@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 
 import { AppTitleStrategy } from '@core/i18n/title-strategy';
+import { AppShell } from '@core/shell/app-shell';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [AppShell],
   templateUrl: './app.html',
 })
 export class App {

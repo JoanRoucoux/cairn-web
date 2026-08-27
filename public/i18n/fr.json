@@ -7,5 +7,14 @@
     "title": "Page introuvable",
     "description": "La page demandée n'existe pas.",
     "home": "Retour à l'accueil"
+  },
+  "shell": {
+    "primary": "Principale",
+    "portfolio": "Patrimoine",
+    "holdings": "Positions",
+    "allocation": "Répartition",
+    "sources": "Sources",
+    "account": "Mon compte",
+    "skipToContent": "Aller au contenu"
   }
 }

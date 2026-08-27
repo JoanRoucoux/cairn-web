@@ -7,5 +7,14 @@
     "title": "Page not found",
     "description": "The requested page does not exist.",
     "home": "Back to home"
+  },
+  "shell": {
+    "primary": "Main",
+    "portfolio": "Portfolio",
+    "holdings": "Holdings",
+    "allocation": "Allocation",
+    "sources": "Sources",
+    "account": "My account",
+    "skipToContent": "Skip to content"
   }
 }
