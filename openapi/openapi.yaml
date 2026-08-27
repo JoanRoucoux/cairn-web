@@ -1,0 +1,797 @@
+openapi: 3.0.3
+info:
+  title: Cairn API
+  description: Contract-first API of the Cairn wealth-tracking application.
+  version: 0.1.0
+tags:
+  - name: Portfolio
+    description: The aggregated, valued portfolio
+  - name: Holding
+    description: Manage the holdings that make up the portfolio
+  - name: Account
+    description: Manage the accounts holdings live in
+  - name: Instrument
+    description: Manage instruments and resolve them from an ISIN
+  - name: Quote
+    description: Read and record quote history, and refresh quotes on demand
+  - name: Jobs
+    description: Inspect recent batch job runs
+  - name: Session
+    description: The signed-in owner and their registered passkeys
+paths:
+  /portfolio:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolio
+      summary: Get the valued portfolio
+      responses:
+        '200':
+          description: The valued portfolio
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '401':
+          description: No session
+  /holdings:
+    get:
+      tags: [Holding]
+      operationId: listHoldings
+      summary: List every holding
+      responses:
+        '200':
+          description: Every holding
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HoldingResponse'
+    post:
+      tags: [Holding]
+      operationId: createHolding
+      summary: Create a holding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateHoldingRequest'
+      responses:
+        '201':
+          description: Holding created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldingResponse'
+        '422':
+          description: Unknown account or instrument, or duplicate holding
+  /holdings/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags: [Holding]
+      operationId: updateHolding
+      summary: Update a holding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateHoldingRequest'
+      responses:
+        '200':
+          description: Holding updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HoldingResponse'
+        '404':
+          description: Unknown holding
+    delete:
+      tags: [Holding]
+      operationId: deleteHolding
+      summary: Delete a holding
+      responses:
+        '204':
+          description: Holding deleted
+        '404':
+          description: Unknown holding
+  /holdings/export:
+    get:
+      tags: [Holding]
+      operationId: exportHoldings
+      summary: Export every holding as a CSV file
+      responses:
+        '200':
+          description: Every holding as an RFC 4180 CSV file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              example: attachment; filename="cairn-2026-08-21.csv"
+          content:
+            text/csv:
+              schema:
+                type: string
+  /accounts:
+    get:
+      tags: [Account]
+      operationId: listAccounts
+      summary: List every account
+      responses:
+        '200':
+          description: Every account
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+    post:
+      tags: [Account]
+      operationId: createAccount
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAccountRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+  /instruments:
+    get:
+      tags: [Instrument]
+      operationId: listInstruments
+      summary: List every instrument
+      responses:
+        '200':
+          description: Every instrument
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstrumentResponse'
+    post:
+      tags: [Instrument]
+      operationId: createInstrument
+      summary: Create an instrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInstrumentRequest'
+      responses:
+        '201':
+          description: Instrument created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstrumentResponse'
+  /instruments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Instrument]
+      operationId: getInstrument
+      summary: Get an instrument's detail
+      responses:
+        '200':
+          description: Instrument detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstrumentDetailResponse'
+        '404':
+          description: Unknown instrument
+    patch:
+      tags: [Instrument]
+      operationId: updateInstrument
+      summary: Update an instrument's description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInstrumentRequest'
+      responses:
+        '200':
+          description: Instrument updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstrumentDetailResponse'
+        '404':
+          description: Unknown instrument
+  /instruments/resolve:
+    post:
+      tags: [Instrument]
+      operationId: resolveInstrument
+      summary: Resolve a query into candidate price sources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [query]
+              properties:
+                query:
+                  type: string
+                  description: An ISIN, a ticker or a name
+      responses:
+        '200':
+          description: Candidate price sources, each probed for a live price
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstrumentCandidateResponse'
+        '422':
+          description: No source knows this instrument
+  /instruments/{id}/quotes:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Quote]
+      operationId: listQuotes
+      summary: List an instrument's quote history over a date range
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: The quote history over the requested range
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuoteResponse'
+    post:
+      tags: [Quote]
+      operationId: recordQuote
+      summary: Record a manual quote for an instrument
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordQuoteRequest'
+      responses:
+        '201':
+          description: Quote recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteResponse'
+  /quotes/refresh:
+    post:
+      tags: [Quote]
+      operationId: refreshQuotes
+      summary: Refresh every refreshable instrument's quote synchronously
+      responses:
+        '200':
+          description: The outcome of the refresh
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshReportResponse'
+  /jobs/runs:
+    get:
+      tags: [Jobs]
+      operationId: getJobRuns
+      summary: List recent batch job runs, most recent first
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Recent batch job executions, most recent first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobRunResponse'
+  /history:
+    get:
+      tags: [History]
+      operationId: getHistory
+      summary: Get the portfolio value over time
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [snapshot, constant-mix]
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: The portfolio value over time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+  /session:
+    get:
+      tags: [Session]
+      operationId: getSession
+      summary: Get the signed-in owner and their registered passkeys
+      responses:
+        '200':
+          description: The signed-in owner and the passkeys registered for them
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          description: No session
+  /session/passkeys/{credentialId}:
+    delete:
+      tags: [Session]
+      operationId: revokePasskey
+      summary: Revoke a passkey
+      parameters:
+        - name: credentialId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The passkey no longer opens this account
+        '404':
+          description: No such passkey for this owner
+        '409':
+          description: This is the last passkey; revoking it would lock the owner out
+components:
+  schemas:
+    PortfolioResponse:
+      type: object
+      required: [totalEur, dayChangeEur, staleCount, generatedAt, byAssetClass, byAccount, holdings]
+      properties:
+        totalEur:
+          type: number
+          example: 278146.45
+        dayChangeEur:
+          type: number
+        dayChangeRatio:
+          type: number
+          nullable: true
+        unrealizedGainEur:
+          type: number
+          nullable: true
+          description: Absent when no holding's cost basis is known enough to sum. Never 0.
+        unrealizedGainRatio:
+          type: number
+          nullable: true
+        staleCount:
+          type: integer
+        generatedAt:
+          type: string
+          format: date-time
+        byAssetClass:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationResponse'
+        byAccount:
+          type: array
+          items:
+            $ref: '#/components/schemas/AllocationResponse'
+        holdings:
+          type: array
+          items:
+            $ref: '#/components/schemas/HoldingResponse'
+    AllocationResponse:
+      type: object
+      required: [label, valueEur, share]
+      properties:
+        label:
+          type: string
+        valueEur:
+          type: number
+        share:
+          type: number
+    CreateHoldingRequest:
+      type: object
+      required: [accountId, instrumentId, quantity]
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        instrumentId:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+        averageCost:
+          type: number
+          nullable: true
+    UpdateHoldingRequest:
+      type: object
+      required: [quantity]
+      properties:
+        quantity:
+          type: number
+        averageCost:
+          type: number
+          nullable: true
+    HoldingResponse:
+      type: object
+      required:
+        - id
+        - accountId
+        - accountName
+        - accountType
+        - instrumentId
+        - instrumentName
+        - assetClass
+        - quantity
+        - price
+        - priceCurrency
+        - priceAsOf
+        - priceSource
+        - stale
+        - marketValueEur
+      properties:
+        id:
+          type: string
+          format: uuid
+        accountId:
+          type: string
+          format: uuid
+        accountName:
+          type: string
+        accountType:
+          type: string
+          enum: [PEA, PEA_PME, CTO, PER, PEE, LIFE_INSURANCE, SAVINGS, CRYPTO]
+        instrumentId:
+          type: string
+          format: uuid
+        instrumentName:
+          type: string
+        isin:
+          type: string
+          nullable: true
+        assetClass:
+          type: string
+          enum: [EQUITY, ETF, FUND, CRYPTO, CASH]
+        quantity:
+          type: number
+        averageCost:
+          type: number
+          nullable: true
+          description: Absent when the cost basis is unknown. Never 0.
+        price:
+          type: number
+        priceCurrency:
+          type: string
+        priceAsOf:
+          type: string
+          format: date
+        priceSource:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+        stale:
+          type: boolean
+        marketValueEur:
+          type: number
+        unrealizedGainEur:
+          type: number
+          nullable: true
+        unrealizedGainRatio:
+          type: number
+          nullable: true
+        dayChangeEur:
+          type: number
+          nullable: true
+        dayChangeRatio:
+          type: number
+          nullable: true
+    AccountResponse:
+      type: object
+      required: [id, name, type, institution]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum: [PEA, PEA_PME, CTO, PER, PEE, LIFE_INSURANCE, SAVINGS, CRYPTO]
+        institution:
+          type: string
+    CreateAccountRequest:
+      type: object
+      required: [name, type, institution]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [PEA, PEA_PME, CTO, PER, PEE, LIFE_INSURANCE, SAVINGS, CRYPTO]
+        institution:
+          type: string
+    InstrumentResponse:
+      type: object
+      required: [id, name, currency, assetClass, priceSource]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isin:
+          type: string
+          nullable: true
+        currency:
+          type: string
+        assetClass:
+          type: string
+          enum: [EQUITY, ETF, FUND, CRYPTO, CASH]
+        priceSource:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+        sourceRef:
+          type: string
+          nullable: true
+    InstrumentDetailResponse:
+      type: object
+      required: [id, name, currency, assetClass, priceSource]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        isin:
+          type: string
+          nullable: true
+        currency:
+          type: string
+        assetClass:
+          type: string
+          enum: [EQUITY, ETF, FUND, CRYPTO, CASH]
+        priceSource:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+        sourceRef:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        externalUrl:
+          type: string
+          nullable: true
+          description: Absent for a manually priced instrument. Never a broken link.
+    CreateInstrumentRequest:
+      type: object
+      required: [name, currency, assetClass, priceSource]
+      properties:
+        name:
+          type: string
+        isin:
+          type: string
+          nullable: true
+        currency:
+          type: string
+        assetClass:
+          type: string
+          enum: [EQUITY, ETF, FUND, CRYPTO, CASH]
+        priceSource:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+        sourceRef:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+    UpdateInstrumentRequest:
+      type: object
+      required: [description]
+      properties:
+        description:
+          type: string
+          nullable: true
+    InstrumentCandidateResponse:
+      type: object
+      required: [name, source, sourceRef, assetClass, probePrice]
+      properties:
+        name:
+          type: string
+        source:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+        sourceRef:
+          type: string
+        assetClass:
+          type: string
+          enum: [EQUITY, ETF, FUND, CRYPTO, CASH]
+        probePrice:
+          type: number
+    QuoteResponse:
+      type: object
+      required: [instrumentId, asOf, price, currency, source]
+      properties:
+        instrumentId:
+          type: string
+          format: uuid
+        asOf:
+          type: string
+          format: date
+        price:
+          type: number
+        currency:
+          type: string
+        source:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+    RecordQuoteRequest:
+      type: object
+      required: [asOf, price]
+      properties:
+        asOf:
+          type: string
+          format: date
+        price:
+          type: number
+    RefreshReportResponse:
+      type: object
+      required: [refreshed, skipped, failures]
+      properties:
+        refreshed:
+          type: integer
+        skipped:
+          type: integer
+        failures:
+          type: array
+          items:
+            $ref: '#/components/schemas/RefreshFailureResponse'
+    RefreshFailureResponse:
+      type: object
+      required: [instrumentId, instrumentName, source, message]
+      properties:
+        instrumentId:
+          type: string
+          format: uuid
+        instrumentName:
+          type: string
+        source:
+          type: string
+          enum: [YAHOO, COINGECKO, SG_SIRIUS, MANUAL]
+        message:
+          type: string
+    JobRunResponse:
+      type: object
+      required: [id, jobName, status, startedAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        jobName:
+          type: string
+          example: refreshQuotesJob
+        status:
+          type: string
+          enum: [STARTING, STARTED, STOPPING, STOPPED, FAILED, COMPLETED, ABANDONED, UNKNOWN]
+        startedAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Absent while the run is still in progress.
+    HistoryResponse:
+      type: object
+      required: [mode, reconstructed, points]
+      properties:
+        mode:
+          type: string
+          enum: [snapshot, constant-mix]
+        reconstructed:
+          type: boolean
+          description: >
+            True when the series is rebuilt at today's composition rather than measured.
+            The client warns the user when the requested range makes this material.
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryPoint'
+    HistoryPoint:
+      type: object
+      required: [date, totalEur]
+      properties:
+        date:
+          type: string
+          format: date
+        totalEur:
+          type: number
+    SessionResponse:
+      type: object
+      required: [displayName, initials, passkeys]
+      properties:
+        displayName:
+          type: string
+          example: Joan Roucoux
+        initials:
+          type: string
+          maxLength: 2
+          example: JR
+        passkeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/PasskeyResponse'
+    PasskeyResponse:
+      type: object
+      required: [credentialId, label, createdAt]
+      properties:
+        credentialId:
+          type: string
+          description: Base64url, as stored by Spring Security
+        label:
+          type: string
+          example: iPhone de Joan
+        createdAt:
+          type: string
+          format: date-time
+        lastUsedAt:
+          type: string
+          format: date-time
+          nullable: true

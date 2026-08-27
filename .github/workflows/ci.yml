@@ -1,0 +1,128 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Also generates the OpenAPI clients and models (postinstall).
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm run format:check
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Unit tests
+        run: pnpm run test:coverage
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm run e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ failure() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # No other job touches the production image, so the Dockerfile and its nginx
+  # config would rot unnoticed: build it and check what it actually serves.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build the production image
+        run: docker build -t app:ci .
+
+      - name: Check that nginx serves the app and falls back to index.html
+        run: |
+          docker run -d --name web -p 8080:80 app:ci
+          timeout 60 sh -c 'until curl -sf http://localhost:8080/ > /dev/null; do sleep 2; done'
+          curl -sf http://localhost:8080/users/1 | grep -q "<app-root>"
+
+  # Guards against drift between the starter and its generator manifest/templates
+  # (generator.config.json, .generator/templates/): generates an app from this
+  # working tree with starter-generator and runs the app's own quality gates.
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Fetch starter-generator
+        run: |
+          git clone --depth 1 https://github.com/JoanRoucoux/starter-generator "$RUNNER_TEMP/starter-generator"
+          pnpm install --frozen-lockfile --dir "$RUNNER_TEMP/starter-generator"
+
+      - name: Generate an app from this working tree
+        run: node "$RUNNER_TEMP/starter-generator/index.mjs" "$RUNNER_TEMP/generated/ci-check-web" --template . --title "CI Check" --skip-install --skip-git --yes
+
+      # Also generates the OpenAPI clients and models of the generated app (postinstall).
+      - name: Install generated app dependencies
+        working-directory: ${{ runner.temp }}/generated/ci-check-web
+        run: pnpm install
+
+      # Mirrors the generator's postInstall step (skipped above with --skip-install).
+      - name: Format the generated app
+        working-directory: ${{ runner.temp }}/generated/ci-check-web
+        run: pnpm run format
+
+      - name: Check the generated app (format, lint, tests, build)
+        working-directory: ${{ runner.temp }}/generated/ci-check-web
+        run: |
+          pnpm run format:check
+          pnpm run lint
+          pnpm run test:coverage
+          pnpm run build
+
+      - name: Install Playwright browsers
+        working-directory: ${{ runner.temp }}/generated/ci-check-web
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end tests on the generated app
+        working-directory: ${{ runner.temp }}/generated/ci-check-web
+        run: pnpm run e2e

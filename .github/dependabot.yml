@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # TypeScript 7 breaks typescript-eslint (via ts-api-utils). Remove once
+      # typescript-eslint supports TS 7 — see AGENTS.md Gotchas.
+      - dependency-name: 'typescript'
+        versions: ['>=7']
+    groups:
+      angular:
+        patterns:
+          - '@angular/*'
+          - 'angular-eslint'
+      dev-dependencies:
+        dependency-type: development
+        exclude-patterns:
+          - '@angular/*'
+          - 'angular-eslint'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

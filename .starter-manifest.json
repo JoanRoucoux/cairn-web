@@ -1,0 +1,12 @@
+{
+  "starter": "angular-starter-web",
+  "template": "C:\\Dev\\starters\\angular-starter-web",
+  "ref": null,
+  "modules": [],
+  "tokens": {
+    "appName": "cairn-web",
+    "title": "Cairn",
+    "feature": "portfolio"
+  },
+  "generatedAt": "2026-08-27T18:19:58.935Z"
+}
