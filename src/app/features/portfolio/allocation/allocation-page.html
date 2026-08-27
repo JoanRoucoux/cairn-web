@@ -1,0 +1,27 @@
+<h1 class="text-xl font-semibold">{{ 'portfolio.allocation.title' | transloco }}</h1>
+
+@if (portfolio.hasValue()) {
+  <div class="mt-4 grid gap-4 lg:grid-cols-2">
+    <ui-card>
+      <app-allocation-breakdown
+        [heading]="'portfolio.allocation.byAssetClass' | transloco"
+        [rows]="portfolio.value().byAssetClass"
+      />
+      <p class="mt-5 border-t border-(--hairline) pt-4 text-xs leading-relaxed text-(--subtle-foreground)">
+        {{ 'portfolio.allocation.scaleNote' | transloco }}
+      </p>
+    </ui-card>
+
+    <ui-card>
+      <app-allocation-breakdown
+        [heading]="'portfolio.allocation.byAccount' | transloco"
+        [rows]="portfolio.value().byAccount"
+      />
+    </ui-card>
+  </div>
+} @else if (portfolio.error()) {
+  <p class="mt-4 text-(--negative)" role="alert">{{ 'portfolio.error' | transloco }}</p>
+} @else {
+  <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>
+  <ui-skeleton class="mt-4" [height]="28" [lines]="6" />
+}

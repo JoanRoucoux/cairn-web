@@ -13,5 +13,11 @@
   "stale": {
     "message": "{{count}} quotes are more than four days old",
     "action": "View sources"
+  },
+  "allocation": {
+    "title": "Allocation",
+    "byAssetClass": "By asset class",
+    "byAccount": "By account",
+    "scaleNote": "Bars are scaled to the largest row, not to the total - otherwise the smallest classes would be invisible."
   }
 }

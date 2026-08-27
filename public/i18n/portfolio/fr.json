@@ -13,5 +13,11 @@
   "stale": {
     "message": "{{count}} cours datent de plus de 4 jours",
     "action": "Voir les sources"
+  },
+  "allocation": {
+    "title": "Repartition",
+    "byAssetClass": "Par classe d'actif",
+    "byAccount": "Par compte",
+    "scaleNote": "Les barres sont a l'echelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
   }
 }
