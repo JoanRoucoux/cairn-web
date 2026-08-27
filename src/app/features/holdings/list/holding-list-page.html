@@ -1,0 +1,35 @@
+<div class="flex flex-wrap items-center gap-3">
+  <h1 class="text-xl font-semibold">{{ 'holdings.title' | transloco }}</h1>
+  <label class="ml-auto flex items-center gap-2">
+    <span class="sr-only">{{ 'holdings.searchLabel' | transloco }}</span>
+    <input
+      class="w-52"
+      data-testid="holdings-search"
+      type="search"
+      uiInput
+      [placeholder]="'holdings.searchPlaceholder' | transloco"
+      [value]="search()"
+      (input)="onSearchInput($event)"
+    />
+  </label>
+</div>
+
+<p class="mt-1.5 text-[13px] text-(--muted-foreground) tabular-nums">
+  {{ 'holdings.summary' | transloco: { lines: totals().lines, accounts: totals().accounts } }} &middot;
+  {{ totals().valueEur | money }}
+</p>
+
+@if (holdings.error()) {
+  <p class="mt-4 text-(--negative)" role="alert">{{ 'holdings.error' | transloco }}</p>
+} @else if (holdings.isLoading()) {
+  <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
+  <ui-skeleton class="mt-4" [height]="52" [lines]="5" />
+} @else if (groups().length === 0) {
+  <p class="mt-4 text-(--muted-foreground)" role="status">{{ 'holdings.empty' | transloco }}</p>
+} @else {
+  <div class="mt-4 flex flex-col gap-2.5">
+    @for (group of groups(); track group.accountId; let first = $first) {
+      <app-holding-account-group [expanded]="first" [group]="group" />
+    }
+  </div>
+}

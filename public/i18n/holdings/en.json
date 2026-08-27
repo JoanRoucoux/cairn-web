@@ -1,0 +1,20 @@
+{
+  "title": "Holdings",
+  "unknown": "Not available",
+  "staleQuote": "Stale quote",
+  "searchLabel": "Search holdings",
+  "searchPlaceholder": "Search a holding",
+  "summary": "{{lines}} holdings across {{accounts}} accounts",
+  "lineCount": "{{count}} holdings",
+  "loading": "Loading your holdings",
+  "empty": "No holding matches your search.",
+  "error": "Your holdings could not be loaded.",
+  "columns": {
+    "line": "Holding",
+    "quantity": "Quantity",
+    "averageCost": "Average cost",
+    "price": "Price",
+    "value": "Value",
+    "unrealized": "Unrealised"
+  }
+}

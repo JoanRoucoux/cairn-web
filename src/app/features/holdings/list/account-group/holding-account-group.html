@@ -1,0 +1,76 @@
+<details class="overflow-hidden rounded-xl border border-(--border) bg-(--card)" [open]="expanded()">
+  <summary
+    class="flex min-h-11 cursor-pointer list-none items-center gap-3 px-3.5 py-3 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+  >
+    <span class="flex min-w-0 grow flex-col gap-0.5">
+      <span class="text-sm font-semibold">{{ group().accountName }}</span>
+      <span class="text-[10.5px] tracking-[0.05em] text-(--subtle-foreground)">
+        {{ group().accountType }} &middot; {{ 'holdings.lineCount' | transloco: { count: group().holdings.length } }}
+      </span>
+    </span>
+
+    @if (group().stale) {
+      <svg
+        class="shrink-0"
+        fill="none"
+        height="13"
+        role="img"
+        stroke="var(--stale)"
+        stroke-linecap="round"
+        stroke-width="2.2"
+        viewBox="0 0 24 24"
+        width="13"
+        [attr.aria-label]="'holdings.staleQuote' | transloco"
+      >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </svg>
+    }
+
+    <span class="shrink-0 text-sm font-semibold tabular-nums">{{ group().valueEur | money }}</span>
+  </summary>
+
+  <div class="overflow-x-auto border-t border-(--hairline)">
+    <table uiTable>
+      <thead>
+        <tr>
+          <th uiTh>{{ 'holdings.columns.line' | transloco }}</th>
+          <th from="md" numeric uiTh>{{ 'holdings.columns.quantity' | transloco }}</th>
+          <th from="lg" numeric uiTh>{{ 'holdings.columns.averageCost' | transloco }}</th>
+          <th from="md" numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
+          <th numeric uiTh>{{ 'holdings.columns.value' | transloco }}</th>
+          <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (holding of group().holdings; track holding.id) {
+          <tr data-testid="holding-row">
+            <td uiTd>
+              <a
+                class="block max-w-56 truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+                [routerLink]="['/positions', holding.id]"
+              >
+                {{ holding.instrumentName }}
+              </a>
+            </td>
+            <td from="md" numeric uiTd>{{ holding.quantity }}</td>
+            <td from="lg" numeric uiTd>
+              @if (holding.averageCost !== null && holding.averageCost !== undefined) {
+                {{ holding.averageCost | money }}
+              } @else {
+                &mdash;
+              }
+            </td>
+            <td from="md" numeric uiTd>{{ holding.price | money }}</td>
+            <td numeric uiTd>{{ holding.marketValueEur | money }}</td>
+            <td numeric uiTd>
+              <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
+                {{ holding.unrealizedGainEur | signedMoney }}
+              </ui-delta>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</details>

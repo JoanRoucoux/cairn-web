@@ -1,0 +1,20 @@
+{
+  "title": "Positions",
+  "unknown": "Non disponible",
+  "staleQuote": "Cours obsolete",
+  "searchLabel": "Rechercher une ligne",
+  "searchPlaceholder": "Rechercher une ligne",
+  "summary": "{{lines}} lignes sur {{accounts}} comptes",
+  "lineCount": "{{count}} lignes",
+  "loading": "Chargement de vos positions",
+  "empty": "Aucune ligne ne correspond a votre recherche.",
+  "error": "Vos positions n'ont pas pu etre chargees.",
+  "columns": {
+    "line": "Ligne",
+    "quantity": "Quantite",
+    "averageCost": "PRU",
+    "price": "Cours",
+    "value": "Valeur",
+    "unrealized": "+/- latente"
+  }
+}
