@@ -55,9 +55,10 @@
       </div>
     </main>
 
-    <!-- No aria-label here: CSS shows only one of the two navs at a time, but both sit in the
-         DOM together, and two landmarks sharing one accessible name is invalid when unstyled. -->
-    <nav class="sticky bottom-0 flex border-t border-(--hairline) bg-(--elevated) pt-2 pb-4 lg:hidden">
+    <nav
+      class="sticky bottom-0 flex border-t border-(--hairline) bg-(--elevated) pt-2 pb-4 lg:hidden"
+      [attr.aria-label]="'shell.primary' | transloco"
+    >
       @for (destination of destinations; track destination.path) {
         <a
           class="flex min-h-11 flex-1 flex-col items-center justify-center gap-1 text-[10px] text-(--muted-foreground) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"

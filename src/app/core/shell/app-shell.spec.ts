@@ -34,7 +34,7 @@ describe('AppShell', () => {
     await renderShell();
     await settleSession();
 
-    expect(screen.getByRole('navigation', { name: 'shell.primary' })).toBeInTheDocument();
+    expect(screen.getAllByRole('navigation', { name: 'shell.primary' })).toHaveLength(2);
   });
 
   it('should render one link per destination in each layout', async () => {
