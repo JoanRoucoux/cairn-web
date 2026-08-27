@@ -21,5 +21,14 @@
     "price": "Cours",
     "value": "Valeur",
     "unrealized": "+/- latente"
+  },
+  "manualQuote": {
+    "open": "Saisir un cours",
+    "title": "Cours de {{name}}",
+    "asOf": "Date",
+    "price": "Cours en euros",
+    "cancel": "Annuler",
+    "submit": "Enregistrer",
+    "error": "Ce cours a ete refuse. Verifiez la date et le montant."
   }
 }

@@ -21,5 +21,14 @@
     "price": "Price",
     "value": "Value",
     "unrealized": "Unrealised"
+  },
+  "manualQuote": {
+    "open": "Enter a price",
+    "title": "Price for {{name}}",
+    "asOf": "Date",
+    "price": "Price in euros",
+    "cancel": "Cancel",
+    "submit": "Save price",
+    "error": "That price was refused. Check the date and the amount."
   }
 }

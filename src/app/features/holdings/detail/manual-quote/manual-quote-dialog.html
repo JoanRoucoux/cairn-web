@@ -1,0 +1,43 @@
+<ui-dialog
+  data-testid="manual-quote-dialog"
+  width="md"
+  [heading]="'holdings.manualQuote.title' | transloco: { name: instrumentName() }"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field [label]="'holdings.manualQuote.asOf' | transloco">
+    <input data-testid="manual-quote-as-of" type="date" uiInput [formField]="form.asOf" />
+  </ui-field>
+
+  <ui-field [label]="'holdings.manualQuote.price' | transloco">
+    <input data-testid="manual-quote-price" step="0.0001" type="number" uiInput [formField]="form.price" />
+  </ui-field>
+
+  @if (error()) {
+    <p class="text-sm text-(--negative)" data-testid="manual-quote-error" role="alert">
+      {{ 'holdings.manualQuote.error' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="manual-quote-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="form().submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.manualQuote.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="manual-quote-submit"
+    dialogActions
+    type="button"
+    ui-button
+    [disabled]="form().submitting()"
+    (click)="confirm()"
+  >
+    {{ 'holdings.manualQuote.submit' | transloco }}
+  </button>
+</ui-dialog>

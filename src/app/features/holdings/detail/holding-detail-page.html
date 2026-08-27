@@ -73,6 +73,26 @@
         <dd class="tabular-nums" [class.text-(--stale)]="holding.stale">{{ holding.priceAsOf | relativeDate }}</dd>
       </div>
     </dl>
+
+    <div class="flex gap-2.5">
+      <button
+        class="min-h-11 flex-1 rounded-lg border border-(--border) bg-(--elevated) text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        data-testid="enter-quote"
+        type="button"
+        (click)="onEnterQuote()"
+      >
+        {{ 'holdings.manualQuote.open' | transloco }}
+      </button>
+    </div>
+
+    @if (pricingInstrument(); as pricing) {
+      <app-manual-quote-dialog
+        [instrumentId]="pricing.id"
+        [instrumentName]="pricing.name"
+        (dismissed)="onQuoteDismissed()"
+        (saved)="onQuoteSaved()"
+      />
+    }
   </article>
 } @else if (holdings.isLoading()) {
   <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>

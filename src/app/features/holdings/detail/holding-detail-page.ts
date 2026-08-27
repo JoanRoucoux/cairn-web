@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { type SegmentedOption, UiCard, UiDelta, UiSegmented, UiSkeleton } from 'cairn-ui';
@@ -10,11 +10,13 @@ import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
 import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
 
 import { HoldingDetailStore } from './holding-detail-store';
+import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
 
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
     LineChart,
+    ManualQuoteDialog,
     MoneyPipe,
     RelativeDatePipe,
     SignedMoneyPipe,
@@ -40,8 +42,27 @@ export class HoldingDetailPage {
     CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`portfolio.range.${value}`) })),
   );
 
+  protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
+
   // The library types the option value as `string`; every option here is built from CHART_RANGES.
   protected setRange(value: string): void {
     this.range.set(value as ChartRange);
+  }
+
+  protected onEnterQuote(): void {
+    const holding = this.holding();
+
+    if (holding) {
+      this.pricingInstrument.set({ id: holding.instrumentId, name: holding.instrumentName });
+    }
+  }
+
+  protected onQuoteSaved(): void {
+    this.pricingInstrument.set(undefined);
+    this.#store.reload();
+  }
+
+  protected onQuoteDismissed(): void {
+    this.pricingInstrument.set(undefined);
   }
 }
