@@ -1,0 +1,26 @@
+<h2 class="mb-3 text-[11px] font-semibold tracking-[0.08em] text-(--muted-foreground) uppercase">
+  {{ 'portfolio.movers.title' | transloco }}
+</h2>
+
+<ul class="flex flex-col gap-2" role="list">
+  @for (mover of movers(); track mover.id) {
+    <li>
+      <a
+        class="flex items-center justify-between gap-3 rounded-xl border border-(--border) bg-(--card) px-3.5 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        data-testid="mover-row"
+        [routerLink]="['/positions', mover.id]"
+      >
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span class="truncate text-sm font-medium">{{ mover.instrumentName }}</span>
+          <span class="text-[11px] text-(--subtle-foreground)">{{ mover.accountName }}</span>
+        </span>
+        <span class="flex shrink-0 flex-col items-end gap-0.5">
+          <span class="text-sm font-semibold tabular-nums">{{ mover.marketValueEur | money }}</span>
+          <ui-delta class="text-xs" [unknownLabel]="'portfolio.unknown' | transloco" [value]="mover.dayChangeEur">
+            {{ mover.dayChangeEur | signedMoney }}
+          </ui-delta>
+        </span>
+      </a>
+    </li>
+  }
+</ul>

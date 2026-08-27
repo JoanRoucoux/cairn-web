@@ -12,7 +12,22 @@ export const getTranslocoTestingModule = (
   options: TranslocoTestingOptions = {},
 ): ModuleWithProviders<TranslocoTestingModule> => {
   return TranslocoTestingModule.forRoot({
-    langs: { en: {}, fr: {}, 'portfolio/en': {}, 'portfolio/fr': {} },
+    langs: {
+      en: {},
+      fr: {},
+      'portfolio/en': {},
+      'portfolio/fr': {},
+      'holdings/en': {},
+      'holdings/fr': {},
+      'instruments/en': {},
+      'instruments/fr': {},
+      'accounts/en': {},
+      'accounts/fr': {},
+      'sources/en': {},
+      'sources/fr': {},
+      'profile/en': {},
+      'profile/fr': {},
+    },
     translocoConfig: {
       availableLangs: ['en', 'fr'],
       defaultLang: 'en',

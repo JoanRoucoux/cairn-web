@@ -1,4 +1,17 @@
 {
-  "title": "Cairn",
-  "description": "Bienvenue sur Cairn. Construisez votre première page dans src/app/features/portfolio/."
+  "title": "Patrimoine",
+  "total": "Patrimoine total",
+  "today": "aujourd'hui",
+  "unknown": "Non disponible",
+  "loading": "Chargement de votre patrimoine",
+  "error": "Votre patrimoine n'a pas pu etre charge.",
+  "chartLabel": "Valeur du patrimoine sur la plage selectionnee",
+  "rangeLabel": "Plage de temps",
+  "reconstructed": "Au-dela d'un an la courbe est reconstruite a composition constante : exacte aux extremites, approximative entre les deux.",
+  "range": { "1d": "1J", "7d": "7J", "1m": "1M", "1y": "1A", "5y": "5A", "max": "Max" },
+  "movers": { "title": "Ce qui bouge" },
+  "stale": {
+    "message": "{{count}} cours datent de plus de 4 jours",
+    "action": "Voir les sources"
+  }
 }

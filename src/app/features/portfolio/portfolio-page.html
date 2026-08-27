@@ -1,5 +1,56 @@
-<!-- Transloco prefixes scoped keys with the camel-cased scope name. -->
-<div class="flex flex-col items-center gap-4 py-24 text-center">
-  <h1 class="text-4xl font-bold tracking-tight text-balance">{{ 'portfolio.title' | transloco }}</h1>
-  <p class="max-w-xl text-lg text-(--muted-foreground)">{{ 'portfolio.description' | transloco }}</p>
-</div>
+<h1 class="sr-only">{{ 'portfolio.title' | transloco }}</h1>
+
+@if (portfolio.hasValue()) {
+  <div class="flex flex-col gap-4">
+    <ui-card>
+      <p class="text-[11px] font-medium tracking-[0.08em] text-(--muted-foreground) uppercase">
+        {{ 'portfolio.total' | transloco }}
+      </p>
+      <p class="mt-3 text-[42px] leading-none font-semibold tabular-nums">
+        {{ portfolio.value().totalEur | money }}
+      </p>
+      <p class="mt-3 flex flex-wrap items-center gap-3">
+        <ui-delta
+          emphasis="pill"
+          [unknownLabel]="'portfolio.unknown' | transloco"
+          [value]="portfolio.value().dayChangeEur"
+        >
+          {{ portfolio.value().dayChangeEur | signedMoney }}
+        </ui-delta>
+        <span class="text-[13px] text-(--muted-foreground) tabular-nums">
+          {{ portfolio.value().dayChangeRatio | ratio: { signed: true } }} {{ 'portfolio.today' | transloco }}
+        </span>
+      </p>
+
+      <div class="mt-4">
+        <app-line-chart [label]="'portfolio.chartLabel' | transloco" [points]="points()" />
+      </div>
+
+      <div class="mt-3">
+        <ui-segmented
+          [label]="'portfolio.rangeLabel' | transloco"
+          [options]="rangeOptions()"
+          [value]="range()"
+          (valueChange)="setRange($event)"
+        />
+      </div>
+
+      @if (reconstructed()) {
+        <p class="mt-3 text-[11.5px] text-(--subtle-foreground)" data-testid="reconstructed-warning">
+          {{ 'portfolio.reconstructed' | transloco }}
+        </p>
+      }
+    </ui-card>
+
+    <app-stale-quotes-banner [count]="portfolio.value().staleCount" />
+
+    <app-portfolio-movers [holdings]="portfolio.value().holdings" />
+  </div>
+} @else if (portfolio.error()) {
+  <p class="text-(--negative)" role="alert">{{ 'portfolio.error' | transloco }}</p>
+} @else {
+  <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>
+  <ui-skeleton class="max-w-64" [height]="34" [lines]="2" />
+  <ui-skeleton class="mt-6" [height]="196" />
+  <ui-skeleton class="mt-6" [height]="56" [lines]="3" />
+}
