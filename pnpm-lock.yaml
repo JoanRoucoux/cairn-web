@@ -32,6 +32,9 @@ importers:
       '@jsverse/transloco-persist-lang':
         specifier: 8.4.0
         version: 8.4.0(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(@jsverse/transloco@8.4.0(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2)(typescript@6.0.3))(@jsverse/utils@1.0.0-beta.5)
+      cairn-ui:
+        specifier: file:..\cairn-ui\dist\ui
+        version: file:../cairn-ui/dist/ui(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))
       rxjs:
         specifier: 7.8.2
         version: 7.8.2
@@ -2538,6 +2541,12 @@ packages:
   bytes@3.1.2:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
+
+  cairn-ui@file:../cairn-ui/dist/ui:
+    resolution: {directory: ../cairn-ui/dist/ui, type: directory}
+    peerDependencies:
+      '@angular/common': ^22.0.0
+      '@angular/core': ^22.0.0
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -6485,6 +6494,12 @@ snapshots:
   buffer-from@1.1.2: {}
 
   bytes@3.1.2: {}
+
+  cairn-ui@file:../cairn-ui/dist/ui(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)):
+    dependencies:
+      '@angular/common': 22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2)
+      '@angular/core': 22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)
+      tslib: 2.8.1
 
   call-bind-apply-helpers@1.0.2:
     dependencies:

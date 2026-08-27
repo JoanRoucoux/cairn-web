@@ -1,45 +1,14 @@
 @import 'tailwindcss';
+@import 'cairn-ui/styles/tokens.css';
 
-/*
- * Global application stylesheet.
- * Design tokens follow the shadcn/ui convention so the app looks consistent
- * even without a component library installed.
- *
- * Each token declares its light and dark value with light-dark(); the active
- * scheme follows the OS preference unless a host shell forces one by setting
- * data-theme on <html>.
- */
-
-:root {
-  color-scheme: light dark;
-  --background: light-dark(hsl(0 0% 100%), hsl(240 10% 3.9%));
-  --foreground: light-dark(hsl(240 10% 3.9%), hsl(0 0% 98%));
-  --card: light-dark(hsl(0 0% 100%), hsl(240 10% 5.5%));
-  --card-foreground: light-dark(hsl(240 10% 3.9%), hsl(0 0% 98%));
-  --border: light-dark(hsl(240 5.9% 90%), hsl(240 3.7% 15.9%));
-  --primary: light-dark(hsl(240 5.9% 10%), hsl(0 0% 98%));
-  --primary-foreground: light-dark(hsl(0 0% 98%), hsl(240 5.9% 10%));
-  --secondary: light-dark(hsl(240 4.8% 95.9%), hsl(240 3.7% 15.9%));
-  --secondary-foreground: light-dark(hsl(240 5.9% 10%), hsl(0 0% 98%));
-  --muted: light-dark(hsl(240 4.8% 95.9%), hsl(240 3.7% 15.9%));
-  --muted-foreground: light-dark(hsl(240 3.8% 46.1%), hsl(240 5% 64.9%));
-  --accent: light-dark(hsl(240 4.8% 95.9%), hsl(240 3.7% 15.9%));
-  --accent-foreground: light-dark(hsl(240 5.9% 10%), hsl(0 0% 98%));
-  --destructive: light-dark(hsl(0 84.2% 45%), hsl(0 62.8% 30.6%));
-  --destructive-foreground: light-dark(hsl(0 0% 98%), hsl(0 0% 98%));
-}
-
-:root[data-theme='light'] {
-  color-scheme: light;
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-}
+/* Tailwind does not scan node_modules: without this, the classes used inside cairn-ui templates
+   are never generated. */
+@source '../node_modules/cairn-ui';
 
 body {
   margin: 0;
   font-family:
+    'Space Grotesk',
     ui-sans-serif,
     system-ui,
     -apple-system,
@@ -47,4 +16,14 @@ body {
     sans-serif;
   color: var(--foreground);
   background-color: var(--background);
+}
+
+/* The ambient gradient of the retained direction. Painted on body rather than on a component so
+   it survives route changes without re-rendering. */
+body::before {
+  position: fixed;
+  z-index: -1;
+  content: '';
+  inset: 0;
+  background: radial-gradient(90% 38% at 62% -6%, var(--glow), transparent 64%);
 }
