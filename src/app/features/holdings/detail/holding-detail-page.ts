@@ -6,38 +6,35 @@ import { type SegmentedOption, UiCard, UiDelta, UiSegmented, UiSkeleton } from '
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { LineChart } from '@shared/chart/line-chart';
 import { MoneyPipe } from '@shared/format/money-pipe';
-import { RatioPipe } from '@shared/format/ratio-pipe';
+import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
 import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
 
-import { PortfolioMovers } from './movers/portfolio-movers';
-import { PortfolioStore } from './portfolio-store';
-import { StaleQuotesBanner } from './stale/stale-quotes-banner';
+import { HoldingDetailStore } from './holding-detail-store';
 
 @Component({
-  selector: 'app-portfolio-page',
+  selector: 'app-holding-detail-page',
   imports: [
     LineChart,
     MoneyPipe,
-    PortfolioMovers,
-    RatioPipe,
+    RelativeDatePipe,
     SignedMoneyPipe,
-    StaleQuotesBanner,
     TranslocoPipe,
     UiCard,
     UiDelta,
     UiSegmented,
     UiSkeleton,
   ],
-  templateUrl: './portfolio-page.html',
+  templateUrl: './holding-detail-page.html',
 })
-export class PortfolioPage {
-  #store = inject(PortfolioStore);
+export class HoldingDetailPage {
+  #store = inject(HoldingDetailStore);
   #transloco = inject(TranslocoService);
 
-  protected readonly portfolio = this.#store.portfolio;
-  protected readonly range = this.#store.range;
+  protected readonly holding = this.#store.holding;
+  protected readonly holdings = this.#store.holdings;
+  protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
-  protected readonly reconstructed = this.#store.reconstructed;
+  protected readonly range = this.#store.range;
 
   protected readonly rangeOptions = computed<SegmentedOption[]>(() =>
     CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`portfolio.range.${value}`) })),

@@ -3,6 +3,7 @@
     "portfolio": "Portfolio",
     "allocation": "Allocation",
     "holdings": "Holdings",
+    "holdingDetail": "Holding detail",
     "notFound": "Page not found"
   },
   "notFound": {

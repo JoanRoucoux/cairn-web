@@ -9,6 +9,11 @@
   "loading": "Loading your holdings",
   "empty": "No holding matches your search.",
   "error": "Your holdings could not be loaded.",
+  "notFound": "This holding no longer exists.",
+  "chartLabel": "Price over the selected range",
+  "externalLink": "Full factsheet on {{source}}",
+  "priceSource": "Price source",
+  "lastQuote": "Last quote",
   "columns": {
     "line": "Holding",
     "quantity": "Quantity",

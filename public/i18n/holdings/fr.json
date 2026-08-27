@@ -9,6 +9,11 @@
   "loading": "Chargement de vos positions",
   "empty": "Aucune ligne ne correspond a votre recherche.",
   "error": "Vos positions n'ont pas pu etre chargees.",
+  "notFound": "Cette ligne n'existe plus.",
+  "chartLabel": "Cours sur la plage selectionnee",
+  "externalLink": "Fiche complete sur {{source}}",
+  "priceSource": "Source du cours",
+  "lastQuote": "Derniere cotation",
   "columns": {
     "line": "Ligne",
     "quantity": "Quantite",

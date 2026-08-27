@@ -1,0 +1,83 @@
+@if (holding(); as holding) {
+  <article class="flex flex-col gap-4">
+    <header>
+      <p class="flex flex-wrap gap-2">
+        <span
+          class="rounded-md bg-(--soft) px-2 py-1 text-[10.5px] font-semibold tracking-[0.05em] text-(--muted-foreground)"
+        >
+          {{ holding.accountName }} &middot; {{ holding.accountType }}
+        </span>
+        <span
+          class="rounded-md bg-(--elevated) px-2 py-1 text-[10.5px] font-semibold tracking-[0.05em] text-(--muted-foreground)"
+        >
+          {{ holding.assetClass }}
+        </span>
+      </p>
+      <h1 class="mt-2.5 text-xl leading-snug font-semibold">{{ holding.instrumentName }}</h1>
+      <p class="mt-1 text-[11.5px] tracking-[0.04em] text-(--subtle-foreground) tabular-nums">{{ holding.isin }}</p>
+    </header>
+
+    <ui-card>
+      <p class="text-[32px] leading-none font-semibold tabular-nums">{{ holding.marketValueEur | money }}</p>
+      <p class="mt-2.5 flex flex-wrap items-center gap-3">
+        <ui-delta emphasis="pill" [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
+          {{ holding.unrealizedGainEur | signedMoney }}
+        </ui-delta>
+        <span class="text-[12.5px] text-(--muted-foreground) tabular-nums">
+          {{ holding.quantity }} &times; {{ holding.price | money }}
+          @if (holding.averageCost !== null && holding.averageCost !== undefined) {
+            &middot; {{ 'holdings.averageCost' | transloco }} {{ holding.averageCost | money }}
+          }
+        </span>
+      </p>
+
+      <div class="mt-4">
+        <app-line-chart [height]="120" [label]="'holdings.chartLabel' | transloco" [points]="points()" />
+      </div>
+
+      <div class="mt-3">
+        <ui-segmented
+          [label]="'portfolio.rangeLabel' | transloco"
+          [options]="rangeOptions()"
+          [value]="range()"
+          (valueChange)="setRange($event)"
+        />
+      </div>
+    </ui-card>
+
+    @if (instrument.hasValue()) {
+      <ui-card>
+        <p class="text-[13.5px] leading-relaxed">{{ instrument.value().description }}</p>
+        @if (instrument.value().externalUrl) {
+          <p class="mt-3 border-t border-(--hairline) pt-3">
+            <a
+              class="text-[12.5px] font-medium underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+              rel="noopener noreferrer"
+              target="_blank"
+              [href]="instrument.value().externalUrl"
+            >
+              {{ 'holdings.externalLink' | transloco: { source: holding.priceSource } }}
+            </a>
+          </p>
+        }
+      </ui-card>
+    }
+
+    <dl class="flex flex-col gap-2.5 px-1">
+      <div class="flex justify-between text-[12px]">
+        <dt class="text-(--subtle-foreground)">{{ 'holdings.priceSource' | transloco }}</dt>
+        <dd class="tabular-nums">{{ holding.priceSource }}</dd>
+      </div>
+      <div class="flex justify-between text-[12px]">
+        <dt class="text-(--subtle-foreground)">{{ 'holdings.lastQuote' | transloco }}</dt>
+        <dd class="tabular-nums" [class.text-(--stale)]="holding.stale">{{ holding.priceAsOf | relativeDate }}</dd>
+      </div>
+    </dl>
+  </article>
+} @else if (holdings.isLoading()) {
+  <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
+  <ui-skeleton class="max-w-56" [height]="30" [lines]="2" />
+  <ui-skeleton class="mt-6" [height]="168" />
+} @else {
+  <p class="text-(--negative)" role="alert">{{ 'holdings.notFound' | transloco }}</p>
+}
