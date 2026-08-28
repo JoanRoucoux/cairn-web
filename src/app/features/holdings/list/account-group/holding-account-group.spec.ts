@@ -2,6 +2,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { render, screen } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -80,7 +81,29 @@ describe('HoldingAccountGroup', () => {
   it('should name every column', async () => {
     await renderGroup();
 
-    expect(await screen.findAllByRole('columnheader')).toHaveLength(6);
+    expect(await screen.findAllByRole('columnheader')).toHaveLength(7);
+  });
+
+  it('should emit the holding to edit', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderGroup();
+    const emitted = vi.fn();
+    fixture.componentInstance.edit.subscribe(emitted);
+
+    await user.click(await screen.findByTestId('edit-holding'));
+
+    expect(emitted).toHaveBeenCalledWith(group.holdings[0]);
+  });
+
+  it('should emit the holding to delete', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderGroup();
+    const emitted = vi.fn();
+    fixture.componentInstance.remove.subscribe(emitted);
+
+    await user.click(await screen.findByTestId('delete-holding'));
+
+    expect(emitted).toHaveBeenCalledWith(group.holdings[0]);
   });
 
   it('should hold the secondary columns back on a narrow viewport', async () => {

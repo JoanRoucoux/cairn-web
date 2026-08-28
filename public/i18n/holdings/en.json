@@ -20,8 +20,13 @@
     "averageCost": "Average cost",
     "price": "Price",
     "value": "Value",
-    "unrealized": "Unrealised"
+    "unrealized": "Unrealised",
+    "actions": "Actions"
   },
+  "editRow": "Edit {{name}}",
+  "editRowShort": "Edit",
+  "deleteRow": "Delete {{name}}",
+  "deleteRowShort": "Delete",
   "manualQuote": {
     "open": "Enter a price",
     "title": "Price for {{name}}",
@@ -30,5 +35,26 @@
     "cancel": "Cancel",
     "submit": "Save price",
     "error": "That price was refused. Check the date and the amount."
+  },
+  "form": {
+    "open": "Add",
+    "createTitle": "Add a holding",
+    "editTitle": "Edit this holding",
+    "choose": "Choose",
+    "account": "Account",
+    "instrument": "Instrument",
+    "quantity": "Quantity",
+    "averageCost": "Average cost",
+    "averageCostHint": "Leave empty if you do not know it - Cairn will show a dash rather than a zero.",
+    "cancel": "Cancel",
+    "submit": "Save",
+    "error": "That holding was refused. Check the account, the instrument and the quantity."
+  },
+  "delete": {
+    "title": "Delete this holding",
+    "description": "{{name}} will be removed from your portfolio. Its quotes are kept.",
+    "cancel": "Cancel",
+    "submit": "Delete",
+    "error": "This holding could not be deleted."
   }
 }

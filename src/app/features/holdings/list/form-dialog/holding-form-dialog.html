@@ -1,0 +1,60 @@
+<ui-dialog
+  data-testid="holding-form-dialog"
+  [heading]="(holding() ? 'holdings.form.editTitle' : 'holdings.form.createTitle') | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field [label]="'holdings.form.account' | transloco">
+    <select data-testid="holding-form-account" uiSelect [formField]="form.accountId">
+      <option value="">{{ 'holdings.form.choose' | transloco }}</option>
+      @for (account of accounts.value(); track account.id) {
+        <option [value]="account.id">{{ account.name }}</option>
+      }
+    </select>
+  </ui-field>
+
+  <ui-field [label]="'holdings.form.instrument' | transloco">
+    <select data-testid="holding-form-instrument" uiSelect [formField]="form.instrumentId">
+      <option value="">{{ 'holdings.form.choose' | transloco }}</option>
+      @for (instrument of instruments.value(); track instrument.id) {
+        <option [value]="instrument.id">{{ instrument.name }}</option>
+      }
+    </select>
+  </ui-field>
+
+  <ui-field [label]="'holdings.form.quantity' | transloco">
+    <input data-testid="holding-form-quantity" step="0.000001" type="number" uiInput [formField]="form.quantity" />
+  </ui-field>
+
+  <ui-field [hint]="'holdings.form.averageCostHint' | transloco" [label]="'holdings.form.averageCost' | transloco">
+    <input data-testid="holding-form-average-cost" step="0.0001" type="number" uiInput [formField]="form.averageCost" />
+  </ui-field>
+
+  @if (error()) {
+    <p class="text-sm text-(--negative)" data-testid="holding-form-error" role="alert">
+      {{ 'holdings.form.error' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="holding-form-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="form().submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.form.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="holding-form-submit"
+    dialogActions
+    type="button"
+    ui-button
+    [disabled]="form().submitting()"
+    (click)="confirm()"
+  >
+    {{ 'holdings.form.submit' | transloco }}
+  </button>
+</ui-dialog>

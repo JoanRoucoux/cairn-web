@@ -40,6 +40,9 @@
           <th from="md" numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
           <th numeric uiTh>{{ 'holdings.columns.value' | transloco }}</th>
           <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
+          <th uiTh>
+            <span class="sr-only">{{ 'holdings.columns.actions' | transloco }}</span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -67,6 +70,32 @@
               <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
                 {{ holding.unrealizedGainEur | signedMoney }}
               </ui-delta>
+            </td>
+            <td uiTd>
+              <div class="flex justify-end gap-1.5">
+                <button
+                  data-testid="edit-holding"
+                  size="sm"
+                  type="button"
+                  ui-button
+                  variant="ghost"
+                  [attr.aria-label]="'holdings.editRow' | transloco: { name: holding.instrumentName }"
+                  (click)="edit.emit(holding)"
+                >
+                  {{ 'holdings.editRowShort' | transloco }}
+                </button>
+                <button
+                  data-testid="delete-holding"
+                  size="sm"
+                  type="button"
+                  ui-button
+                  variant="ghost"
+                  [attr.aria-label]="'holdings.deleteRow' | transloco: { name: holding.instrumentName }"
+                  (click)="remove.emit(holding)"
+                >
+                  {{ 'holdings.deleteRowShort' | transloco }}
+                </button>
+              </div>
             </td>
           </tr>
         }

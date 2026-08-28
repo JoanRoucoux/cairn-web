@@ -1,0 +1,38 @@
+<ui-dialog
+  data-testid="holding-delete-dialog"
+  width="md"
+  [description]="description()"
+  [heading]="'holdings.delete.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  @if (error()) {
+    <p class="text-sm text-(--negative)" data-testid="holding-delete-error" role="alert">
+      {{ 'holdings.delete.error' | transloco }}
+    </p>
+  }
+
+  <!-- showModal() focuses the first focusable element: keep the destructive action second. -->
+  <button
+    data-testid="holding-delete-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="deleting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.delete.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="holding-delete-confirm"
+    dialogActions
+    type="button"
+    ui-button
+    variant="destructive"
+    [disabled]="deleting()"
+    (click)="confirm()"
+  >
+    {{ 'holdings.delete.submit' | transloco }}
+  </button>
+</ui-dialog>

@@ -101,6 +101,79 @@ describe('HoldingListPage', () => {
     expect(await screen.findByText('holdings.empty')).toBeInTheDocument();
   });
 
+  it('should reload the list after a holding is created', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getByTestId('add-holding'));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush([{ id: 'a1', name: 'Saxo Investor' }]));
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([{ id: 'i1', name: 'ETF' }]));
+    await screen.findByRole('option', { name: 'Saxo Investor' });
+
+    await user.selectOptions(screen.getByTestId('holding-form-account'), 'a1');
+    await user.selectOptions(screen.getByTestId('holding-form-instrument'), 'i1');
+    await user.type(screen.getByTestId('holding-form-quantity'), '10');
+    await user.click(screen.getByTestId('holding-form-submit'));
+
+    await vi.waitFor(() => httpTesting.expectOne((request) => request.method === 'POST').flush({}));
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
+
+    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+  });
+
+  it('should close the form dialog when it is dismissed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getByTestId('add-holding'));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush([]));
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+
+    await user.click(await screen.findByTestId('holding-form-cancel'));
+
+    expect(screen.queryByTestId('holding-form-dialog')).not.toBeInTheDocument();
+  });
+
+  it('should open the form dialog prefilled when editing an existing holding', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getAllByTestId('edit-holding')[0]!);
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush([]));
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+
+    expect(await screen.findByText('holdings.form.editTitle')).toBeInTheDocument();
+  });
+
+  it('should reload the list and return focus to the heading after a deletion', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getAllByTestId('delete-holding')[0]!);
+    await user.click(await screen.findByTestId('holding-delete-confirm'));
+
+    await vi.waitFor(() => httpTesting.expectOne((request) => request.method === 'DELETE').flush(null));
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
+
+    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+  });
+
+  it('should close the delete dialog when it is dismissed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getAllByTestId('delete-holding')[0]!);
+    await user.click(await screen.findByTestId('holding-delete-cancel'));
+
+    expect(screen.queryByTestId('holding-delete-dialog')).not.toBeInTheDocument();
+  });
+
   it('should tell the user when holdings fail to load', async () => {
     await render(HoldingListPage, {
       imports: [getTranslocoTestingModule()],

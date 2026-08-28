@@ -20,8 +20,13 @@
     "averageCost": "PRU",
     "price": "Cours",
     "value": "Valeur",
-    "unrealized": "+/- latente"
+    "unrealized": "+/- latente",
+    "actions": "Actions"
   },
+  "editRow": "Modifier {{name}}",
+  "editRowShort": "Modifier",
+  "deleteRow": "Supprimer {{name}}",
+  "deleteRowShort": "Supprimer",
   "manualQuote": {
     "open": "Saisir un cours",
     "title": "Cours de {{name}}",
@@ -30,5 +35,26 @@
     "cancel": "Annuler",
     "submit": "Enregistrer",
     "error": "Ce cours a ete refuse. Verifiez la date et le montant."
+  },
+  "form": {
+    "open": "Ajouter",
+    "createTitle": "Ajouter une ligne",
+    "editTitle": "Modifier la ligne",
+    "choose": "Choisir",
+    "account": "Compte",
+    "instrument": "Instrument",
+    "quantity": "Quantite",
+    "averageCost": "PRU",
+    "averageCostHint": "Laissez vide si vous ne le connaissez pas - Cairn affichera un tiret plutot qu'un zero.",
+    "cancel": "Annuler",
+    "submit": "Enregistrer",
+    "error": "Cette ligne a ete refusee. Verifiez le compte, l'instrument et la quantite."
+  },
+  "delete": {
+    "title": "Supprimer cette ligne",
+    "description": "{{name}} sera retiree de votre portefeuille. Ses cours sont conserves.",
+    "cancel": "Annuler",
+    "submit": "Supprimer",
+    "error": "Cette ligne n'a pas pu etre supprimee."
   }
 }
