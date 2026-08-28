@@ -113,6 +113,28 @@ Keep them in sync with the starter:
 - Templates contain tokens and are not valid syntax: `.generator/templates/` stays excluded in [.prettierignore](.prettierignore) and the ESLint `globalIgnores`.
 - The `generate` job in [ci.yml](.github/workflows/ci.yml) generates an app from the working tree and runs its quality gates — it fails when the manifest or templates drift.
 
+## Deliberate departures from the starter
+
+The starter ships no global chrome and renders only its body. Cairn is a standalone personal
+application and has to navigate, so three things were added on purpose. They are not drift.
+
+- **`core/shell/`** - a sidebar on desktop, a tab bar on mobile, both in the DOM at once with CSS
+  choosing which one shows. It is the only place in the app that knows the route tree.
+- **`core/theme/`** - a `system | light | dark` preference persisted in `localStorage` and stamped
+  on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
+  through `light-dark()`, which follows the OS only while nothing is stamped.
+- **`core/session/`** - one root-level store that reads `GET /session` once and hands the owner
+  and their passkeys to both the shell and the account screen. There is no sign-in screen to build:
+  the passkey ceremony lives on the pages Spring Security serves, and a 401 sends the browser there.
+
+Two conventions worth knowing before touching a screen:
+
+- **`null` is not `0`.** Twelve of the twenty-six holdings have no cost basis. `unrealizedGain*`,
+  `dayChange*` and `averageCost` are nullable and the interface renders a dash - that is what
+  `ui-delta` is for. A subtotal containing one unknown line is itself unknown, never a partial sum.
+- **Never rebuild a provider URL from `priceSource` and `sourceRef`.** The backend computes
+  `externalUrl`; duplicating the rule here would make it live in two places.
+
 ## Gotchas
 
 - `typescript` is pinned to `~6.0.2`: TypeScript 7 breaks `typescript-eslint` (via `ts-api-utils`). Do not bump until typescript-eslint supports TS 7.

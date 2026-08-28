@@ -24,10 +24,9 @@ Calls to `/api` are proxied to `http://localhost:8080` by the dev proxy ([proxy.
 | `pnpm run format`        | Format the whole project (Prettier)                  |
 | `pnpm run generate:api`  | Regenerates clients and models from the OpenAPI spec |
 
-## Next steps
+## Features
 
-- Make sure `openapi/openapi.yaml` is your real backend contract (replace the placeholder if needed), then run `pnpm run generate:api`.
-- Build your pages in `src/app/features/portfolio/`: one folder per screen, named after its route segment (`list/`, `detail/`, ...), holding the page and everything that serves only it — see "Adding a page to a feature" in [AGENTS.md](AGENTS.md) for the exact naming recipe.
-- Adjust the dev proxy target in [proxy.conf.json](proxy.conf.json).
+- `accounts`, `holdings`, `instruments`, `portfolio`, `profile`, `sources` — the business features, one folder per screen.
+- `core/shell/` — the app's navigation chrome (sidebar on desktop, tab bar on mobile), added on top of the starter, which ships none. `core/theme/` and `core/session/` are two more additions specific to this app. See "Deliberate departures from the starter" in [AGENTS.md](AGENTS.md) for why.
 
 See [AGENTS.md](AGENTS.md) for the architecture, conventions and testing guidelines inherited from the starter.
