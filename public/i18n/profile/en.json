@@ -11,6 +11,11 @@
   "revokeRefused": "This is your only passkey. Add another device before revoking this one.",
   "themeLabel": "Theme",
   "theme": { "system": "System", "light": "Light", "dark": "Dark" },
+  "manageData": {
+    "title": "Manage data",
+    "accounts": "Accounts",
+    "instruments": "Instruments"
+  },
   "export": "Export my data",
   "exportHint": "A CSV of every holding, straight from the server.",
   "exportAction": "Export",

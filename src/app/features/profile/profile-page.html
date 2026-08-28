@@ -66,6 +66,16 @@
     />
   </div>
 
+  <div class="flex min-h-11 flex-wrap items-center gap-3 border-b border-(--border) py-3.5">
+    <span class="grow text-[14.5px]">{{ 'profile.manageData.title' | transloco }}</span>
+    <a data-testid="manage-accounts" routerLink="/comptes" ui-button variant="outline">
+      {{ 'profile.manageData.accounts' | transloco }}
+    </a>
+    <a data-testid="manage-instruments" routerLink="/instruments" ui-button variant="outline">
+      {{ 'profile.manageData.instruments' | transloco }}
+    </a>
+  </div>
+
   <div class="flex min-h-11 items-center gap-3 py-3.5">
     <span class="flex grow flex-col gap-0.5">
       <span class="text-[14.5px]">{{ 'profile.export' | transloco }}</span>

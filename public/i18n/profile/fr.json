@@ -11,6 +11,11 @@
   "revokeRefused": "C'est votre seule passkey. Ajoutez un autre appareil avant de la revoquer.",
   "themeLabel": "Theme",
   "theme": { "system": "Systeme", "light": "Clair", "dark": "Sombre" },
+  "manageData": {
+    "title": "Gerer les donnees",
+    "accounts": "Comptes",
+    "instruments": "Instruments"
+  },
   "export": "Exporter mes donnees",
   "exportHint": "Un CSV de toutes les positions, tel que le serveur le produit.",
   "exportAction": "Exporter",
