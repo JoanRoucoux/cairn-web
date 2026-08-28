@@ -28,7 +28,7 @@ export class HoldingFormDialog {
   protected readonly accounts = this.#store.accounts;
   protected readonly instruments = this.#store.instruments;
 
-  #host: ElementRef<HTMLElement> = inject(ElementRef);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
     effect(() => this.#store.prefill(this.holding()));
