@@ -4,9 +4,10 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { TRANSLOCO_LOADER, type TranslocoLoader, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
+import { of } from 'rxjs';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -26,6 +27,31 @@ const session = {
     },
   ],
 };
+
+// Simulates the profile scope's real, asynchronous load: the plain TranslocoTestingModule loader
+// resolves scopes synchronously, which cannot reproduce the race between first render and the
+// lazy scope finishing loading.
+class DeferredScopeLoader implements TranslocoLoader {
+  #resolvedLangs: Record<string, Record<string, unknown>>;
+  #deferredLangs: string[];
+  #resolvers = new Map<string, (translation: Record<string, unknown>) => void>();
+
+  constructor(resolvedLangs: Record<string, Record<string, unknown>>, deferredLangs: string[]) {
+    this.#resolvedLangs = resolvedLangs;
+    this.#deferredLangs = deferredLangs;
+  }
+
+  getTranslation(lang: string): ReturnType<TranslocoLoader['getTranslation']> {
+    if (this.#deferredLangs.includes(lang)) {
+      return new Promise((resolve) => this.#resolvers.set(lang, resolve));
+    }
+    return of(this.#resolvedLangs[lang] ?? {});
+  }
+
+  resolve(lang: string): void {
+    this.#resolvers.get(lang)?.(this.#resolvedLangs[lang] ?? {});
+  }
+}
 
 describe('ProfilePage', () => {
   let httpTesting: HttpTestingController;
@@ -136,6 +162,44 @@ describe('ProfilePage', () => {
     await user.click(screen.getByTestId('sign-out'));
 
     await vi.waitFor(() => httpTesting.expectOne('/logout').flush(null));
+  });
+
+  it('should show the translated theme labels once the lazy profile scope finishes loading, not raw i18n keys', async () => {
+    const loader = new DeferredScopeLoader(
+      {
+        en: {},
+        fr: {},
+        'profile/en': { theme: { dark: 'Dark' } },
+        'profile/fr': { theme: { dark: 'Sombre' } },
+      },
+      ['profile/en', 'profile/fr'],
+    );
+    localStorage.clear();
+    await render(ProfilePage, {
+      // Skip preloading (which would await every scope, including the deferred ones, up front)
+      // so the profile scope stays genuinely pending after the page has rendered once.
+      imports: [getTranslocoTestingModule({ preloadLangs: false })],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTranslocoScope('profile'),
+        { provide: TRANSLOCO_LOADER, useValue: loader },
+        ProfileStore,
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+
+    expect(screen.queryByRole('radio', { name: 'Dark' })).not.toBeInTheDocument();
+
+    loader.resolve('profile/en');
+
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(screen.getByRole('radio', { name: 'Dark' })).toBeInTheDocument();
+    });
   });
 
   it('should re-translate the theme options when the active language changes', async () => {

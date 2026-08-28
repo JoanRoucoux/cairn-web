@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { type SegmentedOption, UiAvatar, UiButton, UiCard, UiSegmented } from 'cairn-ui';
 
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
@@ -18,17 +18,19 @@ import { ProfileStore } from './profile-store';
 export class ProfilePage {
   #store = inject(ProfileStore);
   #router = inject(Router);
-  #transloco = inject(TranslocoService);
 
   protected readonly owner = this.#store.owner;
   protected readonly passkeys = this.#store.passkeys;
   protected readonly revocationRefused = this.#store.revocationRefused;
   protected readonly theme = this.#store.theme;
 
-  protected readonly themeOptions = computed<SegmentedOption[]>(() => {
-    this.#transloco.activeLang();
-    return THEME_PREFERENCES.map((value) => ({ value, label: this.#transloco.translate(`profile.theme.${value}`) }));
-  });
+  // Scope-relative keys: translateSignal resolves the injected TRANSLOCO_SCOPE itself,
+  // and reacts to both scope-load completion and language change.
+  #themeLabels = translateSignal(THEME_PREFERENCES.map((value) => `theme.${value}`));
+
+  protected readonly themeOptions = computed<SegmentedOption[]>(() =>
+    THEME_PREFERENCES.map((value, index) => ({ value, label: this.#themeLabels()[index]! })),
+  );
 
   protected onThemeChange(preference: string): void {
     this.#store.setTheme(preference as ThemePreference);
