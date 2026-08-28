@@ -1,0 +1,10 @@
+{
+  "title": "Comptes",
+  "name": "Nom",
+  "type": "Enveloppe",
+  "institution": "Etablissement",
+  "add": "Ajouter un compte",
+  "empty": "Aucun compte pour le moment.",
+  "error": "Vos comptes n'ont pas pu etre charges.",
+  "createError": "Ce compte a ete refuse."
+}

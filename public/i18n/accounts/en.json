@@ -1,0 +1,10 @@
+{
+  "title": "Accounts",
+  "name": "Name",
+  "type": "Envelope",
+  "institution": "Institution",
+  "add": "Add an account",
+  "empty": "No account yet.",
+  "error": "Your accounts could not be loaded.",
+  "createError": "That account was refused."
+}
