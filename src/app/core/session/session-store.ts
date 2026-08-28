@@ -35,7 +35,7 @@ export class SessionStore {
 
   async signOut(): Promise<void> {
     // A failed logout must not strand the user on a screen they can no longer use: the caller
-    // leaves for /login either way, and the server session expires on its own.
+    // navigates away either way, and the server session expires on its own.
     await firstValueFrom(this.#http.post('/logout', null).pipe(catchError(() => of(null))));
   }
 }

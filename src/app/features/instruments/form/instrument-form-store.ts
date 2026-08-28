@@ -3,7 +3,12 @@ import { form, submit } from '@angular/forms/signals';
 
 import { firstValueFrom } from 'rxjs';
 
-import type { CreateInstrumentRequest, InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  CreateInstrumentRequest,
+  CreateInstrumentRequestAssetClass,
+  CreateInstrumentRequestPriceSource,
+  InstrumentCandidateResponse,
+} from '@core/api-client/cairnAPI.schemas';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
 import { initialInstrumentDraft, instrumentDraftSchema } from './instrument-form';
@@ -55,11 +60,16 @@ export class InstrumentFormStore {
 
     await submit(this.form, async () => {
       try {
-        await firstValueFrom(
-          // The server is the source of truth for assetClass/priceSource validity: it rejects an
-          // unknown value with a 422, which the catch below turns into an error state.
-          this.#instrumentsApiClient.createInstrument(this.#model() as unknown as CreateInstrumentRequest),
-        );
+        const draft = this.#model();
+        // The server is the source of truth for assetClass/priceSource validity: it rejects an
+        // unknown value with a 422, which the catch below turns into an error state.
+        const request: CreateInstrumentRequest = {
+          ...draft,
+          assetClass: draft.assetClass as CreateInstrumentRequestAssetClass,
+          priceSource: draft.priceSource as CreateInstrumentRequestPriceSource,
+        };
+
+        await firstValueFrom(this.#instrumentsApiClient.createInstrument(request));
         saved = true;
       } catch {
         this.error.set(true);
