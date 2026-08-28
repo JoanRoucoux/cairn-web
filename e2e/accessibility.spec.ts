@@ -1,7 +1,16 @@
 import { expect, test } from './fixtures/accessibility';
 import { mockApi } from './fixtures/api';
 
-const screens = ['/', '/positions', '/repartition', '/sources', '/profil', '/comptes', '/instruments'];
+const screens = [
+  '/',
+  '/positions',
+  '/positions/11111111-1111-1111-1111-111111111111',
+  '/repartition',
+  '/sources',
+  '/profil',
+  '/comptes',
+  '/instruments',
+];
 
 for (const screen of screens) {
   test(`has no accessibility violation on ${screen}`, async ({ page, makeAxeBuilder }) => {

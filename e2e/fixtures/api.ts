@@ -127,6 +127,14 @@ const handleApiRoute = async (route: Route): Promise<void> => {
     return route.fulfill({ status: 204 });
   }
 
+  if (url.pathname === `/api/instruments/${instrument.id}` && method === 'GET') {
+    return route.fulfill({ json: instrument });
+  }
+
+  if (url.pathname === `/api/instruments/${instrument.id}/quotes` && method === 'GET') {
+    return route.fulfill({ json: [] });
+  }
+
   const body = FIXED_RESPONSES[`${method} ${url.pathname}`];
 
   if (body !== undefined) {

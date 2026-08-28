@@ -30,4 +30,11 @@ test.describe('holdings', () => {
 
     expect(box?.height).toBeGreaterThanOrEqual(44);
   });
+
+  test('opens a holding detail page from the list', async ({ page }) => {
+    await page.goto('/positions/11111111-1111-1111-1111-111111111111');
+
+    await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByRole('alert')).toHaveCount(0);
+  });
 });
