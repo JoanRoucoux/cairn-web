@@ -4,7 +4,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -30,10 +30,10 @@ const session = {
 describe('ProfilePage', () => {
   let httpTesting: HttpTestingController;
 
-  const renderPage = async (): Promise<void> => {
+  const renderPage = async (translations = getTranslocoTestingModule()): Promise<void> => {
     localStorage.clear();
     await render(ProfilePage, {
-      imports: [getTranslocoTestingModule()],
+      imports: [translations],
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
@@ -116,6 +116,19 @@ describe('ProfilePage', () => {
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
   });
 
+  it('should link out to accounts and instruments management', async () => {
+    await renderPage();
+
+    expect(await screen.findByRole('link', { name: 'profile.manageData.accounts' })).toHaveAttribute(
+      'href',
+      '/comptes',
+    );
+    expect(screen.getByRole('link', { name: 'profile.manageData.instruments' })).toHaveAttribute(
+      'href',
+      '/instruments',
+    );
+  });
+
   it('should sign the user out', async () => {
     const user = userEvent.setup();
     await renderPage();
@@ -123,5 +136,20 @@ describe('ProfilePage', () => {
     await user.click(screen.getByTestId('sign-out'));
 
     await vi.waitFor(() => httpTesting.expectOne('/logout').flush(null));
+  });
+
+  it('should re-translate the theme options when the active language changes', async () => {
+    await renderPage(
+      getTranslocoTestingModule({
+        langs: { en: { 'profile.theme.dark': 'Dark' }, fr: { 'profile.theme.dark': 'Sombre' } },
+      }),
+    );
+
+    expect(await screen.findByRole('radio', { name: 'Dark' })).toBeInTheDocument();
+
+    TestBed.inject(TranslocoService).setActiveLang('fr');
+    TestBed.tick();
+
+    expect(await screen.findByRole('radio', { name: 'Sombre' })).toBeInTheDocument();
   });
 });

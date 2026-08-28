@@ -6,9 +6,7 @@
   "loading": "Loading your portfolio",
   "error": "Your portfolio could not be loaded.",
   "chartLabel": "Portfolio value over the selected range",
-  "rangeLabel": "Time range",
   "reconstructed": "Beyond one year the curve is reconstructed at constant composition: exact at the ends, approximate in between.",
-  "range": { "1d": "1D", "7d": "7D", "1m": "1M", "1y": "1Y", "5y": "5Y", "max": "Max" },
   "movers": { "title": "Moving today" },
   "stale": {
     "message": "{{count}} quotes are more than four days old",

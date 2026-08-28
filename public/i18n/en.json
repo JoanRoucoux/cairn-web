@@ -16,6 +16,10 @@
     "description": "The requested page does not exist.",
     "home": "Back to home"
   },
+  "chart": {
+    "rangeLabel": "Time range",
+    "range": { "1d": "1D", "7d": "7D", "1m": "1M", "1y": "1Y", "5y": "5Y", "max": "Max" }
+  },
   "shell": {
     "primary": "Main",
     "portfolio": "Portfolio",

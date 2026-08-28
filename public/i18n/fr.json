@@ -16,6 +16,10 @@
     "description": "La page demandée n'existe pas.",
     "home": "Retour à l'accueil"
   },
+  "chart": {
+    "rangeLabel": "Plage de temps",
+    "range": { "1d": "1J", "7d": "7J", "1m": "1M", "1y": "1A", "5y": "5A", "max": "Max" }
+  },
   "shell": {
     "primary": "Principale",
     "portfolio": "Patrimoine",

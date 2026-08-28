@@ -39,9 +39,10 @@ export class PortfolioPage {
   protected readonly points = this.#store.points;
   protected readonly reconstructed = this.#store.reconstructed;
 
-  protected readonly rangeOptions = computed<SegmentedOption[]>(() =>
-    CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`portfolio.range.${value}`) })),
-  );
+  protected readonly rangeOptions = computed<SegmentedOption[]>(() => {
+    this.#transloco.activeLang();
+    return CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`chart.range.${value}`) }));
+  });
 
   // The library types the option value as `string`; every option here is built from CHART_RANGES.
   protected setRange(value: string): void {

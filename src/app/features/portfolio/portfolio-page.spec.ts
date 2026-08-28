@@ -4,7 +4,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -37,9 +37,10 @@ describe('PortfolioPage', () => {
     respondToPortfolio: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
       request.flush(portfolio),
     history: HistoryResponse = emptyHistory,
+    translations = getTranslocoTestingModule(),
   ): Promise<void> => {
     await render(PortfolioPage, {
-      imports: [getTranslocoTestingModule()],
+      imports: [translations],
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
@@ -98,7 +99,7 @@ describe('PortfolioPage', () => {
     const user = userEvent.setup();
     await renderPage();
 
-    await user.click(await screen.findByRole('radio', { name: 'portfolio.range.1d' }));
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.1d' }));
 
     expect(httpTesting.match((request) => request.url === '/api/history')).toHaveLength(0);
   });
@@ -107,12 +108,29 @@ describe('PortfolioPage', () => {
     const user = userEvent.setup();
     await renderPage();
 
-    await user.click(await screen.findByRole('radio', { name: 'portfolio.range.max' }));
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
 
     await vi.waitFor(() => {
       const pending = httpTesting.match((request) => request.url === '/api/history');
       expect(pending).toHaveLength(1);
       pending[0]?.flush(emptyHistory);
     });
+  });
+
+  it('should re-translate the range options when the active language changes', async () => {
+    await renderPage(
+      undefined,
+      emptyHistory,
+      getTranslocoTestingModule({
+        langs: { en: { 'chart.range.1d': '1D' }, fr: { 'chart.range.1d': '1J' } },
+      }),
+    );
+
+    expect(await screen.findByRole('radio', { name: '1D' })).toBeInTheDocument();
+
+    TestBed.inject(TranslocoService).setActiveLang('fr');
+    TestBed.tick();
+
+    expect(await screen.findByRole('radio', { name: '1J' })).toBeInTheDocument();
   });
 });
