@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -28,8 +28,18 @@ export class HoldingFormDialog {
   protected readonly accounts = this.#store.accounts;
   protected readonly instruments = this.#store.instruments;
 
+  #host: ElementRef<HTMLElement> = inject(ElementRef);
+
   constructor() {
     effect(() => this.#store.prefill(this.holding()));
+
+    // showModal() focuses the first focusable descendant by default, which would be a form
+    // field: pull focus back onto the safe action once the dialog has rendered open.
+    afterRenderEffect(() => {
+      if (this.open()) {
+        this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="holding-form-cancel"]')?.focus();
+      }
+    });
   }
 
   protected dismiss(): void {

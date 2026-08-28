@@ -1,10 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
-import { type Page, expect } from '@playwright/test';
+import { test as base } from '@playwright/test';
 
-export const expectNoAccessibilityViolations = async (page: Page): Promise<void> => {
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze();
+export const test = base.extend<{ makeAxeBuilder: () => AxeBuilder }>({
+  makeAxeBuilder: async ({ page }, use) => {
+    await use(() => new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']));
+  },
+});
 
-  expect(violations.map(({ id, nodes }) => `${id} on ${nodes.map(({ target }) => target).join(', ')}`)).toEqual([]);
-};
+export { expect } from '@playwright/test';
