@@ -21,6 +21,10 @@ export const routes: Routes = [
     path: 'sources',
     loadChildren: () => import('./features/sources/sources-routes').then((m) => m.SOURCES_ROUTES),
   },
+  {
+    path: 'profil',
+    loadChildren: () => import('./features/profile/profile-routes').then((m) => m.PROFILE_ROUTES),
+  },
   // Eagerly load the landing feature. Its translations still load lazily with the scope.
   {
     path: '',

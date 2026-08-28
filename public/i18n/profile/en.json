@@ -1,0 +1,18 @@
+{
+  "title": "My account",
+  "avatarLabel": "My account",
+  "connectedByPasskey": "Signed in with a passkey on this device",
+  "passkeys": "Passkeys",
+  "addPasskey": "Add a device",
+  "lastUsed": "Last used {{when}}",
+  "neverUsed": "Never used yet",
+  "revoke": "Revoke",
+  "revokeNamed": "Revoke {{label}}",
+  "revokeRefused": "This is your only passkey. Add another device before revoking this one.",
+  "themeLabel": "Theme",
+  "theme": { "system": "System", "light": "Light", "dark": "Dark" },
+  "export": "Export my data",
+  "exportHint": "A CSV of every holding, straight from the server.",
+  "exportAction": "Export",
+  "signOut": "Sign out"
+}

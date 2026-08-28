@@ -1,0 +1,18 @@
+{
+  "title": "Mon compte",
+  "avatarLabel": "Mon compte",
+  "connectedByPasskey": "Connecte par passkey sur cet appareil",
+  "passkeys": "Passkeys",
+  "addPasskey": "Ajouter un appareil",
+  "lastUsed": "Derniere utilisation {{when}}",
+  "neverUsed": "Jamais utilisee",
+  "revoke": "Revoquer",
+  "revokeNamed": "Revoquer {{label}}",
+  "revokeRefused": "C'est votre seule passkey. Ajoutez un autre appareil avant de la revoquer.",
+  "themeLabel": "Theme",
+  "theme": { "system": "Systeme", "light": "Clair", "dark": "Sombre" },
+  "export": "Exporter mes donnees",
+  "exportHint": "Un CSV de toutes les positions, tel que le serveur le produit.",
+  "exportAction": "Exporter",
+  "signOut": "Se deconnecter"
+}

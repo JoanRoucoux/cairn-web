@@ -1,0 +1,29 @@
+import { Injectable, inject, signal } from '@angular/core';
+
+import { SessionStore } from '@core/session/session-store';
+import { type ThemePreference, ThemeStore } from '@core/theme/theme-store';
+
+@Injectable()
+export class ProfileStore {
+  #session = inject(SessionStore);
+  #theme = inject(ThemeStore);
+
+  readonly owner = this.#session.owner;
+  readonly passkeys = this.#session.passkeys;
+  readonly theme = this.#theme.preference;
+
+  readonly revocationRefused = signal(false);
+
+  setTheme(preference: ThemePreference): void {
+    this.#theme.set(preference);
+  }
+
+  async revokePasskey(credentialId: string): Promise<void> {
+    this.revocationRefused.set(false);
+    this.revocationRefused.set(!(await this.#session.revokePasskey(credentialId)));
+  }
+
+  async signOut(): Promise<void> {
+    await this.#session.signOut();
+  }
+}

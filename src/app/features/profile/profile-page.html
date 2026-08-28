@@ -1,0 +1,90 @@
+<h1 class="text-xl font-semibold">{{ 'profile.title' | transloco }}</h1>
+
+<ui-card class="mt-4">
+  <div class="flex items-center gap-3.5 border-b border-(--border) pb-4">
+    <ui-avatar [initials]="owner().initials" [label]="'profile.avatarLabel' | transloco" />
+    <span class="flex flex-col gap-0.5">
+      <span class="text-base font-semibold">{{ owner().displayName }}</span>
+      <span class="text-xs text-(--muted-foreground)">{{ 'profile.connectedByPasskey' | transloco }}</span>
+    </span>
+  </div>
+
+  <div class="flex flex-col gap-2 border-b border-(--border) py-3.5">
+    <div class="flex min-h-11 items-center gap-3">
+      <span class="grow text-[14.5px]">{{ 'profile.passkeys' | transloco }}</span>
+      <a
+        class="text-[13px] font-medium underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        data-testid="manage-passkeys"
+        href="/webauthn/register"
+      >
+        {{ 'profile.addPasskey' | transloco }}
+      </a>
+    </div>
+
+    <ul class="flex flex-col gap-1.5">
+      @for (passkey of passkeys(); track passkey.credentialId) {
+        <li class="flex min-h-11 items-center gap-3 rounded-lg bg-(--elevated) px-3 py-2">
+          <span class="flex min-w-0 grow flex-col gap-0.5">
+            <span class="truncate text-[13.5px] font-medium">{{ passkey.label }}</span>
+            <span class="text-[11px] text-(--subtle-foreground)">
+              @if (passkey.lastUsedAt) {
+                {{ 'profile.lastUsed' | transloco: { when: passkey.lastUsedAt | relativeDate } }}
+              } @else {
+                {{ 'profile.neverUsed' | transloco }}
+              }
+            </span>
+          </span>
+          <button
+            data-testid="revoke-passkey"
+            size="sm"
+            type="button"
+            ui-button
+            variant="outline"
+            [attr.aria-label]="'profile.revokeNamed' | transloco: { label: passkey.label }"
+            (click)="onRevoke(passkey.credentialId)"
+          >
+            {{ 'profile.revoke' | transloco }}
+          </button>
+        </li>
+      }
+    </ul>
+
+    @if (revocationRefused()) {
+      <p class="text-[11.5px] text-(--negative)" data-testid="revoke-error" role="alert">
+        {{ 'profile.revokeRefused' | transloco }}
+      </p>
+    }
+  </div>
+
+  <div class="flex min-h-11 flex-wrap items-center gap-3 border-b border-(--border) py-3.5">
+    <span class="grow text-[14.5px]">{{ 'profile.themeLabel' | transloco }}</span>
+    <ui-segmented
+      [label]="'profile.themeLabel' | transloco"
+      [options]="themeOptions()"
+      [value]="theme()"
+      (valueChange)="onThemeChange($event)"
+    />
+  </div>
+
+  <div class="flex min-h-11 items-center gap-3 py-3.5">
+    <span class="flex grow flex-col gap-0.5">
+      <span class="text-[14.5px]">{{ 'profile.export' | transloco }}</span>
+      <span class="text-[11.5px] text-(--muted-foreground)">{{ 'profile.exportHint' | transloco }}</span>
+    </span>
+    <a data-testid="export-csv" download href="/api/holdings/export" ui-button variant="outline">
+      {{ 'profile.exportAction' | transloco }}
+    </a>
+  </div>
+</ui-card>
+
+<button
+  class="mt-4 w-full text-(--negative)"
+  data-testid="sign-out"
+  size="lg"
+  type="button"
+  ui-button
+  variant="outline"
+  (click)="onSignOut()"
+>
+  {{ 'profile.signOut' | transloco }}
+</button>
