@@ -67,6 +67,7 @@ Before considering a change done, run the same pipeline as CI: `format:check`, `
 - **A store serves exactly one thing that opens and closes** — one screen, or one dialog. State that only means something while a dialog is open belongs to that dialog's store, never to the screen's. This is what keeps a screen store from swelling as the screen gains features, and it is again a rule rather than a line count.
 - **Specs mirror the route wiring**: a spec provides the store the way the route does, like it already does for `provideTranslocoScope`.
 - **The store owns the route parameters it depends on**, read from `ActivatedRoute` (see `user-detail-store.ts`) — it is scoped to that route, so it is the natural owner of "what am I looking at". A page therefore has no route input to forward.
+- **A store that injects `ActivatedRoute` is provided on the `@Component`, not on the route's `providers` array — this is the one exception to "a screen's store is provided by that screen's route".** `ActivatedRoute` is a node-injector token supplied by `RouterOutlet`, not visible from a route-level (environment-injector) `providers` array: a route-provided store injecting it gets the _parent_ route's `ActivatedRoute`, not the matched leaf route's, which silently reads the wrong (or a missing) parameter. `HoldingDetailStore` is the example (`providers: [HoldingDetailStore]` on `HoldingDetailPage`'s `@Component`, not on `holdings-routes.ts`'s `:holdingId` route) — the next store that reads a route parameter should follow it, not the general table above.
 - **Navigation stays in the page.** A store returns a result (`UserCreateStore.save()` returns the created user or `undefined`); the page decides where to go next. A store that injects `Router` knows too much.
 - **Reads are streams, writes return a result.** Queries live in an `rxResource` the template reads through signals; commands are `async` methods returning their outcome (`UserCreateStore.save()`, `UserDeleteStore.remove()`), awaited by the handler that triggered them. Do not hand the generated client's `Observable` back to the component: it makes the caller manage a subscription, and it invites cancelling a mutation because the component went away — the server has already run it.
 - **HTTP goes through the generated client**, injected by the store. Add a hand-written `<feature>-repository.ts` at the feature root only when it earns its place — aggregating several calls into one business operation, mapping DTOs to a view model shared by several pages, or absorbing an API quirk. Never as a pass-through.
@@ -86,7 +87,7 @@ Before considering a change done, run the same pipeline as CI: `format:check`, `
 
 ## i18n (Transloco)
 
-- The global `public/i18n/<lang>.json` files only hold keys needed synchronously before any scope loads: `pageTitle.*` (used by the title strategy on navigation) and the 404 page. They are preloaded by an app initializer — keep them minimal.
+- The global `public/i18n/<lang>.json` files hold keys needed synchronously before any scope loads (`pageTitle.*`, used by the title strategy on navigation, and the 404 page), and any key genuinely shared across two or more features with no single natural owner — `chart.*` (used by both `portfolio` and `holdings`) is the example. They are preloaded by an app initializer: keep them to that, and prefer a feature's own scope when the key has one clear owner.
 - Each feature has a lazy scope in `public/i18n/<feature>/<lang>.json`, declared with `provideTranslocoScope('<feature>')` in the feature's routes. Keys are prefixed with the scope (`users.list.title`).
 - Every key must exist in both `en` and `fr`.
 
@@ -119,7 +120,10 @@ The starter ships no global chrome and renders only its body. Cairn is a standal
 application and has to navigate, so three things were added on purpose. They are not drift.
 
 - **`core/shell/`** - a sidebar on desktop, a tab bar on mobile, both in the DOM at once with CSS
-  choosing which one shows. It is the only place in the app that knows the route tree.
+  choosing which one shows. It is the only place in the app that knows the **primary** navigation
+  route tree. A contextual in-app link from one screen to another (`profile-page.html` linking out
+  to `/comptes` and `/instruments`) is fine and expected — it does not need to be routed through
+  the shell.
 - **`core/theme/`** - a `system | light | dark` preference persisted in `localStorage` and stamped
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
   through `light-dark()`, which follows the OS only while nothing is stamped.
