@@ -1,5 +1,6 @@
 {
   "title": "Holdings",
+  "averageCost": "Average cost",
   "unknown": "Not available",
   "staleQuote": "Stale quote",
   "searchLabel": "Search holdings",
