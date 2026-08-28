@@ -34,7 +34,10 @@ describe('AccountListStore', () => {
     httpTesting.expectOne('/api/accounts').flush([]);
     await TestBed.inject(ApplicationRef).whenStable();
 
-    const created = store.create('Fortuneo', 'LIVRET', 'Fortuneo');
+    store.form.name().value.set('Fortuneo');
+    store.form.type().value.set('LIVRET');
+    store.form.institution().value.set('Fortuneo');
+    const created = store.create();
 
     const request = await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'));
     expect(request.request.body).toEqual({ name: 'Fortuneo', type: 'LIVRET', institution: 'Fortuneo' });
@@ -49,7 +52,10 @@ describe('AccountListStore', () => {
     httpTesting.expectOne('/api/accounts').flush([]);
     await TestBed.inject(ApplicationRef).whenStable();
 
-    const created = store.create('', '', '');
+    store.form.name().value.set('Fortuneo');
+    store.form.type().value.set('LIVRET');
+    store.form.institution().value.set('Fortuneo');
+    const created = store.create();
 
     (await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'))).flush(null, {
       status: 422,
@@ -58,5 +64,13 @@ describe('AccountListStore', () => {
 
     await expect(created).resolves.toBe(false);
     expect(store.error()).toBe(true);
+  });
+
+  it('should refuse an incomplete draft', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/accounts').flush([]);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    await expect(store.create()).resolves.toBe(false);
   });
 });

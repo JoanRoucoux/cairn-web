@@ -116,6 +116,9 @@ describe('AccountListPage', () => {
     await renderPage();
     await screen.findByText('Esalia');
 
+    await user.type(screen.getByTestId('account-name'), 'Fortuneo');
+    await user.type(screen.getByTestId('account-type'), 'LIVRET');
+    await user.type(screen.getByTestId('account-institution'), 'Fortuneo Bank');
     await user.click(screen.getByTestId('account-create'));
 
     (await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'))).flush(null, {

@@ -3,19 +3,13 @@
 <ui-card class="mt-4">
   <div class="flex flex-wrap items-end gap-3">
     <ui-field class="grow" [label]="'accounts.name' | transloco">
-      <input data-testid="account-name" type="text" uiInput [value]="draftName()" (input)="onNameInput($event)" />
+      <input data-testid="account-name" type="text" uiInput [formField]="form.name" />
     </ui-field>
     <ui-field class="grow" [label]="'accounts.type' | transloco">
-      <input data-testid="account-type" type="text" uiInput [value]="draftType()" (input)="onTypeInput($event)" />
+      <input data-testid="account-type" type="text" uiInput [formField]="form.type" />
     </ui-field>
     <ui-field class="grow" [label]="'accounts.institution' | transloco">
-      <input
-        data-testid="account-institution"
-        type="text"
-        uiInput
-        [value]="draftInstitution()"
-        (input)="onInstitutionInput($event)"
-      />
+      <input data-testid="account-institution" type="text" uiInput [formField]="form.institution" />
     </ui-field>
     <button data-testid="account-create" type="button" ui-button (click)="onCreate()">
       {{ 'accounts.add' | transloco }}

@@ -1,14 +1,21 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
+import { form, submit } from '@angular/forms/signals';
 
 import { firstValueFrom } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
 import type { CreateAccountRequestType } from '@core/api-client/cairnAPI.schemas';
 
+import { accountDraftSchema, initialAccountDraft } from './account-form';
+
 @Injectable()
 export class AccountListStore {
   #accountsApiClient = inject(AccountService);
+
+  readonly #model = signal(initialAccountDraft());
+
+  readonly form = form(this.#model, accountDraftSchema);
 
   readonly error = signal(false);
 
@@ -17,22 +24,33 @@ export class AccountListStore {
     defaultValue: [],
   });
 
-  // The type and the institution are free text here: the field lets an operator type a value
-  // the server enum does not (yet) know, and the server is the one source of truth for validity.
-  async create(name: string, type: string, institution: string): Promise<boolean> {
+  async create(): Promise<boolean> {
     this.error.set(false);
+    let created = false;
 
-    try {
-      await firstValueFrom(
-        this.#accountsApiClient.createAccount({ name, type: type as CreateAccountRequestType, institution }),
-      );
-      this.accounts.reload();
+    await submit(this.form, async () => {
+      try {
+        const model = this.#model();
+        // The type and the institution are free text here: the field lets an operator type a value
+        // the server enum does not (yet) know, and the server is the one source of truth for validity.
+        await firstValueFrom(
+          this.#accountsApiClient.createAccount({
+            name: model.name,
+            type: model.type as CreateAccountRequestType,
+            institution: model.institution,
+          }),
+        );
+        this.accounts.reload();
+        created = true;
+      } catch {
+        this.error.set(true);
+      }
+    });
 
-      return true;
-    } catch {
-      this.error.set(true);
+    return created;
+  }
 
-      return false;
-    }
+  reset(): void {
+    this.#model.set(initialAccountDraft());
   }
 }
