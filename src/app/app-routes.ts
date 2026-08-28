@@ -9,6 +9,10 @@ export const routes: Routes = [
     path: 'positions',
     loadChildren: () => import('./features/holdings/holdings-routes').then((m) => m.HOLDINGS_ROUTES),
   },
+  {
+    path: 'instruments',
+    loadChildren: () => import('./features/instruments/instruments-routes').then((m) => m.INSTRUMENTS_ROUTES),
+  },
   // Eagerly load the landing feature. Its translations still load lazily with the scope.
   {
     path: '',

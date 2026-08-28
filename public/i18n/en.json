@@ -4,6 +4,8 @@
     "allocation": "Allocation",
     "holdings": "Holdings",
     "holdingDetail": "Holding detail",
+    "instruments": "Instruments",
+    "instrumentCreate": "Add an instrument",
     "notFound": "Page not found"
   },
   "notFound": {

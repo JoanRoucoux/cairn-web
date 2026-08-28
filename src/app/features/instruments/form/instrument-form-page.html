@@ -1,0 +1,58 @@
+<h1 class="text-xl font-semibold">{{ 'instruments.add' | transloco }}</h1>
+
+<ui-card class="mt-4">
+  <app-isin-lookup
+    [candidates]="candidates()"
+    [notFound]="notFound()"
+    [searching]="searching()"
+    (picked)="onPicked($event)"
+    (searched)="onSearched($event)"
+  />
+</ui-card>
+
+<ui-card class="mt-4">
+  <div class="flex flex-col gap-4">
+    <ui-field [label]="'instruments.name' | transloco">
+      <input data-testid="instrument-name" type="text" uiInput [formField]="form.name" />
+    </ui-field>
+
+    <ui-field [label]="'instruments.isin' | transloco">
+      <input data-testid="instrument-isin" type="text" uiInput [formField]="form.isin" />
+    </ui-field>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <ui-field [label]="'instruments.currency' | transloco">
+        <input data-testid="instrument-currency" type="text" uiInput [formField]="form.currency" />
+      </ui-field>
+      <ui-field [label]="'instruments.assetClass' | transloco">
+        <input data-testid="instrument-asset-class" type="text" uiInput [formField]="form.assetClass" />
+      </ui-field>
+      <ui-field [label]="'instruments.priceSource' | transloco">
+        <input data-testid="instrument-price-source" type="text" uiInput [formField]="form.priceSource" />
+      </ui-field>
+      <ui-field [label]="'instruments.sourceRef' | transloco">
+        <input data-testid="instrument-source-ref" type="text" uiInput [formField]="form.sourceRef" />
+      </ui-field>
+    </div>
+
+    <ui-field [hint]="'instruments.descriptionHint' | transloco" [label]="'instruments.description' | transloco">
+      <textarea data-testid="instrument-description" uiTextarea [formField]="form.description"></textarea>
+    </ui-field>
+  </div>
+
+  @if (error()) {
+    <p class="mt-4 text-sm text-(--negative)" role="alert">{{ 'instruments.saveError' | transloco }}</p>
+  }
+
+  <button
+    class="mt-5 w-full"
+    data-testid="instrument-save"
+    size="lg"
+    type="button"
+    ui-button
+    [disabled]="form().submitting()"
+    (click)="onSave()"
+  >
+    {{ 'instruments.save' | transloco }}
+  </button>
+</ui-card>

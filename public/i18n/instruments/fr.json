@@ -1,0 +1,24 @@
+{
+  "title": "Instruments",
+  "searchLabel": "Rechercher un instrument",
+  "empty": "Aucun instrument ne correspond a votre recherche.",
+  "error": "Vos instruments n'ont pas pu etre charges.",
+  "add": "Ajouter un instrument",
+  "name": "Nom",
+  "isin": "ISIN",
+  "currency": "Devise",
+  "assetClass": "Classe d'actif",
+  "priceSource": "Source du cours",
+  "sourceRef": "Reference de la source",
+  "description": "Description",
+  "descriptionHint": "280 caracteres maximum. Affichee sur l'ecran de detail d'une ligne.",
+  "save": "Enregistrer",
+  "saveError": "Cet instrument a ete refuse. Verifiez le nom et la source du cours.",
+  "lookup": {
+    "label": "ISIN ou nom",
+    "placeholder": "FR0011550185",
+    "search": "Rechercher",
+    "searching": "Recherche de l'instrument",
+    "notFound": "Aucun resultat. Remplissez les champs a la main et choisissez une source manuelle."
+  }
+}

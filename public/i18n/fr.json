@@ -4,6 +4,8 @@
     "allocation": "Repartition",
     "holdings": "Positions",
     "holdingDetail": "Detail de la position",
+    "instruments": "Instruments",
+    "instrumentCreate": "Ajouter un instrument",
     "notFound": "Page introuvable"
   },
   "notFound": {

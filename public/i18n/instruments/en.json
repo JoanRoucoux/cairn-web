@@ -1,0 +1,24 @@
+{
+  "title": "Instruments",
+  "searchLabel": "Search instruments",
+  "empty": "No instrument matches your search.",
+  "error": "Your instruments could not be loaded.",
+  "add": "Add an instrument",
+  "name": "Name",
+  "isin": "ISIN",
+  "currency": "Currency",
+  "assetClass": "Asset class",
+  "priceSource": "Price source",
+  "sourceRef": "Source reference",
+  "description": "Description",
+  "descriptionHint": "Up to 280 characters. Shown on the holding detail screen.",
+  "save": "Save instrument",
+  "saveError": "That instrument was refused. Check the name and the price source.",
+  "lookup": {
+    "label": "ISIN or name",
+    "placeholder": "FR0011550185",
+    "search": "Look up",
+    "searching": "Looking up this instrument",
+    "notFound": "Nothing resolved. Fill the fields by hand and use a manual price source."
+  }
+}
