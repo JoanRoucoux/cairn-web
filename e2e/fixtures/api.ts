@@ -57,6 +57,8 @@ const instrument = {
   assetClass: holding.assetClass,
   priceSource: holding.priceSource,
   sourceRef: 'AMUNDI-MSCI-WORLD',
+  description: 'A physically-replicated ETF tracking the MSCI World index across developed markets.',
+  externalUrl: 'https://www.amundietf.com/en/professional/product/view/LU1681043599',
 };
 
 const instruments = [instrument];
