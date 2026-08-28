@@ -36,7 +36,7 @@ export class HoldingFormDialog {
     // showModal() focuses the first focusable descendant by default, which would be a form
     // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {
-      if (this.open()) {
+      if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="holding-form-cancel"]')?.focus();
       }
     });
