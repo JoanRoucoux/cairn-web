@@ -64,9 +64,13 @@ export class InstrumentFormStore {
         // The server is the source of truth for assetClass/priceSource validity: it rejects an
         // unknown value with a 422, which the catch below turns into an error state.
         const request: CreateInstrumentRequest = {
-          ...draft,
+          name: draft.name,
+          isin: draft.isin,
+          currency: draft.currency,
           assetClass: draft.assetClass as CreateInstrumentRequestAssetClass,
           priceSource: draft.priceSource as CreateInstrumentRequestPriceSource,
+          sourceRef: draft.sourceRef,
+          description: draft.description,
         };
 
         await firstValueFrom(this.#instrumentsApiClient.createInstrument(request));
