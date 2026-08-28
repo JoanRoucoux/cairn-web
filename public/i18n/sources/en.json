@@ -1,0 +1,13 @@
+{
+  "title": "Sources",
+  "statusTitle": "Price sources",
+  "runsTitle": "Recent runs",
+  "noRun": "No batch run recorded yet.",
+  "lineCount": "{{count}} holdings",
+  "refresh": "Refresh now",
+  "refreshing": "Refreshing",
+  "refreshError": "The refresh could not be started.",
+  "report": "{{refreshed}} refreshed, {{skipped}} skipped, {{failed}} failed",
+  "stale": "Stale quote",
+  "fresh": "Up to date"
+}

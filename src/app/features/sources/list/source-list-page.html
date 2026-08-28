@@ -1,0 +1,89 @@
+<div class="flex flex-wrap items-center gap-3">
+  <h1 class="text-xl font-semibold">{{ 'sources.title' | transloco }}</h1>
+  <button
+    class="ml-auto min-h-11 rounded-lg border border-(--border) bg-(--elevated) px-4 text-[13px] font-semibold disabled:opacity-50"
+    data-testid="refresh-quotes"
+    type="button"
+    [disabled]="refreshing()"
+    (click)="onRefresh()"
+  >
+    {{ (refreshing() ? 'sources.refreshing' : 'sources.refresh') | transloco }}
+  </button>
+</div>
+
+<!-- The live region must render while empty so it can announce the report later. -->
+<p aria-live="polite" class="mt-2 text-[13px] text-(--muted-foreground)" data-testid="refresh-report">
+  @if (report(); as report) {
+    {{
+      'sources.report'
+        | transloco: { refreshed: report.refreshed, skipped: report.skipped, failed: report.failures.length }
+    }}
+  }
+</p>
+
+@if (error()) {
+  <p class="mt-2 text-[13px] text-(--negative)" role="alert">{{ 'sources.refreshError' | transloco }}</p>
+}
+
+<ui-card class="mt-4">
+  <h2 class="mb-3 text-[11px] font-semibold tracking-[0.09em] text-(--muted-foreground) uppercase">
+    {{ 'sources.statusTitle' | transloco }}
+  </h2>
+  <ul class="flex flex-col" role="list">
+    @for (source of sources(); track source.source) {
+      <li class="flex min-h-11 items-center gap-3 border-b border-(--hairline) py-2.5 last:border-b-0">
+        @if (source.stale) {
+          <svg
+            class="shrink-0"
+            fill="none"
+            height="13"
+            role="img"
+            stroke="var(--stale)"
+            stroke-linecap="round"
+            stroke-width="2.2"
+            viewBox="0 0 24 24"
+            width="13"
+            [attr.aria-label]="'sources.stale' | transloco"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7v5l3 2" />
+          </svg>
+        } @else {
+          <span aria-hidden="true" class="size-[13px] shrink-0 rounded-full bg-(--positive)"></span>
+          <span class="sr-only">{{ 'sources.fresh' | transloco }}</span>
+        }
+        <span class="grow text-[13.5px]">{{ source.source }}</span>
+        <span class="text-[12px] text-(--muted-foreground) tabular-nums">
+          {{ 'sources.lineCount' | transloco: { count: source.lineCount } }}
+          @if (source.lastQuoteAt) {
+            &middot; {{ source.lastQuoteAt | relativeDate }}
+          }
+        </span>
+      </li>
+    }
+  </ul>
+</ui-card>
+
+<ui-card class="mt-4">
+  <h2 class="mb-3 text-[11px] font-semibold tracking-[0.09em] text-(--muted-foreground) uppercase">
+    {{ 'sources.runsTitle' | transloco }}
+  </h2>
+  @if (runs.value().length === 0) {
+    <p class="text-[13px] text-(--muted-foreground)">{{ 'sources.noRun' | transloco }}</p>
+  } @else {
+    <ul class="flex flex-col" role="list">
+      @for (run of runs.value(); track run.id) {
+        <li class="flex min-h-11 items-center gap-3 border-b border-(--hairline) py-2.5 last:border-b-0">
+          <span class="grow text-[13px]">{{ run.jobName }}</span>
+          <span
+            class="text-[11.5px] tabular-nums"
+            [class.text-(--muted-foreground)]="run.status !== 'FAILED'"
+            [class.text-(--negative)]="run.status === 'FAILED'"
+          >
+            {{ run.startedAt | relativeDate }} &middot; {{ run.status }}
+          </span>
+        </li>
+      }
+    </ul>
+  }
+</ui-card>

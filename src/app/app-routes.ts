@@ -17,6 +17,10 @@ export const routes: Routes = [
     path: 'instruments',
     loadChildren: () => import('./features/instruments/instruments-routes').then((m) => m.INSTRUMENTS_ROUTES),
   },
+  {
+    path: 'sources',
+    loadChildren: () => import('./features/sources/sources-routes').then((m) => m.SOURCES_ROUTES),
+  },
   // Eagerly load the landing feature. Its translations still load lazily with the scope.
   {
     path: '',
