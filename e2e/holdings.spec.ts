@@ -19,6 +19,10 @@ test.describe('holdings', () => {
 
   test('closes the dialog on Escape and hands focus back to the trigger', async ({ page }) => {
     await page.getByTestId('add-holding').click();
+
+    // The native <dialog> renders in the top layer once open, so its wrapping
+    // <ui-dialog> host has an empty box: assert on the <dialog> itself.
+    await expect(page.getByTestId('holding-form-dialog').locator('dialog')).toBeVisible();
     await page.keyboard.press('Escape');
 
     await expect(page.getByTestId('holding-form-dialog').locator('dialog')).toBeHidden();
