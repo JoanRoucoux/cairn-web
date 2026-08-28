@@ -23,6 +23,7 @@
     "allocation": "Répartition",
     "sources": "Sources",
     "account": "Mon compte",
-    "skipToContent": "Aller au contenu"
+    "skipToContent": "Aller au contenu",
+    "offline": "Vous etes hors ligne. Les valeurs peuvent etre perimees."
   }
 }

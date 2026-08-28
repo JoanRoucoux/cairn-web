@@ -23,6 +23,7 @@
     "allocation": "Allocation",
     "sources": "Sources",
     "account": "My account",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "offline": "You are offline. Values may be out of date."
   }
 }

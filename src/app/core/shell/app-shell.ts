@@ -6,11 +6,12 @@ import { UiAvatar } from 'cairn-ui';
 
 import { SessionStore } from '@core/session/session-store';
 
+import { OfflineBanner } from './offline-banner';
 import { SHELL_DESTINATIONS } from './shell-nav';
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe, UiAvatar],
+  imports: [OfflineBanner, RouterLink, RouterLinkActive, RouterOutlet, TranslocoPipe, UiAvatar],
   templateUrl: './app-shell.html',
 })
 export class AppShell {
