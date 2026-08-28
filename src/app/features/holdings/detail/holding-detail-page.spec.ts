@@ -1,18 +1,25 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { RouterOutlet } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
-import { of } from 'rxjs';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingDetailPage } from './holding-detail-page';
-import { HoldingDetailStore } from './holding-detail-store';
+
+// Routed through a real `<router-outlet>`, exactly like the app: `HoldingDetailStore` is
+// provided by `HoldingDetailPage` itself (see its `@Component` decorator), which only sits in
+// the right injector - the one carrying the real `ActivatedRoute` - when activated through an
+// outlet. Rendering the page directly, with a stubbed root `ActivatedRoute`, would pass even if
+// the store went back to being provided on the route (the bug this page shipped with).
+@Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
+class TestHost {}
 
 const holding = {
   id: 'h1',
@@ -49,18 +56,18 @@ describe('HoldingDetailPage', () => {
       description: 'ETF tracking the S&P 500.',
       externalUrl: 'https://example.test/ese',
     },
-  ): Promise<void> => {
-    await render(HoldingDetailPage, {
-      imports: [getTranslocoTestingModule()],
+    translations = getTranslocoTestingModule(),
+  ): Promise<HoldingDetailPage> => {
+    const { fixture } = await render(TestHost, {
+      imports: [translations],
+      routes: [{ path: ':holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' }],
+      initialRoute: holdingId,
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: LOCALE_ID, useValue: 'en-GB' },
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ holdingId })) } },
         provideTranslocoScope('holdings'),
-        provideTranslocoScope('portfolio'),
-        HoldingDetailStore,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -71,6 +78,8 @@ describe('HoldingDetailPage', () => {
       .forEach((request) => request.flush(instrument));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
+
+    return fixture.debugElement.query(By.directive(HoldingDetailPage)).componentInstance as HoldingDetailPage;
   };
 
   afterEach(() => httpTesting.verify());
@@ -101,6 +110,12 @@ describe('HoldingDetailPage', () => {
     expect(screen.queryByRole('link', { name: /holdings.externalLink/ })).not.toBeInTheDocument();
   });
 
+  it('should read the holding id from the real, activated route', async () => {
+    await renderPage('h1');
+
+    expect(await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' })).toBeInTheDocument();
+  });
+
   it('should tell the user when the holding does not exist', async () => {
     await renderPage('nope');
 
@@ -108,24 +123,9 @@ describe('HoldingDetailPage', () => {
   });
 
   it('should ignore a request to price a holding that does not exist', async () => {
-    const { fixture } = await render(HoldingDetailPage, {
-      imports: [getTranslocoTestingModule()],
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ holdingId: 'nope' })) } },
-        provideTranslocoScope('holdings'),
-        provideTranslocoScope('portfolio'),
-        HoldingDetailStore,
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/holdings').flush([holding]);
-    await settle();
+    const page = await renderPage('nope');
 
-    fixture.componentInstance['onEnterQuote']();
+    page['onEnterQuote']();
 
     expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument();
   });
@@ -134,7 +134,7 @@ describe('HoldingDetailPage', () => {
     const user = userEvent.setup();
     await renderPage();
 
-    await user.click(await screen.findByRole('radio', { name: 'portfolio.range.max' }));
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
 
     await vi.waitFor(() => {
       const pending = httpTesting.match((request) => request.url.includes('/quotes'));
@@ -169,5 +169,22 @@ describe('HoldingDetailPage', () => {
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
+  });
+
+  it('should re-translate the range options when the active language changes', async () => {
+    await renderPage(
+      'h1',
+      { description: 'ETF tracking the S&P 500.', externalUrl: 'https://example.test/ese' },
+      getTranslocoTestingModule({
+        langs: { en: { 'chart.range.1d': '1D' }, fr: { 'chart.range.1d': '1J' } },
+      }),
+    );
+
+    expect(await screen.findByRole('radio', { name: '1D' })).toBeInTheDocument();
+
+    TestBed.inject(TranslocoService).setActiveLang('fr');
+    TestBed.tick();
+
+    expect(await screen.findByRole('radio', { name: '1J' })).toBeInTheDocument();
   });
 });

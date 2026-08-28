@@ -27,6 +27,7 @@ import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
     UiSkeleton,
   ],
   templateUrl: './holding-detail-page.html',
+  providers: [HoldingDetailStore],
 })
 export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
@@ -38,9 +39,10 @@ export class HoldingDetailPage {
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
 
-  protected readonly rangeOptions = computed<SegmentedOption[]>(() =>
-    CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`portfolio.range.${value}`) })),
-  );
+  protected readonly rangeOptions = computed<SegmentedOption[]>(() => {
+    this.#transloco.activeLang();
+    return CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`chart.range.${value}`) }));
+  });
 
   protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
 
