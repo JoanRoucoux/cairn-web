@@ -30,8 +30,8 @@ importers:
         specifier: 22.1.2
         version: 22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2)
       '@joanroucoux/cairn-ui':
-        specifier: file:..\cairn-ui\dist\ui
-        version: file:../cairn-ui/dist/ui(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))
+        specifier: 0.1.0
+        version: 0.1.0(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))
       '@jsverse/transloco':
         specifier: 8.4.0
         version: 8.4.0(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2)(typescript@6.0.3)
@@ -1191,8 +1191,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@joanroucoux/cairn-ui@file:../cairn-ui/dist/ui':
-    resolution: {directory: ../cairn-ui/dist/ui, type: directory}
+  '@joanroucoux/cairn-ui@0.1.0':
+    resolution: {integrity: sha512-ScnKMoYzy7fSUCbsPtZmbbVsSHH1jiBLcI8H5YY303uBVM8oAxvgrwiESUIkB/EE2KurlLmEQ8FsdipM1SZDGg==}
     peerDependencies:
       '@angular/common': ^22.0.0
       '@angular/core': ^22.0.0
@@ -5367,7 +5367,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 26.1.1
 
-  '@joanroucoux/cairn-ui@file:../cairn-ui/dist/ui(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))':
+  '@joanroucoux/cairn-ui@0.1.0(@angular/common@22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))':
     dependencies:
       '@angular/common': 22.1.2(@angular/core@22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2))(rxjs@7.8.2)
       '@angular/core': 22.1.2(@angular/compiler@22.1.2)(rxjs@7.8.2)
