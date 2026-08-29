@@ -1,4 +1,6 @@
-@if (holding(); as holding) {
+@if (holdings.error()) {
+  <p class="text-(--negative)" role="alert">{{ 'holdings.error' | transloco }}</p>
+} @else if (holding(); as holding) {
   <article class="flex flex-col gap-4">
     <header>
       <p class="flex flex-wrap gap-2">

@@ -116,6 +116,26 @@ describe('HoldingDetailPage', () => {
     expect(await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' })).toBeInTheDocument();
   });
 
+  it('should tell the user when the holdings could not be loaded', async () => {
+    await render(TestHost, {
+      imports: [getTranslocoTestingModule()],
+      routes: [{ path: ':holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' }],
+      initialRoute: 'h1',
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/holdings').flush('boom', { status: 500, statusText: 'Server error' });
+
+    // A failed load must not read as a holding that does not exist: the id may be perfectly valid.
+    expect(await screen.findByRole('alert')).toHaveTextContent('holdings.error');
+  });
+
   it('should tell the user when the holding does not exist', async () => {
     await renderPage('nope');
 

@@ -8,7 +8,12 @@ import { Logger } from '@core/logger/logger';
 import { environment } from '@environments/environment';
 
 /**
- * Catches error responses from the API in a single place.
+ * Logs every API error in one place, and does nothing else on purpose.
+ *
+ * Showing the failure is the job of the screen that asked: each store owns an `error` signal and
+ * each screen renders it next to the action that failed, where the user is already looking. A
+ * toaster raised from here would either duplicate that message or replace it with one this
+ * interceptor has no context to write.
  */
 export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
   const logger = inject(Logger);
@@ -21,7 +26,6 @@ export const errorHandlerInterceptor: HttpInterceptorFn = (req, next) => {
           return;
         }
         if (error instanceof HttpErrorResponse) {
-          // TODO: display the error with the toaster of your component library.
           logger.error('HttpInterceptor', `API error on ${req.method} ${req.url}`, error);
         }
       },
