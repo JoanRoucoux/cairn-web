@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 
+import { UiButton, UiCard, UiField, UiInput, UiTextarea } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiCard, UiField, UiInput, UiTextarea } from 'cairn-ui';
 
 import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
 

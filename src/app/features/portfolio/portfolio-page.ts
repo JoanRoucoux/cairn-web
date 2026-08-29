@@ -1,7 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 
+import { type SegmentedOption, UiCard, UiDelta, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { type SegmentedOption, UiCard, UiDelta, UiSegmented, UiSkeleton } from 'cairn-ui';
 
 import { LanguageStore } from '@core/i18n/language-store';
 

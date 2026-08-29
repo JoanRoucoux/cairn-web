@@ -1,7 +1,7 @@
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 
+import { UiButton, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiInput, UiSkeleton } from 'cairn-ui';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 

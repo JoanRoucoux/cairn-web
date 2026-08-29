@@ -1,8 +1,8 @@
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { type SegmentedOption, UiAvatar, UiButton, UiCard, UiSegmented } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
-import { type SegmentedOption, UiAvatar, UiButton, UiCard, UiSegmented } from 'cairn-ui';
 
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 

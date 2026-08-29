@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
+import { UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiCard, UiField, UiInput } from 'cairn-ui';
 
 import { AccountListStore } from './account-list-store';
 

@@ -1,8 +1,8 @@
 import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
+import { UiButton, UiDialog, UiField, UiInput, UiSelect } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiDialog, UiField, UiInput, UiSelect } from 'cairn-ui';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 

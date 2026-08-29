@@ -1,8 +1,8 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { UiButton, UiDelta, UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiDelta, UiTable, UiTd, UiTh } from 'cairn-ui';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 

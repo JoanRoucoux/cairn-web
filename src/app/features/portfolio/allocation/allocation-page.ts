@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 
+import { UiCard, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiCard, UiSkeleton } from 'cairn-ui';
 
 import { AllocationBreakdown } from './allocation-breakdown';
 import { AllocationStore } from './allocation-store';

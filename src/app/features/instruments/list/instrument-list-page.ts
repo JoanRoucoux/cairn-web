@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { UiButton, UiInput, UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiInput, UiTable, UiTd, UiTh } from 'cairn-ui';
 
 import { InstrumentListStore } from './instrument-list-store';
 

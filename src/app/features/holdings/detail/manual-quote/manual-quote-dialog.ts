@@ -1,8 +1,8 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
+import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiDialog, UiField, UiInput } from 'cairn-ui';
 
 import { ManualQuoteDialogStore } from './manual-quote-dialog-store';
 

@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 
-import { type MeterTone, UiMeter } from 'cairn-ui';
+import { type MeterTone, UiMeter } from '@joanroucoux/cairn-ui';
 
 import type { AllocationResponse } from '@core/api-client/cairnAPI.schemas';
 

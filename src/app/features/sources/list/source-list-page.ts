@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 
+import { UiCard } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiCard } from 'cairn-ui';
 
 import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
 

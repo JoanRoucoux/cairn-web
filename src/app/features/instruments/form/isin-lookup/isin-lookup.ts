@@ -1,7 +1,7 @@
 import { Component, input, output, signal } from '@angular/core';
 
+import { UiButton, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { UiButton, UiInput } from 'cairn-ui';
 
 import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
 

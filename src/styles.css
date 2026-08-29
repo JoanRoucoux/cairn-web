@@ -1,9 +1,9 @@
 @import 'tailwindcss';
-@import 'cairn-ui/styles/tokens.css';
+@import '@joanroucoux/cairn-ui/styles/tokens.css';
 
 /* Tailwind does not scan node_modules: without this, the classes used inside cairn-ui templates
    are never generated. */
-@source '../node_modules/cairn-ui';
+@source '../node_modules/@joanroucoux/cairn-ui';
 
 body {
   margin: 0;
