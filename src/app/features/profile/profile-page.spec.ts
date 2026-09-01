@@ -123,7 +123,7 @@ describe('ProfilePage', () => {
 
     const link = screen.getByTestId('export-csv');
 
-    expect(link).toHaveAttribute('href', '/api/holdings/export');
+    expect(link).toHaveAttribute('href', '/api/portfolio/export');
     expect(link).toHaveAttribute('download');
   });
 
