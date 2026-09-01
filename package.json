@@ -16,6 +16,7 @@
     "lint:fix": "ng lint --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "api:sync": "curl -fsSL -o openapi/openapi.yaml https://raw.githubusercontent.com/JoanRoucoux/cairn/main/cairn-api/openapi/openapi.yaml && pnpm run generate:api",
     "generate:api": "orval --config ./orval.config.ts",
     "postinstall": "pnpm run generate:api",
     "prepare": "husky"
