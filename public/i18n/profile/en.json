@@ -19,5 +19,23 @@
   "export": "Export my data",
   "exportHint": "A CSV of every holding, straight from the server.",
   "exportAction": "Export",
+  "import": "Import a portfolio",
+  "importHint": "Fill in the template. Quantities are overwritten, so export first if in doubt.",
+  "importTemplate": "Template",
+  "importAction": "Import",
+  "importing": "Importing...",
+  "importDone": "Done: {{accountsCreated}} accounts and {{instrumentsCreated}} instruments created, {{holdingsCreated}} positions added, {{holdingsUpdated}} updated.",
+  "importFailed": "The import could not be sent. Try again.",
+  "importRejected": "Nothing was imported. Fix these {{count}} line(s) and try again.",
+  "importLine": "Line",
+  "importReason": "Reason",
+  "importError": {
+    "BAD_HEADER": "The first line is not the expected header. Download the template again.",
+    "WRONG_COLUMN_COUNT": "This line has {{value}} columns instead of 7.",
+    "UNKNOWN_ACCOUNT_TYPE": "\"{{value}}\" is not a known account type.",
+    "NOT_A_NUMBER": "\"{{value}}\" is not a number.",
+    "ZERO_QUANTITY": "A quantity cannot be zero. Remove the line instead.",
+    "UNRESOLVED_INSTRUMENT": "No price source knows \"{{value}}\"."
+  },
   "signOut": "Sign out"
 }

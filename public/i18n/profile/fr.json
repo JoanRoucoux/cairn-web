@@ -19,5 +19,23 @@
   "export": "Exporter mes donnees",
   "exportHint": "Un CSV de toutes les positions, tel que le serveur le produit.",
   "exportAction": "Exporter",
+  "import": "Importer un portefeuille",
+  "importHint": "Remplissez le modele. Les quantites sont ecrasees, exportez avant en cas de doute.",
+  "importTemplate": "Modele",
+  "importAction": "Importer",
+  "importing": "Import en cours...",
+  "importDone": "Termine : {{accountsCreated}} comptes et {{instrumentsCreated}} instruments crees, {{holdingsCreated}} positions ajoutees, {{holdingsUpdated}} mises a jour.",
+  "importFailed": "L'import n'a pas pu etre envoye. Reessayez.",
+  "importRejected": "Rien n'a ete importe. Corrigez ces {{count}} ligne(s) puis reessayez.",
+  "importLine": "Ligne",
+  "importReason": "Motif",
+  "importError": {
+    "BAD_HEADER": "La premiere ligne n'est pas l'en-tete attendu. Telechargez a nouveau le modele.",
+    "WRONG_COLUMN_COUNT": "Cette ligne a {{value}} colonnes au lieu de 7.",
+    "UNKNOWN_ACCOUNT_TYPE": "\"{{value}}\" n'est pas un type de compte connu.",
+    "NOT_A_NUMBER": "\"{{value}}\" n'est pas un nombre.",
+    "ZERO_QUANTITY": "Une quantite ne peut pas etre nulle. Retirez plutot la ligne.",
+    "UNRESOLVED_INSTRUMENT": "Aucune source de prix ne connait \"{{value}}\"."
+  },
   "signOut": "Se deconnecter"
 }

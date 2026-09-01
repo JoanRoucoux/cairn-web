@@ -85,6 +85,76 @@
       {{ 'profile.exportAction' | transloco }}
     </a>
   </div>
+
+  <div class="flex flex-col gap-3 border-t border-(--border) py-3.5">
+    <div class="flex min-h-11 items-center gap-3">
+      <span class="flex grow flex-col gap-0.5">
+        <span class="text-[14.5px]">{{ 'profile.import' | transloco }}</span>
+        <span class="text-[11.5px] text-(--muted-foreground)">{{ 'profile.importHint' | transloco }}</span>
+      </span>
+      <a data-testid="import-template" download href="/api/portfolio/import/template" ui-button variant="ghost">
+        {{ 'profile.importTemplate' | transloco }}
+      </a>
+      <button
+        data-testid="import-csv"
+        type="button"
+        ui-button
+        variant="outline"
+        [disabled]="importing()"
+        (click)="fileInput.click()"
+      >
+        {{ (importing() ? 'profile.importing' : 'profile.importAction') | transloco }}
+      </button>
+    </div>
+
+    <!-- Never rendered: the visible control is the button above, which forwards the click here. -->
+    <input
+      #fileInput
+      accept=".csv,text/csv"
+      class="hidden"
+      data-testid="import-file"
+      type="file"
+      (change)="onFileSelected($event)"
+    />
+
+    @if (report(); as summary) {
+      <p class="text-[12.5px] text-(--positive)" data-testid="import-report" role="status">
+        {{ 'profile.importDone' | transloco: summary }}
+      </p>
+    }
+
+    @if (failed()) {
+      <p class="text-[12.5px] text-(--negative)" data-testid="import-failed" role="alert">
+        {{ 'profile.importFailed' | transloco }}
+      </p>
+    }
+
+    @if (rejections().length > 0) {
+      <div data-testid="import-rejections" role="alert">
+        <p class="mb-2 text-[12.5px] text-(--negative)">
+          {{ 'profile.importRejected' | transloco: { count: rejections().length } }}
+        </p>
+        <div class="overflow-x-auto">
+          <table uiTable>
+            <thead>
+              <tr>
+                <th uiTh>{{ 'profile.importLine' | transloco }}</th>
+                <th uiTh>{{ 'profile.importReason' | transloco }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (rejection of rejections(); track $index) {
+                <tr>
+                  <td numeric uiTd>{{ rejection.line }}</td>
+                  <td uiTd>{{ 'profile.importError.' + rejection.code | transloco: rejection }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
 </ui-card>
 
 <button
