@@ -28,6 +28,20 @@ jobs:
           node-version: 24
           cache: pnpm
 
+      # openapi/openapi.yaml is a copy: cairn-api owns the contract, this repository only
+      # generates a client from it. Nothing but this step stops the two from drifting apart and
+      # the client being generated against a stale spec. A backend contract change therefore
+      # merges first; `pnpm run api:sync` pulls it here.
+      - name: Check the API contract matches the backend
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/upstream-openapi.yaml" "$CONTRACT_URL"
+          diff -u "$RUNNER_TEMP/upstream-openapi.yaml" openapi/openapi.yaml || {
+            echo "::error file=openapi/openapi.yaml::Out of sync with cairn-api. Run: pnpm run api:sync"
+            exit 1
+          }
+        env:
+          CONTRACT_URL: https://raw.githubusercontent.com/JoanRoucoux/cairn/main/cairn-api/openapi/openapi.yaml
+
       # Also generates the OpenAPI clients and models (postinstall).
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
