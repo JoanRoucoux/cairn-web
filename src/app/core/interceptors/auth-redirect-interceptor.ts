@@ -1,9 +1,10 @@
 import { HttpErrorResponse, type HttpInterceptorFn } from '@angular/common/http';
-import { DOCUMENT, inject } from '@angular/core';
+import { inject } from '@angular/core';
 
 import { catchError, throwError } from 'rxjs';
 
-const SIGN_IN_URL = '/login';
+import { SignInRedirect } from './sign-in-redirect';
+
 const SIGN_OUT_URL = '/logout';
 
 /**
@@ -11,13 +12,13 @@ const SIGN_OUT_URL = '/logout';
  * ceremony happens there, not in this application: there is no login screen to route to.
  */
 export const authRedirectInterceptor: HttpInterceptorFn = (req, next) => {
-  const document = inject(DOCUMENT);
+  const signIn = inject(SignInRedirect);
 
   return next(req).pipe(
     catchError((error: unknown) => {
       // Redirecting on a failing logout would bounce between /logout and /login forever.
       if (error instanceof HttpErrorResponse && error.status === 401 && !req.url.endsWith(SIGN_OUT_URL)) {
-        document.defaultView?.location.assign(SIGN_IN_URL);
+        signIn.start();
       }
 
       return throwError(() => error);

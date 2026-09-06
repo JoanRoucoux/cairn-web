@@ -36,6 +36,18 @@ describe('authRedirectInterceptor', () => {
     await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('/login'));
   });
 
+  it('should navigate once when several requests fail at the same time', async () => {
+    http.get('/api/portfolio').subscribe({ error: () => undefined });
+    http.get('/api/session').subscribe({ error: () => undefined });
+
+    for (const url of ['/api/portfolio', '/api/session']) {
+      controller.expectOne(url).flush(null, { status: 401, statusText: 'Unauthorized' });
+    }
+
+    await vi.waitFor(() => expect(assign).toHaveBeenCalled());
+    expect(assign).toHaveBeenCalledTimes(1);
+  });
+
   it('should leave other error statuses alone', async () => {
     http.get('/api/portfolio').subscribe({ error: () => undefined });
 

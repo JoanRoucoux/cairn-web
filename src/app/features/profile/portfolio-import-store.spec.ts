@@ -81,6 +81,19 @@ describe('PortfolioImportStore', () => {
     expect(store.importing()).toBe(false);
   });
 
+  it('should fall back to a plain failure when a 422 names no line', async () => {
+    const imported = store.importFile(new File([CSV], 'portfolio.csv'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
+      { status: 422, errors: [] },
+      { status: 422, statusText: 'Unprocessable Content' },
+    );
+
+    await imported;
+    // An empty table would tell the reader to fix nothing in particular.
+    expect(store.rejections()).toEqual([]);
+    expect(store.failed()).toBe(true);
+  });
   it('should clear the previous outcome when a new file is imported', async () => {
     const first = store.importFile(new File([CSV], 'portfolio.csv'));
     (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(null, {

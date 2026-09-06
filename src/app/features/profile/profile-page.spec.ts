@@ -184,6 +184,40 @@ describe('ProfilePage', () => {
     expect(screen.queryByTestId('import-report')).not.toBeInTheDocument();
   });
 
+  it('should open the file picker from the visible button, the input being hidden', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const input = screen.getByTestId('import-file');
+    const opened = vi.spyOn(input, 'click');
+
+    await user.click(screen.getByTestId('import-csv'));
+
+    expect(opened).toHaveBeenCalled();
+  });
+
+  it('should say so when the import could not be sent at all', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.upload(screen.getByTestId('import-file'), csvFile());
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(null, {
+      status: 500,
+      statusText: 'Server Error',
+    });
+
+    expect(await screen.findByTestId('import-failed')).toBeInTheDocument();
+    expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
+  });
+
+  it('should send nothing when the file picker is dismissed', async () => {
+    await renderPage();
+
+    // A cancelled picker still fires change, with no file on it.
+    screen.getByTestId('import-file').dispatchEvent(new Event('change'));
+
+    httpTesting.expectNone('/api/portfolio/import');
+  });
   it('should offer the three theme preferences', async () => {
     await renderPage();
 
