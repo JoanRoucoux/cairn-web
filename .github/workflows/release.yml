@@ -1,0 +1,87 @@
+# Builds the frontend image and deploys it, on a tag and only on a tag.
+#
+# This repository owns WEB_TAG in /srv/cairn/.env and the `web` service alone. The backend
+# releases from the cairn repository, on its own tag, without either waiting for the other:
+# the two halves share an origin and a compose file, not a version.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  # Neither value is a secret: the host is what cairn.joanroucoux.fr resolves to, and a host key
+  # is public by construction. Pinning the fingerprint here is what stops the deploy from
+  # trusting whatever answers on that address.
+  DEPLOY_HOST: 51.255.42.146
+  DEPLOY_KNOWN_HOSTS: '51.255.42.146 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEbEn9NUsA5n7n1DSBWaozWpMVcs7JsBn6Y82kH3oGxN'
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/joanroucoux/cairn-web:${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Authorize this runner on the server
+        run: |
+          mkdir -p ~/.ssh
+          # tr -d '\r': the key was very likely pasted from Windows, and a stray carriage return
+          # makes OpenSSH reject it with an error naming neither the cause nor the file.
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Start the new frontend
+        run: |
+          # The script travels on stdin and the token inside it, never in argv: arguments are
+          # readable by any other process on the host through /proc.
+          ssh -i ~/.ssh/id_ed25519 "deploy@${DEPLOY_HOST}" 'bash -euo pipefail -s' <<EOF
+          docker login ghcr.io -u '${{ github.actor }}' --password-stdin <<<'${{ secrets.GITHUB_TOKEN }}'
+
+          cd /srv/cairn
+          sed -i 's|^WEB_TAG=.*|WEB_TAG=${{ github.ref_name }}|' .env
+
+          # Only the web service: this repository must never restart the API or the database.
+          docker compose -f compose.prod.yaml pull web
+          docker compose -f compose.prod.yaml up -d web
+
+          docker logout ghcr.io
+          docker image prune -f
+          EOF
+
+      - name: Wait for the page to answer
+        run: |
+          for i in $(seq 1 30); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' https://cairn.joanroucoux.fr/ || true)
+            if [ "$code" = "200" ]; then
+              echo "web: 200 after $i attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "the page never answered 200 within 150 seconds"
+          exit 1
