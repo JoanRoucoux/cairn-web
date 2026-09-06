@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import {
   type SegmentedOption,
@@ -13,6 +13,7 @@ import {
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
+import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
 import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
@@ -27,7 +28,7 @@ import { ProfileStore } from './profile-store';
 })
 export class ProfilePage {
   #store = inject(ProfileStore);
-  #router = inject(Router);
+  #signIn = inject(SignInRedirect);
 
   protected readonly owner = this.#store.owner;
   protected readonly passkeys = this.#store.passkeys;
@@ -70,6 +71,8 @@ export class ProfilePage {
   // Navigation stays in the page: the store returns, the page decides where to go.
   protected async onSignOut(): Promise<void> {
     await this.#store.signOut();
-    await this.#router.navigateByUrl('/');
+    // A full page load, not a router navigation: the server session is gone, so the application
+    // has to restart rather than keep rendering the one it still holds in memory.
+    this.#signIn.start();
   }
 }

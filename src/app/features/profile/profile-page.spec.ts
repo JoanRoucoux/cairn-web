@@ -9,6 +9,8 @@ import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { of } from 'rxjs';
 
+import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
+
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { PortfolioImportStore } from './portfolio-import-store';
@@ -246,6 +248,18 @@ describe('ProfilePage', () => {
     );
   });
 
+  it('should send the browser to the sign-in page after signing out, not navigate in place', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const signIn = vi.spyOn(TestBed.inject(SignInRedirect), 'start');
+
+    await user.click(screen.getByTestId('sign-out'));
+    await vi.waitFor(() => httpTesting.expectOne('/logout').flush(null));
+
+    // A router navigation would leave the application running on a session the server has just
+    // destroyed, showing the previous user's name until something happens to fail.
+    await vi.waitFor(() => expect(signIn).toHaveBeenCalled());
+  });
   it('should sign the user out', async () => {
     const user = userEvent.setup();
     await renderPage();
