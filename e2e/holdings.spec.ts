@@ -5,7 +5,7 @@ import { mockApi } from './fixtures/api';
 test.describe('holdings', () => {
   test.beforeEach(async ({ page }) => {
     await mockApi(page);
-    await page.goto('/positions');
+    await page.goto('/holdings');
   });
 
   test('opens the add dialog and focuses the safe action first', async ({ page }) => {
@@ -36,7 +36,7 @@ test.describe('holdings', () => {
   });
 
   test('shows a holding detail page at its route', async ({ page }) => {
-    await page.goto('/positions/11111111-1111-1111-1111-111111111111');
+    await page.goto('/holdings/11111111-1111-1111-1111-111111111111');
 
     await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);

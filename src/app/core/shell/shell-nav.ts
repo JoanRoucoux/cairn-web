@@ -10,7 +10,7 @@ export type ShellDestination = {
 /** The four destinations, in the order they appear in both the sidebar and the tab bar. */
 export const SHELL_DESTINATIONS: ShellDestination[] = [
   { path: '/', labelKey: 'shell.portfolio', icon: 'portfolio' },
-  { path: '/positions', labelKey: 'shell.holdings', icon: 'holdings' },
-  { path: '/repartition', labelKey: 'shell.allocation', icon: 'allocation' },
+  { path: '/holdings', labelKey: 'shell.holdings', icon: 'holdings' },
+  { path: '/allocation', labelKey: 'shell.allocation', icon: 'allocation' },
   { path: '/sources', labelKey: 'shell.sources', icon: 'sources' },
 ];

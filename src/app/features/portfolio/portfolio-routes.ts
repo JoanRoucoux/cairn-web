@@ -21,7 +21,7 @@ export const PORTFOLIO_ROUTES: Routes = [
         providers: [PortfolioStore],
       },
       {
-        path: 'repartition',
+        path: 'allocation',
         component: AllocationPage,
         title: 'pageTitle.allocation',
         providers: [AllocationStore],

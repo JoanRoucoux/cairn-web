@@ -240,7 +240,7 @@ describe('ProfilePage', () => {
 
     expect(await screen.findByRole('link', { name: 'profile.manageData.accounts' })).toHaveAttribute(
       'href',
-      '/comptes',
+      '/accounts',
     );
     expect(screen.getByRole('link', { name: 'profile.manageData.instruments' })).toHaveAttribute(
       'href',

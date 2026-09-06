@@ -55,6 +55,6 @@ describe('PortfolioMovers', () => {
   it('should link each row to its holding', async () => {
     await renderMovers([holding({ id: 'h9' })]);
 
-    expect(await screen.findByRole('link', { name: /Ethereum/ })).toHaveAttribute('href', '/positions/h9');
+    expect(await screen.findByRole('link', { name: /Ethereum/ })).toHaveAttribute('href', '/holdings/h9');
   });
 });

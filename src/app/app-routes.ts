@@ -6,11 +6,11 @@ import { PORTFOLIO_ROUTES } from '@features/portfolio/portfolio-routes';
 
 export const routes: Routes = [
   {
-    path: 'comptes',
+    path: 'accounts',
     loadChildren: () => import('./features/accounts/accounts-routes').then((m) => m.ACCOUNTS_ROUTES),
   },
   {
-    path: 'positions',
+    path: 'holdings',
     loadChildren: () => import('./features/holdings/holdings-routes').then((m) => m.HOLDINGS_ROUTES),
   },
   {
@@ -22,7 +22,7 @@ export const routes: Routes = [
     loadChildren: () => import('./features/sources/sources-routes').then((m) => m.SOURCES_ROUTES),
   },
   {
-    path: 'profil',
+    path: 'profile',
     loadChildren: () => import('./features/profile/profile-routes').then((m) => m.PROFILE_ROUTES),
   },
   // Eagerly load the landing feature. Its translations still load lazily with the scope.

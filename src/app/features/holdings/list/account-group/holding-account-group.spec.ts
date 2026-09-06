@@ -75,7 +75,7 @@ describe('HoldingAccountGroup', () => {
   it('should link each line to its detail screen', async () => {
     await renderGroup();
 
-    expect(await screen.findByRole('link', { name: /FCPE Actions/ })).toHaveAttribute('href', '/positions/h3');
+    expect(await screen.findByRole('link', { name: /FCPE Actions/ })).toHaveAttribute('href', '/holdings/h3');
   });
 
   it('should name every column', async () => {

@@ -19,8 +19,8 @@ export const INSTRUMENTS_ROUTES: Routes = [
         providers: [InstrumentListStore],
       },
       {
-        // Declared before any :instrumentId route so 'nouveau' is not matched as an identifier.
-        path: 'nouveau',
+        // Declared before any :instrumentId route so 'new' is not matched as an identifier.
+        path: 'new',
         component: InstrumentFormPage,
         title: 'pageTitle.instrumentCreate',
         providers: [InstrumentFormStore],

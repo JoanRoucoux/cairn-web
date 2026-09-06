@@ -3,12 +3,12 @@ import { mockApi } from './fixtures/api';
 
 const screens = [
   '/',
-  '/positions',
-  '/positions/11111111-1111-1111-1111-111111111111',
-  '/repartition',
+  '/holdings',
+  '/holdings/11111111-1111-1111-1111-111111111111',
+  '/allocation',
   '/sources',
-  '/profil',
-  '/comptes',
+  '/profile',
+  '/accounts',
   '/instruments',
 ];
 

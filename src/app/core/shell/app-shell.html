@@ -28,7 +28,7 @@
     <a
       class="mt-auto flex min-h-11 items-center gap-3 rounded-xl border border-(--border) bg-(--card) px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
       data-testid="account-link-desktop"
-      routerLink="/profil"
+      routerLink="/profile"
     >
       <ui-avatar size="sm" [initials]="owner().initials" [label]="'shell.account' | transloco" />
       <span class="text-[13px] font-semibold">{{ owner().displayName }}</span>
@@ -41,7 +41,7 @@
       <a
         class="flex size-11 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-(--ring)"
         data-testid="account-link-mobile"
-        routerLink="/profil"
+        routerLink="/profile"
       >
         <ui-avatar size="sm" [initials]="owner().initials" [label]="'shell.account' | transloco" />
       </a>
