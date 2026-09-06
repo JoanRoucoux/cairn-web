@@ -142,6 +142,14 @@ Two conventions worth knowing before touching a screen:
 
 ## Gotchas
 
+- `ngsw-config.json` must exclude every path the server renders itself. Angular's default
+  `navigationUrls` claims **every** URL whose last segment has no dot, so the service worker
+  answered `/login` from its own cache with `index.html`: the app found no such route, its session
+  call took a 401, and the interceptor sent the browser back to `/login`, forever. Anything Spring
+  Security owns (`/login`, `/logout`, `/webauthn/**`, `/error`) belongs in the negated list, and
+  `app-config.spec.ts` fails if one goes missing. The proxy has the mirror rule: `cairn.caddy`'s
+  `@api` matcher must cover the same paths, prefixes included.
+
 - `typescript` is pinned to `~6.0.2`: TypeScript 7 breaks `typescript-eslint` (via `ts-api-utils`). Do not bump until typescript-eslint supports TS 7.
 - `pnpm-workspace.yaml` `allowBuilds` is required for native postinstall scripts (esbuild, lmdb, ...) — do not remove it.
 - GitHub Actions in `.github/workflows/ci.yml` are pinned by commit SHA (Dependabot keeps them updated) — when adding one, pin it the same way.
