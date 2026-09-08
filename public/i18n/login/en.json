@@ -1,0 +1,10 @@
+{
+  "title": "Sign in to Cairn",
+  "subtitle": "Your portfolio, and nobody else's.",
+  "username": "Username",
+  "password": "Password",
+  "submit": "Sign in",
+  "submitting": "Signing in...",
+  "refused": "That username and password do not match.",
+  "failed": "Sign-in could not be sent. Try again."
+}

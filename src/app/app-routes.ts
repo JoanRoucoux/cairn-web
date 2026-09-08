@@ -6,6 +6,10 @@ import { PORTFOLIO_ROUTES } from '@features/portfolio/portfolio-routes';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    loadChildren: () => import('./features/login/login-routes').then((m) => m.LOGIN_ROUTES),
+  },
+  {
     path: 'accounts',
     loadChildren: () => import('./features/accounts/accounts-routes').then((m) => m.ACCOUNTS_ROUTES),
   },

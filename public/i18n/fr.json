@@ -9,7 +9,8 @@
     "accounts": "Comptes",
     "sources": "Sources",
     "profile": "Mon compte",
-    "notFound": "Page introuvable"
+    "notFound": "Page introuvable",
+    "login": "Connexion"
   },
   "notFound": {
     "title": "Page introuvable",

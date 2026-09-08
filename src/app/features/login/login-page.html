@@ -1,0 +1,37 @@
+<div class="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4">
+  <h1 class="text-xl font-semibold">{{ 'login.title' | transloco }}</h1>
+  <p class="mt-1 text-[13px] text-(--muted-foreground)">{{ 'login.subtitle' | transloco }}</p>
+
+  <ui-card class="mt-6">
+    <form class="flex flex-col gap-4" (submit)="onSubmit($event)">
+      <ui-field [label]="'login.username' | transloco">
+        <input autocomplete="username" data-testid="login-username" type="text" uiInput [formField]="form.username" />
+      </ui-field>
+
+      <ui-field [label]="'login.password' | transloco">
+        <input
+          autocomplete="current-password"
+          data-testid="login-password"
+          type="password"
+          uiInput
+          [formField]="form.password"
+        />
+      </ui-field>
+
+      @if (refused()) {
+        <p class="text-[12.5px] text-(--negative)" data-testid="login-refused" role="alert">
+          {{ 'login.refused' | transloco }}
+        </p>
+      }
+      @if (failed()) {
+        <p class="text-[12.5px] text-(--negative)" data-testid="login-failed" role="alert">
+          {{ 'login.failed' | transloco }}
+        </p>
+      }
+
+      <button data-testid="login-submit" size="lg" type="submit" ui-button [disabled]="submitting()">
+        {{ (submitting() ? 'login.submitting' : 'login.submit') | transloco }}
+      </button>
+    </form>
+  </ui-card>
+</div>

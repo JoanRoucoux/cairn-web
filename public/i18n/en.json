@@ -9,7 +9,8 @@
     "accounts": "Accounts",
     "sources": "Sources",
     "profile": "My account",
-    "notFound": "Page not found"
+    "notFound": "Page not found",
+    "login": "Sign in"
   },
   "notFound": {
     "title": "Page not found",

@@ -129,8 +129,9 @@ application and has to navigate, so three things were added on purpose. They are
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
   through `light-dark()`, which follows the OS only while nothing is stamped.
 - **`core/session/`** - one root-level store that reads `GET /session` once and hands the owner
-  and their passkeys to both the shell and the account screen. There is no sign-in screen to build:
-  the passkey ceremony lives on the pages Spring Security serves, and a 401 sends the browser there.
+  and their passkeys to both the shell and the account screen. The application owns the password
+  sign-in screen (`features/login/`); the passkey ceremony still lives on the pages Spring Security
+  serves, until part two, and a 401 sends the browser there.
 
 Two conventions worth knowing before touching a screen:
 

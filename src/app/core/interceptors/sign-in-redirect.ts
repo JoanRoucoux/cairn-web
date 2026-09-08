@@ -1,4 +1,6 @@
-import { DOCUMENT, Injectable, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+
+import { PageLoad } from '@core/navigation/page-load';
 
 const SIGN_IN_URL = '/login';
 
@@ -9,7 +11,7 @@ const SIGN_IN_URL = '/login';
  */
 @Injectable({ providedIn: 'root' })
 export class SignInRedirect {
-  #document = inject(DOCUMENT);
+  #pageLoad = inject(PageLoad);
   #started = false;
 
   start(): void {
@@ -18,6 +20,6 @@ export class SignInRedirect {
     }
 
     this.#started = true;
-    this.#document.defaultView?.location.assign(SIGN_IN_URL);
+    this.#pageLoad.to(SIGN_IN_URL);
   }
 }
