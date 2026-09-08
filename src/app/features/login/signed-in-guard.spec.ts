@@ -1,8 +1,11 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { EnvironmentInjector, provideZonelessChangeDetection, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RedirectCommand, provideRouter } from '@angular/router';
+
+import { authRedirectInterceptor } from '@core/interceptors/auth-redirect-interceptor';
+import { PageLoad } from '@core/navigation/page-load';
 
 import { signedInGuard } from './signed-in-guard';
 
@@ -47,5 +50,35 @@ describe('signedInGuard', () => {
     });
 
     expect(await decision).toBe(true);
+  });
+
+  it('should not let the redirect interceptor claim its own 401', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideHttpClient(withInterceptors([authRedirectInterceptor])),
+        provideHttpClientTesting(),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    const pageLoad = TestBed.inject(PageLoad);
+    const to = vi.spyOn(pageLoad, 'to');
+
+    const decision = runInInjectionContext(
+      TestBed.inject(EnvironmentInjector),
+      () =>
+        signedInGuard({ path: 'login' }, [], {} as Parameters<typeof signedInGuard>[2]) as Promise<
+          boolean | RedirectCommand
+        >,
+    );
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(null, {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+
+    expect(await decision).toBe(true);
+    expect(to).not.toHaveBeenCalled();
   });
 });
