@@ -70,16 +70,50 @@ else, and every screen a user meets comes from `cairn-web`.
 **Files:**
 
 - Modify: `cairn-api/src/main/java/com/roucoux/cairn/infrastructure/auth/WebAuthnConfig.java`
-- Test: `cairn-api/src/test/java/com/roucoux/cairn/infrastructure/auth/SignInIT.java`
+- Create: `cairn-api/src/main/java/com/roucoux/cairn/infrastructure/auth/CsrfCookieFilter.java`
+- Create: `cairn-api/src/test/java/com/roucoux/cairn/infrastructure/auth/SignInIT.java`
+- Modify: `cairn-api/src/test/java/com/roucoux/cairn/ApplicationIT.java`
 
 **Interfaces:**
 
 - Consumes: nothing from earlier tasks.
-- Produces: `POST /authenticate` with form-encoded `username` and `password`, answering `204` on
+- Produces: `POST /authenticate` taking form-encoded `username` and `password`, answering `204` on
   success and `401` on failure. `POST /logout` answering `204`. `GET /login` and `GET /logout` no
-  longer served by the backend at all.
+  longer served by the backend. Every response carries an `XSRF-TOKEN` cookie.
 
-- [ ] **Step 1: Write the failing test**
+**Why the cookie filter is not optional.** Measured against production on 2026-09-08:
+`GET /login` sets `XSRF-TOKEN`, `GET /api/session` sets no cookie at all. Spring defers the CSRF
+token and materialises it only when something reads it, and today the only thing that reads it is
+the sign-in page this task removes. Without the filter below, a browser that never visits a Spring
+page has no token to echo, and every write the application makes is refused — the same symptom the
+project spent 2026-09-07 chasing, arriving by a new route.
+
+- [ ] **Step 1: Correct the assertion this task falsifies**
+
+In `cairn-api/src/test/java/com/roucoux/cairn/ApplicationIT.java`, replace the whole
+`servesTheWebAuthnRegistrationPage` test with:
+
+```java
+    @Test
+    void servesNoSignInPageOfItsOwn() {
+        assertThat(restTemplate.getForEntity("/login", String.class).getStatusCode())
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void handsEveryCallerACsrfTokenToEchoBack() {
+        assertThat(restTemplate
+                        .getForEntity("/actuator/health", String.class)
+                        .getHeaders()
+                        .get("Set-Cookie"))
+                .anySatisfy(cookie -> assertThat(cookie).startsWith("XSRF-TOKEN="));
+    }
+```
+
+Update that class's javadoc: it currently claims security answers 401 "without any passkey ceremony
+taking place", which stays true, but drop any mention of a registration page being served.
+
+- [ ] **Step 2: Write the failing sign-in test**
 
 Create `cairn-api/src/test/java/com/roucoux/cairn/infrastructure/auth/SignInIT.java`:
 
@@ -93,32 +127,40 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
- * Drives the real filter chain, which is the only place the answers below are decided: none of
- * this is reachable from a unit test on a @Bean method.
+ * The status codes below are decided by the filter chain and nowhere else, so this boots the real
+ * one. MockMvc rather than TestRestTemplate, for the csrf() post-processor: obtaining a token over
+ * real HTTP would test the cookie filter instead of the sign-in it is meant to exercise.
  */
 @SpringBootTest
-@TestPropertySource(properties = {"app.security.password=a-real-password", "app.security.permit-all=false"})
+@AutoConfigureMockMvc
+@TestPropertySource(
+        properties = {
+            "spring.liquibase.change-log=classpath:db/changelog/changelog-master.xml",
+            "app.security.password=a-real-password"
+        })
+@Testcontainers
 class SignInIT {
 
-    @Autowired
-    private WebApplicationContext context;
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
 
-    private MockMvc mockMvc() {
-        return MockMvcBuilders.webAppContextSetup(context)
-                .apply(org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity())
-                .build();
-    }
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
-    void signsInWithTheRightPassword() throws Exception {
-        mockMvc().perform(post("/authenticate")
+    void answersNoContentOnTheRightPassword() throws Exception {
+        mockMvc.perform(post("/authenticate")
                         .param("username", "joan")
                         .param("password", "a-real-password")
                         .with(csrf()))
@@ -127,7 +169,7 @@ class SignInIT {
 
     @Test
     void answersUnauthorizedRatherThanRedirectingOnAWrongPassword() throws Exception {
-        mockMvc().perform(post("/authenticate")
+        mockMvc.perform(post("/authenticate")
                         .param("username", "joan")
                         .param("password", "wrong")
                         .with(csrf()))
@@ -135,32 +177,68 @@ class SignInIT {
     }
 
     @Test
-    void servesNoSignInPageOfItsOwn() throws Exception {
-        mockMvc().perform(get("/login")).andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void servesNoSignOutConfirmationPageEither() throws Exception {
-        mockMvc().perform(get("/logout")).andExpect(status().isUnauthorized());
+    void servesNoSignOutConfirmationPage() throws Exception {
+        mockMvc.perform(get("/logout")).andExpect(status().isUnauthorized());
     }
 }
 ```
 
-- [ ] **Step 2: Run the test and watch it fail**
+- [ ] **Step 3: Run both and watch them fail**
 
-Run: `./mvnw verify -pl cairn-api -am -Dit.test=SignInIT -Dsurefire.failIfNoSpecifiedTests=false`
+Run: `./mvnw verify -pl cairn-api -am -Dit.test='SignInIT,ApplicationIT' -Dsurefire.failIfNoSpecifiedTests=false`
 
-Expected: FAIL. `signsInWithTheRightPassword` gets 302 (the default success handler redirects),
-`servesNoSignInPageOfItsOwn` gets 200 with Spring's generated HTML.
+Expected: FAIL. `answersNoContentOnTheRightPassword` gets 302, `servesNoSignInPageOfItsOwn` gets
+200 with Spring's generated page, `handsEveryCallerACsrfTokenToEchoBack` finds no Set-Cookie
+header at all.
 
-- [ ] **Step 3: Write the implementation**
+- [ ] **Step 4: Write the cookie filter**
 
-In `WebAuthnConfig.securityFilterChain`, replace `.formLogin(Customizer.withDefaults())` with:
+Create `cairn-api/src/main/java/com/roucoux/cairn/infrastructure/auth/CsrfCookieFilter.java`:
 
 ```java
-                // loginPage points at a page this application does not serve: naming it is what
-                // switches off DefaultLoginPageGeneratingFilter, and with it the sign-out
-                // confirmation page. cairn-web owns /login; the proxy no longer forwards it here.
+package com.roucoux.cairn.infrastructure.auth;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+/**
+ * Forces the CSRF token into its cookie on every request.
+ *
+ * <p>The token is deferred: CookieCsrfTokenRepository writes nothing until something reads the
+ * value. Spring's own sign-in page used to be that reader, and this application no longer serves
+ * one, so a browser that only ever calls the API would hold no token and every write it attempted
+ * would be refused.
+ */
+final class CsrfCookieFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        CsrfToken token = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+        if (token != null) {
+            token.getToken();
+        }
+
+        chain.doFilter(request, response);
+    }
+}
+```
+
+- [ ] **Step 5: Wire the chain**
+
+In `WebAuthnConfig.securityFilterChain`, replace `.formLogin(Customizer.withDefaults())` with the
+three calls below, leaving `webAuthn`, `csrf`, `exceptionHandling` and `authorizeHttpRequests`
+exactly as they are:
+
+```java
+                // Naming a loginPage this application does not serve is what switches off
+                // DefaultLoginPageGeneratingFilter, and the sign-out confirmation page with it.
+                // cairn-web owns /login; the proxy stops forwarding it in the next task.
                 .formLogin(form -> form.loginPage("/login")
                         .loginProcessingUrl("/authenticate")
                         .successHandler((request, response, authentication) ->
@@ -169,37 +247,42 @@ In `WebAuthnConfig.securityFilterChain`, replace `.formLogin(Customizer.withDefa
                                 response.setStatus(HttpStatus.UNAUTHORIZED.value())))
                 .logout(logout -> logout.logoutSuccessHandler(
                         (request, response, authentication) -> response.setStatus(HttpStatus.NO_CONTENT.value())))
+                .addFilterAfter(new CsrfCookieFilter(), CsrfFilter.class)
 ```
 
-Keep every other call in the chain exactly as it is, `webAuthn`, `csrf`, `exceptionHandling` and
-`authorizeHttpRequests` included.
+Add the two imports this needs: `org.springframework.security.web.csrf.CsrfFilter` and, if it is
+not already there, `org.springframework.http.HttpStatus`.
 
-- [ ] **Step 4: Run the test and watch it pass**
+- [ ] **Step 6: Run both and watch them pass**
 
-Run: `./mvnw verify -pl cairn-api -am -Dit.test=SignInIT -Dsurefire.failIfNoSpecifiedTests=false`
+Run: `./mvnw verify -pl cairn-api -am -Dit.test='SignInIT,ApplicationIT' -Dsurefire.failIfNoSpecifiedTests=false`
 
-Expected: PASS, 4 tests.
+Expected: PASS.
 
-- [ ] **Step 5: Run the whole backend build**
+- [ ] **Step 7: Run the whole backend build**
 
 Run: `./mvnw spotless:apply && ./mvnw verify`
 
-Expected: BUILD SUCCESS. If `CucumberIT` fails, check it still sets `app.security.permit-all`; it
-must not be affected by this change.
+Expected: BUILD SUCCESS. `CucumberIT` runs with `app.security.permit-all`, which disables this
+whole chain, so it must be unaffected; if it fails, that is a real regression, not a fixture to
+adjust.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add cairn-api/src/main/java/com/roucoux/cairn/infrastructure/auth/WebAuthnConfig.java \
-        cairn-api/src/test/java/com/roucoux/cairn/infrastructure/auth/SignInIT.java
+git add cairn-api/src/main/java/com/roucoux/cairn/infrastructure/auth/ \
+        cairn-api/src/test/java/com/roucoux/cairn/infrastructure/auth/SignInIT.java \
+        cairn-api/src/test/java/com/roucoux/cairn/ApplicationIT.java
 git commit -m "feat(auth): answer the sign-in POST instead of rendering a page
 
 Naming an external loginPage switches off DefaultLoginPageGeneratingFilter and the sign-out
-confirmation page with it, leaving only JSON and status codes. The SPA gets 204 or 401 where a
-browser form would have followed a redirect it cannot interpret."
-```
+confirmation page with it, leaving only JSON and status codes.
 
----
+That page was also the only thing reading the CSRF token, and Spring writes the cookie only when
+something reads it: measured against production, /login set XSRF-TOKEN and /api/session set no
+cookie at all. A filter now reads it on every request, or the application would lose the ability
+to write anything the moment it stopped visiting a Spring page."
+```
 
 ### Task 2: The proxy hands `/login` to the frontend
 
@@ -611,31 +694,108 @@ Create `public/i18n/login/fr.json`:
 Add `"login": "Sign in"` to `pageTitle` in `public/i18n/en.json`, and `"login": "Connexion"` to
 `pageTitle` in `public/i18n/fr.json`.
 
-- [ ] **Step 2: Write the failing test**
+- [ ] **Step 2: Add the one place that reloads the page**
+
+Signing in has to end in a full page load, not a router navigation: the shell and the session store
+both have to start again against the session that now exists. `SignInRedirect` already does exactly
+this for the opposite direction, and it must not be reused as is — its once-only guard exists so
+several simultaneous 401s produce one navigation, which is wrong for a deliberate one.
+
+Create `src/app/core/navigation/page-load.ts`:
+
+```ts
+import { DOCUMENT, Injectable, inject } from '@angular/core';
+
+/** The only call to location.assign in the application. */
+@Injectable({ providedIn: 'root' })
+export class PageLoad {
+  #document = inject(DOCUMENT);
+
+  to(path: string): void {
+    this.#document.defaultView?.location.assign(path);
+  }
+}
+```
+
+Create `src/app/core/navigation/page-load.spec.ts`:
+
+```ts
+import { DOCUMENT } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+
+import { PageLoad } from './page-load';
+
+describe('PageLoad', () => {
+  it('should leave the application and load the given path', () => {
+    const assign = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } }],
+    });
+
+    TestBed.inject(PageLoad).to('/');
+
+    expect(assign).toHaveBeenCalledWith('/');
+  });
+
+  it('should do nothing where there is no window, rather than throw', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: DOCUMENT, useValue: {} }],
+    });
+
+    expect(() => TestBed.inject(PageLoad).to('/')).not.toThrow();
+  });
+});
+```
+
+Then make `src/app/core/interceptors/sign-in-redirect.ts` delegate, so `location.assign` is called
+from one place only. Replace its `#document` field and the body of `start()`:
+
+```ts
+  #pageLoad = inject(PageLoad);
+  #started = false;
+
+  start(): void {
+    if (this.#started) {
+      return;
+    }
+
+    this.#started = true;
+    this.#pageLoad.to(SIGN_IN_URL);
+  }
+```
+
+Its own spec keeps working unchanged: it provides a stubbed `DOCUMENT`, which is what `PageLoad`
+reads.
+
+Run: `pnpm run test`
+
+Expected: PASS, including the existing `sign-in-redirect` and `profile-page` specs.
+
+- [ ] **Step 3: Write the failing test**
 
 Create `src/app/features/login/login-page.spec.ts`:
 
 ```ts
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { DOCUMENT, provideZonelessChangeDetection } from '@angular/core';
+import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { PageLoad } from '@core/navigation/page-load';
+
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
-import { LoginPage } from './login-page';
 import { LoginStore } from './login-store';
 
 describe('LoginPage', () => {
   let httpTesting: HttpTestingController;
-  let assign: ReturnType<typeof vi.fn>;
+  let load: ReturnType<typeof vi.spyOn>;
 
   const renderPage = async (): Promise<void> => {
-    assign = vi.fn();
     await render(LoginPage, {
       imports: [getTranslocoTestingModule()],
       providers: [
@@ -643,11 +803,12 @@ describe('LoginPage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTranslocoScope('login'),
-        { provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } },
+
         LoginStore,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
+    load = vi.spyOn(TestBed.inject(PageLoad), 'to');
   };
 
   afterEach(() => httpTesting.verify());
@@ -669,7 +830,7 @@ describe('LoginPage', () => {
     });
 
     // A router navigation would leave the application running without the session it just opened.
-    await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('/'));
+    await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 
   it('should say so when the password is refused, and stay put', async () => {
@@ -683,7 +844,7 @@ describe('LoginPage', () => {
     });
 
     expect(await screen.findByTestId('login-refused')).toBeInTheDocument();
-    expect(assign).not.toHaveBeenCalled();
+    expect(load).not.toHaveBeenCalled();
   });
 
   it('should tell a breakdown apart from a refusal', async () => {
@@ -702,13 +863,13 @@ describe('LoginPage', () => {
 });
 ```
 
-- [ ] **Step 3: Run it and watch it fail**
+- [ ] **Step 4: Run it and watch it fail**
 
 Run: `pnpm run test`
 
 Expected: FAIL, the suite cannot resolve `./login-page`.
 
-- [ ] **Step 4: Write the page**
+- [ ] **Step 5: Write the page**
 
 Create `src/app/features/login/login-page.ts`:
 
@@ -717,6 +878,8 @@ import { Component, DOCUMENT, inject } from '@angular/core';
 
 import { UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
+
+import { PageLoad } from '@core/navigation/page-load';
 
 import { LoginStore } from './login-store';
 
@@ -727,7 +890,7 @@ import { LoginStore } from './login-store';
 })
 export class LoginPage {
   #store = inject(LoginStore);
-  #document = inject(DOCUMENT);
+  #pageLoad = inject(PageLoad);
 
   protected readonly form = this.#store.form;
   protected readonly submitting = this.#store.submitting;
@@ -741,7 +904,7 @@ export class LoginPage {
 
     // A full page load, not a router navigation: the shell and the session store have to start
     // against the session that now exists.
-    this.#document.defaultView?.location.assign('/');
+    this.#pageLoad.to('/');
   }
 }
 ```
@@ -787,13 +950,13 @@ Create `src/app/features/login/login-page.html`:
 </div>
 ```
 
-- [ ] **Step 5: Run it and watch it pass**
+- [ ] **Step 6: Run it and watch it pass**
 
 Run: `pnpm run test`
 
 Expected: PASS, 3 new tests.
 
-- [ ] **Step 6: Wire the route**
+- [ ] **Step 7: Wire the route**
 
 Create `src/app/features/login/login-routes.ts`:
 
@@ -824,21 +987,21 @@ In `src/app/app-routes.ts`, add before the `path: ''` entry:
   },
 ```
 
-- [ ] **Step 7: Run every gate**
+- [ ] **Step 8: Run every gate**
 
 Run: `pnpm run format:check && pnpm run lint && pnpm run test:coverage && pnpm run build`
 
 Expected: all four pass, coverage at 100% on all four counters. `login-routes.ts` is excluded from
 coverage by the existing `**/*-routes.ts` rule.
 
-- [ ] **Step 8: Correct the statement this task falsifies**
+- [ ] **Step 9: Correct the statement this task falsifies**
 
 `AGENTS.md`, under "Deliberate departures from the starter", says of `core/session/`: "There is no
 sign-in screen to build: the passkey ceremony lives on the pages Spring Security serves". Half of
 that is now false. Change it to say the application owns the password screen and that the passkey
 ceremony is still Spring's, until part two.
 
-- [ ] **Step 9: Commit**
+- [ ] **Step 10: Commit**
 
 ```bash
 git add src/app/features/login/ src/app/app-routes.ts public/i18n/ AGENTS.md
