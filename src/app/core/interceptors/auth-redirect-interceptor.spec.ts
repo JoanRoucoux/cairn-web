@@ -63,4 +63,12 @@ describe('authRedirectInterceptor', () => {
 
     expect(assign).not.toHaveBeenCalled();
   });
+
+  it('should not redirect when the sign-in attempt itself is refused', async () => {
+    http.post('/api/authenticate', null).subscribe({ error: () => undefined });
+
+    controller.expectOne('/api/authenticate').flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    expect(assign).not.toHaveBeenCalled();
+  });
 });
