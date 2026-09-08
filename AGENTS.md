@@ -123,7 +123,7 @@ application and has to navigate, so three things were added on purpose. They are
 - **`core/shell/`** - a sidebar on desktop, a tab bar on mobile, both in the DOM at once with CSS
   choosing which one shows. It is the only place in the app that knows the **primary** navigation
   route tree. A contextual in-app link from one screen to another (`profile-page.html` linking out
-  to `/comptes` and `/instruments`) is fine and expected — it does not need to be routed through
+  to `/accounts` and `/instruments`) is fine and expected — it does not need to be routed through
   the shell.
 - **`core/theme/`** - a `system | light | dark` preference persisted in `localStorage` and stamped
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
@@ -142,14 +142,13 @@ Two conventions worth knowing before touching a screen:
 
 ## Gotchas
 
-- `ngsw-config.json` must exclude every path the server renders itself. Angular's default
-  `navigationUrls` claims **every** URL whose last segment has no dot, so the service worker
-  answered `/login` from its own cache with `index.html`: the app found no such route, its session
-  call took a 401, and the interceptor sent the browser back to `/login`, forever. Anything Spring
-  Security owns (`/login`, `/logout`, `/webauthn/**`, `/error`) belongs in the negated list, and
-  `app-config.spec.ts` fails if one goes missing. The proxy has the mirror rule: `cairn.caddy`'s
-  `@api` matcher must cover the same paths, prefixes included.
-
+- **There is no service worker, and adding one back needs care.** It was removed on 2026-09-08
+  (`core/pwa/service-worker-removal.ts` still unregisters the one browsers installed). Angular's
+  default `navigationUrls` claims **every** URL whose last segment has no dot, so the worker
+  answered `/login` from its cache with `index.html`: the app found no such route, its session call
+  took a 401, and the interceptor sent the browser back to `/login`, forever. Invisible to curl,
+  which has no worker. Anything the server renders itself must be in the negated list before that
+  file comes back.
 - `typescript` is pinned to `~6.0.2`: TypeScript 7 breaks `typescript-eslint` (via `ts-api-utils`). Do not bump until typescript-eslint supports TS 7.
 - `pnpm-workspace.yaml` `allowBuilds` is required for native postinstall scripts (esbuild, lmdb, ...) — do not remove it.
 - GitHub Actions in `.github/workflows/ci.yml` are pinned by commit SHA (Dependabot keeps them updated) — when adding one, pin it the same way.
