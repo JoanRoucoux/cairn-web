@@ -9,8 +9,7 @@ const SIGN_OUT_URL = '/logout';
 const SIGN_IN_URL = '/authenticate';
 
 /**
- * Sends the browser to the Spring Security sign-in page when the session is gone. The passkey
- * ceremony happens there, not in this application: there is no login screen to route to.
+ * Sends the browser to the application's sign-in screen when the session is gone.
  */
 export const authRedirectInterceptor: HttpInterceptorFn = (req, next) => {
   const signIn = inject(SignInRedirect);
