@@ -29,8 +29,8 @@
         </p>
       }
 
-      <button data-testid="login-submit" size="lg" type="submit" ui-button [disabled]="submitting()">
-        {{ (submitting() ? 'login.submitting' : 'login.submit') | transloco }}
+      <button data-testid="login-submit" size="lg" type="submit" ui-button [disabled]="form().submitting()">
+        {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
       </button>
     </form>
   </ui-card>

@@ -18,7 +18,6 @@ export class LoginPage {
   #pageLoad = inject(PageLoad);
 
   protected readonly form = this.#store.form;
-  protected readonly submitting = this.#store.submitting;
   protected readonly refused = this.#store.refused;
   protected readonly failed = this.#store.failed;
 

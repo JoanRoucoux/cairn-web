@@ -33,6 +33,13 @@ describe('LoginStore', () => {
     expect(await signedIn).toBe(true);
   });
 
+  it('should send no request when the credentials are empty', async () => {
+    const signedIn = await store.signIn();
+
+    httpTesting.expectNone('/api/authenticate');
+    expect(signedIn).toBe(false);
+  });
+
   it('should report a refused password without reporting a breakdown', async () => {
     store.form.username().value.set('joan');
     store.form.password().value.set('wrong');
@@ -46,7 +53,7 @@ describe('LoginStore', () => {
     expect(await signedIn).toBe(false);
     expect(store.refused()).toBe(true);
     expect(store.failed()).toBe(false);
-    expect(store.submitting()).toBe(false);
+    expect(store.form().submitting()).toBe(false);
   });
 
   it('should tell a breakdown apart from a refusal', async () => {

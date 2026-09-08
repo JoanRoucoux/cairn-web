@@ -70,6 +70,15 @@ describe('LoginPage', () => {
     expect(load).not.toHaveBeenCalled();
   });
 
+  it('should send no request when submitted empty', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-submit'));
+
+    httpTesting.expectNone('/api/authenticate');
+  });
+
   it('should tell a breakdown apart from a refusal', async () => {
     const user = userEvent.setup();
     await renderPage();
