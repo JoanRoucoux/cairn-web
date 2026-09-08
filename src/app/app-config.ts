@@ -12,12 +12,17 @@ import { provideServiceWorkerRemoval } from '@core/pwa/service-worker-removal';
 
 import { routes } from './app-routes';
 
+// Both halves of a contract with Spring's CookieCsrfTokenRepository, which defaults to exactly
+// these names. app-config.spec.ts asserts them against literals, not against these constants.
+export const XSRF_COOKIE_NAME = 'XSRF-TOKEN';
+export const XSRF_HEADER_NAME = 'X-XSRF-TOKEN';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(
-      withXsrfConfiguration({ cookieName: 'XSRF-TOKEN', headerName: 'X-CSRF-TOKEN' }),
+      withXsrfConfiguration({ cookieName: XSRF_COOKIE_NAME, headerName: XSRF_HEADER_NAME }),
       withInterceptors([authRedirectInterceptor, errorHandlerInterceptor]),
     ),
     provideTranslocoGlobal(),
