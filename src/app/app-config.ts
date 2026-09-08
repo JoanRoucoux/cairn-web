@@ -4,6 +4,7 @@ import { TitleStrategy, provideRouter } from '@angular/router';
 
 import { TranslocoService } from '@jsverse/transloco';
 
+import { XSRF_COOKIE_NAME, XSRF_HEADER_NAME } from '@core/http/xsrf';
 import { AppTitleStrategy } from '@core/i18n/title-strategy';
 import { provideTranslocoGlobal } from '@core/i18n/transloco-provider';
 import { authRedirectInterceptor } from '@core/interceptors/auth-redirect-interceptor';
@@ -11,11 +12,6 @@ import { errorHandlerInterceptor } from '@core/interceptors/error-handler-interc
 import { provideServiceWorkerRemoval } from '@core/pwa/service-worker-removal';
 
 import { routes } from './app-routes';
-
-// Both halves of a contract with Spring's CookieCsrfTokenRepository, which defaults to exactly
-// these names. app-config.spec.ts asserts them against literals, not against these constants.
-export const XSRF_COOKIE_NAME = 'XSRF-TOKEN';
-export const XSRF_HEADER_NAME = 'X-XSRF-TOKEN';
 
 export const appConfig: ApplicationConfig = {
   providers: [

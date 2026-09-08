@@ -2,7 +2,7 @@ import { HttpClient, provideHttpClient, withXsrfConfiguration } from '@angular/c
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { XSRF_COOKIE_NAME, XSRF_HEADER_NAME } from './app-config';
+import { XSRF_COOKIE_NAME, XSRF_HEADER_NAME } from './xsrf';
 
 /**
  * These two names are one half of a contract whose other half lives in another repository, in
