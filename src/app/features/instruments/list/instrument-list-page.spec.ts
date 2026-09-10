@@ -87,6 +87,14 @@ describe('InstrumentListPage', () => {
     expect(await screen.findByText('instruments.empty')).toBeInTheDocument();
   });
 
+  it('tells the reader what the search box searches', async () => {
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
+
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+  });
+
   it('should show an error when instruments cannot load', async () => {
     await renderPage();
 

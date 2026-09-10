@@ -1,6 +1,7 @@
 {
   "title": "Instruments",
   "searchLabel": "Search instruments",
+  "searchPlaceholder": "Name or ISIN",
   "empty": "No instrument matches your search.",
   "error": "Your instruments could not be loaded.",
   "add": "Add an instrument",

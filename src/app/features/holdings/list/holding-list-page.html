@@ -1,12 +1,19 @@
-<div class="flex flex-wrap items-center gap-3">
+<div class="flex flex-wrap items-center justify-between gap-3">
   <h1 #heading class="text-xl font-semibold" tabindex="-1">{{ 'holdings.title' | transloco }}</h1>
   <button data-testid="add-holding" type="button" ui-button (click)="onAdd()">
     {{ 'holdings.form.open' | transloco }}
   </button>
-  <label class="ml-auto flex items-center gap-2">
+</div>
+
+<p class="mt-1.5 text-[13px] text-(--muted-foreground) tabular-nums">
+  {{ 'holdings.summary' | transloco: { lines: totals().lines, accounts: totals().accounts } }} &middot;
+  {{ totals().valueEur | money }}
+</p>
+
+<div class="mt-4">
+  <label class="flex flex-col gap-1.5">
     <span class="sr-only">{{ 'holdings.searchLabel' | transloco }}</span>
     <input
-      class="w-52"
       data-testid="holdings-search"
       type="search"
       uiInput
@@ -16,11 +23,6 @@
     />
   </label>
 </div>
-
-<p class="mt-1.5 text-[13px] text-(--muted-foreground) tabular-nums">
-  {{ 'holdings.summary' | transloco: { lines: totals().lines, accounts: totals().accounts } }} &middot;
-  {{ totals().valueEur | money }}
-</p>
 
 @if (holdings.error()) {
   <p class="mt-4 text-(--negative)" role="alert">{{ 'holdings.error' | transloco }}</p>
