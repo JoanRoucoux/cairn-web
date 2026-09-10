@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { PortfolioImportStore } from './portfolio-import-store';
 
-const CSV = 'account,accountType,institution,instrument,isinOrTicker,quantity,averageCost\r\n';
+const CSV = 'account;accountType;institution;instrument;isinOrTicker;quantity;averageCost\r\n';
 
 describe('PortfolioImportStore', () => {
   let store: PortfolioImportStore;

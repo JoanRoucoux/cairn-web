@@ -17,7 +17,7 @@ import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
 
-const CSV_HEADER = 'account,accountType,institution,instrument,isinOrTicker,quantity,averageCost';
+const CSV_HEADER = 'account;accountType;institution;instrument;isinOrTicker;quantity;averageCost';
 
 const csvFile = (): File => new File([`${CSV_HEADER}\r\n`], 'portfolio.csv', { type: 'text/csv' });
 
