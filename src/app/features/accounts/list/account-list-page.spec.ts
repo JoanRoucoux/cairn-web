@@ -127,6 +127,7 @@ describe('AccountListPage', () => {
 
     expect(await screen.findByText('Fortuneo')).toBeInTheDocument();
     expect(screen.getByTestId('account-name')).toHaveValue('');
+    expect(screen.queryAllByRole('alert')).toHaveLength(0);
   });
 
   it('says which fields are missing instead of refusing in silence', async () => {
