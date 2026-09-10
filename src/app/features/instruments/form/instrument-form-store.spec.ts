@@ -3,7 +3,13 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  CreateInstrumentRequestAssetClass,
+  CreateInstrumentRequestPriceSource,
+  InstrumentCandidateResponse,
+} from '@core/api-client/cairnAPI.schemas';
+
+import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { InstrumentFormStore } from './instrument-form-store';
 
@@ -13,6 +19,7 @@ describe('InstrumentFormStore', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
@@ -92,6 +99,29 @@ describe('InstrumentFormStore', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({});
 
     await expect(saved).resolves.toBe(true);
+  });
+
+  it('should refuse a draft with no currency, asset class or price source', async () => {
+    store.form.name().value.set('BNP Paribas Easy S&P 500');
+    // The selects offer no empty option, so this state is unreachable through the UI; the schema
+    // still guards it, and the cast mirrors how an emptied enum field is represented elsewhere.
+    store.form.currency().value.set('');
+    store.form.assetClass().value.set('' as CreateInstrumentRequestAssetClass);
+    store.form.priceSource().value.set('' as CreateInstrumentRequestPriceSource);
+
+    await expect(store.save()).resolves.toBe(false);
+    httpTesting.expectNone('/api/instruments');
+    expect(store.form.currency().errors()).not.toHaveLength(0);
+    expect(store.form.assetClass().errors()).not.toHaveLength(0);
+    expect(store.form.priceSource().errors()).not.toHaveLength(0);
+  });
+
+  it('should refuse a description over the length limit', async () => {
+    store.form.name().value.set('BNP Paribas Easy S&P 500');
+    store.form.description().value.set('a'.repeat(281));
+
+    await expect(store.save()).resolves.toBe(false);
+    httpTesting.expectNone('/api/instruments');
   });
 
   it('should report a failure instead of pretending it worked', async () => {

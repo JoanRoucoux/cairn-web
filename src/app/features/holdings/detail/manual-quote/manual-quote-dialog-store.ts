@@ -5,6 +5,8 @@ import { firstValueFrom } from 'rxjs';
 
 import { QuoteService } from '@core/api-client/quote/quote.service';
 
+import { formMessages } from '@shared/forms/form-messages';
+
 import { initialManualQuote, manualQuoteSchema } from './manual-quote-form';
 
 @Injectable()
@@ -13,7 +15,9 @@ export class ManualQuoteDialogStore {
 
   readonly #model = signal(initialManualQuote());
 
-  readonly form = form(this.#model, manualQuoteSchema);
+  readonly #messages = formMessages();
+
+  readonly form = form(this.#model, manualQuoteSchema(this.#messages));
 
   readonly error = signal(false);
 

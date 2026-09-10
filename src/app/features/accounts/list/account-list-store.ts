@@ -7,6 +7,8 @@ import { firstValueFrom } from 'rxjs';
 import { AccountService } from '@core/api-client/account/account.service';
 import type { CreateAccountRequestType } from '@core/api-client/cairnAPI.schemas';
 
+import { formMessages } from '@shared/forms/form-messages';
+
 import { accountDraftSchema, initialAccountDraft } from './account-form';
 
 @Injectable()
@@ -15,7 +17,9 @@ export class AccountListStore {
 
   readonly #model = signal(initialAccountDraft());
 
-  readonly form = form(this.#model, accountDraftSchema);
+  readonly #messages = formMessages();
+
+  readonly form = form(this.#model, accountDraftSchema(this.#messages));
 
   readonly error = signal(false);
 

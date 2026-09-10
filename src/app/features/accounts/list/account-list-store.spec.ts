@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+
 import { AccountListStore } from './account-list-store';
 
 describe('AccountListStore', () => {
@@ -11,6 +13,7 @@ describe('AccountListStore', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
       providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), AccountListStore],
     });
     store = TestBed.inject(AccountListStore);

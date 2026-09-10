@@ -76,6 +76,29 @@ describe('HoldingFormDialog', () => {
     expect(dismissed).toHaveBeenCalled();
   });
 
+  it('says which fields are missing instead of refusing in silence', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('holding-form-submit'));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(3);
+  });
+
+  it('says the quantity and cost basis cannot be negative', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await user.selectOptions(screen.getByTestId('holding-form-account'), 'a1');
+    await user.selectOptions(screen.getByTestId('holding-form-instrument'), 'i1');
+    await user.type(screen.getByTestId('holding-form-quantity'), '-1');
+    await user.type(screen.getByTestId('holding-form-average-cost'), '-1');
+    await user.click(screen.getByTestId('holding-form-submit'));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(2);
+  });
+
   it('should emit savedForm once the holding is accepted', async () => {
     const user = userEvent.setup();
     await renderDialog();

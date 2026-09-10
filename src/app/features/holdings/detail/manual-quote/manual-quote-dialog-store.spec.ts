@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+
 import { ManualQuoteDialogStore } from './manual-quote-dialog-store';
 
 describe('ManualQuoteDialogStore', () => {
@@ -11,6 +13,7 @@ describe('ManualQuoteDialogStore', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
@@ -26,6 +29,14 @@ describe('ManualQuoteDialogStore', () => {
 
   it('should refuse to send an incomplete form', async () => {
     await expect(store.save('i1')).resolves.toBe(false);
+  });
+
+  it('should refuse a quote with no date', async () => {
+    store.form.price().value.set(33.3069);
+    store.form.asOf().value.set('');
+
+    await expect(store.save('i1')).resolves.toBe(false);
+    httpTesting.expectNone('/api/instruments/i1/quotes');
   });
 
   it('should post the quote for the instrument', async () => {

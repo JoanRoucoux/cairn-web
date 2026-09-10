@@ -6,6 +6,8 @@ import { firstValueFrom } from 'rxjs';
 import type { CreateInstrumentRequest, InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
+import { formMessages } from '@shared/forms/form-messages';
+
 import { initialInstrumentDraft, instrumentDraftSchema } from './instrument-form';
 
 @Injectable()
@@ -14,7 +16,9 @@ export class InstrumentFormStore {
 
   readonly #model = signal(initialInstrumentDraft());
 
-  readonly form = form(this.#model, instrumentDraftSchema);
+  readonly #messages = formMessages();
+
+  readonly form = form(this.#model, instrumentDraftSchema(this.#messages));
 
   readonly candidates = signal<InstrumentCandidateResponse[]>([]);
   readonly searching = signal(false);

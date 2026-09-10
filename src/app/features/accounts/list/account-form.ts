@@ -2,6 +2,8 @@ import { type Schema, required, schema } from '@angular/forms/signals';
 
 import type { CreateAccountRequestType } from '@core/api-client/cairnAPI.schemas';
 
+import type { FormMessages } from '@shared/forms/form-messages';
+
 export type AccountDraft = {
   name: string;
   type: CreateAccountRequestType | '';
@@ -15,8 +17,9 @@ export const initialAccountDraft = (): AccountDraft => ({
   institution: '',
 });
 
-export const accountDraftSchema: Schema<AccountDraft> = schema((account) => {
-  required(account.name);
-  required(account.type);
-  required(account.institution);
-});
+export const accountDraftSchema = (messages: FormMessages): Schema<AccountDraft> =>
+  schema((account) => {
+    required(account.name, { message: () => messages.required() });
+    required(account.type, { message: () => messages.required() });
+    required(account.institution, { message: () => messages.required() });
+  });

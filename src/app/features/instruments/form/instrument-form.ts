@@ -5,6 +5,8 @@ import type {
   CreateInstrumentRequestPriceSource,
 } from '@core/api-client/cairnAPI.schemas';
 
+import type { FormMessages } from '@shared/forms/form-messages';
+
 export type InstrumentDraft = {
   name: string;
   isin: string;
@@ -26,10 +28,14 @@ export const initialInstrumentDraft = (): InstrumentDraft => ({
   description: '',
 });
 
-export const instrumentDraftSchema: Schema<InstrumentDraft> = schema((instrument) => {
-  required(instrument.name);
-  required(instrument.currency);
-  required(instrument.assetClass);
-  required(instrument.priceSource);
-  maxLength(instrument.description, 280);
-});
+export const instrumentDraftSchema = (messages: FormMessages): Schema<InstrumentDraft> => {
+  const descriptionTooLong = messages.maxLength(280);
+
+  return schema((instrument) => {
+    required(instrument.name, { message: () => messages.required() });
+    required(instrument.currency, { message: () => messages.required() });
+    required(instrument.assetClass, { message: () => messages.required() });
+    required(instrument.priceSource, { message: () => messages.required() });
+    maxLength(instrument.description, 280, { message: () => descriptionTooLong() });
+  });
+};

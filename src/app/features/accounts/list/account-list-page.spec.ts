@@ -129,6 +129,16 @@ describe('AccountListPage', () => {
     expect(screen.getByTestId('account-name')).toHaveValue('');
   });
 
+  it('says which fields are missing instead of refusing in silence', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('account-create'));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(3);
+    httpTesting.expectNone({ method: 'POST', url: '/api/accounts' });
+  });
+
   it('should report a refused account', async () => {
     const user = userEvent.setup();
     await renderPage();

@@ -68,6 +68,25 @@ describe('ManualQuoteDialog', () => {
     expect(dismissed).toHaveBeenCalled();
   });
 
+  it('says which field is missing instead of refusing in silence', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('manual-quote-submit'));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+  });
+
+  it('says the price cannot be negative', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('manual-quote-price'), '-1');
+    await user.click(screen.getByTestId('manual-quote-submit'));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+  });
+
   it('should emit saved once the quote is accepted', async () => {
     const user = userEvent.setup();
     await renderDialog();

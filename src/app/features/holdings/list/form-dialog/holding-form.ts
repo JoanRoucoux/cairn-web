@@ -2,6 +2,8 @@ import { type Schema, min, required, schema } from '@angular/forms/signals';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import type { FormMessages } from '@shared/forms/form-messages';
+
 export type HoldingDraft = {
   accountId: string;
   instrumentId: string;
@@ -17,12 +19,16 @@ export const initialHoldingDraft = (holding?: HoldingResponse): HoldingDraft => 
   averageCost: holding?.averageCost ?? null,
 });
 
-export const holdingDraftSchema: Schema<HoldingDraft> = schema((holding) => {
-  required(holding.accountId);
-  required(holding.instrumentId);
-  required(holding.quantity);
-  min(holding.quantity, 0);
-  // averageCost stays optional on purpose: twelve of the twenty-six holdings have no cost basis,
-  // and forcing a number here would invent one.
-  min(holding.averageCost, 0);
-});
+export const holdingDraftSchema = (messages: FormMessages): Schema<HoldingDraft> => {
+  const belowMin = messages.min(0);
+
+  return schema((holding) => {
+    required(holding.accountId, { message: () => messages.required() });
+    required(holding.instrumentId, { message: () => messages.required() });
+    required(holding.quantity, { message: () => messages.required() });
+    min(holding.quantity, 0, { message: () => belowMin() });
+    // averageCost stays optional on purpose: twelve of the twenty-six holdings have no cost basis,
+    // and forcing a number here would invent one.
+    min(holding.averageCost, 0, { message: () => belowMin() });
+  });
+};

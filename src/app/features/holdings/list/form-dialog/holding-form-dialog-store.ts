@@ -9,6 +9,8 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
+import { formMessages } from '@shared/forms/form-messages';
+
 import { holdingDraftSchema, initialHoldingDraft } from './holding-form';
 
 @Injectable()
@@ -19,7 +21,9 @@ export class HoldingFormDialogStore {
 
   readonly #model = signal(initialHoldingDraft());
 
-  readonly form = form(this.#model, holdingDraftSchema);
+  readonly #messages = formMessages();
+
+  readonly form = form(this.#model, holdingDraftSchema(this.#messages));
 
   readonly error = signal(false);
 

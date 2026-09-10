@@ -5,6 +5,8 @@ import { TestBed } from '@angular/core/testing';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+
 import { HoldingFormDialogStore } from './holding-form-dialog-store';
 
 describe('HoldingFormDialogStore', () => {
@@ -19,6 +21,7 @@ describe('HoldingFormDialogStore', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),

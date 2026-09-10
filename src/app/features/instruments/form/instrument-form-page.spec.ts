@@ -57,6 +57,16 @@ describe('InstrumentFormPage', () => {
     expect(screen.getByTestId('instrument-source-ref')).toHaveValue('ESE.PA');
   });
 
+  it('says which field is missing instead of refusing in silence', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('instrument-save'));
+
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    httpTesting.expectNone({ method: 'POST', url: '/api/instruments' });
+  });
+
   it('should save the instrument and navigate back to the list', async () => {
     const user = userEvent.setup();
     await renderPage();
