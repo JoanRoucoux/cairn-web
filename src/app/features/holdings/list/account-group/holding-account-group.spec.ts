@@ -42,7 +42,7 @@ describe('HoldingAccountGroup', () => {
     await renderGroup();
 
     expect(await screen.findByText('Esalia')).toBeInTheDocument();
-    expect(screen.getByText(/PEE/)).toBeInTheDocument();
+    expect(screen.getByText(/enums\.accountType\.PEE/)).toBeInTheDocument();
   });
 
   it('should mark a stale account with an icon, not with colour alone', async () => {

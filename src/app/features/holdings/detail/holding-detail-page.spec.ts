@@ -96,6 +96,15 @@ describe('HoldingDetailPage', () => {
     expect(await screen.findByText('ETF tracking the S&P 500.')).toBeInTheDocument();
   });
 
+  it('should translate the account type, asset class and price source instead of showing raw codes', async () => {
+    await renderPage();
+
+    await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
+    expect(screen.getByText('enums.accountType.PEA', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('enums.assetClass.ETF')).toBeInTheDocument();
+    expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
+  });
+
   it('should link out to the provider factsheet in a new tab', async () => {
     await renderPage();
 

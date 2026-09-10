@@ -7,12 +7,12 @@
         <span
           class="rounded-md bg-(--soft) px-2 py-1 text-[10.5px] font-semibold tracking-[0.05em] text-(--muted-foreground)"
         >
-          {{ holding.accountName }} &middot; {{ holding.accountType }}
+          {{ holding.accountName }} &middot; {{ 'enums.accountType.' + holding.accountType | transloco }}
         </span>
         <span
           class="rounded-md bg-(--elevated) px-2 py-1 text-[10.5px] font-semibold tracking-[0.05em] text-(--muted-foreground)"
         >
-          {{ holding.assetClass }}
+          {{ 'enums.assetClass.' + holding.assetClass | transloco }}
         </span>
       </p>
       <h1 class="mt-2.5 text-xl leading-snug font-semibold">{{ holding.instrumentName }}</h1>
@@ -58,7 +58,7 @@
               target="_blank"
               [href]="instrument.value().externalUrl"
             >
-              {{ 'holdings.externalLink' | transloco: { source: holding.priceSource } }}
+              {{ 'holdings.externalLink' | transloco: { source: priceSourceLabel() } }}
             </a>
           </p>
         }
@@ -68,7 +68,7 @@
     <dl class="flex flex-col gap-2.5 px-1">
       <div class="flex justify-between text-[12px]">
         <dt class="text-(--subtle-foreground)">{{ 'holdings.priceSource' | transloco }}</dt>
-        <dd class="tabular-nums">{{ holding.priceSource }}</dd>
+        <dd class="tabular-nums">{{ 'enums.priceSource.' + holding.priceSource | transloco }}</dd>
       </div>
       <div class="flex justify-between text-[12px]">
         <dt class="text-(--subtle-foreground)">{{ 'holdings.lastQuote' | transloco }}</dt>

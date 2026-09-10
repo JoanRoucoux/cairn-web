@@ -51,6 +51,13 @@ export class HoldingDetailPage {
 
   protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
 
+  // enums.* lives in the preloaded global i18n file (no lazy scope to race), so reacting
+  // to language changes through LanguageStore is enough.
+  protected readonly priceSourceLabel = computed(() => {
+    this.#language.activeLang();
+    return this.#transloco.translate(`enums.priceSource.${this.holding()?.priceSource}`);
+  });
+
   // The library types the option value as `string`; every option here is built from CHART_RANGES.
   protected setRange(value: string): void {
     this.range.set(value as ChartRange);
