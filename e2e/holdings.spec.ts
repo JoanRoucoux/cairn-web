@@ -46,6 +46,17 @@ test.describe('holdings', () => {
     expect(box?.height).toBeGreaterThanOrEqual(44);
   });
 
+  test('does not move the dialog under the pointer when a submit is refused', async ({ page }) => {
+    await page.getByTestId('add-holding').click();
+    const submit = page.getByTestId('holding-form-submit');
+    const before = await submit.boundingBox();
+
+    await submit.click();
+
+    await expect(page.getByRole('alert')).toHaveCount(3);
+    expect((await submit.boundingBox())?.y).toBeCloseTo(before!.y, 0);
+  });
+
   test('shows a holding detail page at its route', async ({ page }) => {
     await page.goto('/holdings/11111111-1111-1111-1111-111111111111');
 

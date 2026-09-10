@@ -1,22 +1,24 @@
 <h1 class="text-xl font-semibold">{{ 'accounts.title' | transloco }}</h1>
 
 <ui-card class="mt-4">
-  <div class="flex flex-wrap items-end gap-3">
-    <ui-field class="grow" [label]="'accounts.name' | transloco">
-      <input data-testid="account-name" type="text" uiInput [formField]="form.name" />
-    </ui-field>
-    <ui-field class="grow" [label]="'accounts.type' | transloco">
-      <select data-testid="account-type" uiSelect [formField]="form.type">
-        <option value="">{{ 'accounts.choose' | transloco }}</option>
-        @for (type of accountTypes; track type) {
-          <option [value]="type">{{ 'enums.accountType.' + type | transloco }}</option>
-        }
-      </select>
-    </ui-field>
-    <ui-field class="grow" [label]="'accounts.institution' | transloco">
-      <input data-testid="account-institution" type="text" uiInput [formField]="form.institution" />
-    </ui-field>
-    <button data-testid="account-create" type="button" ui-button (click)="onCreate()">
+  <div class="flex flex-col gap-4">
+    <div class="grid gap-4 sm:grid-cols-3">
+      <ui-field [label]="'accounts.name' | transloco">
+        <input data-testid="account-name" type="text" uiInput [formField]="form.name" />
+      </ui-field>
+      <ui-field [label]="'accounts.type' | transloco">
+        <select data-testid="account-type" uiSelect [formField]="form.type">
+          <option value="">{{ 'accounts.choose' | transloco }}</option>
+          @for (type of accountTypes; track type) {
+            <option [value]="type">{{ 'enums.accountType.' + type | transloco }}</option>
+          }
+        </select>
+      </ui-field>
+      <ui-field [label]="'accounts.institution' | transloco">
+        <input data-testid="account-institution" type="text" uiInput [formField]="form.institution" />
+      </ui-field>
+    </div>
+    <button class="sm:self-start" data-testid="account-create" type="button" ui-button (click)="onCreate()">
       {{ 'accounts.add' | transloco }}
     </button>
   </div>

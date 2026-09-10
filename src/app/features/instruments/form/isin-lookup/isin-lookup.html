@@ -1,4 +1,4 @@
-<div class="flex flex-wrap items-end gap-2.5">
+<div class="flex flex-wrap items-start gap-2.5">
   <ui-field
     class="grow"
     [error]="blank() ? ('instruments.lookup.blank' | transloco) : undefined"
@@ -13,9 +13,12 @@
       (input)="onQueryInput($event)"
     />
   </ui-field>
-  <button data-testid="isin-search" type="button" ui-button [disabled]="searching()" (click)="onSearch()">
-    {{ 'instruments.lookup.search' | transloco }}
-  </button>
+  <div class="flex flex-col gap-1.5">
+    <span aria-hidden="true" class="text-[13px] font-medium">&nbsp;</span>
+    <button data-testid="isin-search" type="button" ui-button [disabled]="searching()" (click)="onSearch()">
+      {{ 'instruments.lookup.search' | transloco }}
+    </button>
+  </div>
 </div>
 
 @if (searching()) {
