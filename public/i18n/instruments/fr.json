@@ -18,6 +18,7 @@
   "saveError": "Cet instrument a ete refuse. Verifiez le nom et la source du cours.",
   "lookup": {
     "label": "ISIN ou nom",
+    "blank": "Saisir un ISIN ou un nom à rechercher.",
     "placeholder": "FR0011550185",
     "search": "Rechercher",
     "searching": "Recherche de l'instrument",

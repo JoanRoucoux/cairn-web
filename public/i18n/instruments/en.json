@@ -18,6 +18,7 @@
   "saveError": "That instrument was refused. Check the name and the price source.",
   "lookup": {
     "label": "ISIN or name",
+    "blank": "Enter an ISIN or a name to look up.",
     "placeholder": "FR0011550185",
     "search": "Look up",
     "searching": "Looking up this instrument",

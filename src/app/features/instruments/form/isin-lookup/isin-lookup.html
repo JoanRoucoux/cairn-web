@@ -1,16 +1,18 @@
 <div class="flex flex-wrap items-end gap-2.5">
-  <label class="flex grow flex-col gap-1.5">
-    <span class="text-[13px] font-medium">{{ 'instruments.lookup.label' | transloco }}</span>
+  <ui-field
+    class="grow"
+    [error]="blank() ? ('instruments.lookup.blank' | transloco) : undefined"
+    [label]="'instruments.lookup.label' | transloco"
+  >
     <input
       data-testid="isin-input"
       type="search"
       uiInput
-      [attr.aria-label]="'instruments.lookup.label' | transloco"
       [placeholder]="'instruments.lookup.placeholder' | transloco"
       [value]="query()"
       (input)="onQueryInput($event)"
     />
-  </label>
+  </ui-field>
   <button data-testid="isin-search" type="button" ui-button [disabled]="searching()" (click)="onSearch()">
     {{ 'instruments.lookup.search' | transloco }}
   </button>

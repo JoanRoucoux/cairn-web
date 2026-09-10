@@ -83,4 +83,26 @@ describe('IsinLookup', () => {
 
     expect(searched).not.toHaveBeenCalled();
   });
+
+  it('says what it is waiting for instead of ignoring an empty search', async () => {
+    const user = userEvent.setup();
+    const searched = vi.fn();
+    const { fixture } = await renderLookup();
+    fixture.componentInstance.searched.subscribe(searched);
+
+    await user.click(screen.getByTestId('isin-search'));
+
+    expect(searched).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('instruments.lookup.blank');
+  });
+
+  it('clears the complaint as soon as the reader types', async () => {
+    const user = userEvent.setup();
+    await renderLookup();
+
+    await user.click(screen.getByTestId('isin-search'));
+    await user.type(screen.getByTestId('isin-input'), 'FR001');
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 });
