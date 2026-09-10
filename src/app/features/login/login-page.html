@@ -3,9 +3,7 @@
   <p class="mt-1 text-[13px] text-(--muted-foreground)">{{ 'login.subtitle' | transloco }}</p>
 
   <ui-card class="mt-6">
-    <!-- novalidate: the browser's own required-field validation would block submit() from ever
-         running, so the reader would see the browser's unstyled, untranslated tooltip instead of
-         the message below, or on a browser that keeps silent, nothing at all. -->
+    <!-- novalidate: the native required-field validation would block submit() from ever running. -->
     <form class="flex flex-col gap-4" novalidate (submit)="onSubmit($event)">
       <ui-field [label]="'login.username' | transloco">
         <input autocomplete="username" data-testid="login-username" type="text" uiInput [formField]="form.username" />

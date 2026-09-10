@@ -21,9 +21,7 @@ export const formMessages = (): FormMessages => {
   const service = inject(TranslocoService);
   const injector = inject(Injector);
 
-  // `forms.*` lives in the global i18n file, not a feature scope. translateSignal would prefix
-  // the key with whatever scope the calling screen provides (e.g. `login.forms.required`), which
-  // the global file never defines, so this reads the plain, unscoped translation instead.
+  // translateSignal resolves keys against the ambient Transloco scope, which would turn this root-scope key into a scoped one.
   const translate = (key: string, params?: Record<string, unknown>): Signal<string> => {
     const translated = (): string => service.translate<string>(key, params);
     return toSignal(service.langChanges$.pipe(map(translated)), { initialValue: translated(), injector });
