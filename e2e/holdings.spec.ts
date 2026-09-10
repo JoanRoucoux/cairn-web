@@ -15,6 +15,17 @@ test.describe('holdings', () => {
     // <ui-dialog> host has an empty box: assert on the <dialog> itself.
     await expect(page.getByTestId('holding-form-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('holding-form-cancel')).toBeFocused();
+
+    const dialogBox = await page.getByTestId('holding-form-dialog').locator('dialog').boundingBox();
+    const viewport = page.viewportSize();
+    expect(dialogBox).not.toBeNull();
+    expect(viewport).not.toBeNull();
+    const leftGap = dialogBox!.x;
+    const rightGap = viewport!.width - (dialogBox!.x + dialogBox!.width);
+    const topGap = dialogBox!.y;
+    const bottomGap = viewport!.height - (dialogBox!.y + dialogBox!.height);
+    expect(Math.abs(leftGap - rightGap)).toBeLessThanOrEqual(2);
+    expect(Math.abs(topGap - bottomGap)).toBeLessThanOrEqual(2);
   });
 
   test('closes the dialog on Escape and hands focus back to the trigger', async ({ page }) => {
