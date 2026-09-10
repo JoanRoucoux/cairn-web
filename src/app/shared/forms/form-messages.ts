@@ -8,7 +8,7 @@ import { map } from 'rxjs';
  * The text a refused field shows, one entry per validator this application uses.
  *
  * Signals, not strings: a validator's `message` callback reads them while the error is computed,
- * so a message already on screen is retranslated when the reader switches language.
+ * so they recompute when the active language changes.
  */
 export type FormMessages = {
   required: Signal<string>;
