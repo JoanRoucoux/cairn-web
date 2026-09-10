@@ -1,13 +1,13 @@
 {
   "title": "Sources",
   "statusTitle": "Sources de cours",
-  "runsTitle": "Dernieres executions",
-  "noRun": "Aucune execution enregistree pour le moment.",
+  "runsTitle": "Dernières exécutions",
+  "noRun": "Aucune exécution enregistrée pour le moment.",
   "lineCount": "{{count}} lignes",
-  "refresh": "Rafraichir maintenant",
-  "refreshing": "Rafraichissement",
-  "refreshError": "Le rafraichissement n'a pas pu demarrer.",
-  "report": "{{refreshed}} rafraichis, {{skipped}} ignores, {{failed}} en echec",
-  "stale": "Cours obsolete",
-  "fresh": "A jour"
+  "refresh": "Rafraîchir maintenant",
+  "refreshing": "Rafraîchissement",
+  "refreshError": "Le rafraîchissement n'a pas pu démarrer.",
+  "report": "{{refreshed}} rafraîchis, {{skipped}} ignorés, {{failed}} en échec",
+  "stale": "Cours obsolète",
+  "fresh": "À jour"
 }

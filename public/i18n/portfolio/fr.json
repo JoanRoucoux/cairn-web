@@ -4,18 +4,18 @@
   "today": "aujourd'hui",
   "unknown": "Non disponible",
   "loading": "Chargement de votre patrimoine",
-  "error": "Votre patrimoine n'a pas pu etre charge.",
-  "chartLabel": "Valeur du patrimoine sur la plage selectionnee",
-  "reconstructed": "Au-dela d'un an la courbe est reconstruite a composition constante : exacte aux extremites, approximative entre les deux.",
+  "error": "Votre patrimoine n'a pas pu être chargé.",
+  "chartLabel": "Valeur du patrimoine sur la plage sélectionnée",
+  "reconstructed": "Au-delà d'un an la courbe est reconstruite à composition constante : exacte aux extrémités, approximative entre les deux.",
   "movers": { "title": "Ce qui bouge" },
   "stale": {
     "message": "{{count}} cours datent de plus de 4 jours",
     "action": "Voir les sources"
   },
   "allocation": {
-    "title": "Repartition",
+    "title": "Répartition",
     "byAssetClass": "Par classe d'actif",
     "byAccount": "Par compte",
-    "scaleNote": "Les barres sont a l'echelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
+    "scaleNote": "Les barres sont à l'échelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
   }
 }

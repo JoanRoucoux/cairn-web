@@ -1,10 +1,10 @@
 {
-  "title": "Connexion a Cairn",
+  "title": "Connexion à Cairn",
   "subtitle": "Votre portefeuille, et celui de personne d'autre.",
   "username": "Identifiant",
   "password": "Mot de passe",
   "submit": "Se connecter",
   "submitting": "Connexion...",
   "refused": "Cet identifiant et ce mot de passe ne correspondent pas.",
-  "failed": "La connexion n'a pas pu etre envoyee. Reessayez."
+  "failed": "La connexion n'a pas pu être envoyée. Réessayez."
 }

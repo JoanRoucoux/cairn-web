@@ -2,8 +2,8 @@
   "title": "Instruments",
   "searchLabel": "Rechercher un instrument",
   "searchPlaceholder": "Nom ou ISIN",
-  "empty": "Aucun instrument ne correspond a votre recherche.",
-  "error": "Vos instruments n'ont pas pu etre charges.",
+  "empty": "Aucun instrument ne correspond à votre recherche.",
+  "error": "Vos instruments n'ont pas pu être chargés.",
   "add": "Ajouter un instrument",
   "name": "Nom",
   "isin": "ISIN",
@@ -11,17 +11,17 @@
   "currencyHint": "Cairn valorise un portefeuille en euros.",
   "assetClass": "Classe d'actif",
   "priceSource": "Source du cours",
-  "sourceRef": "Reference de la source",
+  "sourceRef": "Référence de la source",
   "description": "Description",
-  "descriptionHint": "280 caracteres maximum. Affichee sur l'ecran de detail d'une ligne.",
+  "descriptionHint": "280 caractères maximum. Affichée sur l'écran de détail d'une ligne.",
   "save": "Enregistrer",
-  "saveError": "Cet instrument a ete refuse. Verifiez le nom et la source du cours.",
+  "saveError": "Cet instrument a été refusé. Vérifiez le nom et la source du cours.",
   "lookup": {
     "label": "ISIN ou nom",
     "blank": "Saisir un ISIN ou un nom à rechercher.",
     "placeholder": "FR0011550185",
     "search": "Rechercher",
     "searching": "Recherche de l'instrument",
-    "notFound": "Aucun resultat. Remplissez les champs a la main et choisissez une source manuelle."
+    "notFound": "Aucun résultat. Remplissez les champs à la main et choisissez une source manuelle."
   }
 }

@@ -3,9 +3,9 @@
   "name": "Nom",
   "type": "Enveloppe",
   "choose": "Choisir une enveloppe",
-  "institution": "Etablissement",
+  "institution": "Établissement",
   "add": "Ajouter un compte",
   "empty": "Aucun compte pour le moment.",
-  "error": "Vos comptes n'ont pas pu etre charges.",
-  "createError": "Ce compte a ete refuse."
+  "error": "Vos comptes n'ont pas pu être chargés.",
+  "createError": "Ce compte a été refusé."
 }

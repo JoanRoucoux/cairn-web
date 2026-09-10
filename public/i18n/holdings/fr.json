@@ -2,22 +2,22 @@
   "title": "Positions",
   "averageCost": "PRU",
   "unknown": "Non disponible",
-  "staleQuote": "Cours obsolete",
+  "staleQuote": "Cours obsolète",
   "searchLabel": "Rechercher une ligne",
   "searchPlaceholder": "Rechercher une ligne",
   "summary": "{{lines}} lignes sur {{accounts}} comptes",
   "lineCount": "{{count}} lignes",
   "loading": "Chargement de vos positions",
-  "empty": "Aucune ligne ne correspond a votre recherche.",
-  "error": "Vos positions n'ont pas pu etre chargees.",
+  "empty": "Aucune ligne ne correspond à votre recherche.",
+  "error": "Vos positions n'ont pas pu être chargées.",
   "notFound": "Cette ligne n'existe plus.",
-  "chartLabel": "Cours sur la plage selectionnee",
-  "externalLink": "Fiche complete sur {{source}}",
+  "chartLabel": "Cours sur la plage sélectionnée",
+  "externalLink": "Fiche complète sur {{source}}",
   "priceSource": "Source du cours",
-  "lastQuote": "Derniere cotation",
+  "lastQuote": "Dernière cotation",
   "columns": {
     "line": "Ligne",
-    "quantity": "Quantite",
+    "quantity": "Quantité",
     "averageCost": "PRU",
     "price": "Cours",
     "value": "Valeur",
@@ -35,7 +35,7 @@
     "price": "Cours en euros",
     "cancel": "Annuler",
     "submit": "Enregistrer",
-    "error": "Ce cours a ete refuse. Verifiez la date et le montant."
+    "error": "Ce cours a été refusé. Vérifiez la date et le montant."
   },
   "form": {
     "open": "Ajouter",
@@ -44,18 +44,18 @@
     "choose": "Choisir",
     "account": "Compte",
     "instrument": "Instrument",
-    "quantity": "Quantite",
+    "quantity": "Quantité",
     "averageCost": "PRU",
-    "averageCostHint": "Laissez vide si vous ne le connaissez pas - Cairn affichera un tiret plutot qu'un zero.",
+    "averageCostHint": "Laissez vide si vous ne le connaissez pas - Cairn affichera un tiret plutôt qu'un zéro.",
     "cancel": "Annuler",
     "submit": "Enregistrer",
-    "error": "Cette ligne a ete refusee. Verifiez le compte, l'instrument et la quantite."
+    "error": "Cette ligne a été refusée. Vérifiez le compte, l'instrument et la quantité."
   },
   "delete": {
     "title": "Supprimer cette ligne",
-    "description": "{{name}} sera retiree de votre portefeuille. Ses cours sont conserves.",
+    "description": "{{name}} sera retirée de votre portefeuille. Ses cours sont conservés.",
     "cancel": "Annuler",
     "submit": "Supprimer",
-    "error": "Cette ligne n'a pas pu etre supprimee."
+    "error": "Cette ligne n'a pas pu être supprimée."
   }
 }
