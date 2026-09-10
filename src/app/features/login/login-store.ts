@@ -4,6 +4,8 @@ import { form, submit } from '@angular/forms/signals';
 
 import { firstValueFrom } from 'rxjs';
 
+import { formMessages } from '@shared/forms/form-messages';
+
 import { environment } from '@environments/environment';
 
 import { credentialsSchema, initialCredentials } from './credentials';
@@ -14,7 +16,9 @@ export class LoginStore {
 
   readonly #model = signal(initialCredentials());
 
-  readonly form = form(this.#model, credentialsSchema);
+  readonly #messages = formMessages();
+
+  readonly form = form(this.#model, credentialsSchema(this.#messages));
 
   /** The password was wrong. An outcome, not a breakdown, and the only one worth naming. */
   readonly refused = signal(false);

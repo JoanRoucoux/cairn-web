@@ -79,6 +79,17 @@ describe('LoginPage', () => {
     httpTesting.expectNone('/api/authenticate');
   });
 
+  it('says which field is missing instead of refusing in silence', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-submit'));
+
+    expect(await screen.findAllByRole('alert')).toHaveLength(2);
+    expect(screen.getAllByRole('alert')[0]).toHaveTextContent('forms.required');
+    httpTesting.expectNone('/api/authenticate');
+  });
+
   it('should tell a breakdown apart from a refusal', async () => {
     const user = userEvent.setup();
     await renderPage();

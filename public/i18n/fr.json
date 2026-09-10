@@ -55,5 +55,10 @@
     "account": "Mon compte",
     "skipToContent": "Aller au contenu",
     "offline": "Vous êtes hors ligne. Les valeurs peuvent être périmées."
+  },
+  "forms": {
+    "required": "Ce champ est obligatoire.",
+    "maxLength": "Utiliser au plus {{limit}} caractères.",
+    "min": "Utiliser une valeur supérieure ou égale à {{floor}}."
   }
 }

@@ -55,5 +55,10 @@
     "account": "My account",
     "skipToContent": "Skip to content",
     "offline": "You are offline. Values may be out of date."
+  },
+  "forms": {
+    "required": "This field is required.",
+    "maxLength": "Use at most {{limit}} characters.",
+    "min": "Use a value of {{floor}} or more."
   }
 }
