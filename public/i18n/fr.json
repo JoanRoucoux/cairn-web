@@ -27,7 +27,7 @@
       "ETF": "Tracker",
       "FUND": "Fonds",
       "CRYPTO": "Crypto",
-      "CASH": "Liquidites"
+      "CASH": "Liquidités"
     },
     "priceSource": {
       "YAHOO": "Yahoo Finance",
@@ -42,7 +42,7 @@
       "PER": "PER",
       "PEE": "PEE",
       "LIFE_INSURANCE": "Assurance-vie",
-      "SAVINGS": "Epargne",
+      "SAVINGS": "Épargne",
       "CRYPTO": "Crypto"
     }
   },
