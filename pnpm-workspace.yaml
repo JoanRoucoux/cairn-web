@@ -6,3 +6,4 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - lint-staged@17.1.0
   - '@joanroucoux/cairn-ui@0.1.0'
+  - '@joanroucoux/cairn-ui@0.1.1'
