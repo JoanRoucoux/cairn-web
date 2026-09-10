@@ -4,6 +4,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { TranslocoService } from '@jsverse/transloco';
 
+import { AVAILABLE_LANGS } from '@core/i18n/transloco-provider';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,6 +16,8 @@ export class LanguageStore {
   readonly activeLang: Signal<string> = toSignal(this.#translocoService.langChanges$, {
     initialValue: this.#translocoService.getActiveLang(),
   });
+
+  readonly availableLangs: readonly string[] = AVAILABLE_LANGS;
 
   constructor() {
     // Keep the `lang` attribute on <html> in sync so assistive technologies announce the right language.

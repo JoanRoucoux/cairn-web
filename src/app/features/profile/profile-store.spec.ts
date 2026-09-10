@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+
 import { ProfileStore } from './profile-store';
 
 const session = {
@@ -26,6 +28,7 @@ describe('ProfileStore', () => {
   beforeEach(() => {
     localStorage.clear();
     TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
       providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), ProfileStore],
     });
     store = TestBed.inject(ProfileStore);

@@ -12,11 +12,13 @@ import { firstValueFrom } from 'rxjs';
 
 import { TranslocoHttpLoader } from '@core/i18n/transloco-loader';
 
+export const AVAILABLE_LANGS = ['en', 'fr'] as const;
+
 export const provideTranslocoGlobal = (): EnvironmentProviders => {
   return makeEnvironmentProviders([
     provideTransloco({
       config: {
-        availableLangs: ['en', 'fr'],
+        availableLangs: [...AVAILABLE_LANGS],
         defaultLang: 'en',
         // Remove this option if your application doesn't support changing language in runtime.
         reRenderOnLangChange: true,

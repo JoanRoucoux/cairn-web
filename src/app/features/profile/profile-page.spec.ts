@@ -223,7 +223,26 @@ describe('ProfilePage', () => {
   it('should offer the three theme preferences', async () => {
     await renderPage();
 
-    expect(await screen.findAllByRole('radio')).toHaveLength(3);
+    expect(await screen.findByRole('radiogroup', { name: 'profile.themeLabel' })).toBeInTheDocument();
+    expect(within(screen.getByRole('radiogroup', { name: 'profile.themeLabel' })).getAllByRole('radio')).toHaveLength(
+      3,
+    );
+  });
+
+  it('should offer both languages and switch to the one that is picked', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    const group = await screen.findByRole('radiogroup', { name: 'profile.languageLabel' });
+    expect(
+      within(group)
+        .getAllByRole('radio')
+        .map((radio) => radio.textContent?.trim()),
+    ).toEqual(['profile.language.en', 'profile.language.fr']);
+
+    await user.click(within(group).getByRole('radio', { name: 'profile.language.fr' }));
+
+    expect(TestBed.inject(TranslocoService).getActiveLang()).toBe('fr');
   });
 
   it('should apply a chosen theme to the document', async () => {

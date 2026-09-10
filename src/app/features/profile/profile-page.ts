@@ -34,6 +34,7 @@ export class ProfilePage {
   protected readonly passkeys = this.#store.passkeys;
   protected readonly revocationRefused = this.#store.revocationRefused;
   protected readonly theme = this.#store.theme;
+  protected readonly language = this.#store.language;
 
   #importStore = inject(PortfolioImportStore);
   protected readonly importing = this.#importStore.importing;
@@ -49,8 +50,18 @@ export class ProfilePage {
     THEME_PREFERENCES.map((value, index) => ({ value, label: this.#themeLabels()[index]! })),
   );
 
+  #languageLabels = translateSignal(this.#store.availableLanguages.map((lang) => `language.${lang}`));
+
+  protected readonly languageOptions = computed<SegmentedOption[]>(() =>
+    this.#store.availableLanguages.map((value, index) => ({ value, label: this.#languageLabels()[index]! })),
+  );
+
   protected onThemeChange(preference: string): void {
     this.#store.setTheme(preference as ThemePreference);
+  }
+
+  protected onLanguageChange(lang: string): void {
+    this.#store.setLanguage(lang);
   }
 
   // Resets the input so picking the same corrected file again still fires a change event.

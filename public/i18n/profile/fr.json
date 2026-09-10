@@ -11,6 +11,8 @@
   "revokeRefused": "C'est votre seule passkey. Ajoutez un autre appareil avant de la révoquer.",
   "themeLabel": "Thème",
   "theme": { "system": "Système", "light": "Clair", "dark": "Sombre" },
+  "languageLabel": "Langue",
+  "language": { "en": "English", "fr": "Français" },
   "manageData": {
     "title": "Gérer les données",
     "accounts": "Comptes",
