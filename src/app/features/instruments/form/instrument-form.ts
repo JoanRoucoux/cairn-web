@@ -1,13 +1,16 @@
 import { type Schema, maxLength, required, schema } from '@angular/forms/signals';
 
-// assetClass and priceSource are free text here: the form lets an operator type a value the
-// server enum does not (yet) know, and the server is the one source of truth for validity.
+import type {
+  CreateInstrumentRequestAssetClass,
+  CreateInstrumentRequestPriceSource,
+} from '@core/api-client/cairnAPI.schemas';
+
 export type InstrumentDraft = {
   name: string;
   isin: string;
   currency: string;
-  assetClass: string;
-  priceSource: string;
+  assetClass: CreateInstrumentRequestAssetClass;
+  priceSource: CreateInstrumentRequestPriceSource;
   sourceRef: string;
   description: string;
 };

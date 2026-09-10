@@ -86,4 +86,28 @@ describe('InstrumentFormPage', () => {
     expect(await screen.findByText('instruments.saveError')).toBeInTheDocument();
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
+
+  it('offers exactly the asset classes the contract declares', async () => {
+    await renderPage();
+
+    const select = screen.getByTestId('instrument-asset-class') as HTMLSelectElement;
+
+    expect([...select.options].map((option) => option.value)).toEqual(['EQUITY', 'ETF', 'FUND', 'CRYPTO', 'CASH']);
+  });
+
+  it('offers exactly the price sources the contract declares', async () => {
+    await renderPage();
+
+    const select = screen.getByTestId('instrument-price-source') as HTMLSelectElement;
+
+    expect([...select.options].map((option) => option.value)).toEqual(['YAHOO', 'COINGECKO', 'SG_SIRIUS', 'MANUAL']);
+  });
+
+  it('values a portfolio in euros and offers no other currency', async () => {
+    await renderPage();
+
+    const select = screen.getByTestId('instrument-currency') as HTMLSelectElement;
+
+    expect([...select.options].map((option) => option.value)).toEqual(['EUR']);
+  });
 });

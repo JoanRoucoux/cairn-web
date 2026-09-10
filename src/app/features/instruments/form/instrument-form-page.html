@@ -21,14 +21,26 @@
     </ui-field>
 
     <div class="grid gap-4 sm:grid-cols-2">
-      <ui-field [label]="'instruments.currency' | transloco">
-        <input data-testid="instrument-currency" type="text" uiInput [formField]="form.currency" />
+      <ui-field [hint]="'instruments.currencyHint' | transloco" [label]="'instruments.currency' | transloco">
+        <select data-testid="instrument-currency" uiSelect [formField]="form.currency">
+          @for (currency of currencies; track currency) {
+            <option [value]="currency">{{ currency }}</option>
+          }
+        </select>
       </ui-field>
       <ui-field [label]="'instruments.assetClass' | transloco">
-        <input data-testid="instrument-asset-class" type="text" uiInput [formField]="form.assetClass" />
+        <select data-testid="instrument-asset-class" uiSelect [formField]="form.assetClass">
+          @for (assetClass of assetClasses; track assetClass) {
+            <option [value]="assetClass">{{ 'enums.assetClass.' + assetClass | transloco }}</option>
+          }
+        </select>
       </ui-field>
       <ui-field [label]="'instruments.priceSource' | transloco">
-        <input data-testid="instrument-price-source" type="text" uiInput [formField]="form.priceSource" />
+        <select data-testid="instrument-price-source" uiSelect [formField]="form.priceSource">
+          @for (priceSource of priceSources; track priceSource) {
+            <option [value]="priceSource">{{ 'enums.priceSource.' + priceSource | transloco }}</option>
+          }
+        </select>
       </ui-field>
       <ui-field [label]="'instruments.sourceRef' | transloco">
         <input data-testid="instrument-source-ref" type="text" uiInput [formField]="form.sourceRef" />

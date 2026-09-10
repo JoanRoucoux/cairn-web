@@ -7,6 +7,7 @@
   "name": "Name",
   "isin": "ISIN",
   "currency": "Currency",
+  "currencyHint": "Cairn values a portfolio in euros.",
   "assetClass": "Asset class",
   "priceSource": "Price source",
   "sourceRef": "Source reference",
