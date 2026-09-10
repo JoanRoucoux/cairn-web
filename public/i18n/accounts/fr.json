@@ -2,6 +2,7 @@
   "title": "Comptes",
   "name": "Nom",
   "type": "Enveloppe",
+  "choose": "Choisir une enveloppe",
   "institution": "Etablissement",
   "add": "Ajouter un compte",
   "empty": "Aucun compte pour le moment.",

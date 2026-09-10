@@ -31,8 +31,8 @@ export class AccountListStore {
     await submit(this.form, async () => {
       try {
         const model = this.#model();
-        // The type and the institution are free text here: the field lets an operator type a value
-        // the server enum does not (yet) know, and the server is the one source of truth for validity.
+        // The cast drops the empty placeholder option: required(account.type) is what guarantees
+        // submit() never reaches this line with one.
         await firstValueFrom(
           this.#accountsApiClient.createAccount({
             name: model.name,

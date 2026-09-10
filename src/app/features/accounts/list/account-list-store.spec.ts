@@ -35,12 +35,12 @@ describe('AccountListStore', () => {
     await TestBed.inject(ApplicationRef).whenStable();
 
     store.form.name().value.set('Fortuneo');
-    store.form.type().value.set('LIVRET');
+    store.form.type().value.set('CTO');
     store.form.institution().value.set('Fortuneo');
     const created = store.create();
 
     const request = await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'));
-    expect(request.request.body).toEqual({ name: 'Fortuneo', type: 'LIVRET', institution: 'Fortuneo' });
+    expect(request.request.body).toEqual({ name: 'Fortuneo', type: 'CTO', institution: 'Fortuneo' });
     request.flush({});
 
     await expect(created).resolves.toBe(true);
@@ -53,7 +53,7 @@ describe('AccountListStore', () => {
     await TestBed.inject(ApplicationRef).whenStable();
 
     store.form.name().value.set('Fortuneo');
-    store.form.type().value.set('LIVRET');
+    store.form.type().value.set('CTO');
     store.form.institution().value.set('Fortuneo');
     const created = store.create();
 

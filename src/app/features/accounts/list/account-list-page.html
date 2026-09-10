@@ -6,7 +6,12 @@
       <input data-testid="account-name" type="text" uiInput [formField]="form.name" />
     </ui-field>
     <ui-field class="grow" [label]="'accounts.type' | transloco">
-      <input data-testid="account-type" type="text" uiInput [formField]="form.type" />
+      <select data-testid="account-type" uiSelect [formField]="form.type">
+        <option value="">{{ 'accounts.choose' | transloco }}</option>
+        @for (type of accountTypes; track type) {
+          <option [value]="type">{{ 'enums.accountType.' + type | transloco }}</option>
+        }
+      </select>
     </ui-field>
     <ui-field class="grow" [label]="'accounts.institution' | transloco">
       <input data-testid="account-institution" type="text" uiInput [formField]="form.institution" />
@@ -31,7 +36,9 @@
       <li>
         <ui-card class="flex items-center justify-between gap-3" padding="sm">
           <span class="text-[13.5px] font-medium">{{ account.name }}</span>
-          <span class="text-[11.5px] tracking-[0.05em] text-(--muted-foreground)">{{ account.type }}</span>
+          <span class="text-[11.5px] tracking-[0.05em] text-(--muted-foreground)">
+            {{ 'enums.accountType.' + account.type | transloco }}
+          </span>
         </ui-card>
       </li>
     }

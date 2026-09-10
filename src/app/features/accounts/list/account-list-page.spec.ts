@@ -87,24 +87,42 @@ describe('AccountListPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('accounts.error');
   });
 
+  it('offers exactly the envelopes the contract declares', async () => {
+    await renderPage();
+
+    const select = screen.getByTestId('account-type') as HTMLSelectElement;
+
+    expect([...select.options].map((option) => option.value)).toEqual([
+      '',
+      'PEA',
+      'PEA_PME',
+      'CTO',
+      'PER',
+      'PEE',
+      'LIFE_INSURANCE',
+      'SAVINGS',
+      'CRYPTO',
+    ]);
+  });
+
   it('should create an account and reload the list', async () => {
     const user = userEvent.setup();
     await renderPage();
     await screen.findByText('Esalia');
 
     await user.type(screen.getByTestId('account-name'), 'Fortuneo');
-    await user.type(screen.getByTestId('account-type'), 'LIVRET');
+    await user.selectOptions(screen.getByTestId('account-type'), 'CTO');
     await user.type(screen.getByTestId('account-institution'), 'Fortuneo Bank');
     await user.click(screen.getByTestId('account-create'));
 
     const request = await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'));
-    expect(request.request.body).toEqual({ name: 'Fortuneo', type: 'LIVRET', institution: 'Fortuneo Bank' });
+    expect(request.request.body).toEqual({ name: 'Fortuneo', type: 'CTO', institution: 'Fortuneo Bank' });
     request.flush({});
 
     await vi.waitFor(() =>
       httpTesting
         .expectOne('/api/accounts')
-        .flush([...accounts, { id: 'a3', name: 'Fortuneo', type: 'LIVRET', institution: 'Fortuneo Bank' }]),
+        .flush([...accounts, { id: 'a3', name: 'Fortuneo', type: 'CTO', institution: 'Fortuneo Bank' }]),
     );
 
     expect(await screen.findByText('Fortuneo')).toBeInTheDocument();
@@ -117,7 +135,7 @@ describe('AccountListPage', () => {
     await screen.findByText('Esalia');
 
     await user.type(screen.getByTestId('account-name'), 'Fortuneo');
-    await user.type(screen.getByTestId('account-type'), 'LIVRET');
+    await user.selectOptions(screen.getByTestId('account-type'), 'CTO');
     await user.type(screen.getByTestId('account-institution'), 'Fortuneo Bank');
     await user.click(screen.getByTestId('account-create'));
 

@@ -2,6 +2,7 @@
   "title": "Accounts",
   "name": "Name",
   "type": "Envelope",
+  "choose": "Choose an envelope",
   "institution": "Institution",
   "add": "Add an account",
   "empty": "No account yet.",
