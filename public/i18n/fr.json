@@ -21,6 +21,31 @@
     "rangeLabel": "Plage de temps",
     "range": { "1d": "1J", "7d": "7J", "1m": "1M", "1y": "1A", "5y": "5A", "max": "Max" }
   },
+  "enums": {
+    "assetClass": {
+      "EQUITY": "Action",
+      "ETF": "Tracker",
+      "FUND": "Fonds",
+      "CRYPTO": "Crypto",
+      "CASH": "Liquidites"
+    },
+    "priceSource": {
+      "YAHOO": "Yahoo Finance",
+      "COINGECKO": "CoinGecko",
+      "SG_SIRIUS": "SG Sirius",
+      "MANUAL": "Manuel"
+    },
+    "accountType": {
+      "PEA": "PEA",
+      "PEA_PME": "PEA-PME",
+      "CTO": "Compte-titres",
+      "PER": "PER",
+      "PEE": "PEE",
+      "LIFE_INSURANCE": "Assurance-vie",
+      "SAVINGS": "Epargne",
+      "CRYPTO": "Crypto"
+    }
+  },
   "shell": {
     "primary": "Principale",
     "portfolio": "Patrimoine",

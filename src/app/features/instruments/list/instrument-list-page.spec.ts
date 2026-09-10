@@ -45,6 +45,22 @@ describe('InstrumentListPage', () => {
     expect(await screen.findAllByTestId('instrument-row')).toHaveLength(1);
   });
 
+  it('names the asset class and the price source through a translation key', async () => {
+    await renderPage();
+
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne('/api/instruments')
+        .flush([
+          { id: 'i1', name: 'BNP Paribas Easy S&P 500', isin: 'FR0011550185', assetClass: 'ETF', priceSource: 'YAHOO' },
+        ]),
+    );
+    await screen.findAllByTestId('instrument-row');
+
+    expect(screen.getByText('enums.assetClass.ETF')).toBeInTheDocument();
+    expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
+  });
+
   it('should filter the instruments by name or isin', async () => {
     const user = userEvent.setup();
     await renderPage();

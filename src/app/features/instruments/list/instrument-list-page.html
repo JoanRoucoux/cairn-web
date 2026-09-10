@@ -42,8 +42,8 @@
                 &mdash;
               }
             </td>
-            <td from="lg" uiTd>{{ instrument.assetClass }}</td>
-            <td uiTd>{{ instrument.priceSource }}</td>
+            <td from="lg" uiTd>{{ 'enums.assetClass.' + instrument.assetClass | transloco }}</td>
+            <td uiTd>{{ 'enums.priceSource.' + instrument.priceSource | transloco }}</td>
           </tr>
         }
       </tbody>
