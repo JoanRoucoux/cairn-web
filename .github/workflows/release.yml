@@ -82,3 +82,9 @@ jobs:
           code=$(curl -sS -o /dev/null -w '%{http_code}' https://cairn.joanroucoux.fr/)
           echo "GET / -> $code"
           [ "$code" = "200" ] || exit 1
+
+      - name: Check the translations are served uncacheable
+        run: |
+          cache=$(curl -sSI https://cairn.joanroucoux.fr/i18n/en.json | tr -d '\r' | grep -i '^cache-control:' || true)
+          echo "GET /i18n/en.json -> ${cache:-no Cache-Control}"
+          echo "$cache" | grep -qi 'no-cache' || exit 1
