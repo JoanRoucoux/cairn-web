@@ -8,3 +8,4 @@ minimumReleaseAgeExclude:
   - '@joanroucoux/cairn-ui@0.1.0'
   - '@joanroucoux/cairn-ui@0.1.1'
   - '@joanroucoux/cairn-ui@0.1.2'
+  - '@joanroucoux/cairn-ui@0.1.3'
