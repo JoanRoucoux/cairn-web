@@ -90,7 +90,10 @@ describe('InstrumentListPage', () => {
   it('tells the reader what the search box searches', async () => {
     await renderPage();
 
-    expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
+    expect(screen.getByRole('searchbox', { name: 'instruments.searchLabel' })).toHaveAttribute(
+      'placeholder',
+      'instruments.searchPlaceholder',
+    );
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
   });

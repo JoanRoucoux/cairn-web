@@ -1,6 +1,6 @@
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 
-import { UiButton, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { UiButton, UiField, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -21,6 +21,7 @@ import { HoldingListStore } from './holding-list-store';
     MoneyPipe,
     TranslocoPipe,
     UiButton,
+    UiField,
     UiInput,
     UiSkeleton,
   ],

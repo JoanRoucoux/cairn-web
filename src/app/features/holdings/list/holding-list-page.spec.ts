@@ -91,6 +91,15 @@ describe('HoldingListPage', () => {
     expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
   });
 
+  it('names the search box with its label, not only its placeholder', async () => {
+    await renderPage();
+
+    expect(await screen.findByRole('searchbox', { name: 'holdings.searchLabel' })).toHaveAttribute(
+      'placeholder',
+      'holdings.searchPlaceholder',
+    );
+  });
+
   it('should tell the user when nothing matches', async () => {
     const user = userEvent.setup();
     await renderPage();
