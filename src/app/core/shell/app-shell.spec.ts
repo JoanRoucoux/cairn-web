@@ -45,6 +45,16 @@ describe('AppShell', () => {
     expect(screen.getAllByRole('link', { name: 'shell.holdings' })).toHaveLength(2);
   });
 
+  it('sends the reader home from the wordmark, in both layouts', async () => {
+    await renderShell();
+    await settleSession();
+
+    const wordmarks = screen.getAllByRole('link', { name: 'CAIRN' });
+
+    expect(wordmarks).toHaveLength(2);
+    wordmarks.forEach((wordmark) => expect(wordmark).toHaveAttribute('href', '/'));
+  });
+
   it('should offer a way into the account screen', async () => {
     await renderShell();
     await settleSession();
