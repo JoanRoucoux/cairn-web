@@ -51,7 +51,6 @@ export class HoldingListStore {
         holdings: [],
       };
 
-      // A null market value is a holding with no quote yet, never a zero: it is counted, not summed.
       if (holding.marketValueEur === null || holding.marketValueEur === undefined) {
         group.unvaluedCount += 1;
       } else {
