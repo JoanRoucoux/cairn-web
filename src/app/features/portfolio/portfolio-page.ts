@@ -14,6 +14,7 @@ import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
 import { PortfolioMovers } from './movers/portfolio-movers';
 import { PortfolioStore } from './portfolio-store';
 import { StaleQuotesBanner } from './stale/stale-quotes-banner';
+import { UnvaluedBanner } from './unvalued/unvalued-banner';
 
 @Component({
   selector: 'app-portfolio-page',
@@ -29,6 +30,7 @@ import { StaleQuotesBanner } from './stale/stale-quotes-banner';
     UiDelta,
     UiSegmented,
     UiSkeleton,
+    UnvaluedBanner,
   ],
   templateUrl: './portfolio-page.html',
   providers: [PortfolioStore],

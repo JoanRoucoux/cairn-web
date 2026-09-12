@@ -38,7 +38,23 @@ const staleHolding = {
   unrealizedGainRatio: null,
 };
 
-const holdings = [holding, staleHolding];
+const unvaluedHolding = {
+  ...holding,
+  id: '33333333-3333-3333-3333-333333333333',
+  instrumentId: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+  instrumentName: 'Newly listed fund',
+  assetClass: 'FUND',
+  price: null,
+  priceCurrency: null,
+  priceAsOf: null,
+  marketValueEur: null,
+  unrealizedGainEur: null,
+  unrealizedGainRatio: null,
+  dayChangeEur: null,
+  dayChangeRatio: null,
+};
+
+const holdings = [holding, staleHolding, unvaluedHolding];
 
 const account = {
   id: holding.accountId,
@@ -62,6 +78,21 @@ const instrument = {
   holdingCount: 1,
 };
 
+const unvaluedInstrument = {
+  id: unvaluedHolding.instrumentId,
+  name: unvaluedHolding.instrumentName,
+  isin: null,
+  currency: 'EUR',
+  assetClass: unvaluedHolding.assetClass,
+  priceSource: unvaluedHolding.priceSource,
+  sourceRef: 'NEWLY-LISTED-FUND',
+  description: 'A fund awaiting its first quote.',
+  externalUrl: null,
+  holdingCount: 1,
+};
+
+// Not part of `instruments`: it backs a holding used for one screen only, and must not shift the
+// count the instruments list asserts on.
 const instruments = [instrument];
 
 let created = 0;
@@ -73,6 +104,7 @@ const portfolio = {
   unrealizedGainEur: 495.6,
   unrealizedGainRatio: 0.108,
   staleCount: 1,
+  unvaluedCount: 1,
   generatedAt: '2026-08-27T18:00:00Z',
   byAssetClass: [
     { label: 'ETF', valueEur: 4922.4, share: 0.5 },
@@ -109,7 +141,11 @@ const session = {
   ],
 };
 
-const refreshReport = { refreshed: 2, skipped: 0, failures: [] };
+const refreshReport = {
+  refreshed: 2,
+  skipped: 0,
+  failures: [{ instrumentId: instrument.id, instrumentName: instrument.name, source: 'YAHOO', message: 'timeout' }],
+};
 
 const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/portfolio': portfolio,
@@ -132,11 +168,17 @@ const handleApiRoute = async (route: Route): Promise<void> => {
     return route.fulfill({ status: 204 });
   }
 
-  if (url.pathname === `/api/instruments/${instrument.id}` && method === 'GET') {
-    return route.fulfill({ json: instrument });
+  const instrumentMatch = /^\/api\/instruments\/([^/]+)$/.exec(url.pathname);
+
+  if (instrumentMatch && method === 'GET') {
+    const found = [...instruments, unvaluedInstrument].find((candidate) => candidate.id === instrumentMatch[1]);
+
+    return found
+      ? route.fulfill({ json: found })
+      : route.fulfill({ status: 404, json: { message: `unknown instrument: ${instrumentMatch[1]}` } });
   }
 
-  if (url.pathname === `/api/instruments/${instrument.id}/quotes` && method === 'GET') {
+  if (/^\/api\/instruments\/[^/]+\/quotes$/.test(url.pathname) && method === 'GET') {
     return route.fulfill({ json: [] });
   }
 

@@ -8,6 +8,9 @@
 <p class="mt-1.5 text-[13px] text-(--muted-foreground) tabular-nums">
   {{ 'holdings.summary' | transloco: { lines: totals().lines, accounts: totals().accounts } }} &middot;
   {{ totals().valueEur | money }}
+  @if (totals().unvaluedCount > 0) {
+    &middot; {{ 'holdings.unvaluedCount' | transloco: { count: totals().unvaluedCount } }}
+  }
 </p>
 
 <div class="mt-4">

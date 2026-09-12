@@ -43,6 +43,7 @@
     </ui-card>
 
     <app-stale-quotes-banner [count]="portfolio.value().staleCount" />
+    <app-unvalued-banner [count]="portfolio.value().unvaluedCount" />
 
     <app-portfolio-movers [holdings]="portfolio.value().holdings" />
   </div>

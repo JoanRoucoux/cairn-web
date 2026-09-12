@@ -103,6 +103,27 @@ describe('SourceListPage', () => {
     await vi.waitFor(() => httpTesting.match((request) => request.url.startsWith('/api/jobs/runs'))[0]?.flush([]));
 
     expect(await screen.findByTestId('refresh-report')).toHaveTextContent('sources.report');
+    expect(await screen.findByTestId('refresh-failures')).toHaveTextContent('ETF');
+    expect(screen.getByTestId('refresh-failures')).toHaveTextContent('timeout');
+  });
+
+  it('should not show a failure list when nothing failed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('YAHOO');
+
+    await user.click(screen.getByTestId('refresh-quotes'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/quotes/refresh'))).flush({
+      refreshed: 21,
+      skipped: 3,
+      failures: [],
+    });
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
+    await vi.waitFor(() => httpTesting.match((request) => request.url.startsWith('/api/jobs/runs'))[0]?.flush([]));
+
+    await screen.findByTestId('refresh-report');
+    expect(screen.queryByTestId('refresh-failures')).not.toBeInTheDocument();
   });
 
   it('should show no sources when the holdings fail to load', async () => {

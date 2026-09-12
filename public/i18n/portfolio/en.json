@@ -7,7 +7,9 @@
   "error": "Your portfolio could not be loaded.",
   "chartLabel": "Portfolio value over the selected range",
   "reconstructed": "Beyond one year the curve is reconstructed at constant composition: exact at the ends, approximate in between.",
-  "movers": { "title": "Moving today" },
+  "movers": {
+    "title": "Moving today"
+  },
   "stale": {
     "message": "{{count}} quotes are more than four days old",
     "action": "View sources"
@@ -17,5 +19,9 @@
     "byAssetClass": "By asset class",
     "byAccount": "By account",
     "scaleNote": "Bars are scaled to the largest row, not to the total - otherwise the smallest classes would be invisible."
+  },
+  "unvalued": {
+    "message": "{{count}} holdings have no quote yet",
+    "action": "View sources"
   }
 }

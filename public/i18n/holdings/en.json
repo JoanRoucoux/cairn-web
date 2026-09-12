@@ -21,7 +21,7 @@
     "averageCost": "Average cost",
     "price": "Price",
     "value": "Value",
-    "unrealized": "Unrealised",
+    "unrealized": "Gain or loss",
     "actions": "Actions"
   },
   "editRow": "Edit {{name}}",
@@ -57,5 +57,7 @@
     "cancel": "Cancel",
     "submit": "Delete",
     "error": "This holding could not be deleted."
-  }
+  },
+  "unvaluedCount": "{{count}} unvalued",
+  "noQuoteYet": "No quote yet for this instrument."
 }

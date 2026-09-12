@@ -21,7 +21,7 @@
     "averageCost": "PRU",
     "price": "Cours",
     "value": "Valeur",
-    "unrealized": "+/- latente",
+    "unrealized": "Plus ou moins-value",
     "actions": "Actions"
   },
   "editRow": "Modifier {{name}}",
@@ -57,5 +57,7 @@
     "cancel": "Annuler",
     "submit": "Supprimer",
     "error": "Cette ligne n'a pas pu être supprimée."
-  }
+  },
+  "unvaluedCount": "{{count}} non valorisées",
+  "noQuoteYet": "Aucune cotation pour cet instrument."
 }

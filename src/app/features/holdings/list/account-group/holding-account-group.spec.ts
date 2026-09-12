@@ -14,12 +14,14 @@ const group: AccountGroup = {
   accountName: 'Esalia',
   accountType: 'PEE',
   valueEur: 119258,
+  unvaluedCount: 0,
   unrealizedGainEur: null,
   stale: true,
   holdings: [
     {
       id: 'h3',
       instrumentName: 'FCPE Actions',
+      assetClass: 'FUND',
       quantity: 412.5,
       price: 289.11,
       marketValueEur: 119258,
@@ -70,6 +72,36 @@ describe('HoldingAccountGroup', () => {
     });
 
     expect(await screen.findByText('€250.50')).toBeInTheDocument();
+  });
+
+  it('should show the asset class as a badge under the instrument name', async () => {
+    await renderGroup();
+
+    expect(await screen.findByText('enums.assetClass.FUND')).toBeInTheDocument();
+  });
+
+  it('should render a dash for an unvalued line instead of an empty or zero cell', async () => {
+    const { container } = await renderGroup({
+      ...group,
+      holdings: [{ ...group.holdings[0], price: null, marketValueEur: null } as (typeof group.holdings)[0]],
+    });
+
+    const row = await screen.findByTestId('holding-row');
+
+    expect(row.textContent).toContain('—');
+    expect(container.textContent).not.toContain('€0.00');
+  });
+
+  it('should signal the unvalued lines folded out of an account subtotal', async () => {
+    await renderGroup({ ...group, unvaluedCount: 2 });
+
+    expect(await screen.findByText('holdings.unvaluedCount')).toBeInTheDocument();
+  });
+
+  it('should not signal unvalued lines when every line has a value', async () => {
+    await renderGroup();
+
+    expect(screen.queryByText(/unvaluedCount/)).not.toBeInTheDocument();
   });
 
   it('should link each line to its detail screen', async () => {

@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
-import { type SegmentedOption, UiCard, UiDelta, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { type SegmentedOption, UiBadge, UiCard, UiDelta, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';
@@ -23,6 +23,7 @@ import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
     RelativeDatePipe,
     SignedMoneyPipe,
     TranslocoPipe,
+    UiBadge,
     UiCard,
     UiDelta,
     UiSegmented,

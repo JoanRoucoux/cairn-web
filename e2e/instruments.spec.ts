@@ -44,8 +44,10 @@ test.describe('instruments', () => {
   test('edits an instrument and sees the change in the list', async ({ page }) => {
     await page.goto('/instruments');
     await page.getByRole('link', { name: 'Amundi MSCI World' }).click();
+    await page.waitForLoadState('networkidle');
 
     await page.getByTestId('instrument-name').fill('Amundi MSCI World (renamed)');
+    await expect(page.getByTestId('instrument-name')).toHaveValue('Amundi MSCI World (renamed)');
     await page.getByTestId('instrument-save').click();
 
     await page.waitForURL('**/instruments');

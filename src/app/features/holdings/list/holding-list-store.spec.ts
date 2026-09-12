@@ -38,6 +38,16 @@ const holdings = [
     unrealizedGainEur: null,
     stale: true,
   },
+  {
+    id: 'h4',
+    accountId: 'a1',
+    accountName: 'Saxo Investor',
+    accountType: 'PEA',
+    instrumentName: 'Newly listed fund',
+    marketValueEur: null,
+    unrealizedGainEur: 0,
+    stale: false,
+  },
 ] as unknown as HoldingResponse[];
 
 describe('HoldingListStore', () => {
@@ -106,7 +116,16 @@ describe('HoldingListStore', () => {
   it('should count lines and accounts', async () => {
     await load();
 
-    expect(store.totals()).toEqual({ lines: 3, accounts: 2, valueEur: 161676.47 });
+    expect(store.totals()).toEqual({ lines: 4, accounts: 2, valueEur: 161676.47, unvaluedCount: 1 });
+  });
+
+  it('should count unvalued lines per account without folding them into the subtotal', async () => {
+    await load();
+
+    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+
+    expect(saxo?.unvaluedCount).toBe(1);
+    expect(saxo?.valueEur).toBeCloseTo(42418.47, 2);
   });
 
   it('should hold empty groups while loading', () => {

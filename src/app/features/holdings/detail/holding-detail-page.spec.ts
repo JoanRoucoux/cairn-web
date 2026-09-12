@@ -119,6 +119,35 @@ describe('HoldingDetailPage', () => {
     expect(screen.queryByRole('link', { name: /holdings.externalLink/ })).not.toBeInTheDocument();
   });
 
+  it('should not present an empty chart or a blank last quote for a holding with no quote yet', async () => {
+    const { fixture } = await render(TestHost, {
+      imports: [getTranslocoTestingModule()],
+      routes: [{ path: ':holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' }],
+      initialRoute: 'h1',
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting
+      .expectOne('/api/holdings')
+      .flush([{ ...holding, price: null, priceCurrency: null, priceAsOf: null, marketValueEur: null }]);
+    await settle();
+    httpTesting
+      .match((request) => request.url === '/api/instruments/i1')
+      .forEach((request) => request.flush({ description: 'ETF tracking the S&P 500.' }));
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    await settle();
+
+    expect(fixture.debugElement.nativeElement.textContent).toContain('—');
+    expect(screen.queryByTestId('chart-line')).not.toBeInTheDocument();
+    expect(screen.getByTestId('no-quote-yet')).toBeInTheDocument();
+  });
+
   it('should read the holding id from the real, activated route', async () => {
     await renderPage('h1');
 

@@ -21,6 +21,16 @@
   }
 </p>
 
+@if (report()?.failures.length) {
+  <ul class="mt-2 flex flex-col gap-1" data-testid="refresh-failures" role="list">
+    @for (failure of report()!.failures; track failure.instrumentId) {
+      <li class="text-[12.5px] text-(--negative)">
+        <span class="font-semibold">{{ failure.instrumentName }}</span> &middot; {{ failure.message }}
+      </li>
+    }
+  </ul>
+}
+
 @if (error()) {
   <p class="mt-2 text-[13px] text-(--negative)" role="alert">{{ 'sources.refreshError' | transloco }}</p>
 }

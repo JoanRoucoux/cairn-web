@@ -52,4 +52,11 @@ test.describe('holdings', () => {
     await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);
   });
+
+  test('shows a dash and the asset-class badge for a holding with no price yet', async ({ page }) => {
+    const row = page.getByTestId('holding-row').filter({ hasText: 'Newly listed fund' });
+
+    await expect(row).toContainText('—');
+    await expect(row.locator('ui-badge')).toHaveText('Fund');
+  });
 });

@@ -22,6 +22,7 @@ const portfolio = {
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
   staleCount: 2,
+  unvaluedCount: 3,
   generatedAt: '2026-08-21T20:00:00Z',
   byAssetClass: [],
   byAccount: [],
@@ -75,6 +76,12 @@ describe('PortfolioPage', () => {
     await renderPage();
 
     expect(await screen.findByTestId('stale-banner')).toBeInTheDocument();
+  });
+
+  it('should warn about unvalued holdings', async () => {
+    await renderPage();
+
+    expect(await screen.findByTestId('unvalued-banner')).toBeInTheDocument();
   });
 
   it('should offer the six ranges', async () => {

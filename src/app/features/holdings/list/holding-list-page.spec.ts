@@ -71,6 +71,34 @@ describe('HoldingListPage', () => {
     expect(screen.getByText('Saxo Investor')).toBeInTheDocument();
   });
 
+  it('should not signal unvalued lines in the header total when every line has a value', async () => {
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    expect(screen.queryByText(/unvaluedCount/)).not.toBeInTheDocument();
+  });
+
+  it('should signal unvalued lines folded out of the header total', async () => {
+    await render(HoldingListPage, {
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+        HoldingListStore,
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting
+      .expectOne('/api/holdings')
+      .flush([...holdings, { ...holdings[0], id: 'h4', marketValueEur: null, unrealizedGainEur: null }]);
+
+    expect(await screen.findByText('holdings.unvaluedCount')).toBeInTheDocument();
+  });
+
   it('should expand the largest account and leave the others collapsed', async () => {
     const { container } = await renderPage();
 

@@ -9,6 +9,7 @@ export type AccountGroup = {
   accountName: string;
   accountType: string;
   valueEur: number;
+  unvaluedCount: number;
   unrealizedGainEur: number | null;
   stale: boolean;
   holdings: HoldingResponse[];
@@ -44,12 +45,19 @@ export class HoldingListStore {
         accountName: holding.accountName,
         accountType: holding.accountType,
         valueEur: 0,
+        unvaluedCount: 0,
         unrealizedGainEur: 0,
         stale: false,
         holdings: [],
       };
 
-      group.valueEur += holding.marketValueEur;
+      // A null market value is a holding with no quote yet, never a zero: it is counted, not summed.
+      if (holding.marketValueEur === null || holding.marketValueEur === undefined) {
+        group.unvaluedCount += 1;
+      } else {
+        group.valueEur += holding.marketValueEur;
+      }
+
       group.stale = group.stale || holding.stale;
       group.holdings.push(holding);
 
@@ -75,6 +83,7 @@ export class HoldingListStore {
       lines: groups.reduce((count, group) => count + group.holdings.length, 0),
       accounts: groups.length,
       valueEur: Number(groups.reduce((sum, group) => sum + group.valueEur, 0).toFixed(2)),
+      unvaluedCount: groups.reduce((count, group) => count + group.unvaluedCount, 0),
     };
   });
 }
