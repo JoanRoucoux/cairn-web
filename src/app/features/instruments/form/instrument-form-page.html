@@ -1,4 +1,17 @@
-<h1 class="text-xl font-semibold">{{ 'instruments.add' | transloco }}</h1>
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <h1 class="text-xl font-semibold">{{ (editing() ? 'instruments.edit.title' : 'instruments.add') | transloco }}</h1>
+  @if (editing()) {
+    <button
+      data-testid="instrument-delete"
+      type="button"
+      ui-button
+      variant="destructive"
+      (click)="deleteOpen.set(true)"
+    >
+      {{ 'instruments.edit.delete' | transloco }}
+    </button>
+  }
+</div>
 
 <ui-card class="mt-4">
   <app-isin-lookup
@@ -21,13 +34,15 @@
     </ui-field>
 
     <div class="grid gap-4 sm:grid-cols-2">
-      <ui-field [hint]="'instruments.currencyHint' | transloco" [label]="'instruments.currency' | transloco">
-        <select data-testid="instrument-currency" uiSelect [formField]="form.currency">
-          @for (currency of currencies; track currency) {
-            <option [value]="currency">{{ currency }}</option>
-          }
-        </select>
-      </ui-field>
+      @if (!editing()) {
+        <ui-field [hint]="'instruments.currencyHint' | transloco" [label]="'instruments.currency' | transloco">
+          <select data-testid="instrument-currency" uiSelect [formField]="form.currency">
+            @for (currency of currencies; track currency) {
+              <option [value]="currency">{{ currency }}</option>
+            }
+          </select>
+        </ui-field>
+      }
       <ui-field [label]="'instruments.assetClass' | transloco">
         <select data-testid="instrument-asset-class" uiSelect [formField]="form.assetClass">
           @for (assetClass of assetClasses; track assetClass) {
@@ -68,3 +83,11 @@
     {{ 'instruments.save' | transloco }}
   </button>
 </ui-card>
+
+@if (deleteOpen() && instrument.hasValue()) {
+  <app-instrument-delete-dialog
+    [instrument]="instrument.value()"
+    (deleted)="onDeleted()"
+    (dismissed)="deleteOpen.set(false)"
+  />
+}

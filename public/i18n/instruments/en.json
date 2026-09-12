@@ -23,5 +23,16 @@
     "search": "Look up",
     "searching": "Looking up this instrument",
     "notFound": "Nothing resolved. Fill the fields by hand and use a manual price source."
+  },
+  "edit": {
+    "title": "Edit an instrument",
+    "delete": "Delete instrument"
+  },
+  "delete": {
+    "title": "Delete this instrument",
+    "description": "{{name}} and the {{count}} holdings it backs will be removed. Their quotes go too.",
+    "cancel": "Cancel",
+    "submit": "Delete",
+    "error": "This instrument could not be deleted."
   }
 }

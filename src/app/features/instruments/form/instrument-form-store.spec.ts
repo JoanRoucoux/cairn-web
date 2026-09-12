@@ -2,6 +2,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+
+import { of } from 'rxjs';
 
 import type {
   CreateInstrumentRequestAssetClass,
@@ -24,6 +27,7 @@ describe('InstrumentFormStore', () => {
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({})) } },
         InstrumentFormStore,
       ],
     });
@@ -130,6 +134,90 @@ describe('InstrumentFormStore', () => {
     const saved = store.save();
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush(null, {
+      status: 422,
+      statusText: 'Unprocessable',
+    });
+
+    await expect(saved).resolves.toBe(false);
+    expect(store.error()).toBe(true);
+  });
+});
+
+describe('InstrumentFormStore in edit mode', () => {
+  let store: InstrumentFormStore;
+  let httpTesting: HttpTestingController;
+
+  const instrument = {
+    id: 'i1',
+    name: 'BNP Paribas Easy S&P 500',
+    isin: 'FR0011550185',
+    currency: 'EUR',
+    assetClass: 'ETF',
+    priceSource: 'YAHOO',
+    sourceRef: 'ESE.PA',
+    description: 'ETF tracking the S&P 500.',
+    holdingCount: 2,
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: of(convertToParamMap({ instrumentId: instrument.id })) },
+        },
+        InstrumentFormStore,
+      ],
+    });
+    store = TestBed.inject(InstrumentFormStore);
+    httpTesting = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpTesting.verify());
+
+  const settle = async (): Promise<void> => {
+    for (let i = 0; i < 10; i++) {
+      TestBed.tick();
+      await Promise.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  };
+
+  it('should prefill the draft from the loaded instrument', async () => {
+    (await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`))).flush(instrument);
+    await settle();
+
+    expect(store.form.name().value()).toBe(instrument.name);
+    expect(store.form.isin().value()).toBe(instrument.isin);
+    expect(store.form.sourceRef().value()).toBe(instrument.sourceRef);
+    expect(store.form.description().value()).toBe(instrument.description);
+  });
+
+  it('should update the instrument once the draft is valid', async () => {
+    (await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`))).flush(instrument);
+    await settle();
+
+    const saved = store.save();
+
+    const request = await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).not.toHaveProperty('currency');
+    request.flush(instrument);
+
+    await expect(saved).resolves.toBe(true);
+  });
+
+  it('should report a failure instead of pretending it worked', async () => {
+    (await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`))).flush(instrument);
+    await settle();
+
+    const saved = store.save();
+
+    (await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`))).flush(null, {
       status: 422,
       statusText: 'Unprocessable',
     });

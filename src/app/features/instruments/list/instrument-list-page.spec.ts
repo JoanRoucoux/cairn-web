@@ -98,6 +98,23 @@ describe('InstrumentListPage', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
   });
 
+  it('should link each row to the instrument edit screen', async () => {
+    await renderPage();
+
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne('/api/instruments')
+        .flush([
+          { id: 'i1', name: 'BNP Paribas Easy S&P 500', isin: 'FR0011550185', assetClass: 'ETF', priceSource: 'YAHOO' },
+        ]),
+    );
+
+    expect(await screen.findByRole('link', { name: 'BNP Paribas Easy S&P 500' })).toHaveAttribute(
+      'href',
+      '/instruments/i1',
+    );
+  });
+
   it('should show an error when instruments cannot load', async () => {
     await renderPage();
 

@@ -21,6 +21,11 @@ export const INSTRUMENTS_ROUTES: Routes = [
         component: InstrumentFormPage,
         title: 'pageTitle.instrumentCreate',
       },
+      {
+        path: ':instrumentId',
+        component: InstrumentFormPage,
+        title: 'pageTitle.instrumentEdit',
+      },
     ],
   },
 ];

@@ -36,7 +36,14 @@
       <tbody>
         @for (instrument of filteredInstruments(); track instrument.id) {
           <tr data-testid="instrument-row">
-            <td class="max-w-64 truncate" uiTd>{{ instrument.name }}</td>
+            <td class="max-w-64 truncate" uiTd>
+              <a
+                class="block truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+                [routerLink]="['/instruments', instrument.id]"
+              >
+                {{ instrument.name }}
+              </a>
+            </td>
             <td class="tabular-nums" from="md" uiTd>
               @if (instrument.isin) {
                 {{ instrument.isin }}

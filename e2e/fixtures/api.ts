@@ -59,6 +59,7 @@ const instrument = {
   sourceRef: 'AMUNDI-MSCI-WORLD',
   description: 'A physically-replicated ETF tracking the MSCI World index across developed markets.',
   externalUrl: 'https://www.amundietf.com/en/professional/product/view/LU1681043599',
+  holdingCount: 1,
 };
 
 const instruments = [instrument];
@@ -145,6 +146,37 @@ const handleApiRoute = async (route: Route): Promise<void> => {
     instruments.push(saved);
 
     return route.fulfill({ status: 201, json: saved });
+  }
+
+  // Stateful on purpose: an edited instrument has to show up updated in the list that follows.
+  if (url.pathname.startsWith('/api/instruments/') && method === 'PUT') {
+    const id = url.pathname.split('/').pop();
+    const existing = instruments.find((candidate) => candidate.id === id);
+
+    if (!existing) {
+      return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
+    }
+
+    Object.assign(existing, request.postDataJSON());
+
+    return route.fulfill({ json: existing });
+  }
+
+  // Stateful on purpose: a deleted instrument, and the holdings it backs, must disappear.
+  if (url.pathname.startsWith('/api/instruments/') && method === 'DELETE') {
+    const id = url.pathname.split('/').pop();
+    const index = instruments.findIndex((candidate) => candidate.id === id);
+
+    if (index === -1) {
+      return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
+    }
+
+    instruments.splice(index, 1);
+    holdings
+      .filter((candidate) => candidate.instrumentId === id)
+      .forEach((candidate) => holdings.splice(holdings.indexOf(candidate), 1));
+
+    return route.fulfill({ status: 204 });
   }
 
   const body = FIXED_RESPONSES[`${method} ${url.pathname}`];

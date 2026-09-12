@@ -3,6 +3,7 @@ import { type Schema, maxLength, required, schema } from '@angular/forms/signals
 import type {
   CreateInstrumentRequestAssetClass,
   CreateInstrumentRequestPriceSource,
+  InstrumentDetailResponse,
 } from '@core/api-client/cairnAPI.schemas';
 
 import type { FormMessages } from '@shared/forms/form-messages';
@@ -18,14 +19,14 @@ export type InstrumentDraft = {
 };
 
 // A factory so each page instance gets its own model object.
-export const initialInstrumentDraft = (): InstrumentDraft => ({
-  name: '',
-  isin: '',
+export const initialInstrumentDraft = (instrument?: InstrumentDetailResponse): InstrumentDraft => ({
+  name: instrument?.name ?? '',
+  isin: instrument?.isin ?? '',
   currency: 'EUR',
-  assetClass: 'ETF',
-  priceSource: 'MANUAL',
-  sourceRef: '',
-  description: '',
+  assetClass: instrument?.assetClass ?? 'ETF',
+  priceSource: instrument?.priceSource ?? 'MANUAL',
+  sourceRef: instrument?.sourceRef ?? '',
+  description: instrument?.description ?? '',
 });
 
 export const instrumentDraftSchema = (messages: FormMessages): Schema<InstrumentDraft> => {

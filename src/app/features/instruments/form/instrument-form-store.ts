@@ -1,9 +1,15 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { form, submit } from '@angular/forms/signals';
+import { ActivatedRoute } from '@angular/router';
 
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
-import type { CreateInstrumentRequest, InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  CreateInstrumentRequest,
+  InstrumentCandidateResponse,
+  UpdateInstrumentRequest,
+} from '@core/api-client/cairnAPI.schemas';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
 import { formMessages } from '@shared/forms/form-messages';
@@ -13,6 +19,14 @@ import { initialInstrumentDraft, instrumentDraftSchema } from './instrument-form
 @Injectable()
 export class InstrumentFormStore {
   #instrumentsApiClient = inject(InstrumentService);
+  #route = inject(ActivatedRoute);
+
+  readonly instrumentId = toSignal(this.#route.paramMap.pipe(map((params) => params.get('instrumentId') ?? undefined)));
+
+  readonly instrument = rxResource({
+    params: () => this.instrumentId(),
+    stream: ({ params }) => this.#instrumentsApiClient.getInstrument(params),
+  });
 
   readonly #model = signal(initialInstrumentDraft());
 
@@ -24,6 +38,16 @@ export class InstrumentFormStore {
   readonly searching = signal(false);
   readonly notFound = signal(false);
   readonly error = signal(false);
+
+  constructor() {
+    effect(() => {
+      const instrument = this.instrument.value();
+
+      if (instrument) {
+        this.#model.set(initialInstrumentDraft(instrument));
+      }
+    });
+  }
 
   async lookup(query: string): Promise<void> {
     this.searching.set(true);
@@ -60,17 +84,31 @@ export class InstrumentFormStore {
     await submit(this.form, async () => {
       try {
         const draft = this.#model();
-        const request: CreateInstrumentRequest = {
-          name: draft.name,
-          isin: draft.isin,
-          currency: draft.currency,
-          assetClass: draft.assetClass,
-          priceSource: draft.priceSource,
-          sourceRef: draft.sourceRef,
-          description: draft.description,
-        };
+        const instrumentId = this.instrumentId();
 
-        await firstValueFrom(this.#instrumentsApiClient.createInstrument(request));
+        if (instrumentId) {
+          const request: UpdateInstrumentRequest = {
+            name: draft.name,
+            isin: draft.isin,
+            assetClass: draft.assetClass,
+            priceSource: draft.priceSource,
+            sourceRef: draft.sourceRef,
+            description: draft.description,
+          };
+          await firstValueFrom(this.#instrumentsApiClient.updateInstrument(instrumentId, request));
+        } else {
+          const request: CreateInstrumentRequest = {
+            name: draft.name,
+            isin: draft.isin,
+            currency: draft.currency,
+            assetClass: draft.assetClass,
+            priceSource: draft.priceSource,
+            sourceRef: draft.sourceRef,
+            description: draft.description,
+          };
+          await firstValueFrom(this.#instrumentsApiClient.createInstrument(request));
+        }
+
         saved = true;
       } catch {
         this.error.set(true);

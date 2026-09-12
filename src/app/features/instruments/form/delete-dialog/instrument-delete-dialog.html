@@ -1,0 +1,38 @@
+<ui-dialog
+  data-testid="instrument-delete-dialog"
+  width="md"
+  [description]="description()"
+  [heading]="'instruments.delete.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  @if (error()) {
+    <p class="text-sm text-(--negative)" data-testid="instrument-delete-error" role="alert">
+      {{ 'instruments.delete.error' | transloco }}
+    </p>
+  }
+
+  <!-- showModal() focuses the first focusable element: keep the destructive action second. -->
+  <button
+    data-testid="instrument-delete-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="deleting()"
+    (click)="dismiss()"
+  >
+    {{ 'instruments.delete.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="instrument-delete-confirm"
+    dialogActions
+    type="button"
+    ui-button
+    variant="destructive"
+    [disabled]="deleting()"
+    (click)="confirm()"
+  >
+    {{ 'instruments.delete.submit' | transloco }}
+  </button>
+</ui-dialog>

@@ -40,4 +40,26 @@ test.describe('instruments', () => {
     await expect(page.getByTestId('instrument-row')).toHaveCount(2);
     await expect(page.getByText('Bitcoin')).toBeVisible();
   });
+
+  test('edits an instrument and sees the change in the list', async ({ page }) => {
+    await page.goto('/instruments');
+    await page.getByRole('link', { name: 'Amundi MSCI World' }).click();
+
+    await page.getByTestId('instrument-name').fill('Amundi MSCI World (renamed)');
+    await page.getByTestId('instrument-save').click();
+
+    await page.waitForURL('**/instruments');
+    await expect(page.getByText('Amundi MSCI World (renamed)')).toBeVisible();
+  });
+
+  test('deletes an instrument and sees it gone from the list', async ({ page }) => {
+    await page.goto('/instruments');
+    await page.getByRole('link', { name: 'Amundi MSCI World' }).click();
+
+    await page.getByTestId('instrument-delete').click();
+    await page.getByTestId('instrument-delete-confirm').click();
+
+    await page.waitForURL('**/instruments');
+    await expect(page.getByTestId('instrument-row')).toHaveCount(0);
+  });
 });

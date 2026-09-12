@@ -1,8 +1,8 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { Router, RouterOutlet, provideRouter } from '@angular/router';
 
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -11,6 +11,12 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { InstrumentFormPage } from './instrument-form-page';
 import { InstrumentFormStore } from './instrument-form-store';
+
+// Routed through a real `<router-outlet>`, exactly like the app: `InstrumentFormStore` is provided
+// by `InstrumentFormPage` itself, which only sits in the right injector - the one carrying the real
+// `ActivatedRoute` - when activated through an outlet.
+@Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
+class TestHost {}
 
 describe('InstrumentFormPage', () => {
   let httpTesting: HttpTestingController;
@@ -119,5 +125,102 @@ describe('InstrumentFormPage', () => {
     const select = screen.getByTestId('instrument-currency') as HTMLSelectElement;
 
     expect([...select.options].map((option) => option.value)).toEqual(['EUR']);
+  });
+});
+
+const instrument = {
+  id: 'i1',
+  name: 'BNP Paribas Easy S&P 500',
+  isin: 'FR0011550185',
+  currency: 'EUR',
+  assetClass: 'ETF',
+  priceSource: 'YAHOO',
+  sourceRef: 'ESE.PA',
+  description: 'ETF tracking the S&P 500.',
+  holdingCount: 2,
+};
+
+describe('InstrumentFormPage in edit mode', () => {
+  let httpTesting: HttpTestingController;
+  let router: Router;
+
+  const renderEditPage = async (): Promise<void> => {
+    const { fixture } = await render(TestHost, {
+      imports: [getTranslocoTestingModule()],
+      routes: [{ path: ':instrumentId', component: InstrumentFormPage, title: 'pageTitle.instrumentEdit' }],
+      initialRoute: instrument.id,
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    router = TestBed.inject(Router);
+    httpTesting.expectOne(`/api/instruments/${instrument.id}`).flush(instrument);
+    await fixture.whenStable();
+  };
+
+  afterEach(() => httpTesting.verify());
+
+  it('should prefill the draft from the loaded instrument', async () => {
+    await renderEditPage();
+
+    expect(await screen.findByTestId('instrument-name')).toHaveValue(instrument.name);
+    expect(screen.getByTestId('instrument-isin')).toHaveValue(instrument.isin);
+    expect(screen.getByTestId('instrument-source-ref')).toHaveValue(instrument.sourceRef);
+    expect(screen.queryByTestId('instrument-currency')).not.toBeInTheDocument();
+  });
+
+  it('should update the instrument and navigate back to the list', async () => {
+    const user = userEvent.setup();
+    await renderEditPage();
+    const navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    await user.click(await screen.findByTestId('instrument-save'));
+
+    const request = await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`));
+    expect(request.request.method).toBe('PUT');
+    request.flush({ ...instrument });
+
+    await vi.waitFor(() => expect(navigateByUrl).toHaveBeenCalledWith('/instruments'));
+  });
+
+  it('should delete the instrument from the delete dialog and navigate back to the list', async () => {
+    const user = userEvent.setup();
+    await renderEditPage();
+    const navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    await user.click(await screen.findByTestId('instrument-delete'));
+    expect(screen.getByTestId('instrument-delete-dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('instrument-delete-confirm'));
+
+    await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`).flush(null));
+    await vi.waitFor(() => expect(navigateByUrl).toHaveBeenCalledWith('/instruments'));
+  });
+
+  it('should dismiss the delete dialog without deleting anything', async () => {
+    const user = userEvent.setup();
+    await renderEditPage();
+    const navigateByUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+
+    await user.click(await screen.findByTestId('instrument-delete'));
+    await user.click(screen.getByTestId('instrument-delete-cancel'));
+
+    expect(screen.queryByTestId('instrument-delete-dialog')).not.toBeInTheDocument();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('should not offer a delete action when creating an instrument', async () => {
+    await render(InstrumentFormPage, {
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        InstrumentFormStore,
+      ],
+    });
+    TestBed.inject(HttpTestingController).verify();
+
+    expect(screen.queryByTestId('instrument-delete')).not.toBeInTheDocument();
   });
 });

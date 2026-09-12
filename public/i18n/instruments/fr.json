@@ -23,5 +23,16 @@
     "search": "Rechercher",
     "searching": "Recherche de l'instrument",
     "notFound": "Aucun résultat. Remplissez les champs à la main et choisissez une source manuelle."
+  },
+  "edit": {
+    "title": "Modifier un instrument",
+    "delete": "Supprimer l'instrument"
+  },
+  "delete": {
+    "title": "Supprimer cet instrument",
+    "description": "{{name}} et les {{count}} lignes qu'il alimente seront supprimés. Leurs cours aussi.",
+    "cancel": "Annuler",
+    "submit": "Supprimer",
+    "error": "Cet instrument n'a pas pu être supprimé."
   }
 }
