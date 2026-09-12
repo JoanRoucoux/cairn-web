@@ -12,6 +12,7 @@ import { AccountListStore } from './account-list-store';
   selector: 'app-account-list-page',
   imports: [FormField, TranslocoPipe, UiButton, UiCard, UiField, UiInput, UiSelect],
   templateUrl: './account-list-page.html',
+  providers: [AccountListStore],
 })
 export class AccountListPage {
   #store = inject(AccountListStore);

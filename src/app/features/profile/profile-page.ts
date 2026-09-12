@@ -25,6 +25,7 @@ import { ProfileStore } from './profile-store';
   selector: 'app-profile-page',
   imports: [RelativeDatePipe, RouterLink, TranslocoPipe, UiAvatar, UiButton, UiCard, UiSegmented, UiTable, UiTd, UiTh],
   templateUrl: './profile-page.html',
+  providers: [ProfileStore, PortfolioImportStore],
 })
 export class ProfilePage {
   #store = inject(ProfileStore);

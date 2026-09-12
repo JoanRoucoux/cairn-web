@@ -31,6 +31,7 @@ import { StaleQuotesBanner } from './stale/stale-quotes-banner';
     UiSkeleton,
   ],
   templateUrl: './portfolio-page.html',
+  providers: [PortfolioStore],
 })
 export class PortfolioPage {
   #store = inject(PortfolioStore);

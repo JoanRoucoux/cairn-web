@@ -12,6 +12,7 @@ import { LoginStore } from './login-store';
   selector: 'app-login-page',
   imports: [FormField, TranslocoPipe, UiButton, UiCard, UiField, UiInput],
   templateUrl: './login-page.html',
+  providers: [LoginStore],
 })
 export class LoginPage {
   #store = inject(LoginStore);

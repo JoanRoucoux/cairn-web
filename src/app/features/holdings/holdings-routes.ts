@@ -4,7 +4,6 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 
 import { HoldingDetailPage } from './detail/holding-detail-page';
 import { HoldingListPage } from './list/holding-list-page';
-import { HoldingListStore } from './list/holding-list-store';
 
 export const HOLDINGS_ROUTES: Routes = [
   {
@@ -15,7 +14,6 @@ export const HOLDINGS_ROUTES: Routes = [
         path: '',
         component: HoldingListPage,
         title: 'pageTitle.holdings',
-        providers: [HoldingListStore],
       },
       {
         path: ':holdingId',

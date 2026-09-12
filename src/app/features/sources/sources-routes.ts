@@ -3,7 +3,6 @@ import { type Routes } from '@angular/router';
 import { provideTranslocoScope } from '@jsverse/transloco';
 
 import { SourceListPage } from './list/source-list-page';
-import { SourceListStore } from './list/source-list-store';
 
 export const SOURCES_ROUTES: Routes = [
   {
@@ -14,7 +13,6 @@ export const SOURCES_ROUTES: Routes = [
         path: '',
         component: SourceListPage,
         title: 'pageTitle.sources',
-        providers: [SourceListStore],
       },
     ],
   },

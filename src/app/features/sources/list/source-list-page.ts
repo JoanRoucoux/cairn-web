@@ -11,6 +11,7 @@ import { SourceListStore } from './source-list-store';
   selector: 'app-source-list-page',
   imports: [RelativeDatePipe, TranslocoPipe, UiCard],
   templateUrl: './source-list-page.html',
+  providers: [SourceListStore],
 })
 export class SourceListPage {
   #store = inject(SourceListStore);

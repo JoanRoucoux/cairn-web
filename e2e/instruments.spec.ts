@@ -22,4 +22,22 @@ test.describe('instruments', () => {
 
     expect(centreOf(buttonBox!)).toBeCloseTo(centreOf(inputBox!), 0);
   });
+
+  test('lists a new instrument as soon as it is created', async ({ page }) => {
+    await page.goto('/instruments');
+    await expect(page.getByTestId('instrument-row')).toHaveCount(1);
+
+    await page.getByTestId('add-instrument').click();
+    await page.waitForLoadState('networkidle');
+    await page.getByTestId('instrument-name').fill('Bitcoin');
+    await expect(page.getByTestId('instrument-name')).toHaveValue('Bitcoin');
+    await page.getByTestId('instrument-asset-class').selectOption('CRYPTO');
+    await page.getByTestId('instrument-price-source').selectOption('COINGECKO');
+    await page.getByTestId('instrument-source-ref').fill('bitcoin');
+    await page.getByTestId('instrument-save').click();
+
+    await page.waitForURL('**/instruments');
+    await expect(page.getByTestId('instrument-row')).toHaveCount(2);
+    await expect(page.getByText('Bitcoin')).toBeVisible();
+  });
 });

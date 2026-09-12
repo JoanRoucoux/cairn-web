@@ -26,6 +26,7 @@ import { HoldingListStore } from './holding-list-store';
     UiSkeleton,
   ],
   templateUrl: './holding-list-page.html',
+  providers: [HoldingListStore],
 })
 export class HoldingListPage {
   #store = inject(HoldingListStore);

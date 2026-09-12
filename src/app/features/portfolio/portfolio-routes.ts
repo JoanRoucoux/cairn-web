@@ -3,9 +3,7 @@ import { type Routes } from '@angular/router';
 import { provideTranslocoScope } from '@jsverse/transloco';
 
 import { AllocationPage } from './allocation/allocation-page';
-import { AllocationStore } from './allocation/allocation-store';
 import { PortfolioPage } from './portfolio-page';
-import { PortfolioStore } from './portfolio-store';
 
 export const PORTFOLIO_ROUTES: Routes = [
   {
@@ -17,14 +15,11 @@ export const PORTFOLIO_ROUTES: Routes = [
         path: '',
         component: PortfolioPage,
         title: 'pageTitle.portfolio',
-        // Scoped to this route: created and destroyed with the page.
-        providers: [PortfolioStore],
       },
       {
         path: 'allocation',
         component: AllocationPage,
         title: 'pageTitle.allocation',
-        providers: [AllocationStore],
       },
     ],
   },

@@ -18,6 +18,7 @@ import { IsinLookup } from './isin-lookup/isin-lookup';
   selector: 'app-instrument-form-page',
   imports: [FormField, IsinLookup, TranslocoPipe, UiButton, UiCard, UiField, UiInput, UiSelect, UiTextarea],
   templateUrl: './instrument-form-page.html',
+  providers: [InstrumentFormStore],
 })
 export class InstrumentFormPage {
   #store = inject(InstrumentFormStore);

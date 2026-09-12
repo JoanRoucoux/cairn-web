@@ -10,6 +10,7 @@ import { InstrumentListStore } from './instrument-list-store';
   selector: 'app-instrument-list-page',
   imports: [RouterLink, TranslocoPipe, UiButton, UiField, UiInput, UiTable, UiTd, UiTh],
   templateUrl: './instrument-list-page.html',
+  providers: [InstrumentListStore],
 })
 export class InstrumentListPage {
   #store = inject(InstrumentListStore);

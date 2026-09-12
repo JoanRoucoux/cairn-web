@@ -63,6 +63,8 @@ const instrument = {
 
 const instruments = [instrument];
 
+let created = 0;
+
 const portfolio = {
   totalEur: 9844.8,
   dayChangeEur: 24.6,
@@ -135,6 +137,14 @@ const handleApiRoute = async (route: Route): Promise<void> => {
 
   if (url.pathname === `/api/instruments/${instrument.id}/quotes` && method === 'GET') {
     return route.fulfill({ json: [] });
+  }
+
+  // Stateful on purpose: a created instrument has to show up in the list that follows.
+  if (url.pathname === '/api/instruments' && method === 'POST') {
+    const saved = { ...instrument, ...request.postDataJSON(), id: `cccccccc-cccc-cccc-cccc-00000000000${++created}` };
+    instruments.push(saved);
+
+    return route.fulfill({ status: 201, json: saved });
   }
 
   const body = FIXED_RESPONSES[`${method} ${url.pathname}`];

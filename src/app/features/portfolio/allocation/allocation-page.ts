@@ -10,6 +10,7 @@ import { AllocationStore } from './allocation-store';
   selector: 'app-allocation-page',
   imports: [AllocationBreakdown, TranslocoPipe, UiCard, UiSkeleton],
   templateUrl: './allocation-page.html',
+  providers: [AllocationStore],
 })
 export class AllocationPage {
   #store = inject(AllocationStore);
