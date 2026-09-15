@@ -22,4 +22,5 @@ export class HoldingAccountGroup {
 
   readonly edit = output<HoldingResponse>();
   readonly remove = output<HoldingResponse>();
+  readonly addCash = output<string>();
 }

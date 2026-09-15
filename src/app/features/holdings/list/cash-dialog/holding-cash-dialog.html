@@ -1,0 +1,43 @@
+<ui-dialog
+  data-testid="holding-cash-dialog"
+  width="md"
+  [heading]="'holdings.cash.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field [label]="'holdings.cash.amount' | transloco">
+    <input data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />
+  </ui-field>
+
+  @if (duplicate()) {
+    <p class="text-sm text-(--negative)" data-testid="holding-cash-duplicate" role="alert">
+      {{ 'holdings.cash.duplicate' | transloco }}
+    </p>
+  } @else if (error()) {
+    <p class="text-sm text-(--negative)" data-testid="holding-cash-error" role="alert">
+      {{ 'holdings.cash.error' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="holding-cash-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="form().submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.cash.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="holding-cash-submit"
+    dialogActions
+    type="button"
+    ui-button
+    [disabled]="form().submitting()"
+    (click)="confirm()"
+  >
+    {{ 'holdings.cash.submit' | transloco }}
+  </button>
+</ui-dialog>

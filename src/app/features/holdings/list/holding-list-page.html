@@ -39,6 +39,7 @@
       <app-holding-account-group
         [expanded]="first"
         [group]="group"
+        (addCash)="accountToAddCashTo.set($event)"
         (edit)="onEdit($event)"
         (remove)="holdingToDelete.set($event)"
       />
@@ -52,4 +53,12 @@
 
 @if (holdingToDelete(); as holding) {
   <app-holding-delete-dialog [holding]="holding" (deleted)="onDeleted()" (dismissed)="holdingToDelete.set(undefined)" />
+}
+
+@if (accountToAddCashTo(); as accountId) {
+  <app-holding-cash-dialog
+    [accountId]="accountId"
+    (dismissed)="accountToAddCashTo.set(undefined)"
+    (saved)="onCashSaved()"
+  />
 }

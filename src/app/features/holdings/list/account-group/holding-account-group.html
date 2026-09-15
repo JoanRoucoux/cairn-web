@@ -1,126 +1,157 @@
-<details class="overflow-hidden rounded-xl border border-(--border) bg-(--card)" [open]="expanded()">
-  <summary
-    class="flex min-h-11 cursor-pointer list-none items-center gap-3 px-3.5 py-3 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-  >
-    <span class="flex min-w-0 grow flex-col gap-0.5">
-      <span class="text-sm font-semibold">{{ group().accountName }}</span>
-      <span class="text-[10.5px] tracking-[0.05em] text-(--subtle-foreground)">
+<div class="overflow-hidden rounded-xl border border-(--border) bg-(--card)">
+  <div class="flex min-h-11 items-center gap-3 px-3.5 pt-3">
+    <span class="min-w-0 grow truncate text-sm font-semibold" [id]="'account-name-' + group().accountId">{{
+      group().accountName
+    }}</span>
+
+    <!-- Sits beside the account name rather than inside <summary>: a button nested in an
+         interactive <summary> is invalid and unreachable for assistive technologies. -->
+    <button
+      class="shrink-0"
+      data-testid="add-cash"
+      size="md"
+      type="button"
+      ui-button
+      variant="outline"
+      [attr.aria-label]="'holdings.cash.open' | transloco: { name: group().accountName }"
+      (click)="addCash.emit(group().accountId)"
+    >
+      {{ 'holdings.cash.openShort' | transloco }}
+    </button>
+  </div>
+
+  <details [open]="expanded()">
+    <summary
+      class="flex min-h-11 cursor-pointer list-none items-center gap-3 px-3.5 pb-3 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+      [attr.aria-labelledby]="
+        'account-name-' +
+        group().accountId +
+        ' account-summary-' +
+        group().accountId +
+        ' account-value-' +
+        group().accountId
+      "
+    >
+      <span
+        class="grow text-[10.5px] tracking-[0.05em] text-(--subtle-foreground)"
+        [id]="'account-summary-' + group().accountId"
+      >
         {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
         {{ 'holdings.lineCount' | transloco: { count: group().holdings.length } }}
       </span>
-    </span>
 
-    @if (group().stale) {
-      <svg
-        class="shrink-0"
-        fill="none"
-        height="13"
-        role="img"
-        stroke="var(--stale)"
-        stroke-linecap="round"
-        stroke-width="2.2"
-        viewBox="0 0 24 24"
-        width="13"
-        [attr.aria-label]="'holdings.staleQuote' | transloco"
-      >
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </svg>
-    }
-
-    <span class="shrink-0 text-right text-sm font-semibold tabular-nums">
-      {{ group().valueEur | money }}
-      @if (group().unvaluedCount > 0) {
-        <span class="block text-[10.5px] font-normal text-(--muted-foreground)">
-          {{ 'holdings.unvaluedCount' | transloco: { count: group().unvaluedCount } }}
-        </span>
+      @if (group().stale) {
+        <svg
+          class="shrink-0"
+          fill="none"
+          height="13"
+          role="img"
+          stroke="var(--stale)"
+          stroke-linecap="round"
+          stroke-width="2.2"
+          viewBox="0 0 24 24"
+          width="13"
+          [attr.aria-label]="'holdings.staleQuote' | transloco"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
       }
-    </span>
-  </summary>
 
-  <div class="overflow-x-auto border-t border-(--hairline)">
-    <table uiTable>
-      <thead>
-        <tr>
-          <th uiTh>{{ 'holdings.columns.line' | transloco }}</th>
-          <th from="md" numeric uiTh>{{ 'holdings.columns.quantity' | transloco }}</th>
-          <th from="lg" numeric uiTh>{{ 'holdings.columns.averageCost' | transloco }}</th>
-          <th from="md" numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
-          <th numeric uiTh>{{ 'holdings.columns.value' | transloco }}</th>
-          <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
-          <th uiTh>
-            <span class="sr-only">{{ 'holdings.columns.actions' | transloco }}</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (holding of group().holdings; track holding.id) {
-          <tr data-testid="holding-row">
-            <td uiTd>
-              <a
-                class="block max-w-56 truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-                [routerLink]="['/holdings', holding.id]"
-              >
-                {{ holding.instrumentName }}
-              </a>
-              <ui-badge variant="outline">{{ 'enums.assetClass.' + holding.assetClass | transloco }}</ui-badge>
-            </td>
-            <td from="md" numeric uiTd>{{ holding.quantity }}</td>
-            <td from="lg" numeric uiTd>
-              @if (holding.averageCost !== null && holding.averageCost !== undefined) {
-                {{ holding.averageCost | money }}
-              } @else {
-                &mdash;
-              }
-            </td>
-            <td from="md" numeric uiTd>
-              @if (holding.price !== null && holding.price !== undefined) {
-                {{ holding.price | money }}
-              } @else {
-                &mdash;
-              }
-            </td>
-            <td numeric uiTd>
-              @if (holding.marketValueEur !== null && holding.marketValueEur !== undefined) {
-                {{ holding.marketValueEur | money }}
-              } @else {
-                &mdash;
-              }
-            </td>
-            <td numeric uiTd>
-              <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
-                {{ holding.unrealizedGainEur | signedMoney }}
-              </ui-delta>
-            </td>
-            <td uiTd>
-              <div class="flex justify-end gap-1.5">
-                <button
-                  data-testid="edit-holding"
-                  size="md"
-                  type="button"
-                  ui-button
-                  variant="ghost"
-                  [attr.aria-label]="'holdings.editRow' | transloco: { name: holding.instrumentName }"
-                  (click)="edit.emit(holding)"
-                >
-                  {{ 'holdings.editRowShort' | transloco }}
-                </button>
-                <button
-                  data-testid="delete-holding"
-                  size="md"
-                  type="button"
-                  ui-button
-                  variant="ghost"
-                  [attr.aria-label]="'holdings.deleteRow' | transloco: { name: holding.instrumentName }"
-                  (click)="remove.emit(holding)"
-                >
-                  {{ 'holdings.deleteRowShort' | transloco }}
-                </button>
-              </div>
-            </td>
-          </tr>
+      <span class="shrink-0 text-right text-sm font-semibold tabular-nums" [id]="'account-value-' + group().accountId">
+        {{ group().valueEur | money }}
+        @if (group().unvaluedCount > 0) {
+          <span class="block text-[10.5px] font-normal text-(--muted-foreground)">
+            {{ 'holdings.unvaluedCount' | transloco: { count: group().unvaluedCount } }}
+          </span>
         }
-      </tbody>
-    </table>
-  </div>
-</details>
+      </span>
+    </summary>
+
+    <div class="overflow-x-auto border-t border-(--hairline)">
+      <table uiTable>
+        <thead>
+          <tr>
+            <th uiTh>{{ 'holdings.columns.line' | transloco }}</th>
+            <th from="md" numeric uiTh>{{ 'holdings.columns.quantity' | transloco }}</th>
+            <th from="lg" numeric uiTh>{{ 'holdings.columns.averageCost' | transloco }}</th>
+            <th from="md" numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
+            <th numeric uiTh>{{ 'holdings.columns.value' | transloco }}</th>
+            <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
+            <th uiTh>
+              <span class="sr-only">{{ 'holdings.columns.actions' | transloco }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (holding of group().holdings; track holding.id) {
+            <tr data-testid="holding-row">
+              <td uiTd>
+                <a
+                  class="block max-w-56 truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+                  [routerLink]="['/holdings', holding.id]"
+                >
+                  {{ holding.instrumentName }}
+                </a>
+                <ui-badge variant="outline">{{ 'enums.assetClass.' + holding.assetClass | transloco }}</ui-badge>
+              </td>
+              <td from="md" numeric uiTd>{{ holding.quantity }}</td>
+              <td from="lg" numeric uiTd>
+                @if (holding.averageCost !== null && holding.averageCost !== undefined) {
+                  {{ holding.averageCost | money }}
+                } @else {
+                  &mdash;
+                }
+              </td>
+              <td from="md" numeric uiTd>
+                @if (holding.price !== null && holding.price !== undefined) {
+                  {{ holding.price | money }}
+                } @else {
+                  &mdash;
+                }
+              </td>
+              <td numeric uiTd>
+                @if (holding.marketValueEur !== null && holding.marketValueEur !== undefined) {
+                  {{ holding.marketValueEur | money }}
+                } @else {
+                  &mdash;
+                }
+              </td>
+              <td numeric uiTd>
+                <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
+                  {{ holding.unrealizedGainEur | signedMoney }}
+                </ui-delta>
+              </td>
+              <td uiTd>
+                <div class="flex justify-end gap-1.5">
+                  <button
+                    data-testid="edit-holding"
+                    size="md"
+                    type="button"
+                    ui-button
+                    variant="ghost"
+                    [attr.aria-label]="'holdings.editRow' | transloco: { name: holding.instrumentName }"
+                    (click)="edit.emit(holding)"
+                  >
+                    {{ 'holdings.editRowShort' | transloco }}
+                  </button>
+                  <button
+                    data-testid="delete-holding"
+                    size="md"
+                    type="button"
+                    ui-button
+                    variant="ghost"
+                    [attr.aria-label]="'holdings.deleteRow' | transloco: { name: holding.instrumentName }"
+                    (click)="remove.emit(holding)"
+                  >
+                    {{ 'holdings.deleteRowShort' | transloco }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </details>
+</div>

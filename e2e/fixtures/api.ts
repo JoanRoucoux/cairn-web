@@ -159,75 +159,147 @@ const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/session': session,
 };
 
+type Handler = (route: Route, match: RegExpExecArray) => Promise<void>;
+
+const allInstruments = (): typeof instruments => [...instruments, unvaluedInstrument];
+
+const deletePasskey: Handler = (route) => route.fulfill({ status: 204 });
+
+const getInstrument: Handler = (route, [, id]) => {
+  const found = allInstruments().find((candidate) => candidate.id === id);
+
+  return found
+    ? route.fulfill({ json: found })
+    : route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
+};
+
+const listQuotes: Handler = (route) => route.fulfill({ json: [] });
+
+// Stateful on purpose: a quote recorded for a newly created cash instrument must value it.
+const recordQuote: Handler = (route, [, instrumentId]) =>
+  route.fulfill({ status: 201, json: { instrumentId, ...(route.request().postDataJSON() as object) } });
+
+// Stateful on purpose: a holding is unique per account and instrument, and a duplicate is refused.
+const createHolding: Handler = (route) => {
+  const body = route.request().postDataJSON() as {
+    accountId: string;
+    instrumentId: string;
+    quantity: number;
+    averageCost?: number | null;
+  };
+  const duplicate = holdings.some(
+    (candidate) => candidate.accountId === body.accountId && candidate.instrumentId === body.instrumentId,
+  );
+
+  if (duplicate) {
+    return route.fulfill({
+      status: 409,
+      json: { message: 'a holding already exists for this account and instrument' },
+    });
+  }
+
+  const owningAccount = accounts.find((candidate) => candidate.id === body.accountId);
+  const owningInstrument = allInstruments().find((candidate) => candidate.id === body.instrumentId);
+  const saved = {
+    id: `55555555-5555-5555-5555-00000000000${holdings.length + 1}`,
+    accountId: body.accountId,
+    accountName: owningAccount?.name ?? 'Unknown account',
+    accountType: owningAccount?.type ?? 'PEA',
+    instrumentId: body.instrumentId,
+    instrumentName: owningInstrument?.name ?? 'Unknown instrument',
+    isin: owningInstrument?.isin ?? null,
+    assetClass: owningInstrument?.assetClass ?? 'CASH',
+    quantity: body.quantity,
+    averageCost: body.averageCost ?? null,
+    price: 1,
+    priceCurrency: 'EUR',
+    priceAsOf: new Date().toISOString(),
+    priceSource: owningInstrument?.priceSource ?? 'MANUAL',
+    stale: false,
+    marketValueEur: body.quantity,
+    unrealizedGainEur: 0,
+    unrealizedGainRatio: 0,
+    dayChangeEur: 0,
+    dayChangeRatio: 0,
+  };
+  holdings.push(saved);
+
+  return route.fulfill({ status: 201, json: saved });
+};
+
+// Stateful on purpose: a created instrument has to show up in the list that follows.
+const createInstrument: Handler = (route) => {
+  const saved = {
+    ...instrument,
+    ...route.request().postDataJSON(),
+    id: `cccccccc-cccc-cccc-cccc-00000000000${++created}`,
+  };
+  instruments.push(saved);
+
+  return route.fulfill({ status: 201, json: saved });
+};
+
+// Stateful on purpose: an edited instrument has to show up updated in the list that follows.
+const updateInstrument: Handler = (route, [, id]) => {
+  const existing = instruments.find((candidate) => candidate.id === id);
+
+  if (!existing) {
+    return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
+  }
+
+  Object.assign(existing, route.request().postDataJSON());
+
+  return route.fulfill({ json: existing });
+};
+
+// Stateful on purpose: a deleted instrument, and the holdings it backs, must disappear.
+const deleteInstrument: Handler = (route, [, id]) => {
+  const index = instruments.findIndex((candidate) => candidate.id === id);
+
+  if (index === -1) {
+    return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
+  }
+
+  instruments.splice(index, 1);
+  holdings
+    .filter((candidate) => candidate.instrumentId === id)
+    .forEach((candidate) => holdings.splice(holdings.indexOf(candidate), 1));
+
+  return route.fulfill({ status: 204 });
+};
+
+// First match wins, so a more specific path must come before a broader one.
+const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
+  { method: 'DELETE', path: new RegExp('^/api/session/passkeys/.+$'), handle: deletePasskey },
+  { method: 'GET', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: listQuotes },
+  { method: 'POST', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: recordQuote },
+  { method: 'GET', path: new RegExp('^/api/instruments/([^/]+)$'), handle: getInstrument },
+  { method: 'PUT', path: new RegExp('^/api/instruments/([^/]+)$'), handle: updateInstrument },
+  { method: 'DELETE', path: new RegExp('^/api/instruments/([^/]+)$'), handle: deleteInstrument },
+  { method: 'POST', path: new RegExp('^/api/instruments$'), handle: createInstrument },
+  { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
+];
+
 const handleApiRoute = async (route: Route): Promise<void> => {
   const request = route.request();
-  const url = new URL(request.url());
+  const { pathname } = new URL(request.url());
   const method = request.method();
 
-  if (url.pathname.startsWith('/api/session/passkeys/') && method === 'DELETE') {
-    return route.fulfill({ status: 204 });
-  }
+  for (const { method: expected, path, handle } of ROUTES) {
+    const match = method === expected ? path.exec(pathname) : null;
 
-  const instrumentMatch = /^\/api\/instruments\/([^/]+)$/.exec(url.pathname);
-
-  if (instrumentMatch && method === 'GET') {
-    const found = [...instruments, unvaluedInstrument].find((candidate) => candidate.id === instrumentMatch[1]);
-
-    return found
-      ? route.fulfill({ json: found })
-      : route.fulfill({ status: 404, json: { message: `unknown instrument: ${instrumentMatch[1]}` } });
-  }
-
-  if (/^\/api\/instruments\/[^/]+\/quotes$/.test(url.pathname) && method === 'GET') {
-    return route.fulfill({ json: [] });
-  }
-
-  // Stateful on purpose: a created instrument has to show up in the list that follows.
-  if (url.pathname === '/api/instruments' && method === 'POST') {
-    const saved = { ...instrument, ...request.postDataJSON(), id: `cccccccc-cccc-cccc-cccc-00000000000${++created}` };
-    instruments.push(saved);
-
-    return route.fulfill({ status: 201, json: saved });
-  }
-
-  // Stateful on purpose: an edited instrument has to show up updated in the list that follows.
-  if (url.pathname.startsWith('/api/instruments/') && method === 'PUT') {
-    const id = url.pathname.split('/').pop();
-    const existing = instruments.find((candidate) => candidate.id === id);
-
-    if (!existing) {
-      return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
+    if (match) {
+      return handle(route, match);
     }
-
-    Object.assign(existing, request.postDataJSON());
-
-    return route.fulfill({ json: existing });
   }
 
-  // Stateful on purpose: a deleted instrument, and the holdings it backs, must disappear.
-  if (url.pathname.startsWith('/api/instruments/') && method === 'DELETE') {
-    const id = url.pathname.split('/').pop();
-    const index = instruments.findIndex((candidate) => candidate.id === id);
-
-    if (index === -1) {
-      return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
-    }
-
-    instruments.splice(index, 1);
-    holdings
-      .filter((candidate) => candidate.instrumentId === id)
-      .forEach((candidate) => holdings.splice(holdings.indexOf(candidate), 1));
-
-    return route.fulfill({ status: 204 });
-  }
-
-  const body = FIXED_RESPONSES[`${method} ${url.pathname}`];
+  const body = FIXED_RESPONSES[`${method} ${pathname}`];
 
   if (body !== undefined) {
     return route.fulfill({ json: body });
   }
 
-  return route.fulfill({ status: 404, json: { message: `unmocked route: ${method} ${url.pathname}` } });
+  return route.fulfill({ status: 404, json: { message: `unmocked route: ${method} ${pathname}` } });
 };
 
 export const mockApi = async (page: Page): Promise<void> => {

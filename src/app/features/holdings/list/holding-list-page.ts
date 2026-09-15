@@ -8,6 +8,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { MoneyPipe } from '@shared/format/money-pipe';
 
 import { HoldingAccountGroup } from './account-group/holding-account-group';
+import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
 import { HoldingDeleteDialog } from './delete-dialog/holding-delete-dialog';
 import { HoldingFormDialog } from './form-dialog/holding-form-dialog';
 import { HoldingListStore } from './holding-list-store';
@@ -16,6 +17,7 @@ import { HoldingListStore } from './holding-list-store';
   selector: 'app-holding-list-page',
   imports: [
     HoldingAccountGroup,
+    HoldingCashDialog,
     HoldingDeleteDialog,
     HoldingFormDialog,
     MoneyPipe,
@@ -41,6 +43,7 @@ export class HoldingListPage {
   protected readonly formOpen = signal(false);
   protected readonly holdingToEdit = signal<HoldingResponse | undefined>(undefined);
   protected readonly holdingToDelete = signal<HoldingResponse | undefined>(undefined);
+  protected readonly accountToAddCashTo = signal<string | undefined>(undefined);
 
   protected onSearchInput(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
@@ -69,5 +72,10 @@ export class HoldingListPage {
     this.holdingToDelete.set(undefined);
     this.holdings.reload();
     this.heading().nativeElement.focus();
+  }
+
+  protected onCashSaved(): void {
+    this.accountToAddCashTo.set(undefined);
+    this.holdings.reload();
   }
 }

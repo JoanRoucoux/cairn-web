@@ -59,5 +59,15 @@
     "error": "This holding could not be deleted."
   },
   "unvaluedCount": "{{count}} unvalued",
-  "noQuoteYet": "No quote yet for this instrument."
+  "noQuoteYet": "No quote yet for this instrument.",
+  "cash": {
+    "open": "Add cash to {{name}}",
+    "openShort": "+ Cash",
+    "title": "Add cash",
+    "amount": "Amount in euros",
+    "cancel": "Cancel",
+    "submit": "Add",
+    "duplicate": "This account already has a cash line. Edit it instead of adding a new one.",
+    "error": "That cash line was refused."
+  }
 }

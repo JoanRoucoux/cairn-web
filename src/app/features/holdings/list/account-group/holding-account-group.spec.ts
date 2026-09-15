@@ -47,6 +47,13 @@ describe('HoldingAccountGroup', () => {
     expect(screen.getByText(/enums\.accountType\.PEE/)).toBeInTheDocument();
   });
 
+  it('announces the account name on the toggle, which sits outside it next to the cash button', async () => {
+    const { container } = await renderGroup();
+    await screen.findByText('Esalia');
+
+    expect(container.querySelector('summary')).toHaveAccessibleName(/Esalia/);
+  });
+
   it('should mark a stale account with an icon, not with colour alone', async () => {
     await renderGroup();
 
@@ -136,6 +143,17 @@ describe('HoldingAccountGroup', () => {
     await user.click(await screen.findByTestId('delete-holding'));
 
     expect(emitted).toHaveBeenCalledWith(group.holdings[0]);
+  });
+
+  it('should emit the account to add a cash line to', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderGroup();
+    const emitted = vi.fn();
+    fixture.componentInstance.addCash.subscribe(emitted);
+
+    await user.click(await screen.findByTestId('add-cash'));
+
+    expect(emitted).toHaveBeenCalledWith(group.accountId);
   });
 
   it('should hold the secondary columns back on a narrow viewport', async () => {

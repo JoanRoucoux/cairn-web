@@ -59,4 +59,33 @@ test.describe('holdings', () => {
     await expect(row).toContainText('—');
     await expect(row.locator('ui-badge')).toHaveText('Fund');
   });
+
+  test('adds cash to an account, then refuses a second cash line on the same account', async ({ page }) => {
+    await page.getByTestId('add-cash').first().click();
+
+    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByTestId('holding-cash-cancel')).toBeFocused();
+
+    await page.getByTestId('holding-cash-amount').fill('500');
+    await page.getByTestId('holding-cash-submit').click();
+
+    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeHidden();
+    await expect(page.getByText('Euros')).toBeVisible();
+    await expect(page.getByRole('row', { name: /Euros/ })).toContainText('500');
+
+    await page.getByTestId('add-cash').first().click();
+    await page.getByTestId('holding-cash-amount').fill('200');
+    await page.getByTestId('holding-cash-submit').click();
+
+    await expect(page.getByTestId('holding-cash-duplicate')).toBeVisible();
+    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
+  });
+
+  test('refuses a zero amount in the cash dialog', async ({ page }) => {
+    await page.getByTestId('add-cash').first().click();
+    await page.getByTestId('holding-cash-amount').fill('0');
+    await page.getByTestId('holding-cash-submit').click();
+
+    await expect(page.getByTestId('holding-cash-amount')).toHaveAttribute('aria-invalid', 'true');
+  });
 });

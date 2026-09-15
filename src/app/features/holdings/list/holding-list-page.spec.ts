@@ -200,6 +200,35 @@ describe('HoldingListPage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
   });
 
+  it('should reload the list after a cash line is added', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getAllByTestId('add-cash')[0]!);
+    await user.type(screen.getByTestId('holding-cash-amount'), '500');
+    await user.click(screen.getByTestId('holding-cash-submit'));
+
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() => httpTesting.expectOne({ url: '/api/instruments', method: 'POST' }).flush({ id: 'euros' }));
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/euros/quotes').flush({}));
+    await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'POST' }).flush({}));
+    await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush(holdings));
+
+    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+  });
+
+  it('should close the cash dialog when it is dismissed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findByText('Esalia');
+
+    await user.click(screen.getAllByTestId('add-cash')[0]!);
+    await user.click(await screen.findByTestId('holding-cash-cancel'));
+
+    expect(screen.queryByTestId('holding-cash-dialog')).not.toBeInTheDocument();
+  });
+
   it('should close the delete dialog when it is dismissed', async () => {
     const user = userEvent.setup();
     await renderPage();

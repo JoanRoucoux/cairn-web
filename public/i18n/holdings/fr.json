@@ -59,5 +59,15 @@
     "error": "Cette ligne n'a pas pu être supprimée."
   },
   "unvaluedCount": "{{count}} non valorisées",
-  "noQuoteYet": "Aucune cotation pour cet instrument."
+  "noQuoteYet": "Aucune cotation pour cet instrument.",
+  "cash": {
+    "open": "Ajouter des liquidités sur {{name}}",
+    "openShort": "+ Liquidités",
+    "title": "Ajouter des liquidités",
+    "amount": "Montant en euros",
+    "cancel": "Annuler",
+    "submit": "Ajouter",
+    "duplicate": "Ce compte a déjà une ligne de liquidités. Modifiez-la plutôt que d'en ajouter une nouvelle.",
+    "error": "Cette ligne de liquidités a été refusée."
+  }
 }
