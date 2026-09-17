@@ -1,5 +1,3 @@
-# Deploys every push to main, tagged sha-<7 characters>, and redeploys an earlier commit on demand.
-# This repository owns WEB_TAG in /srv/cairn/.env and the `web` service alone.
 name: Deploy
 
 on:
@@ -15,16 +13,11 @@ permissions:
   contents: read
   packages: write
 
-# A running deploy is never cancelled, so none stops between the migration and the API start.
-# GitHub keeps only the newest pending run per group: a rollback dispatched while another run waits
-# can be superseded by a later push, so check the run list after dispatching one.
 concurrency:
   group: deploy
   cancel-in-progress: false
 
 env:
-  # Neither value is a secret. Pinning the host key is what stops the deploy from trusting
-  # whatever answers on that address; reinstalling the server changes it.
   DEPLOY_HOST: 51.255.42.146
   DEPLOY_KNOWN_HOSTS: '51.255.42.146 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEbEn9NUsA5n7n1DSBWaozWpMVcs7JsBn6Y82kH3oGxN'
 
@@ -112,7 +105,6 @@ jobs:
       - name: Start the new frontend
         run: |
           scp -i ~/.ssh/id_ed25519 deploy/deploy.sh "deploy@${DEPLOY_HOST}:/srv/cairn/deploy-web.sh"
-          # The token goes down stdin: arguments are readable by every process on the host.
           printf '%s\n' "${{ secrets.GITHUB_TOKEN }}" \
             | ssh -i ~/.ssh/id_ed25519 "deploy@${DEPLOY_HOST}" \
                 "bash /srv/cairn/deploy-web.sh '${IMAGE_TAG}' '${{ github.actor }}'"
@@ -128,3 +120,34 @@ jobs:
           cache=$(curl -sSI https://cairn.joanroucoux.fr/i18n/en.json | tr -d '\r' | grep -i '^cache-control:' || true)
           echo "GET /i18n/en.json -> ${cache:-no Cache-Control}"
           echo "$cache" | grep -qi 'no-cache' || exit 1
+
+  release:
+    needs: deploy
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Name the release after the day it shipped
+        id: calver
+        run: |
+          day=$(date -u +%Y.%m.%d)
+          echo "tag=v${day}.$(( $(git tag -l "v${day}.*" | wc -l) + 1 ))" >> "$GITHUB_OUTPUT"
+
+      - uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        env:
+          OUTPUT: release-notes.md
+        with:
+          args: --unreleased
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.calver.outputs.tag }}
+        run: |
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" \
+            --notes-file release-notes.md --latest
