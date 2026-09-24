@@ -172,6 +172,7 @@ describe('LoginPage', () => {
 
     const toggle = screen.getByTestId('login-password-toggle');
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle).toHaveAttribute('aria-controls', 'login-password-form');
     expect(screen.queryByTestId('login-username')).not.toBeInTheDocument();
 
     await fillIn(user, 'a-real-password');

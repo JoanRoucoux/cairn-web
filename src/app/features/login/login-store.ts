@@ -32,10 +32,8 @@ export class LoginStore {
   readonly passkeyUnsupported = signal(false);
   readonly passkeyFailed = signal(false);
 
-  // Returns true once the session exists.
   async signIn(): Promise<boolean> {
-    this.refused.set(false);
-    this.failed.set(false);
+    this.#clearOutcomes();
     let signedIn = false;
 
     // submit() marks every field as touched and skips the request while the form is invalid.
@@ -67,11 +65,8 @@ export class LoginStore {
     return signedIn;
   }
 
-  // Returns true once the session exists.
   async signInWithPasskey(): Promise<boolean> {
-    this.passkeyRefused.set(false);
-    this.passkeyUnsupported.set(false);
-    this.passkeyFailed.set(false);
+    this.#clearOutcomes();
     this.passkeySubmitting.set(true);
 
     try {
@@ -95,5 +90,13 @@ export class LoginStore {
     } finally {
       this.passkeySubmitting.set(false);
     }
+  }
+
+  #clearOutcomes(): void {
+    this.refused.set(false);
+    this.failed.set(false);
+    this.passkeyRefused.set(false);
+    this.passkeyUnsupported.set(false);
+    this.passkeyFailed.set(false);
   }
 }

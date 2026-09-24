@@ -138,12 +138,46 @@ describe('LoginStore', () => {
     expect(store.passkeyFailed()).toBe(true);
   });
 
-  it('should clear the previous outcome before trying again', async () => {
+  it('should clear the previous passkey outcome before trying again', async () => {
     authenticate.mockResolvedValueOnce('refused');
     await store.signInWithPasskey();
 
     authenticate.mockResolvedValueOnce('ok');
     expect(await store.signInWithPasskey()).toBe(true);
+    expect(store.passkeyRefused()).toBe(false);
+  });
+
+  it('should clear a stale password outcome when a passkey attempt runs', async () => {
+    store.form.username().value.set('joan');
+    store.form.password().value.set('wrong');
+    const passwordAttempt = store.signIn();
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    await passwordAttempt;
+    expect(store.refused()).toBe(true);
+
+    authenticate.mockResolvedValue('ok');
+    await store.signInWithPasskey();
+
+    expect(store.refused()).toBe(false);
+  });
+
+  it('should clear a stale passkey outcome when a password attempt runs', async () => {
+    authenticate.mockResolvedValue('refused');
+    await store.signInWithPasskey();
+    expect(store.passkeyRefused()).toBe(true);
+
+    store.form.username().value.set('joan');
+    store.form.password().value.set('a-real-password');
+    const passwordAttempt = store.signIn();
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+    await passwordAttempt;
+
     expect(store.passkeyRefused()).toBe(false);
   });
 });

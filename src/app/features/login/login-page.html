@@ -32,6 +32,7 @@
       }
 
       <button
+        aria-controls="login-password-form"
         data-testid="login-password-toggle"
         type="button"
         ui-button
@@ -44,7 +45,7 @@
 
       @if (passwordExpanded()) {
         <!-- novalidate: the native required-field validation would block submit() from ever running. -->
-        <form class="flex flex-col gap-4" novalidate (submit)="onSubmit($event)">
+        <form class="flex flex-col gap-4" id="login-password-form" novalidate (submit)="onSubmit($event)">
           <ui-field [label]="'login.username' | transloco">
             <input
               autocomplete="username"
