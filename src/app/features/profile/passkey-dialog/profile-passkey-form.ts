@@ -15,8 +15,6 @@ export const passkeyDraftSchema = (messages: FormMessages): Schema<PasskeyDraft>
   return schema((draft) => {
     required(draft.label, { message: () => messages.required() });
     maxLength(draft.label, 64, { message: () => labelTooLong() });
-    // required() only rejects an empty string: a label of nothing but spaces passes it and would
-    // otherwise reach the ceremony untrimmed.
     validate(draft.label, ({ value }) =>
       value().trim().length === 0 ? requiredError({ message: messages.required() }) : undefined,
     );

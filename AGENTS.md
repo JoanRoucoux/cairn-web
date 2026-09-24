@@ -155,9 +155,10 @@ application and has to navigate, so three things were added on purpose. They are
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
   through `light-dark()`, which follows the OS only while nothing is stamped.
 - **`core/session/`** - one root-level store that reads `GET /session` once and hands the owner
-  and their passkeys to both the shell and the account screen. The application owns the password
-  sign-in screen (`features/login/`); the passkey ceremony still lives on the pages Spring Security
-  serves, until part two, and a 401 sends the browser there.
+  and their passkeys to both the shell and the account screen. The application owns sign-in
+  (`features/login/`, passkey first, password folded) and passkey registration (a dialog on the
+  account screen); `core/webauthn/` plays the ceremony against Spring Security's endpoints. A 401
+  sends the browser to the application's `/login`, except for the sign-in ceremony's own calls.
 
 Two conventions worth knowing before touching a screen:
 

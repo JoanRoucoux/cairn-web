@@ -3,7 +3,7 @@
   "avatarLabel": "My account",
   "connectedByPasskey": "Signed in with a passkey on this device",
   "passkeys": "Passkeys",
-  "addPasskey": "Add a device",
+  "addPasskey": "Add a passkey",
   "addPasskeyTitle": "Add a passkey",
   "addPasskeyDescription": "Name this device so you can recognize it later.",
   "addPasskeyLabel": "Device name",

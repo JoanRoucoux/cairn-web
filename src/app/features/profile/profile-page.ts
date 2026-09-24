@@ -14,7 +14,6 @@ import {
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
-import { SessionStore } from '@core/session/session-store';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
 import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
@@ -44,7 +43,6 @@ import { ProfileStore } from './profile-store';
 export class ProfilePage {
   #store = inject(ProfileStore);
   #signIn = inject(SignInRedirect);
-  #session = inject(SessionStore);
 
   protected readonly owner = this.#store.owner;
   protected readonly passkeys = this.#store.passkeys;
@@ -99,7 +97,7 @@ export class ProfilePage {
 
   protected onPasskeyRegistered(): void {
     this.passkeyDialogOpen.set(false);
-    this.#session.reload();
+    this.#store.reloadSession();
   }
 
   // Navigation stays in the page: the store returns, the page decides where to go.

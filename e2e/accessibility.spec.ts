@@ -25,3 +25,40 @@ for (const screen of screens) {
     expect(results.violations).toEqual([]);
   });
 }
+
+test('has no accessibility violation on /login, folded', async ({ page, makeAxeBuilder }) => {
+  await mockApi(page);
+  await page.route('**/api/session', (route) => route.fulfill({ status: 401, json: { message: 'unauthenticated' } }));
+  await page.goto('/login');
+  await page.waitForLoadState('networkidle');
+
+  const results = await makeAxeBuilder().analyze();
+
+  expect(results.violations).toEqual([]);
+});
+
+test('has no accessibility violation on /login, unfolded', async ({ page, makeAxeBuilder }) => {
+  await mockApi(page);
+  await page.route('**/api/session', (route) => route.fulfill({ status: 401, json: { message: 'unauthenticated' } }));
+  await page.goto('/login');
+  await page.waitForLoadState('networkidle');
+  await page.getByTestId('login-password-toggle').click();
+
+  const results = await makeAxeBuilder().analyze();
+
+  expect(results.violations).toEqual([]);
+});
+
+test('has no accessibility violation on /profile with the add-passkey dialog open', async ({
+  page,
+  makeAxeBuilder,
+}) => {
+  await mockApi(page);
+  await page.goto('/profile');
+  await page.waitForLoadState('networkidle');
+  await page.getByTestId('manage-passkeys').click();
+
+  const results = await makeAxeBuilder().analyze();
+
+  expect(results.violations).toEqual([]);
+});

@@ -32,13 +32,7 @@ const seedResidentCredential = (page: Page): Promise<void> =>
     });
   });
 
-// Chromium only: the virtual authenticator is a CDP capability, and Firefox/WebKit have no
-// equivalent in Playwright.
 test.describe('passkeys', () => {
-  test.beforeEach(({ browserName }) => {
-    test.skip(browserName !== 'chromium', 'virtual WebAuthn authenticator is Chromium-only');
-  });
-
   test('registers a passkey from the account screen', async ({ page }) => {
     await addVirtualAuthenticator(page);
     await mockApi(page);

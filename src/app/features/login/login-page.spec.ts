@@ -124,6 +124,20 @@ describe('LoginPage', () => {
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 
+  it('should disable the passkey button while the ceremony is running', async () => {
+    const user = userEvent.setup();
+    let resolveAuthenticate!: (outcome: PasskeyOutcome) => void;
+    authenticate.mockReturnValue(new Promise((resolve) => (resolveAuthenticate = resolve)));
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    expect(await screen.findByTestId('login-passkey')).toBeDisabled();
+
+    resolveAuthenticate('ok');
+    await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
+  });
+
   it('should show no message when the passkey ceremony is dismissed', async () => {
     const user = userEvent.setup();
     authenticate.mockResolvedValue('cancelled');

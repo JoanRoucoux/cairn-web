@@ -102,6 +102,14 @@ describe('ProfileStore', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
   });
 
+  it('should reload the session on request', async () => {
+    await settleSession();
+
+    store.reloadSession();
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+  });
+
   it('should sign the user out', async () => {
     await settleSession();
 

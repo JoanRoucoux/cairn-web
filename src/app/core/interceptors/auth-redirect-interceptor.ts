@@ -18,9 +18,7 @@ export const authRedirectInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: unknown) => {
       // Redirecting on a failing logout would bounce between /logout and /login forever, and
-      // redirecting on a refused sign-in would reload the page that is already showing. The
-      // passkey sign-in ceremony owns its own 401s too: PasskeyCeremony turns them into a
-      // `refused` outcome the login screen renders in place.
+      // redirecting on a refused sign-in would reload the page that is already showing.
       const ownAuthenticationCall =
         req.url.endsWith(SIGN_OUT_URL) ||
         req.url.endsWith(SIGN_IN_URL) ||

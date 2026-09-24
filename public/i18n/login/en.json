@@ -9,7 +9,7 @@
   "failed": "Sign-in could not be sent. Try again.",
   "passkey": "Sign in with a passkey",
   "passkeySubmitting": "Signing in...",
-  "passkeyRefused": "This passkey was not recognised.",
+  "passkeyRefused": "This passkey was not recognized.",
   "passkeyUnsupported": "This browser cannot use passkeys.",
   "passkeyFailed": "Sign-in failed, try again.",
   "passwordToggle": "Use my password instead"
