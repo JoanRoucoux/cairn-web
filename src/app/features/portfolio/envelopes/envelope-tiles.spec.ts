@@ -38,6 +38,12 @@ describe('EnvelopeTiles', () => {
     expect(screen.getByText('+€500.00')).toBeInTheDocument();
   });
 
+  it('should join the period and the share with a middle dot', async () => {
+    await renderTiles();
+
+    expect(screen.getAllByText(/·/)[0]).toHaveTextContent('portfolio.hero.period.1d · 70.0% portfolio.envelopes.share');
+  });
+
   it('should render nothing when there are no envelopes', async () => {
     await renderTiles([]);
 

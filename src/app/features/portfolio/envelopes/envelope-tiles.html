@@ -1,16 +1,17 @@
-<div class="grid grid-cols-1 gap-3 sm:grid-cols-2" role="list">
+<div class="flex flex-col gap-3" role="list">
   @for (envelope of envelopes(); track envelope.accountType) {
     <ui-card padding="sm" role="listitem">
       <ui-stat size="tile" [label]="'enums.accountType.' + envelope.accountType | transloco">
-        <span uiStatValue>{{ envelope.valueEur | money }}</span>
+        <span class="flex items-baseline justify-between gap-3" uiStatValue>
+          <span>{{ envelope.valueEur | money }}</span>
+          <ui-delta class="text-sm" [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
+            {{ envelope.changeEur | signedMoney }}
+          </ui-delta>
+        </span>
 
-        <ui-delta uiStatDelta [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
-          {{ envelope.changeEur | signedMoney }}
-        </ui-delta>
-
-        <span uiStatCaption>{{ periodKey() | transloco }}</span>
-
-        <span uiStatCaption>{{ envelope.share | ratio }} {{ 'portfolio.envelopes.share' | transloco }}</span>
+        <span uiStatCaption>
+          {{ periodKey() | transloco }} · {{ envelope.share | ratio }} {{ 'portfolio.envelopes.share' | transloco }}
+        </span>
       </ui-stat>
     </ui-card>
   }

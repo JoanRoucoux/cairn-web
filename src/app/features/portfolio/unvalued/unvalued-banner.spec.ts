@@ -32,4 +32,16 @@ describe('UnvaluedBanner', () => {
 
     expect(screen.getByRole('link', { name: 'portfolio.unvalued.action' })).toHaveAttribute('href', '/sources');
   });
+
+  it('should use the singular message key for a count of one', async () => {
+    await renderBanner(1);
+
+    expect(screen.getByRole('status')).toHaveTextContent('portfolio.unvalued.message_one');
+  });
+
+  it('should use the plural message key for more than one', async () => {
+    await renderBanner(2);
+
+    expect(screen.getByRole('status')).toHaveTextContent('portfolio.unvalued.message_other');
+  });
 });

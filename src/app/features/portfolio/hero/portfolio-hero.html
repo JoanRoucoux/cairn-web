@@ -24,7 +24,7 @@
     />
   </ui-stat>
 
-  <div class="mt-5 grid grid-cols-2 gap-4">
+  <div class="mt-5 flex gap-6 border-t border-(--hairline) pt-4">
     <div>
       <p class="text-[11px] font-medium text-(--muted-foreground)">
         {{ 'portfolio.hero.unrealizedGain' | transloco }}
@@ -34,12 +34,14 @@
       </ui-delta>
     </div>
 
-    <div>
-      <p class="text-[11px] font-medium text-(--muted-foreground)">{{ 'portfolio.hero.day' | transloco }}</p>
-      <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="dayChangeEur()">
-        {{ dayChangeEur() | signedMoney }}
-      </ui-delta>
-    </div>
+    @if (range() !== '1d') {
+      <div>
+        <p class="text-[11px] font-medium text-(--muted-foreground)">{{ 'portfolio.hero.day' | transloco }}</p>
+        <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="dayChangeEur()">
+          {{ dayChangeEur() | signedMoney }}
+        </ui-delta>
+      </div>
+    }
   </div>
 
   @if (updatedAt(); as updatedAt) {

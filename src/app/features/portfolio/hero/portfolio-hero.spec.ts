@@ -55,4 +55,16 @@ describe('PortfolioHero', () => {
 
     expect(screen.queryByTestId('updated-at')).not.toBeInTheDocument();
   });
+
+  it('should hide the day change on the one-day range, since it repeats the hero delta', async () => {
+    await renderHero({ range: '1d' });
+
+    expect(screen.queryByText('portfolio.hero.day')).not.toBeInTheDocument();
+  });
+
+  it('should show the day change alongside the range change beyond one day', async () => {
+    await renderHero({ range: '1m' });
+
+    expect(screen.getByText('portfolio.hero.day')).toBeInTheDocument();
+  });
 });

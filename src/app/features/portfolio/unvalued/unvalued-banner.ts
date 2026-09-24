@@ -1,7 +1,9 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { TranslocoPipe } from '@jsverse/transloco';
+
+import { pluralKey } from '@shared/format/plural-key';
 
 @Component({
   selector: 'app-unvalued-banner',
@@ -27,7 +29,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
           <circle cx="12" cy="12" r="9" />
           <path d="M12 7v5l3 2" />
         </svg>
-        <span>{{ 'portfolio.unvalued.message' | transloco: { count: count() } }}</span>
+        <span>{{ messageKey() | transloco: { count: count() } }}</span>
         <a class="ml-auto font-semibold underline underline-offset-2" routerLink="/sources">
           {{ 'portfolio.unvalued.action' | transloco }}
         </a>
@@ -37,4 +39,6 @@ import { TranslocoPipe } from '@jsverse/transloco';
 })
 export class UnvaluedBanner {
   readonly count = input.required<number>();
+
+  protected readonly messageKey = computed(() => pluralKey('portfolio.unvalued.message', this.count()));
 }

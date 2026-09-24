@@ -26,7 +26,8 @@
     "title": "Ce qui bouge"
   },
   "stale": {
-    "message": "{{count}} cours datent de plus de 4 jours",
+    "message_one": "{{count}} cours date de plus de 4 jours",
+    "message_other": "{{count}} cours datent de plus de 4 jours",
     "action": "Voir les sources"
   },
   "allocation": {
@@ -36,7 +37,8 @@
     "scaleNote": "Les barres sont à l'échelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
   },
   "unvalued": {
-    "message": "{{count}} lignes non valorisées",
+    "message_one": "{{count}} ligne non valorisée",
+    "message_other": "{{count}} lignes non valorisées",
     "action": "Voir les sources"
   }
 }

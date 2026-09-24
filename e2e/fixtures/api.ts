@@ -121,6 +121,12 @@ const history = {
   reconstructed: false,
   points: [
     { date: '2026-08-20', totalEur: 9700 },
+    { date: '2026-08-21', totalEur: 9650.5 },
+    { date: '2026-08-22', totalEur: 9710.2 },
+    { date: '2026-08-23', totalEur: 9690.8 },
+    { date: '2026-08-24', totalEur: 9760.4 },
+    { date: '2026-08-25', totalEur: 9790.1 },
+    { date: '2026-08-26', totalEur: 9820.2 },
     { date: '2026-08-27', totalEur: 9844.8 },
   ],
 };
