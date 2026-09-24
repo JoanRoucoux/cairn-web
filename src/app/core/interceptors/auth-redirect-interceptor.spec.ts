@@ -71,4 +71,28 @@ describe('authRedirectInterceptor', () => {
 
     expect(assign).not.toHaveBeenCalled();
   });
+
+  it('should not redirect when the passkey sign-in ceremony is refused', async () => {
+    http.post('/login/webauthn', null).subscribe({ error: () => undefined });
+
+    controller.expectOne('/login/webauthn').flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('should not redirect when fetching passkey sign-in options is refused', async () => {
+    http.post('/webauthn/authenticate/options', null).subscribe({ error: () => undefined });
+
+    controller.expectOne('/webauthn/authenticate/options').flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('should still redirect when passkey registration is refused, since it means the session expired', async () => {
+    http.post('/webauthn/register', null).subscribe({ error: () => undefined });
+
+    controller.expectOne('/webauthn/register').flush(null, { status: 401, statusText: 'Unauthorized' });
+
+    await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('/login'));
+  });
 });

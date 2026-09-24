@@ -1,7 +1,9 @@
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { DOCUMENT, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+
+import { authRedirectInterceptor } from '@core/interceptors/auth-redirect-interceptor';
 
 import { PasskeyCeremony } from './passkey-ceremony';
 
@@ -95,6 +97,48 @@ describe('PasskeyCeremony', () => {
       loginRequest.flush(null, { status: 401, statusText: 'Unauthorized' });
 
       await expect(outcome).resolves.toBe('refused');
+    });
+
+    it('should resolve refused when the server responds 200 but declines the assertion', async () => {
+      const credential = { toJSON: () => credentialJSON };
+      installSupport(vi.fn().mockResolvedValue(credential), vi.fn());
+
+      const outcome = ceremony.authenticate();
+
+      (await vi.waitFor(() => http.expectOne('/webauthn/authenticate/options'))).flush(requestOptionsJSON);
+
+      const loginRequest = await vi.waitFor(() => http.expectOne('/login/webauthn'));
+      loginRequest.flush({ authenticated: false, redirectUrl: '/login' });
+
+      await expect(outcome).resolves.toBe('refused');
+    });
+
+    it('should resolve refused without triggering a full page reload, through the real interceptor chain', async () => {
+      const assign = vi.fn();
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          provideHttpClient(withInterceptors([authRedirectInterceptor])),
+          provideHttpClientTesting(),
+          { provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } },
+        ],
+      });
+      ceremony = TestBed.inject(PasskeyCeremony);
+      http = TestBed.inject(HttpTestingController);
+
+      const credential = { toJSON: () => credentialJSON };
+      installSupport(vi.fn().mockResolvedValue(credential), vi.fn());
+
+      const outcome = ceremony.authenticate();
+
+      (await vi.waitFor(() => http.expectOne('/webauthn/authenticate/options'))).flush(requestOptionsJSON);
+
+      const loginRequest = await vi.waitFor(() => http.expectOne('/login/webauthn'));
+      loginRequest.flush(null, { status: 401, statusText: 'Unauthorized' });
+
+      await expect(outcome).resolves.toBe('refused');
+      expect(assign).not.toHaveBeenCalled();
     });
 
     it('should resolve cancelled and send no second request when the user dismisses the prompt', async () => {

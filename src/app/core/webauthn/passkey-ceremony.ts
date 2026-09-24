@@ -35,9 +35,11 @@ export class PasskeyCeremony {
         return isDismissal(error) ? 'cancelled' : 'failed';
       }
 
-      await firstValueFrom(this.#http.post('/login/webauthn', (credential as PublicKeyCredential).toJSON()));
+      const response = await firstValueFrom(
+        this.#http.post<{ authenticated: boolean }>('/login/webauthn', (credential as PublicKeyCredential).toJSON()),
+      );
 
-      return 'ok';
+      return response.authenticated ? 'ok' : 'refused';
     } catch (error) {
       return this.#isUnauthorized(error) ? 'refused' : 'failed';
     }
