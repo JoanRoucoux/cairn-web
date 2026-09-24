@@ -49,11 +49,24 @@ test.describe('passkeys', () => {
     await page.getByTestId('manage-passkeys').click();
     await expect(page.getByTestId('profile-passkey-dialog').locator('dialog')).toBeVisible();
 
+    let registerBody: {
+      publicKey: { label: string; credential: { response: { attestationObject: string; clientDataJSON: string } } };
+    } | null = null;
+    await page.route('**/webauthn/register', async (route) => {
+      registerBody = route.request().postDataJSON();
+
+      return route.fallback();
+    });
+
     await page.getByTestId('passkey-label').fill('MacBook de Joan');
     await page.getByTestId('passkey-register').click();
 
     await expect(page.getByTestId('profile-passkey-dialog')).toHaveCount(0);
     await expect(page.getByText('MacBook de Joan')).toBeVisible();
+
+    expect(registerBody?.publicKey.label).toBe('MacBook de Joan');
+    expect(registerBody?.publicKey.credential.response.attestationObject).toBeTruthy();
+    expect(registerBody?.publicKey.credential.response.clientDataJSON).toBeTruthy();
   });
 
   test('signs in with a passkey from the login screen', async ({ page }) => {
@@ -71,8 +84,15 @@ test.describe('passkeys', () => {
 
       return route.fallback();
     });
+    let loginBody: {
+      id: string;
+      rawId: string;
+      type: string;
+      response: { authenticatorData: string; clientDataJSON: string; signature: string };
+    } | null = null;
     await page.route('**/login/webauthn', async (route) => {
       signedIn = true;
+      loginBody = route.request().postDataJSON();
 
       return route.fulfill({ json: { authenticated: true, redirectUrl: '/' } });
     });
@@ -85,5 +105,12 @@ test.describe('passkeys', () => {
     await page.getByTestId('login-passkey').click();
 
     await expect(page).toHaveURL('/');
+
+    expect(loginBody?.id).toBeTruthy();
+    expect(loginBody?.rawId).toBe(loginBody?.id);
+    expect(loginBody?.type).toBe('public-key');
+    expect(loginBody?.response.authenticatorData).toBeTruthy();
+    expect(loginBody?.response.clientDataJSON).toBeTruthy();
+    expect(loginBody?.response.signature).toBeTruthy();
   });
 });
