@@ -1,0 +1,45 @@
+<ui-dialog
+  data-testid="profile-passkey-dialog"
+  width="md"
+  [description]="'profile.addPasskeyDescription' | transloco"
+  [heading]="'profile.addPasskeyTitle' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field [label]="'profile.addPasskeyLabel' | transloco">
+    <input data-testid="passkey-label" type="text" uiInput [formField]="form.label" />
+  </ui-field>
+
+  @if (unsupported()) {
+    <p class="mt-3 text-sm text-(--negative)" data-testid="passkey-unsupported" role="alert">
+      {{ 'profile.addPasskeyUnsupported' | transloco }}
+    </p>
+  }
+  @if (failed()) {
+    <p class="mt-3 text-sm text-(--negative)" data-testid="passkey-failed" role="alert">
+      {{ 'profile.addPasskeyFailed' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="passkey-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'profile.addPasskeyCancel' | transloco }}
+  </button>
+  <button
+    data-testid="passkey-register"
+    dialogActions
+    type="button"
+    ui-button
+    [disabled]="submitting()"
+    (click)="register()"
+  >
+    {{ (submitting() ? 'profile.addPasskeySubmitting' : 'profile.addPasskeySubmit') | transloco }}
+  </button>
+</ui-dialog>

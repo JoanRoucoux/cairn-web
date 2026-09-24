@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 import { of } from 'rxjs';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
+import { PasskeyCeremony, type PasskeyOutcome } from '@core/webauthn/passkey-ceremony';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -62,9 +63,11 @@ class DeferredScopeLoader implements TranslocoLoader {
 
 describe('ProfilePage', () => {
   let httpTesting: HttpTestingController;
+  let register: ReturnType<typeof vi.fn<() => Promise<PasskeyOutcome>>>;
 
   const renderPage = async (translations = getTranslocoTestingModule()): Promise<void> => {
     localStorage.clear();
+    register = vi.fn();
     await render(ProfilePage, {
       imports: [translations],
       providers: [
@@ -73,6 +76,7 @@ describe('ProfilePage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTranslocoScope('profile'),
+        { provide: PasskeyCeremony, useValue: { register } },
         ProfileStore,
         PortfolioImportStore,
       ],
@@ -96,10 +100,36 @@ describe('ProfilePage', () => {
     expect(screen.getAllByTestId('revoke-passkey')).toHaveLength(2);
   });
 
-  it('should send passkey registration to Spring Security rather than reimplementing it', async () => {
+  it('should open the passkey dialog', async () => {
+    const user = userEvent.setup();
     await renderPage();
 
-    expect(screen.getByTestId('manage-passkeys')).toHaveAttribute('href', '/webauthn/register');
+    await user.click(screen.getByTestId('manage-passkeys'));
+
+    expect(screen.getByTestId('profile-passkey-dialog')).toBeInTheDocument();
+  });
+
+  it('should reload the session and close the dialog once a passkey is registered', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    register.mockResolvedValue('ok');
+
+    await user.click(screen.getByTestId('manage-passkeys'));
+    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.click(screen.getByTestId('passkey-register'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument());
+  });
+
+  it('should close the passkey dialog when dismissed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('manage-passkeys'));
+    await user.click(screen.getByTestId('passkey-cancel'));
+
+    expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument();
   });
 
   it('should revoke a device', async () => {

@@ -12,13 +12,14 @@
   <div class="flex flex-col gap-2 border-b border-(--border) py-3.5">
     <div class="flex min-h-11 items-center gap-3">
       <span class="grow text-[14.5px]">{{ 'profile.passkeys' | transloco }}</span>
-      <a
+      <button
         class="text-[13px] font-medium underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
         data-testid="manage-passkeys"
-        href="/webauthn/register"
+        type="button"
+        (click)="passkeyDialogOpen.set(true)"
       >
         {{ 'profile.addPasskey' | transloco }}
-      </a>
+      </button>
     </div>
 
     <ul class="flex flex-col gap-1.5">
@@ -178,3 +179,7 @@
 >
   {{ 'profile.signOut' | transloco }}
 </button>
+
+@if (passkeyDialogOpen()) {
+  <app-profile-passkey-dialog (dismissed)="passkeyDialogOpen.set(false)" (registered)="onPasskeyRegistered()" />
+}

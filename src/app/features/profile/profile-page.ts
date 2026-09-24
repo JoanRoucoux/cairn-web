@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -14,28 +14,45 @@ import {
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
+import { SessionStore } from '@core/session/session-store';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
 import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
 
+import { ProfilePasskeyDialog } from './passkey-dialog/profile-passkey-dialog';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfileStore } from './profile-store';
 
 @Component({
   selector: 'app-profile-page',
-  imports: [RelativeDatePipe, RouterLink, TranslocoPipe, UiAvatar, UiButton, UiCard, UiSegmented, UiTable, UiTd, UiTh],
+  imports: [
+    ProfilePasskeyDialog,
+    RelativeDatePipe,
+    RouterLink,
+    TranslocoPipe,
+    UiAvatar,
+    UiButton,
+    UiCard,
+    UiSegmented,
+    UiTable,
+    UiTd,
+    UiTh,
+  ],
   templateUrl: './profile-page.html',
   providers: [ProfileStore, PortfolioImportStore],
 })
 export class ProfilePage {
   #store = inject(ProfileStore);
   #signIn = inject(SignInRedirect);
+  #session = inject(SessionStore);
 
   protected readonly owner = this.#store.owner;
   protected readonly passkeys = this.#store.passkeys;
   protected readonly revocationRefused = this.#store.revocationRefused;
   protected readonly theme = this.#store.theme;
   protected readonly language = this.#store.language;
+
+  protected readonly passkeyDialogOpen = signal(false);
 
   #importStore = inject(PortfolioImportStore);
   protected readonly importing = this.#importStore.importing;
@@ -78,6 +95,11 @@ export class ProfilePage {
 
   protected async onRevoke(credentialId: string): Promise<void> {
     await this.#store.revokePasskey(credentialId);
+  }
+
+  protected onPasskeyRegistered(): void {
+    this.passkeyDialogOpen.set(false);
+    this.#session.reload();
   }
 
   // Navigation stays in the page: the store returns, the page decides where to go.
