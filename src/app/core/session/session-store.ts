@@ -33,6 +33,10 @@ export class SessionStore {
     }
   }
 
+  reload(): void {
+    this.#session.reload();
+  }
+
   async signOut(): Promise<void> {
     // A failed logout must not strand the user on a screen they can no longer use: the caller
     // navigates away either way, and the server session expires on its own.

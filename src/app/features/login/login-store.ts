@@ -4,6 +4,8 @@ import { form, submit } from '@angular/forms/signals';
 
 import { firstValueFrom } from 'rxjs';
 
+import { PasskeyCeremony } from '@core/webauthn/passkey-ceremony';
+
 import { formMessages } from '@shared/forms/form-messages';
 
 import { environment } from '@environments/environment';
@@ -13,6 +15,7 @@ import { credentialsSchema, initialCredentials } from './credentials';
 @Injectable()
 export class LoginStore {
   #http = inject(HttpClient);
+  #passkeyCeremony = inject(PasskeyCeremony);
 
   readonly #model = signal(initialCredentials());
 
@@ -24,10 +27,13 @@ export class LoginStore {
   readonly refused = signal(false);
   readonly failed = signal(false);
 
-  // Returns true once the session exists.
+  readonly passkeySubmitting = signal(false);
+  readonly passkeyRefused = signal(false);
+  readonly passkeyUnsupported = signal(false);
+  readonly passkeyFailed = signal(false);
+
   async signIn(): Promise<boolean> {
-    this.refused.set(false);
-    this.failed.set(false);
+    this.#clearOutcomes();
     let signedIn = false;
 
     // submit() marks every field as touched and skips the request while the form is invalid.
@@ -57,5 +63,40 @@ export class LoginStore {
     });
 
     return signedIn;
+  }
+
+  async signInWithPasskey(): Promise<boolean> {
+    this.#clearOutcomes();
+    this.passkeySubmitting.set(true);
+
+    try {
+      const outcome = await this.#passkeyCeremony.authenticate();
+
+      switch (outcome) {
+        case 'ok':
+          return true;
+        case 'cancelled':
+          return false;
+        case 'refused':
+          this.passkeyRefused.set(true);
+          return false;
+        case 'unsupported':
+          this.passkeyUnsupported.set(true);
+          return false;
+        case 'failed':
+          this.passkeyFailed.set(true);
+          return false;
+      }
+    } finally {
+      this.passkeySubmitting.set(false);
+    }
+  }
+
+  #clearOutcomes(): void {
+    this.refused.set(false);
+    this.failed.set(false);
+    this.passkeyRefused.set(false);
+    this.passkeyUnsupported.set(false);
+    this.passkeyFailed.set(false);
   }
 }

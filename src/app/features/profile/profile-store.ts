@@ -34,4 +34,8 @@ export class ProfileStore {
   async signOut(): Promise<void> {
     await this.#session.signOut();
   }
+
+  reloadSession(): void {
+    this.#session.reload();
+  }
 }

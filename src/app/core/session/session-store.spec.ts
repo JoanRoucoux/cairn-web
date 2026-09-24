@@ -79,6 +79,14 @@ describe('SessionStore', () => {
     await expect(revoked).resolves.toBe(false);
   });
 
+  it('should reload the session on request', async () => {
+    await settleSession();
+
+    store.reload();
+
+    (await vi.waitFor(() => http.expectOne('/api/session'))).flush(session);
+  });
+
   it('should post to the Spring Security logout endpoint', async () => {
     await settleSession();
 
