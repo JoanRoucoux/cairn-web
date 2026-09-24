@@ -6,20 +6,23 @@
   [open]="open()"
   (dismissed)="dismiss()"
 >
-  <ui-field [label]="'profile.addPasskeyLabel' | transloco">
-    <input data-testid="passkey-label" type="text" uiInput [formField]="form.label" />
-  </ui-field>
+  <!-- novalidate: the native required/maxlength validation would block submit() from ever running. -->
+  <form id="profile-passkey-form" novalidate (submit)="onSubmit($event)">
+    <ui-field [label]="'profile.addPasskeyLabel' | transloco">
+      <input data-testid="passkey-label" type="text" uiInput [formField]="form.label" />
+    </ui-field>
 
-  @if (unsupported()) {
-    <p class="mt-3 text-sm text-(--negative)" data-testid="passkey-unsupported" role="alert">
-      {{ 'profile.addPasskeyUnsupported' | transloco }}
-    </p>
-  }
-  @if (failed()) {
-    <p class="mt-3 text-sm text-(--negative)" data-testid="passkey-failed" role="alert">
-      {{ 'profile.addPasskeyFailed' | transloco }}
-    </p>
-  }
+    @if (unsupported()) {
+      <p class="mt-3 text-sm text-(--negative)" data-testid="passkey-unsupported" role="alert">
+        {{ 'profile.addPasskeyUnsupported' | transloco }}
+      </p>
+    }
+    @if (failed()) {
+      <p class="mt-3 text-sm text-(--negative)" data-testid="passkey-failed" role="alert">
+        {{ 'profile.addPasskeyFailed' | transloco }}
+      </p>
+    }
+  </form>
 
   <button
     data-testid="passkey-cancel"
@@ -35,10 +38,10 @@
   <button
     data-testid="passkey-register"
     dialogActions
-    type="button"
+    form="profile-passkey-form"
+    type="submit"
     ui-button
     [disabled]="submitting()"
-    (click)="register()"
   >
     {{ (submitting() ? 'profile.addPasskeySubmitting' : 'profile.addPasskeySubmit') | transloco }}
   </button>

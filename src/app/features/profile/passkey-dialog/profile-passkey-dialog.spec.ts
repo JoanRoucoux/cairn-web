@@ -77,6 +77,27 @@ describe('ProfilePasskeyDialog', () => {
     await vi.waitFor(() => expect(registered).toHaveBeenCalled());
   });
 
+  it('should register on Enter in the label field, with no explicit click', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    register.mockResolvedValue('ok');
+
+    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan{Enter}');
+
+    await vi.waitFor(() => expect(registered).toHaveBeenCalled());
+  });
+
+  it('should trim the label before running the ceremony', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    register.mockResolvedValue('ok');
+
+    await user.type(screen.getByTestId('passkey-label'), '  iPhone  ');
+    await user.click(screen.getByTestId('passkey-register'));
+
+    await vi.waitFor(() => expect(register).toHaveBeenCalledWith('iPhone'));
+  });
+
   it('should show no message and stay open when the ceremony is dismissed', async () => {
     const user = userEvent.setup();
     await renderDialog();

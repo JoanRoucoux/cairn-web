@@ -37,12 +37,28 @@ describe('ProfilePasskeyDialogStore', () => {
     expect(register).not.toHaveBeenCalled();
   });
 
+  it('should send no ceremony when the label is only spaces', async () => {
+    store.form.label().value.set('   ');
+
+    expect(await store.register()).toBe(false);
+    expect(register).not.toHaveBeenCalled();
+  });
+
   it('should register once the ceremony succeeds', async () => {
     store.form.label().value.set('iPhone de Joan');
     register.mockResolvedValue('ok');
 
     expect(await store.register()).toBe(true);
     expect(store.submitting()).toBe(false);
+  });
+
+  it('should send the trimmed label to the ceremony', async () => {
+    store.form.label().value.set('  iPhone  ');
+    register.mockResolvedValue('ok');
+
+    await store.register();
+
+    expect(register).toHaveBeenCalledWith('iPhone');
   });
 
   it('should report neither outcome when the ceremony is dismissed', async () => {

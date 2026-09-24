@@ -30,7 +30,9 @@ export class ProfilePasskeyDialog {
     this.dismissed.emit();
   }
 
-  protected async register(): Promise<void> {
+  protected async onSubmit(event: SubmitEvent): Promise<void> {
+    event.preventDefault();
+
     if (await this.#store.register()) {
       this.open.set(false);
       this.registered.emit();

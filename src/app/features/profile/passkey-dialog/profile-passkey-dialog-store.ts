@@ -31,7 +31,7 @@ export class ProfilePasskeyDialogStore {
       this.submitting.set(true);
 
       try {
-        const outcome = await this.#passkeyCeremony.register(this.#model().label);
+        const outcome = await this.#passkeyCeremony.register(this.#model().label.trim());
 
         switch (outcome) {
           case 'ok':
