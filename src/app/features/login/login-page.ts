@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
@@ -22,6 +22,13 @@ export class LoginPage {
   protected readonly refused = this.#store.refused;
   protected readonly failed = this.#store.failed;
 
+  protected readonly passkeySubmitting = this.#store.passkeySubmitting;
+  protected readonly passkeyRefused = this.#store.passkeyRefused;
+  protected readonly passkeyUnsupported = this.#store.passkeyUnsupported;
+  protected readonly passkeyFailed = this.#store.passkeyFailed;
+
+  protected readonly passwordExpanded = signal(false);
+
   protected async onSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
 
@@ -32,5 +39,17 @@ export class LoginPage {
     // A full page load, not a router navigation: the shell and the session store have to start
     // against the session that now exists.
     this.#pageLoad.to('/');
+  }
+
+  protected async onPasskeySignIn(): Promise<void> {
+    if (!(await this.#store.signInWithPasskey())) {
+      return;
+    }
+
+    this.#pageLoad.to('/');
+  }
+
+  protected togglePassword(): void {
+    this.passwordExpanded.update((expanded) => !expanded);
   }
 }

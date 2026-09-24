@@ -3,36 +3,84 @@
   <p class="mt-1 text-[13px] text-(--muted-foreground)">{{ 'login.subtitle' | transloco }}</p>
 
   <ui-card class="mt-6">
-    <!-- novalidate: the native required-field validation would block submit() from ever running. -->
-    <form class="flex flex-col gap-4" novalidate (submit)="onSubmit($event)">
-      <ui-field [label]="'login.username' | transloco">
-        <input autocomplete="username" data-testid="login-username" type="text" uiInput [formField]="form.username" />
-      </ui-field>
-
-      <ui-field [label]="'login.password' | transloco">
-        <input
-          autocomplete="current-password"
-          data-testid="login-password"
-          type="password"
-          uiInput
-          [formField]="form.password"
-        />
-      </ui-field>
-
-      @if (refused()) {
-        <p class="text-[12.5px] text-(--negative)" data-testid="login-refused" role="alert">
-          {{ 'login.refused' | transloco }}
-        </p>
-      }
-      @if (failed()) {
-        <p class="text-[12.5px] text-(--negative)" data-testid="login-failed" role="alert">
-          {{ 'login.failed' | transloco }}
-        </p>
-      }
-
-      <button data-testid="login-submit" size="lg" type="submit" ui-button [disabled]="form().submitting()">
-        {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
+    <div class="flex flex-col gap-4">
+      <button
+        data-testid="login-passkey"
+        size="lg"
+        type="button"
+        ui-button
+        [disabled]="passkeySubmitting()"
+        (click)="onPasskeySignIn()"
+      >
+        {{ (passkeySubmitting() ? 'login.passkeySubmitting' : 'login.passkey') | transloco }}
       </button>
-    </form>
+
+      @if (passkeyRefused()) {
+        <p class="text-[12.5px] text-(--negative)" data-testid="login-passkey-refused" role="alert">
+          {{ 'login.passkeyRefused' | transloco }}
+        </p>
+      }
+      @if (passkeyUnsupported()) {
+        <p class="text-[12.5px] text-(--negative)" data-testid="login-passkey-unsupported" role="alert">
+          {{ 'login.passkeyUnsupported' | transloco }}
+        </p>
+      }
+      @if (passkeyFailed()) {
+        <p class="text-[12.5px] text-(--negative)" data-testid="login-passkey-failed" role="alert">
+          {{ 'login.passkeyFailed' | transloco }}
+        </p>
+      }
+
+      <button
+        data-testid="login-password-toggle"
+        type="button"
+        ui-button
+        variant="ghost"
+        [attr.aria-expanded]="passwordExpanded()"
+        (click)="togglePassword()"
+      >
+        {{ 'login.passwordToggle' | transloco }}
+      </button>
+
+      @if (passwordExpanded()) {
+        <!-- novalidate: the native required-field validation would block submit() from ever running. -->
+        <form class="flex flex-col gap-4" novalidate (submit)="onSubmit($event)">
+          <ui-field [label]="'login.username' | transloco">
+            <input
+              autocomplete="username"
+              data-testid="login-username"
+              type="text"
+              uiInput
+              [formField]="form.username"
+            />
+          </ui-field>
+
+          <ui-field [label]="'login.password' | transloco">
+            <input
+              autocomplete="current-password"
+              data-testid="login-password"
+              type="password"
+              uiInput
+              [formField]="form.password"
+            />
+          </ui-field>
+
+          @if (refused()) {
+            <p class="text-[12.5px] text-(--negative)" data-testid="login-refused" role="alert">
+              {{ 'login.refused' | transloco }}
+            </p>
+          }
+          @if (failed()) {
+            <p class="text-[12.5px] text-(--negative)" data-testid="login-failed" role="alert">
+              {{ 'login.failed' | transloco }}
+            </p>
+          }
+
+          <button data-testid="login-submit" size="lg" type="submit" ui-button [disabled]="form().submitting()">
+            {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
+          </button>
+        </form>
+      }
+    </div>
   </ui-card>
 </div>

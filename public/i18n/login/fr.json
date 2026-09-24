@@ -6,5 +6,11 @@
   "submit": "Se connecter",
   "submitting": "Connexion...",
   "refused": "Cet identifiant et ce mot de passe ne correspondent pas.",
-  "failed": "La connexion n'a pas pu être envoyée. Réessayez."
+  "failed": "La connexion n'a pas pu être envoyée. Réessayez.",
+  "passkey": "Se connecter avec une passkey",
+  "passkeySubmitting": "Connexion...",
+  "passkeyRefused": "Cette passkey n'est pas reconnue.",
+  "passkeyUnsupported": "Ce navigateur ne gère pas les passkeys.",
+  "passkeyFailed": "La connexion a échoué, réessayez.",
+  "passwordToggle": "Utiliser mon mot de passe"
 }

@@ -3,6 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { PasskeyCeremony, type PasskeyOutcome } from '@core/webauthn/passkey-ceremony';
+
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { LoginStore } from './login-store';
@@ -10,11 +12,19 @@ import { LoginStore } from './login-store';
 describe('LoginStore', () => {
   let store: LoginStore;
   let httpTesting: HttpTestingController;
+  let authenticate: ReturnType<typeof vi.fn<() => Promise<PasskeyOutcome>>>;
 
   beforeEach(() => {
+    authenticate = vi.fn();
     TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule()],
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), LoginStore],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: PasskeyCeremony, useValue: { authenticate } },
+        LoginStore,
+      ],
     });
     store = TestBed.inject(LoginStore);
     httpTesting = TestBed.inject(HttpTestingController);
@@ -89,5 +99,51 @@ describe('LoginStore', () => {
     expect(store.refused()).toBe(false);
     request.flush(null, { status: 204, statusText: 'No Content' });
     await second;
+  });
+
+  it('should sign in once the passkey ceremony succeeds', async () => {
+    authenticate.mockResolvedValue('ok');
+
+    expect(await store.signInWithPasskey()).toBe(true);
+    expect(store.passkeySubmitting()).toBe(false);
+  });
+
+  it('should report neither cancellation nor a message when the ceremony is dismissed', async () => {
+    authenticate.mockResolvedValue('cancelled');
+
+    expect(await store.signInWithPasskey()).toBe(false);
+    expect(store.passkeyRefused()).toBe(false);
+    expect(store.passkeyUnsupported()).toBe(false);
+    expect(store.passkeyFailed()).toBe(false);
+  });
+
+  it('should report a refused passkey', async () => {
+    authenticate.mockResolvedValue('refused');
+
+    expect(await store.signInWithPasskey()).toBe(false);
+    expect(store.passkeyRefused()).toBe(true);
+  });
+
+  it('should report an unsupported browser', async () => {
+    authenticate.mockResolvedValue('unsupported');
+
+    expect(await store.signInWithPasskey()).toBe(false);
+    expect(store.passkeyUnsupported()).toBe(true);
+  });
+
+  it('should report a breakdown', async () => {
+    authenticate.mockResolvedValue('failed');
+
+    expect(await store.signInWithPasskey()).toBe(false);
+    expect(store.passkeyFailed()).toBe(true);
+  });
+
+  it('should clear the previous outcome before trying again', async () => {
+    authenticate.mockResolvedValueOnce('refused');
+    await store.signInWithPasskey();
+
+    authenticate.mockResolvedValueOnce('ok');
+    expect(await store.signInWithPasskey()).toBe(true);
+    expect(store.passkeyRefused()).toBe(false);
   });
 });

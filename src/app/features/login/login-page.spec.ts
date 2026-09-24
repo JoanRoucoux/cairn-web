@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { PageLoad } from '@core/navigation/page-load';
+import { PasskeyCeremony, type PasskeyOutcome } from '@core/webauthn/passkey-ceremony';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -17,6 +18,11 @@ import { LoginStore } from './login-store';
 describe('LoginPage', () => {
   let httpTesting: HttpTestingController;
   let load: ReturnType<typeof vi.spyOn>;
+  let authenticate: ReturnType<typeof vi.fn<() => Promise<PasskeyOutcome>>>;
+
+  beforeEach(() => {
+    authenticate = vi.fn();
+  });
 
   const renderPage = async (): Promise<void> => {
     await render(LoginPage, {
@@ -27,6 +33,7 @@ describe('LoginPage', () => {
         provideHttpClientTesting(),
         provideTranslocoScope('login'),
 
+        { provide: PasskeyCeremony, useValue: { authenticate } },
         LoginStore,
       ],
     });
@@ -37,6 +44,7 @@ describe('LoginPage', () => {
   afterEach(() => httpTesting.verify());
 
   const fillIn = async (user: ReturnType<typeof userEvent.setup>, password: string): Promise<void> => {
+    await user.click(screen.getByTestId('login-password-toggle'));
     await user.type(screen.getByTestId('login-username'), 'joan');
     await user.type(screen.getByTestId('login-password'), password);
     await user.click(screen.getByTestId('login-submit'));
@@ -74,6 +82,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     await renderPage();
 
+    await user.click(screen.getByTestId('login-password-toggle'));
     await user.click(screen.getByTestId('login-submit'));
 
     httpTesting.expectNone('/api/authenticate');
@@ -83,6 +92,7 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     await renderPage();
 
+    await user.click(screen.getByTestId('login-password-toggle'));
     await user.click(screen.getByTestId('login-submit'));
 
     expect(await screen.findAllByRole('alert')).toHaveLength(2);
@@ -102,5 +112,76 @@ describe('LoginPage', () => {
 
     expect(await screen.findByTestId('login-failed')).toBeInTheDocument();
     expect(screen.queryByTestId('login-refused')).not.toBeInTheDocument();
+  });
+
+  it('should reload the application once the passkey ceremony succeeds', async () => {
+    const user = userEvent.setup();
+    authenticate.mockResolvedValue('ok');
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
+  });
+
+  it('should show no message when the passkey ceremony is dismissed', async () => {
+    const user = userEvent.setup();
+    authenticate.mockResolvedValue('cancelled');
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    await vi.waitFor(() => expect(authenticate).toHaveBeenCalled());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  it('should say so when the passkey is refused', async () => {
+    const user = userEvent.setup();
+    authenticate.mockResolvedValue('refused');
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    expect(await screen.findByTestId('login-passkey-refused')).toBeInTheDocument();
+  });
+
+  it('should say so when the browser cannot use passkeys', async () => {
+    const user = userEvent.setup();
+    authenticate.mockResolvedValue('unsupported');
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    expect(await screen.findByTestId('login-passkey-unsupported')).toBeInTheDocument();
+  });
+
+  it('should say so when the passkey ceremony breaks down', async () => {
+    const user = userEvent.setup();
+    authenticate.mockResolvedValue('failed');
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    expect(await screen.findByTestId('login-passkey-failed')).toBeInTheDocument();
+  });
+
+  it('should fold the password form behind a toggle and let it work once expanded', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    const toggle = screen.getByTestId('login-password-toggle');
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByTestId('login-username')).not.toBeInTheDocument();
+
+    await fillIn(user, 'a-real-password');
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 });
