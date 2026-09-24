@@ -1,3 +1,5 @@
+import { parisDateString } from '@shared/format/paris-date';
+
 export const CHART_RANGES = ['1d', '7d', '1m', '1y', '5y', 'max'] as const;
 export type ChartRange = (typeof CHART_RANGES)[number];
 
@@ -18,5 +20,7 @@ export const rangeStart = (range: ChartRange, now: Date = new Date()): string | 
     return undefined;
   }
 
-  return new Date(now.getTime() - days * 86_400_000).toISOString().slice(0, 10);
+  const paris = new Date(`${parisDateString(now)}T00:00:00Z`);
+
+  return new Date(paris.getTime() - days * 86_400_000).toISOString().slice(0, 10);
 };

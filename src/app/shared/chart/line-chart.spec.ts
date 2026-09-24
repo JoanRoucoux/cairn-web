@@ -11,9 +11,12 @@ const points: ChartPoint[] = [
   { t: 1, v: 160 },
 ];
 
-const renderChart = (series: ChartPoint[]): Promise<RenderResult<LineChart>> =>
+const renderChart = (
+  series: ChartPoint[],
+  variant: 'default' | 'sparkline' = 'default',
+): Promise<RenderResult<LineChart>> =>
   render(LineChart, {
-    inputs: { points: series, label: 'Portfolio value over one month' },
+    inputs: { points: series, label: 'Portfolio value over one month', variant },
     providers: [provideZonelessChangeDetection()],
   });
 
@@ -41,6 +44,14 @@ describe('LineChart', () => {
 
     expect(container.querySelector('[data-testid="chart-line"]')).not.toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Portfolio value over one month' })).toBeInTheDocument();
+  });
+
+  it('should drop the grid and the end marker in the sparkline variant', async () => {
+    const { container } = await renderChart(points, 'sparkline');
+
+    expect(container.querySelector('line')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-testid="chart-end"]')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-testid="chart-line"]')).toBeInTheDocument();
   });
 
   it('should give each instance its own gradient identifiers', async () => {

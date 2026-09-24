@@ -1,12 +1,27 @@
 {
   "title": "Patrimoine",
-  "total": "Patrimoine total",
-  "today": "aujourd'hui",
   "unknown": "Non disponible",
   "loading": "Chargement de votre patrimoine",
   "error": "Votre patrimoine n'a pas pu être chargé.",
   "chartLabel": "Valeur du patrimoine sur la plage sélectionnée",
   "reconstructed": "Au-delà d'un an la courbe est reconstruite à composition constante : exacte aux extrémités, approximative entre les deux.",
+  "hero": {
+    "label": "Patrimoine",
+    "period": {
+      "1d": "aujourd'hui",
+      "7d": "sur 7 jours",
+      "1m": "sur 1 mois",
+      "1y": "sur 1 an",
+      "5y": "sur 5 ans",
+      "max": "au total"
+    },
+    "unrealizedGain": "Plus-value latente",
+    "day": "Variation du jour",
+    "updatedAt": "À jour à {{time}}"
+  },
+  "envelopes": {
+    "share": "du total"
+  },
   "movers": {
     "title": "Ce qui bouge"
   },

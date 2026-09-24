@@ -1,5 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 
+import { buildPerformanceFixtures } from './performance';
+
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
 // fixed JSON here instead, so the suite is self-contained in CI and locally.
 
@@ -123,6 +125,8 @@ const history = {
   ],
 };
 
+const { intradayHistory, performance } = buildPerformanceFixtures(portfolio, account);
+
 const jobRuns = [
   {
     id: 1,
@@ -149,7 +153,9 @@ const refreshReport = {
 
 const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/portfolio': portfolio,
+  'GET /api/portfolio/performance': performance,
   'GET /api/history': history,
+  'GET /api/history/intraday': intradayHistory,
   'GET /api/holdings': holdings,
   'GET /api/accounts': accounts,
   'POST /api/accounts': account,

@@ -1,12 +1,27 @@
 {
   "title": "Portfolio",
-  "total": "Total value",
-  "today": "today",
   "unknown": "Not available",
   "loading": "Loading your portfolio",
   "error": "Your portfolio could not be loaded.",
   "chartLabel": "Portfolio value over the selected range",
   "reconstructed": "Beyond one year the curve is reconstructed at constant composition: exact at the ends, approximate in between.",
+  "hero": {
+    "label": "Net worth",
+    "period": {
+      "1d": "today",
+      "7d": "over 7 days",
+      "1m": "over 1 month",
+      "1y": "over 1 year",
+      "5y": "over 5 years",
+      "max": "overall"
+    },
+    "unrealizedGain": "Unrealized gain",
+    "day": "Today's change",
+    "updatedAt": "Updated at {{time}}"
+  },
+  "envelopes": {
+    "share": "of total"
+  },
   "movers": {
     "title": "Moving today"
   },

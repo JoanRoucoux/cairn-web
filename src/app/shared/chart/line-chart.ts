@@ -30,8 +30,10 @@ let instanceCount = 0;
         </linearGradient>
       </defs>
 
-      @for (gridline of gridlines(); track gridline) {
-        <line style="stroke: var(--hairline)" x1="0" [attr.x2]="width()" [attr.y1]="gridline" [attr.y2]="gridline" />
+      @if (variant() === 'default') {
+        @for (gridline of gridlines(); track gridline) {
+          <line style="stroke: var(--hairline)" x1="0" [attr.x2]="width()" [attr.y1]="gridline" [attr.y2]="gridline" />
+        }
       }
 
       @if (geometry(); as geometry) {
@@ -45,14 +47,16 @@ let instanceCount = 0;
           [attr.d]="geometry.line"
           [attr.stroke]="'url(#' + lineId + ')'"
         />
-        <circle
-          data-testid="chart-end"
-          r="5"
-          stroke-width="3"
-          style="fill: var(--primary); stroke: var(--card)"
-          [attr.cx]="geometry.end.x"
-          [attr.cy]="geometry.end.y"
-        />
+        @if (variant() === 'default') {
+          <circle
+            data-testid="chart-end"
+            r="5"
+            stroke-width="3"
+            style="fill: var(--primary); stroke: var(--card)"
+            [attr.cx]="geometry.end.x"
+            [attr.cy]="geometry.end.y"
+          />
+        }
       }
     </svg>
   `,
@@ -62,6 +66,8 @@ export class LineChart {
   readonly label = input.required<string>();
   readonly width = input(1080);
   readonly height = input(196);
+  /** `sparkline` drops the grid and the end marker, for a compact figure inside a stat. */
+  readonly variant = input<'default' | 'sparkline'>('default');
 
   protected readonly areaId = `chart-area-${++instanceCount}`;
   protected readonly lineId = `chart-line-${instanceCount}`;

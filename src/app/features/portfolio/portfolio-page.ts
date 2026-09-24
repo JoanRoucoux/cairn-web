@@ -1,16 +1,15 @@
 import { Component, computed, inject } from '@angular/core';
 
-import { type SegmentedOption, UiCard, UiDelta, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { type SegmentedOption, UiCard, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { LineChart } from '@shared/chart/line-chart';
-import { MoneyPipe } from '@shared/format/money-pipe';
-import { RatioPipe } from '@shared/format/ratio-pipe';
-import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
 
+import { EnvelopeTiles } from './envelopes/envelope-tiles';
+import { PortfolioHero } from './hero/portfolio-hero';
 import { PortfolioMovers } from './movers/portfolio-movers';
 import { PortfolioStore } from './portfolio-store';
 import { StaleQuotesBanner } from './stale/stale-quotes-banner';
@@ -19,15 +18,13 @@ import { UnvaluedBanner } from './unvalued/unvalued-banner';
 @Component({
   selector: 'app-portfolio-page',
   imports: [
+    EnvelopeTiles,
     LineChart,
-    MoneyPipe,
+    PortfolioHero,
     PortfolioMovers,
-    RatioPipe,
-    SignedMoneyPipe,
     StaleQuotesBanner,
     TranslocoPipe,
     UiCard,
-    UiDelta,
     UiSegmented,
     UiSkeleton,
     UnvaluedBanner,
@@ -41,6 +38,7 @@ export class PortfolioPage {
   #language = inject(LanguageStore);
 
   protected readonly portfolio = this.#store.portfolio;
+  protected readonly performance = this.#store.performance;
   protected readonly range = this.#store.range;
   protected readonly points = this.#store.points;
   protected readonly reconstructed = this.#store.reconstructed;

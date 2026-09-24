@@ -1,30 +1,22 @@
 <h1 class="sr-only">{{ 'portfolio.title' | transloco }}</h1>
 
-@if (portfolio.hasValue()) {
+@if (portfolio.hasValue() && performance.hasValue()) {
   <div class="flex flex-col gap-4">
-    <ui-card>
-      <p class="text-[11px] font-medium tracking-[0.08em] text-(--muted-foreground) uppercase">
-        {{ 'portfolio.total' | transloco }}
-      </p>
-      <p class="mt-3 text-[42px] leading-none font-semibold tabular-nums">
-        {{ portfolio.value().totalEur | money }}
-      </p>
-      <p class="mt-3 flex flex-wrap items-center gap-3">
-        <ui-delta
-          emphasis="pill"
-          [unknownLabel]="'portfolio.unknown' | transloco"
-          [value]="portfolio.value().dayChangeEur"
-        >
-          {{ portfolio.value().dayChangeEur | signedMoney }}
-        </ui-delta>
-        <span class="text-[13px] text-(--muted-foreground) tabular-nums">
-          {{ portfolio.value().dayChangeRatio | ratio: { signed: true } }} {{ 'portfolio.today' | transloco }}
-        </span>
-      </p>
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <app-portfolio-hero
+        [dayChangeEur]="portfolio.value().dayChangeEur"
+        [lastPriceAt]="performance.value().lastPriceAt"
+        [points]="points()"
+        [range]="range()"
+        [total]="performance.value().total"
+        [unrealizedGainEur]="portfolio.value().unrealizedGainEur"
+      />
 
-      <div class="mt-4">
-        <app-line-chart [label]="'portfolio.chartLabel' | transloco" [points]="points()" />
-      </div>
+      <app-envelope-tiles [envelopes]="performance.value().byEnvelope" [range]="range()" />
+    </div>
+
+    <ui-card>
+      <app-line-chart [label]="'portfolio.chartLabel' | transloco" [points]="points()" />
 
       <div class="mt-3">
         <ui-segmented
@@ -47,7 +39,7 @@
 
     <app-portfolio-movers [holdings]="portfolio.value().holdings" />
   </div>
-} @else if (portfolio.error()) {
+} @else if (portfolio.error() || performance.error()) {
   <p class="text-(--negative)" role="alert">{{ 'portfolio.error' | transloco }}</p>
 } @else {
   <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>
