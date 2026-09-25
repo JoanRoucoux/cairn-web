@@ -48,6 +48,34 @@ const holdings = [
     unrealizedGainEur: 0,
     stale: false,
   },
+  {
+    id: 'h5',
+    accountId: 'a1',
+    accountName: 'Saxo Investor',
+    accountType: 'PEA',
+    instrumentName: 'Euros',
+    assetClass: 'CASH',
+    priceSource: 'MANUAL',
+    priceCurrency: 'EUR',
+    quantity: 732.4,
+    marketValueEur: 732.4,
+    unrealizedGainEur: 0,
+    stale: false,
+  },
+  {
+    id: 'h6',
+    accountId: 'a3',
+    accountName: 'Livret A',
+    accountType: 'SAVINGS',
+    instrumentName: 'Euros',
+    assetClass: 'CASH',
+    priceSource: 'MANUAL',
+    priceCurrency: 'EUR',
+    quantity: 20000,
+    marketValueEur: 20000,
+    unrealizedGainEur: 0,
+    stale: false,
+  },
 ] as unknown as HoldingResponse[];
 
 describe('HoldingListStore', () => {
@@ -73,7 +101,7 @@ describe('HoldingListStore', () => {
   it('should group holdings by account', async () => {
     await load();
 
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Esalia', 'Saxo Investor']);
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Esalia', 'Saxo Investor', 'Livret A']);
   });
 
   it('should order groups by value, largest first', async () => {
@@ -85,7 +113,7 @@ describe('HoldingListStore', () => {
   it('should subtotal each account', async () => {
     await load();
 
-    expect(store.groups()[1]!.valueEur).toBeCloseTo(42418.47, 2);
+    expect(store.groups()[1]!.valueEur).toBeCloseTo(43150.87, 2);
   });
 
   it('should leave an account subtotal unknown when any line has no cost basis', async () => {
@@ -116,7 +144,77 @@ describe('HoldingListStore', () => {
   it('should count lines and accounts', async () => {
     await load();
 
-    expect(store.totals()).toEqual({ lines: 4, accounts: 2, valueEur: 161676.47, unvaluedCount: 1 });
+    expect(store.totals()).toEqual({ lines: 4, accounts: 3, valueEur: 182408.87, unvaluedCount: 1 });
+  });
+
+  it('should render a cash-only account with zero lines and its cash row', async () => {
+    await load();
+
+    const livretA = store.groups().find((group) => group.accountName === 'Livret A');
+
+    expect(livretA).toBeDefined();
+    expect(livretA?.holdings).toHaveLength(0);
+    expect(livretA?.cashEur).toBe(20000);
+    expect(livretA?.valueEur).toBe(20000);
+  });
+
+  it('should show a cash-only account with an empty search', async () => {
+    await load();
+
+    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(true);
+  });
+
+  it('should hide a cash-only account whose name does not match the search', async () => {
+    await load();
+
+    store.search.set('esalia');
+
+    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(false);
+  });
+
+  it('should show a cash-only account whose name matches the search', async () => {
+    await load();
+
+    store.search.set('livret');
+
+    expect(store.groups()).toHaveLength(1);
+    expect(store.groups()[0]!.accountName).toBe('Livret A');
+    expect(store.groups()[0]!.cashEur).toBe(20000);
+  });
+
+  it('should exclude the EUR cash line from the positions and its lineCount', async () => {
+    await load();
+
+    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+
+    expect(saxo?.holdings.some((holding) => holding.instrumentName === 'Euros')).toBe(false);
+    expect(saxo?.holdings).toHaveLength(3);
+  });
+
+  it('should include the cash balance in the account subtotal', async () => {
+    await load();
+
+    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+
+    expect(saxo?.cashEur).toBe(732.4);
+    expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
+  });
+
+  it('should default the cash balance to zero for an account with no cash line', async () => {
+    await load();
+
+    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
+
+    expect(esalia?.cashEur).toBe(0);
+  });
+
+  it('should keep the cash balance in a visible group even when the search hides every position', async () => {
+    await load();
+
+    store.search.set('amundi');
+
+    expect(store.groups()).toHaveLength(1);
+    expect(store.groups()[0]!.cashEur).toBe(732.4);
   });
 
   it('should count unvalued lines per account without folding them into the subtotal', async () => {
@@ -125,7 +223,7 @@ describe('HoldingListStore', () => {
     const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
 
     expect(saxo?.unvaluedCount).toBe(1);
-    expect(saxo?.valueEur).toBeCloseTo(42418.47, 2);
+    expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
   });
 
   it('should hold empty groups while loading', () => {

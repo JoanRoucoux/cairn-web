@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterRenderEffect, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
@@ -16,6 +16,8 @@ export class HoldingCashDialog {
   #store = inject(HoldingCashStore);
 
   readonly accountId = input.required<string>();
+  readonly accountName = input.required<string>();
+  readonly balance = input.required<number>();
   readonly saved = output<void>();
   readonly dismissed = output<void>();
 
@@ -23,11 +25,12 @@ export class HoldingCashDialog {
   protected readonly open = signal(true);
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
-  protected readonly duplicate = this.#store.duplicate;
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
+    effect(() => this.#store.prefill(this.balance()));
+
     // showModal() focuses the first focusable descendant by default, which would be the amount
     // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {

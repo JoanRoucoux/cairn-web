@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 
 import { UiButton, UiField, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -43,7 +43,10 @@ export class HoldingListPage {
   protected readonly formOpen = signal(false);
   protected readonly holdingToEdit = signal<HoldingResponse | undefined>(undefined);
   protected readonly holdingToDelete = signal<HoldingResponse | undefined>(undefined);
-  protected readonly accountToAddCashTo = signal<string | undefined>(undefined);
+  protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
+  protected readonly groupToEditCashFor = computed(() =>
+    this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
+  );
 
   protected onSearchInput(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
@@ -75,7 +78,7 @@ export class HoldingListPage {
   }
 
   protected onCashSaved(): void {
-    this.accountToAddCashTo.set(undefined);
+    this.accountToEditCashFor.set(undefined);
     this.holdings.reload();
   }
 }

@@ -14,6 +14,7 @@ const group: AccountGroup = {
   accountName: 'Esalia',
   accountType: 'PEE',
   valueEur: 119258,
+  cashEur: 0,
   unvaluedCount: 0,
   unrealizedGainEur: null,
   stale: true,
@@ -88,7 +89,7 @@ describe('HoldingAccountGroup', () => {
   });
 
   it('should render a dash for an unvalued line instead of an empty or zero cell', async () => {
-    const { container } = await renderGroup({
+    await renderGroup({
       ...group,
       holdings: [{ ...group.holdings[0], price: null, marketValueEur: null } as (typeof group.holdings)[0]],
     });
@@ -96,7 +97,7 @@ describe('HoldingAccountGroup', () => {
     const row = await screen.findByTestId('holding-row');
 
     expect(row.textContent).toContain('—');
-    expect(container.textContent).not.toContain('€0.00');
+    expect(row.textContent).not.toContain('€0.00');
   });
 
   it('should signal the unvalued lines folded out of an account subtotal', async () => {
@@ -145,15 +146,31 @@ describe('HoldingAccountGroup', () => {
     expect(emitted).toHaveBeenCalledWith(group.holdings[0]);
   });
 
-  it('should emit the account to add a cash line to', async () => {
+  it('should emit the account whose cash balance is edited', async () => {
     const user = userEvent.setup();
     const { fixture } = await renderGroup();
     const emitted = vi.fn();
-    fixture.componentInstance.addCash.subscribe(emitted);
+    fixture.componentInstance.editCash.subscribe(emitted);
 
-    await user.click(await screen.findByTestId('add-cash'));
+    await user.click(await screen.findByTestId('edit-cash'));
 
     expect(emitted).toHaveBeenCalledWith(group.accountId);
+  });
+
+  it('should render the cash line as the last row, muted when empty', async () => {
+    await renderGroup();
+
+    const row = await screen.findByTestId('cash-row');
+
+    expect(row).toHaveTextContent('€0.00');
+  });
+
+  it('should render the cash line with the account balance when it has one', async () => {
+    await renderGroup({ ...group, cashEur: 732.4 });
+
+    const row = await screen.findByTestId('cash-row');
+
+    expect(row).toHaveTextContent('€732.40');
   });
 
   it('should hold the secondary columns back on a narrow viewport', async () => {

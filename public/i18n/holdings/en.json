@@ -61,13 +61,13 @@
   "unvaluedCount": "{{count}} unvalued",
   "noQuoteYet": "No quote yet for this instrument.",
   "cash": {
-    "open": "Add cash to {{name}}",
-    "openShort": "+ Cash",
-    "title": "Add cash",
+    "line": "Cash",
+    "editRow": "Edit the cash balance of {{name}}",
+    "title": "Cash balance of {{name}}",
     "amount": "Amount in euros",
+    "zeroHint": "0 removes the line.",
     "cancel": "Cancel",
-    "submit": "Add",
-    "duplicate": "This account already has a cash line. Edit it instead of adding a new one.",
-    "error": "That cash line was refused."
+    "submit": "Save",
+    "error": "That balance was refused."
   }
 }
