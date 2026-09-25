@@ -1,0 +1,138 @@
+<div class="relative" [class.h-48]="interactive()" [class.sm:h-60]="interactive()">
+  <svg
+    #svgRef
+    [attr.aria-hidden]="variant() === 'sparkline' ? 'true' : null"
+    [attr.aria-label]="variant() === 'default' ? label() : null"
+    [attr.height]="effectiveHeight()"
+    [attr.role]="variant() === 'default' ? 'img' : null"
+    [attr.tabindex]="interactive() ? 0 : null"
+    [attr.viewBox]="'0 0 ' + effectiveWidth() + ' ' + effectiveHeight()"
+    [attr.width]="effectiveWidth()"
+    [class]="interactive() ? 'block h-full w-full' : 'block w-full'"
+    (keydown)="onKeydown($event)"
+    (pointerleave)="onPointerLeave()"
+    (pointermove)="onPointerMove($event)"
+  >
+    <defs>
+      <linearGradient x1="0" x2="0" y1="0" y2="1" [attr.id]="areaId">
+        <stop offset="0%" style="stop-color: var(--primary); stop-opacity: 0.17" />
+        <stop offset="100%" style="stop-color: var(--primary); stop-opacity: 0" />
+      </linearGradient>
+      <linearGradient x1="0" x2="1" y1="0" y2="0" [attr.id]="lineId">
+        <stop offset="0%" style="stop-color: var(--primary-to)" />
+        <stop offset="100%" style="stop-color: var(--primary)" />
+      </linearGradient>
+    </defs>
+
+    @if (variant() === 'default') {
+      @for (gridline of gridlines(); track $index) {
+        <line
+          style="stroke: var(--hairline)"
+          x1="0"
+          [attr.x2]="effectiveWidth()"
+          [attr.y1]="gridline"
+          [attr.y2]="gridline"
+        />
+      }
+    }
+
+    @if (geometry(); as geometry) {
+      <path [attr.d]="geometry.area" [attr.fill]="'url(#' + areaId + ')'" />
+      <path
+        data-testid="chart-line"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2.2"
+        [attr.d]="geometry.line"
+        [attr.stroke]="'url(#' + lineId + ')'"
+      />
+      @if (variant() === 'default') {
+        <circle
+          data-testid="chart-end"
+          r="5"
+          stroke-width="3"
+          style="fill: var(--primary); stroke: var(--card)"
+          [attr.cx]="geometry.end.x"
+          [attr.cy]="geometry.end.y"
+        />
+      }
+
+      @for (
+        tick of ticks();
+        track tick.t;
+        let index = $index;
+        let count = $count;
+        let first = $first;
+        let last = $last
+      ) {
+        <text
+          data-testid="chart-axis-tick"
+          style="fill: var(--muted-foreground); font-size: 11px"
+          [attr.text-anchor]="first ? 'start' : last ? 'end' : 'middle'"
+          [attr.x]="tick.x"
+          [attr.y]="effectiveHeight() - 6"
+          [class.max-sm:hidden]="!coreTick(index, count)"
+        >
+          {{ axisFormat()(tick.t) }}
+        </text>
+      }
+
+      @if (active(); as point) {
+        <line
+          data-testid="chart-crosshair"
+          stroke-width="1"
+          style="stroke: var(--muted-foreground)"
+          y1="0"
+          [attr.x1]="point.x"
+          [attr.x2]="point.x"
+          [attr.y2]="effectiveHeight()"
+        />
+        <circle
+          data-testid="chart-active-point"
+          r="4.5"
+          stroke-width="2"
+          style="fill: var(--primary); stroke: var(--card)"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+        />
+      }
+    }
+  </svg>
+
+  @if (active(); as point) {
+    <div
+      class="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-md border border-(--hairline) bg-(--card) px-2.5 py-1.5 text-xs whitespace-nowrap shadow-md"
+      data-testid="chart-tooltip"
+      role="status"
+      [style]="tooltipStyle(point)"
+    >
+      <p class="font-semibold text-(--foreground)">{{ valueFormat()(point.v) }}</p>
+      <p class="text-(--muted-foreground)">{{ timeFormat()(point.t) }}</p>
+    </div>
+  }
+
+  @if (variant() === 'default' && points().length > 0) {
+    <table class="sr-only">
+      <caption>
+        {{
+          label()
+        }}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">{{ timeColumnLabel() }}</th>
+          <th scope="col">{{ valueColumnLabel() }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (point of points(); track point.t) {
+          <tr>
+            <td>{{ timeFormat()(point.t) }}</td>
+            <td>{{ valueFormat()(point.v) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

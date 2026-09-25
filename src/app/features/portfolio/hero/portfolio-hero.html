@@ -1,0 +1,63 @@
+<ui-card class="flex h-full flex-col">
+  <ui-stat size="hero" [label]="'portfolio.hero.label' | transloco">
+    <span data-testid="hero-value" uiStatValue>{{ total().valueEur | wholeMoney }}</span>
+
+    <span data-testid="hero-change" uiStatDelta [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
+      <ui-delta
+        emphasis="pill"
+        [unknownLabel]="'portfolio.unknown' | transloco"
+        [value]="rangeError() ? undefined : total().changeEur"
+      >
+        {{ total().changeEur | signedMoney }}
+      </ui-delta>
+    </span>
+
+    <span data-testid="hero-period" uiStatCaption [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
+      @if (!rangeError() && total().changeRatio !== null && total().changeRatio !== undefined) {
+        {{ total().changeRatio | ratio: { signed: true } }}
+      }
+      {{ periodKey() | transloco }}
+    </span>
+
+    @if (!rangeError()) {
+      <app-line-chart
+        class="w-28"
+        uiStatAside
+        variant="sparkline"
+        [class.opacity-40]="loading()"
+        [height]="44"
+        [label]="'portfolio.chartLabel' | transloco"
+        [points]="points()"
+        [width]="112"
+      />
+    }
+  </ui-stat>
+
+  <div class="min-h-5 grow"></div>
+
+  <div class="flex gap-6 border-t border-(--hairline) pt-4">
+    <div>
+      <p class="text-[11px] font-medium text-(--muted-foreground)">
+        {{ 'portfolio.hero.unrealizedGain' | transloco }}
+      </p>
+      <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="unrealizedGainEur()">
+        {{ unrealizedGainEur() | signedMoney }}
+      </ui-delta>
+    </div>
+
+    @if (range() !== '1d') {
+      <div>
+        <p class="text-[11px] font-medium text-(--muted-foreground)">{{ 'portfolio.hero.day' | transloco }}</p>
+        <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="dayChangeEur()">
+          {{ dayChangeEur() | signedMoney }}
+        </ui-delta>
+      </div>
+    }
+  </div>
+
+  @if (updatedAt(); as updatedAt) {
+    <p class="mt-4 text-[11.5px] text-(--subtle-foreground)" data-testid="updated-at">
+      {{ 'portfolio.hero.updatedAt' | transloco: { time: updatedAt } }}
+    </p>
+  }
+</ui-card>

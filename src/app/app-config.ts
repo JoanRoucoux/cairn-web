@@ -10,6 +10,7 @@ import { provideTranslocoGlobal } from '@core/i18n/transloco-provider';
 import { authRedirectInterceptor } from '@core/interceptors/auth-redirect-interceptor';
 import { errorHandlerInterceptor } from '@core/interceptors/error-handler-interceptor';
 import { provideServiceWorkerRemoval } from '@core/pwa/service-worker-removal';
+import { provideThemeInit } from '@core/theme/theme-init';
 
 import { routes } from './app-routes';
 
@@ -28,5 +29,6 @@ export const appConfig: ApplicationConfig = {
       useFactory: () => (inject(TranslocoService).getActiveLang() === 'fr' ? 'fr-FR' : 'en-GB'),
     },
     provideServiceWorkerRemoval(),
+    provideThemeInit(),
   ],
 };

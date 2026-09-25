@@ -1,32 +1,26 @@
 <h1 class="sr-only">{{ 'portfolio.title' | transloco }}</h1>
 
-@if (portfolio.hasValue()) {
+@if (portfolio.hasValue() && performanceValue(); as performance) {
   <div class="flex flex-col gap-4">
+    <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[2fr_1fr]">
+      <app-portfolio-hero
+        [dayChangeEur]="portfolio.value().dayChangeEur"
+        [lastPriceAt]="performance.lastPriceAt"
+        [loading]="rangeLoading()"
+        [points]="points()"
+        [range]="range()"
+        [rangeError]="rangeError()"
+        [total]="performance.total"
+        [unrealizedGainEur]="portfolio.value().unrealizedGainEur"
+      />
+
+      <app-envelope-card [envelopes]="performance.byEnvelope" [loading]="rangeLoading()" [rangeError]="rangeError()" />
+    </div>
+
     <ui-card>
-      <p class="text-[11px] font-medium tracking-[0.08em] text-(--muted-foreground) uppercase">
-        {{ 'portfolio.total' | transloco }}
-      </p>
-      <p class="mt-3 text-[42px] leading-none font-semibold tabular-nums">
-        {{ portfolio.value().totalEur | money }}
-      </p>
-      <p class="mt-3 flex flex-wrap items-center gap-3">
-        <ui-delta
-          emphasis="pill"
-          [unknownLabel]="'portfolio.unknown' | transloco"
-          [value]="portfolio.value().dayChangeEur"
-        >
-          {{ portfolio.value().dayChangeEur | signedMoney }}
-        </ui-delta>
-        <span class="text-[13px] text-(--muted-foreground) tabular-nums">
-          {{ portfolio.value().dayChangeRatio | ratio: { signed: true } }} {{ 'portfolio.today' | transloco }}
-        </span>
-      </p>
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-sm font-medium text-(--foreground)">{{ 'portfolio.chartTitle' | transloco }}</h2>
 
-      <div class="mt-4">
-        <app-line-chart [label]="'portfolio.chartLabel' | transloco" [points]="points()" />
-      </div>
-
-      <div class="mt-3">
         <ui-segmented
           [label]="'chart.rangeLabel' | transloco"
           [options]="rangeOptions()"
@@ -34,6 +28,30 @@
           (valueChange)="setRange($event)"
         />
       </div>
+
+      @if (rangeError()) {
+        <div
+          class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-(--negative)/25 bg-(--negative)/5 px-4 py-3"
+          role="alert"
+        >
+          <p class="text-[12.5px] text-(--negative)">{{ 'portfolio.rangeError' | transloco }}</p>
+          <button type="button" ui-button variant="outline" (click)="retry()">
+            {{ 'portfolio.retry' | transloco }}
+          </button>
+        </div>
+      } @else {
+        <div [attr.aria-busy]="rangeLoading()" [class.opacity-50]="rangeLoading()">
+          <app-line-chart
+            [axisFormat]="axisFormat()"
+            [label]="chartSummaryKey() | transloco: chartSummaryParams()"
+            [points]="points()"
+            [timeColumnLabel]="'chart.time' | transloco"
+            [timeFormat]="tooltipTimeFormat()"
+            [valueColumnLabel]="'chart.value' | transloco"
+            [valueFormat]="valueFormat()"
+          />
+        </div>
+      }
 
       @if (reconstructed()) {
         <p class="mt-3 text-[11.5px] text-(--subtle-foreground)" data-testid="reconstructed-warning">
@@ -47,7 +65,7 @@
 
     <app-portfolio-movers [holdings]="portfolio.value().holdings" />
   </div>
-} @else if (portfolio.error()) {
+} @else if (portfolio.error() || performance.error()) {
   <p class="text-(--negative)" role="alert">{{ 'portfolio.error' | transloco }}</p>
 } @else {
   <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>

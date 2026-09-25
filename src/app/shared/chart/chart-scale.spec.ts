@@ -21,7 +21,7 @@ describe('buildGeometry', () => {
   });
 
   it('should place the highest value at the top of the box, inside the padding', () => {
-    const geometry = buildGeometry(series, 100, 50, 4);
+    const geometry = buildGeometry(series, 100, 50, { x: 4, top: 4, bottom: 4 });
 
     expect(geometry?.end).toEqual({ x: 96, y: 4 });
   });
@@ -32,12 +32,27 @@ describe('buildGeometry', () => {
       { t: 1, v: 42 },
     ];
 
-    expect(buildGeometry(flat, 100, 50, 4)?.end.y).toBe(25);
+    expect(buildGeometry(flat, 100, 50, { x: 4, top: 4, bottom: 4 })?.end.y).toBe(25);
   });
 
   it('should handle a single point', () => {
-    const geometry = buildGeometry([{ t: 0, v: 42 }], 100, 50, 4);
+    const geometry = buildGeometry([{ t: 0, v: 42 }], 100, 50, { x: 4, top: 4, bottom: 4 });
 
     expect(geometry?.end).toEqual({ x: 4, y: 25 });
+  });
+
+  it('should default to a uniform 4px padding on every side', () => {
+    const geometry = buildGeometry(series, 100, 50);
+
+    expect(geometry?.end).toEqual({ x: 96, y: 4 });
+  });
+
+  it('should reserve a bottom band and a top margin separately, above/below where the curve is drawn', () => {
+    const geometry = buildGeometry(series, 100, 100, { x: 4, top: 10, bottom: 30 });
+
+    expect(geometry?.plotTop).toBe(10);
+    expect(geometry?.plotBottom).toBe(70);
+    // The highest value (last point) sits at plotTop, not at the box's own top edge (0).
+    expect(geometry?.end.y).toBe(10);
   });
 });

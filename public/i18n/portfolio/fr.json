@@ -1,17 +1,38 @@
 {
   "title": "Patrimoine",
-  "total": "Patrimoine total",
-  "today": "aujourd'hui",
   "unknown": "Non disponible",
   "loading": "Chargement de votre patrimoine",
   "error": "Votre patrimoine n'a pas pu être chargé.",
+  "rangeError": "Impossible de charger cette période",
+  "retry": "Réessayer",
   "chartLabel": "Valeur du patrimoine sur la plage sélectionnée",
+  "chartTitle": "Évolution",
+  "chartSummary": "Patrimoine de {{from}} à {{to}}, {{change}} sur la période",
   "reconstructed": "Au-delà d'un an la courbe est reconstruite à composition constante : exacte aux extrémités, approximative entre les deux.",
+  "hero": {
+    "label": "Patrimoine",
+    "period": {
+      "1d": "aujourd'hui",
+      "7d": "sur 7 jours",
+      "1m": "sur 1 mois",
+      "1y": "sur 1 an",
+      "5y": "sur 5 ans",
+      "max": "au total"
+    },
+    "unrealizedGain": "Plus-value latente",
+    "day": "Variation du jour",
+    "updatedAt": "À jour à {{time}}"
+  },
+  "envelopes": {
+    "title": "Enveloppes",
+    "share": "du total"
+  },
   "movers": {
     "title": "Ce qui bouge"
   },
   "stale": {
-    "message": "{{count}} cours datent de plus de 4 jours",
+    "message_one": "{{count}} cours date de plus de 4 jours",
+    "message_other": "{{count}} cours datent de plus de 4 jours",
     "action": "Voir les sources"
   },
   "allocation": {
@@ -21,7 +42,8 @@
     "scaleNote": "Les barres sont à l'échelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
   },
   "unvalued": {
-    "message": "{{count}} lignes non valorisées",
+    "message_one": "{{count}} ligne non valorisée",
+    "message_other": "{{count}} lignes non valorisées",
     "action": "Voir les sources"
   }
 }

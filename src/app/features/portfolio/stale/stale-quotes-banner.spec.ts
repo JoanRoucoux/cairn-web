@@ -32,4 +32,16 @@ describe('StaleQuotesBanner', () => {
 
     expect(screen.getByRole('link', { name: 'portfolio.stale.action' })).toHaveAttribute('href', '/sources');
   });
+
+  it('should use the singular message key for a count of one', async () => {
+    await renderBanner(1);
+
+    expect(screen.getByRole('status')).toHaveTextContent('portfolio.stale.message_one');
+  });
+
+  it('should use the plural message key for more than one', async () => {
+    await renderBanner(2);
+
+    expect(screen.getByRole('status')).toHaveTextContent('portfolio.stale.message_other');
+  });
 });

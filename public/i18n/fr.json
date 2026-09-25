@@ -20,7 +20,9 @@
   },
   "chart": {
     "rangeLabel": "Plage de temps",
-    "range": { "1d": "1J", "7d": "7J", "1m": "1M", "1y": "1A", "5y": "5A", "max": "Max" }
+    "range": { "1d": "1J", "7d": "7J", "1m": "1M", "1y": "1A", "5y": "5A", "max": "Max" },
+    "time": "Heure",
+    "value": "Valeur"
   },
   "enums": {
     "assetClass": {

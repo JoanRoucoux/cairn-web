@@ -1,17 +1,38 @@
 {
   "title": "Portfolio",
-  "total": "Total value",
-  "today": "today",
   "unknown": "Not available",
   "loading": "Loading your portfolio",
   "error": "Your portfolio could not be loaded.",
+  "rangeError": "Could not load this period",
+  "retry": "Retry",
   "chartLabel": "Portfolio value over the selected range",
+  "chartTitle": "Over time",
+  "chartSummary": "Net worth from {{from}} to {{to}}, {{change}} over the period",
   "reconstructed": "Beyond one year the curve is reconstructed at constant composition: exact at the ends, approximate in between.",
+  "hero": {
+    "label": "Net worth",
+    "period": {
+      "1d": "today",
+      "7d": "over 7 days",
+      "1m": "over 1 month",
+      "1y": "over 1 year",
+      "5y": "over 5 years",
+      "max": "overall"
+    },
+    "unrealizedGain": "Unrealized gain",
+    "day": "Today's change",
+    "updatedAt": "Updated at {{time}}"
+  },
+  "envelopes": {
+    "title": "Envelopes",
+    "share": "of total"
+  },
   "movers": {
     "title": "Moving today"
   },
   "stale": {
-    "message": "{{count}} quotes are more than four days old",
+    "message_one": "{{count}} quote is more than four days old",
+    "message_other": "{{count}} quotes are more than four days old",
     "action": "View sources"
   },
   "allocation": {
@@ -21,7 +42,8 @@
     "scaleNote": "Bars are scaled to the largest row, not to the total - otherwise the smallest classes would be invisible."
   },
   "unvalued": {
-    "message": "{{count}} holdings have no quote yet",
+    "message_one": "{{count}} holding has no quote yet",
+    "message_other": "{{count}} holdings have no quote yet",
     "action": "View sources"
   }
 }
