@@ -1,6 +1,15 @@
-import { expect, test } from '@playwright/test';
+import { type Locator, expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
+
+// The first group renders expanded, so clicking its summary would close it: open only when closed.
+const openGroup = async (group: Locator): Promise<void> => {
+  const details = group.locator('details');
+  if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
+    await group.locator('summary').click();
+  }
+  await expect(details).toHaveAttribute('open', '');
+};
 
 test.describe('holdings', () => {
   test.beforeEach(async ({ page }) => {
@@ -62,7 +71,7 @@ test.describe('holdings', () => {
 
   test('shows the prefilled balance and updates it through the cash dialog', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.locator('summary').click();
+    await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
@@ -78,7 +87,7 @@ test.describe('holdings', () => {
 
   test('removes the cash line when the balance is set to zero', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.locator('summary').click();
+    await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
 
     await page.getByTestId('holding-cash-amount').fill('0');
@@ -90,7 +99,7 @@ test.describe('holdings', () => {
 
   test('refuses a negative amount in the cash dialog', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.locator('summary').click();
+    await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
     await page.getByTestId('holding-cash-amount').fill('-10');
     await page.getByTestId('holding-cash-submit').click();
@@ -100,7 +109,7 @@ test.describe('holdings', () => {
 
   test('renders a cash-only account with no ordinary line', async ({ page }) => {
     const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
-    await livretA.locator('summary').click();
+    await openGroup(livretA);
 
     await expect(livretA.getByText('Savings · 0 holdings')).toBeVisible();
     await expect(livretA.getByTestId('cash-row')).toHaveText(/20.?000/);
