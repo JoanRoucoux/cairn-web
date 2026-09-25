@@ -61,7 +61,7 @@ test.describe('holdings', () => {
   });
 
   test('shows the prefilled balance and updates it through the cash dialog', async ({ page }) => {
-    const boursorama = page.locator('div.overflow-hidden').filter({ hasText: 'PEA Boursorama' });
+    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
     await boursorama.locator('summary').click();
     await boursorama.getByTestId('edit-cash').click();
 
@@ -77,7 +77,7 @@ test.describe('holdings', () => {
   });
 
   test('removes the cash line when the balance is set to zero', async ({ page }) => {
-    const boursorama = page.locator('div.overflow-hidden').filter({ hasText: 'PEA Boursorama' });
+    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
     await boursorama.locator('summary').click();
     await boursorama.getByTestId('edit-cash').click();
 
@@ -89,7 +89,7 @@ test.describe('holdings', () => {
   });
 
   test('refuses a negative amount in the cash dialog', async ({ page }) => {
-    const boursorama = page.locator('div.overflow-hidden').filter({ hasText: 'PEA Boursorama' });
+    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
     await boursorama.locator('summary').click();
     await boursorama.getByTestId('edit-cash').click();
     await page.getByTestId('holding-cash-amount').fill('-10');
@@ -99,11 +99,12 @@ test.describe('holdings', () => {
   });
 
   test('renders a cash-only account with no ordinary line', async ({ page }) => {
-    const livretA = page.locator('div.overflow-hidden').filter({ hasText: 'Livret A' });
+    const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
     await livretA.locator('summary').click();
 
     await expect(livretA.getByText('Savings · 0 holdings')).toBeVisible();
     await expect(livretA.getByTestId('cash-row')).toHaveText(/20.?000/);
     await expect(livretA.getByTestId('holding-row')).toHaveCount(0);
+    await expect(livretA.getByTestId('edit-cash')).toHaveAccessibleName(/Livret A/);
   });
 });

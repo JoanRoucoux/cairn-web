@@ -1,4 +1,4 @@
-<div class="overflow-hidden rounded-xl border border-(--border) bg-(--card)">
+<div class="overflow-hidden rounded-xl border border-(--border) bg-(--card)" data-testid="account-group">
   <div class="flex min-h-11 items-center gap-3 px-3.5 pt-3">
     <span class="min-w-0 grow truncate text-sm font-semibold" [id]="'account-name-' + group().accountId">{{
       group().accountName
@@ -103,7 +103,11 @@
                 }
               </td>
               <td numeric uiTd>
-                <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
+                <ui-delta
+                  class="whitespace-nowrap"
+                  [unknownLabel]="'holdings.unknown' | transloco"
+                  [value]="holding.unrealizedGainEur"
+                >
                   {{ holding.unrealizedGainEur | signedMoney }}
                 </ui-delta>
               </td>
