@@ -1,23 +1,8 @@
-<div class="overflow-hidden rounded-xl border border-(--border) bg-(--card)">
+<div class="overflow-hidden rounded-xl border border-(--border) bg-(--card)" data-testid="account-group">
   <div class="flex min-h-11 items-center gap-3 px-3.5 pt-3">
     <span class="min-w-0 grow truncate text-sm font-semibold" [id]="'account-name-' + group().accountId">{{
       group().accountName
     }}</span>
-
-    <!-- Sits beside the account name rather than inside <summary>: a button nested in an
-         interactive <summary> is invalid and unreachable for assistive technologies. -->
-    <button
-      class="shrink-0"
-      data-testid="add-cash"
-      size="md"
-      type="button"
-      ui-button
-      variant="outline"
-      [attr.aria-label]="'holdings.cash.open' | transloco: { name: group().accountName }"
-      (click)="addCash.emit(group().accountId)"
-    >
-      {{ 'holdings.cash.openShort' | transloco }}
-    </button>
   </div>
 
   <details [open]="expanded()">
@@ -118,7 +103,11 @@
                 }
               </td>
               <td numeric uiTd>
-                <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
+                <ui-delta
+                  class="whitespace-nowrap"
+                  [unknownLabel]="'holdings.unknown' | transloco"
+                  [value]="holding.unrealizedGainEur"
+                >
                   {{ holding.unrealizedGainEur | signedMoney }}
                 </ui-delta>
               </td>
@@ -150,6 +139,31 @@
               </td>
             </tr>
           }
+          <tr data-testid="cash-row">
+            <td uiTd>{{ 'holdings.cash.line' | transloco }}</td>
+            <td from="md" numeric uiTd></td>
+            <td from="lg" numeric uiTd></td>
+            <td from="md" numeric uiTd></td>
+            <td numeric uiTd>
+              <span [class.text-(--muted-foreground)]="group().cashEur === 0">{{ group().cashEur | money }}</span>
+            </td>
+            <td numeric uiTd></td>
+            <td uiTd>
+              <div class="flex justify-end gap-1.5">
+                <button
+                  data-testid="edit-cash"
+                  size="md"
+                  type="button"
+                  ui-button
+                  variant="ghost"
+                  [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+                  (click)="editCash.emit(group().accountId)"
+                >
+                  {{ 'holdings.editRowShort' | transloco }}
+                </button>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

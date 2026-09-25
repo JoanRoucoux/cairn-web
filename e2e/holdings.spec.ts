@@ -1,6 +1,15 @@
-import { expect, test } from '@playwright/test';
+import { type Locator, expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
+
+// The first group renders expanded, so clicking its summary would close it: open only when closed.
+const openGroup = async (group: Locator): Promise<void> => {
+  const details = group.locator('details');
+  if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
+    await group.locator('summary').click();
+  }
+  await expect(details).toHaveAttribute('open', '');
+};
 
 test.describe('holdings', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,32 +69,51 @@ test.describe('holdings', () => {
     await expect(row.locator('ui-badge')).toHaveText('Fund');
   });
 
-  test('adds cash to an account, then refuses a second cash line on the same account', async ({ page }) => {
-    await page.getByTestId('add-cash').first().click();
+  test('shows the prefilled balance and updates it through the cash dialog', async ({ page }) => {
+    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
+    await openGroup(boursorama);
+    await boursorama.getByTestId('edit-cash').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('holding-cash-cancel')).toBeFocused();
+    await expect(page.getByTestId('holding-cash-amount')).toHaveValue('732.4');
 
-    await page.getByTestId('holding-cash-amount').fill('500');
+    await page.getByTestId('holding-cash-amount').fill('900');
     await page.getByTestId('holding-cash-submit').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeHidden();
-    await expect(page.getByText('Euros')).toBeVisible();
-    await expect(page.getByRole('row', { name: /Euros/ })).toContainText('500');
-
-    await page.getByTestId('add-cash').first().click();
-    await page.getByTestId('holding-cash-amount').fill('200');
-    await page.getByTestId('holding-cash-submit').click();
-
-    await expect(page.getByTestId('holding-cash-duplicate')).toBeVisible();
-    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
+    await expect(boursorama.getByTestId('cash-row')).toContainText('900');
   });
 
-  test('refuses a zero amount in the cash dialog', async ({ page }) => {
-    await page.getByTestId('add-cash').first().click();
+  test('removes the cash line when the balance is set to zero', async ({ page }) => {
+    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
+    await openGroup(boursorama);
+    await boursorama.getByTestId('edit-cash').click();
+
     await page.getByTestId('holding-cash-amount').fill('0');
     await page.getByTestId('holding-cash-submit').click();
 
+    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeHidden();
+    await expect(boursorama.getByTestId('cash-row')).toHaveText(/0[,.]00/);
+  });
+
+  test('refuses a negative amount in the cash dialog', async ({ page }) => {
+    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
+    await openGroup(boursorama);
+    await boursorama.getByTestId('edit-cash').click();
+    await page.getByTestId('holding-cash-amount').fill('-10');
+    await page.getByTestId('holding-cash-submit').click();
+
     await expect(page.getByTestId('holding-cash-amount')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('renders a cash-only account with no ordinary line', async ({ page }) => {
+    const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
+    await openGroup(livretA);
+
+    await expect(livretA.getByText('Savings · 0 holdings')).toBeVisible();
+    await expect(livretA.getByTestId('cash-row')).toHaveText(/20.?000/);
+    await expect(livretA.getByTestId('holding-row')).toHaveCount(0);
+    await expect(livretA.getByTestId('edit-cash')).toHaveAccessibleName(/Livret A/);
   });
 });

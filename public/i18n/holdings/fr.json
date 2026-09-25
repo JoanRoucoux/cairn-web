@@ -61,13 +61,13 @@
   "unvaluedCount": "{{count}} non valorisées",
   "noQuoteYet": "Aucune cotation pour cet instrument.",
   "cash": {
-    "open": "Ajouter des liquidités sur {{name}}",
-    "openShort": "+ Liquidités",
-    "title": "Ajouter des liquidités",
+    "line": "Liquidités",
+    "editRow": "Modifier les liquidités de {{name}}",
+    "title": "Liquidités de {{name}}",
     "amount": "Montant en euros",
+    "zeroHint": "0 retire la ligne.",
     "cancel": "Annuler",
-    "submit": "Ajouter",
-    "duplicate": "Ce compte a déjà une ligne de liquidités. Modifiez-la plutôt que d'en ajouter une nouvelle.",
-    "error": "Cette ligne de liquidités a été refusée."
+    "submit": "Enregistrer",
+    "error": "Ce solde a été refusé."
   }
 }

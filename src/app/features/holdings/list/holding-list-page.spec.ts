@@ -200,19 +200,20 @@ describe('HoldingListPage', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
   });
 
-  it('should reload the list after a cash line is added', async () => {
+  it('should reload the list after the cash balance is set', async () => {
     const user = userEvent.setup();
     await renderPage();
     await screen.findByText('Esalia');
 
-    await user.click(screen.getAllByTestId('add-cash')[0]!);
+    await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.type(screen.getByTestId('holding-cash-amount'), '500');
     await user.click(screen.getByTestId('holding-cash-submit'));
 
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
-    await vi.waitFor(() => httpTesting.expectOne({ url: '/api/instruments', method: 'POST' }).flush({ id: 'euros' }));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/euros/quotes').flush({}));
-    await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'POST' }).flush({}));
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne((request) => request.method === 'PUT' && request.url.endsWith('/cash'))
+        .flush(null, { status: 204, statusText: 'No Content' }),
+    );
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush(holdings));
 
     expect(await screen.findByText('Esalia')).toBeInTheDocument();
@@ -223,7 +224,7 @@ describe('HoldingListPage', () => {
     await renderPage();
     await screen.findByText('Esalia');
 
-    await user.click(screen.getAllByTestId('add-cash')[0]!);
+    await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.click(await screen.findByTestId('holding-cash-cancel'));
 
     expect(screen.queryByTestId('holding-cash-dialog')).not.toBeInTheDocument();
