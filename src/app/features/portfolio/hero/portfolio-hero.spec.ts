@@ -67,4 +67,17 @@ describe('PortfolioHero', () => {
 
     expect(screen.getByText('portfolio.hero.day')).toBeInTheDocument();
   });
+
+  it('should mark the range change as busy while the range is reloading, without blanking the total', async () => {
+    await renderHero({ loading: true });
+
+    expect(screen.getByTestId('hero-value')).toHaveTextContent('€298,889');
+    expect(screen.getByTestId('hero-period')).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('should not mark the range change as busy once it has settled', async () => {
+    await renderHero({ loading: false });
+
+    expect(screen.getByTestId('hero-period')).toHaveAttribute('aria-busy', 'false');
+  });
 });

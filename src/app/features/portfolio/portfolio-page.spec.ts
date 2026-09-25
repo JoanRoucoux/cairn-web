@@ -50,6 +50,7 @@ describe('PortfolioPage', () => {
       request.flush(portfolio),
     intraday: IntradayHistoryResponse = emptyIntraday,
     translations = getTranslocoTestingModule(),
+    locale = 'en-GB',
   ): Promise<void> => {
     await render(PortfolioPage, {
       imports: [translations],
@@ -58,7 +59,7 @@ describe('PortfolioPage', () => {
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
+        { provide: LOCALE_ID, useValue: locale },
         // Provided by the route in the app, the test must mirror it.
         provideTranslocoScope('portfolio'),
         PortfolioStore,
@@ -161,6 +162,68 @@ describe('PortfolioPage', () => {
       expect(pending).toHaveLength(1);
       pending[0]?.flush({ ...performance, range: 'max' });
     });
+  });
+
+  it('should summarize the curve for assistive technology once points are available', async () => {
+    const points: IntradayHistoryResponse = {
+      points: [
+        { at: '2026-08-27T09:00:00Z', totalEur: 278000 },
+        { at: '2026-08-27T18:00:00Z', totalEur: 278146.45 },
+      ],
+    };
+    await renderPage(undefined, points);
+
+    expect(await screen.findByRole('img', { name: 'portfolio.chartSummary' })).toBeInTheDocument();
+  });
+
+  it('should format the 1d axis in the locale-appropriate hour style', async () => {
+    const points: IntradayHistoryResponse = {
+      points: [
+        { at: '2026-08-27T09:00:00Z', totalEur: 278000 },
+        { at: '2026-08-27T18:00:00Z', totalEur: 278146.45 },
+      ],
+    };
+    await renderPage(undefined, points, getTranslocoTestingModule(), 'en-GB');
+
+    const ticks = await screen.findAllByTestId('chart-axis-tick');
+
+    expect(ticks[0]?.textContent?.trim()).toMatch(/^\d{1,2}:\d{2}$/);
+  });
+
+  it('should format the 1d axis with the French hour marker', async () => {
+    const points: IntradayHistoryResponse = {
+      points: [
+        { at: '2026-08-27T09:00:00Z', totalEur: 278000 },
+        { at: '2026-08-27T18:00:00Z', totalEur: 278146.45 },
+      ],
+    };
+    await renderPage(undefined, points, getTranslocoTestingModule(), 'fr-FR');
+
+    const ticks = await screen.findAllByTestId('chart-axis-tick');
+
+    expect(ticks[0]?.textContent?.trim()).toMatch(/^\d{1,2} h$/);
+  });
+
+  it('should mark the range change and the curve as busy while the new range is loading', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
+
+    expect((await screen.findByTestId('hero-period')).getAttribute('aria-busy')).toBe('true');
+
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/history');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush(emptyHistory);
+    });
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush({ ...performance, range: 'max' });
+    });
+
+    expect(await screen.findByTestId('hero-period')).toHaveAttribute('aria-busy', 'false');
   });
 
   it('should re-translate the range options when the active language changes', async () => {

@@ -187,4 +187,26 @@ describe('PortfolioStore', () => {
   it('should hold an empty series while the history is loading', () => {
     expect(store.points()).toEqual([]);
   });
+
+  it('should flag the range-dependent resources as loading on a range switch, and clear it once both settle', async () => {
+    respondWith((candidate) => candidate.flush(portfolio));
+    await flushIntraday();
+    await flushPerformance();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.rangeLoading()).toBe(false);
+
+    store.range.set('7d');
+    TestBed.tick();
+
+    expect(store.rangeLoading()).toBe(true);
+
+    await flushHistory();
+    await vi.waitFor(() =>
+      httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance')[0]?.flush(performance),
+    );
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.rangeLoading()).toBe(false);
+  });
 });

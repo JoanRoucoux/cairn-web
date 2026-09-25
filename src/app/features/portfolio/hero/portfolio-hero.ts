@@ -25,6 +25,8 @@ export class PortfolioHero {
   readonly unrealizedGainEur = input.required<number | null | undefined>();
   readonly dayChangeEur = input.required<number | null | undefined>();
   readonly lastPriceAt = input.required<string | null | undefined>();
+  /** True while the range switched but `performance`/`history` have not settled on the new range yet. */
+  readonly loading = input(false);
 
   protected readonly periodKey = computed(() => `portfolio.hero.period.${this.range()}`);
 

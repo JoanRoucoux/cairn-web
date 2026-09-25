@@ -1,10 +1,15 @@
 import type { Page, Route } from '@playwright/test';
 
-import { buildPerformanceFixtures } from './performance';
+import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdings';
+import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstrument } from './instruments';
+import { buildPerformanceFixtures, buildTrendSeries } from './performance';
+import { summarizeByAccount, totalsOf } from './portfolio-summary';
 
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
 // fixed JSON here instead, so the suite is self-contained in CI and locally.
 
+// PEA ~88,200 (this holding plus the stale one below); the other 5 envelopes live in
+// ./envelope-holdings.ts, summing with this one to the portfolio total.
 const holding = {
   id: '11111111-1111-1111-1111-111111111111',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
@@ -14,18 +19,18 @@ const holding = {
   instrumentName: 'Amundi MSCI World',
   isin: 'FR0010756098',
   assetClass: 'ETF',
-  quantity: 12,
+  quantity: 203,
   averageCost: 380.5,
   price: 410.2,
   priceCurrency: 'EUR',
   priceAsOf: '2026-08-27T18:00:00Z',
   priceSource: 'YAHOO',
   stale: false,
-  marketValueEur: 4922.4,
-  unrealizedGainEur: 495.6,
-  unrealizedGainRatio: 0.108,
-  dayChangeEur: 12.3,
-  dayChangeRatio: 0.0025,
+  marketValueEur: 83_277.6,
+  unrealizedGainEur: 6_500.5,
+  unrealizedGainRatio: 0.085,
+  dayChangeEur: 142.8,
+  dayChangeRatio: 0.0017,
 };
 
 const staleHolding = {
@@ -36,8 +41,11 @@ const staleHolding = {
   priceSource: 'COINGECKO',
   stale: true,
   averageCost: null,
+  marketValueEur: 4_922.4,
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
+  dayChangeEur: 12.3,
+  dayChangeRatio: 0.0025,
 };
 
 const unvaluedHolding = {
@@ -56,7 +64,7 @@ const unvaluedHolding = {
   dayChangeRatio: null,
 };
 
-const holdings = [holding, staleHolding, unvaluedHolding];
+const holdings = [holding, staleHolding, unvaluedHolding, ...EXTRA_HOLDINGS];
 
 const account = {
   id: holding.accountId,
@@ -65,33 +73,10 @@ const account = {
   institution: 'Boursorama',
 };
 
-const accounts = [account];
+const accounts = [account, ...EXTRA_ACCOUNTS];
 
-const instrument = {
-  id: holding.instrumentId,
-  name: holding.instrumentName,
-  isin: holding.isin,
-  currency: 'EUR',
-  assetClass: holding.assetClass,
-  priceSource: holding.priceSource,
-  sourceRef: 'AMUNDI-MSCI-WORLD',
-  description: 'A physically-replicated ETF tracking the MSCI World index across developed markets.',
-  externalUrl: 'https://www.amundietf.com/en/professional/product/view/LU1681043599',
-  holdingCount: 1,
-};
-
-const unvaluedInstrument = {
-  id: unvaluedHolding.instrumentId,
-  name: unvaluedHolding.instrumentName,
-  isin: null,
-  currency: 'EUR',
-  assetClass: unvaluedHolding.assetClass,
-  priceSource: unvaluedHolding.priceSource,
-  sourceRef: 'NEWLY-LISTED-FUND',
-  description: 'A fund awaiting its first quote.',
-  externalUrl: null,
-  holdingCount: 1,
-};
+const instrument = buildInstrument(holding);
+const unvaluedInstrument = buildUnvaluedInstrument(unvaluedHolding);
 
 // Not part of `instruments`: it backs a holding used for one screen only, and must not shift the
 // count the instruments list asserts on.
@@ -99,39 +84,51 @@ const instruments = [instrument];
 
 let created = 0;
 
+const { totalEur, dayChangeEur, unrealizedGainEur } = totalsOf(holdings);
+// Every holding is assetClass ETF except the stale one (CRYPTO) and the SAVINGS envelope (CASH).
+const cashEur = 20_000;
+const etfEur = totalEur - staleHolding.marketValueEur - cashEur;
+
 const portfolio = {
-  totalEur: 9844.8,
-  dayChangeEur: 24.6,
-  dayChangeRatio: 0.0025,
-  unrealizedGainEur: 495.6,
-  unrealizedGainRatio: 0.108,
+  totalEur,
+  dayChangeEur,
+  dayChangeRatio: dayChangeEur / (totalEur - dayChangeEur),
+  unrealizedGainEur,
+  unrealizedGainRatio: unrealizedGainEur / (totalEur - unrealizedGainEur),
   staleCount: 1,
   unvaluedCount: 1,
   generatedAt: '2026-08-27T18:00:00Z',
   byAssetClass: [
-    { label: 'ETF', valueEur: 4922.4, share: 0.5 },
-    { label: 'CRYPTO', valueEur: 4922.4, share: 0.5 },
+    { label: 'ETF', valueEur: etfEur, share: etfEur / totalEur },
+    { label: 'CRYPTO', valueEur: staleHolding.marketValueEur, share: staleHolding.marketValueEur / totalEur },
+    { label: 'CASH', valueEur: cashEur, share: cashEur / totalEur },
   ],
-  byAccount: [{ label: account.name, valueEur: 4922.4, share: 0.5 }],
+  byAccount: summarizeByAccount(holdings, accounts, totalEur),
   holdings,
 };
 
+// Irregular, not a smooth climb: a portfolio has down days too. Same trend-plus-random-walk shape
+// as the intraday fixture (`buildTrendSeries`), pinned to end exactly on `totalEur`.
+const historyDates = [
+  '2026-08-20',
+  '2026-08-21',
+  '2026-08-22',
+  '2026-08-23',
+  '2026-08-24',
+  '2026-08-25',
+  '2026-08-26',
+  '2026-08-27',
+];
 const history = {
   mode: 'constant-mix',
   reconstructed: false,
-  points: [
-    { date: '2026-08-20', totalEur: 9700 },
-    { date: '2026-08-21', totalEur: 9650.5 },
-    { date: '2026-08-22', totalEur: 9710.2 },
-    { date: '2026-08-23', totalEur: 9690.8 },
-    { date: '2026-08-24', totalEur: 9760.4 },
-    { date: '2026-08-25', totalEur: 9790.1 },
-    { date: '2026-08-26', totalEur: 9820.2 },
-    { date: '2026-08-27', totalEur: 9844.8 },
-  ],
+  points: buildTrendSeries(263_000, totalEur, historyDates.length, 20_260_820).map((value, index) => ({
+    date: historyDates[index],
+    totalEur: value,
+  })),
 };
 
-const { intradayHistory, performance } = buildPerformanceFixtures(portfolio, account);
+const { intradayHistory, performance } = buildPerformanceFixtures(portfolio, buildEnvelopes(holding, staleHolding));
 
 const jobRuns = [
   {

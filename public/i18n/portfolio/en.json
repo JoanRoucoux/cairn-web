@@ -4,6 +4,8 @@
   "loading": "Loading your portfolio",
   "error": "Your portfolio could not be loaded.",
   "chartLabel": "Portfolio value over the selected range",
+  "chartTitle": "Over time",
+  "chartSummary": "Net worth from {{from}} to {{to}}, {{change}} over the period",
   "reconstructed": "Beyond one year the curve is reconstructed at constant composition: exact at the ends, approximate in between.",
   "hero": {
     "label": "Net worth",
@@ -20,6 +22,7 @@
     "updatedAt": "Updated at {{time}}"
   },
   "envelopes": {
+    "title": "Envelopes",
     "share": "of total"
   },
   "movers": {

@@ -20,7 +20,9 @@
   },
   "chart": {
     "rangeLabel": "Time range",
-    "range": { "1d": "1D", "7d": "7D", "1m": "1M", "1y": "1Y", "5y": "5Y", "max": "Max" }
+    "range": { "1d": "1D", "7d": "7D", "1m": "1M", "1y": "1Y", "5y": "5Y", "max": "Max" },
+    "time": "Time",
+    "value": "Value"
   },
   "enums": {
     "assetClass": {

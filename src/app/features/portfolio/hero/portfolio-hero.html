@@ -1,12 +1,14 @@
-<ui-card>
+<ui-card class="flex h-full flex-col">
   <ui-stat size="hero" [label]="'portfolio.hero.label' | transloco">
     <span data-testid="hero-value" uiStatValue>{{ total().valueEur | wholeMoney }}</span>
 
-    <ui-delta emphasis="pill" uiStatDelta [unknownLabel]="'portfolio.unknown' | transloco" [value]="total().changeEur">
-      {{ total().changeEur | signedMoney }}
-    </ui-delta>
+    <span uiStatDelta [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
+      <ui-delta emphasis="pill" [unknownLabel]="'portfolio.unknown' | transloco" [value]="total().changeEur">
+        {{ total().changeEur | signedMoney }}
+      </ui-delta>
+    </span>
 
-    <span data-testid="hero-period" uiStatCaption>
+    <span data-testid="hero-period" uiStatCaption [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
       @if (total().changeRatio !== null && total().changeRatio !== undefined) {
         {{ total().changeRatio | ratio: { signed: true } }}
       }
@@ -17,6 +19,7 @@
       class="w-28"
       uiStatAside
       variant="sparkline"
+      [class.opacity-40]="loading()"
       [height]="44"
       [label]="'portfolio.chartLabel' | transloco"
       [points]="points()"
@@ -24,7 +27,9 @@
     />
   </ui-stat>
 
-  <div class="mt-5 flex gap-6 border-t border-(--hairline) pt-4">
+  <div class="min-h-5 grow"></div>
+
+  <div class="flex gap-6 border-t border-(--hairline) pt-4">
     <div>
       <p class="text-[11px] font-medium text-(--muted-foreground)">
         {{ 'portfolio.hero.unrealizedGain' | transloco }}

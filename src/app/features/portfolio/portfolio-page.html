@@ -1,29 +1,42 @@
 <h1 class="sr-only">{{ 'portfolio.title' | transloco }}</h1>
 
-@if (portfolio.hasValue() && performance.hasValue()) {
+@if (portfolio.hasValue() && performanceValue(); as performance) {
   <div class="flex flex-col gap-4">
-    <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[2fr_1fr]">
+    <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[2fr_1fr]">
       <app-portfolio-hero
         [dayChangeEur]="portfolio.value().dayChangeEur"
-        [lastPriceAt]="performance.value().lastPriceAt"
+        [lastPriceAt]="performance.lastPriceAt"
+        [loading]="rangeLoading()"
         [points]="points()"
         [range]="range()"
-        [total]="performance.value().total"
+        [total]="performance.total"
         [unrealizedGainEur]="portfolio.value().unrealizedGainEur"
       />
 
-      <app-envelope-tiles [envelopes]="performance.value().byEnvelope" [range]="range()" />
+      <app-envelope-card [envelopes]="performance.byEnvelope" [loading]="rangeLoading()" />
     </div>
 
     <ui-card>
-      <app-line-chart [label]="'portfolio.chartLabel' | transloco" [points]="points()" />
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-sm font-medium text-(--foreground)">{{ 'portfolio.chartTitle' | transloco }}</h2>
 
-      <div class="mt-3">
         <ui-segmented
           [label]="'chart.rangeLabel' | transloco"
           [options]="rangeOptions()"
           [value]="range()"
           (valueChange)="setRange($event)"
+        />
+      </div>
+
+      <div [attr.aria-busy]="rangeLoading()" [class.opacity-50]="rangeLoading()">
+        <app-line-chart
+          [axisFormat]="axisFormat()"
+          [label]="chartSummaryKey() | transloco: chartSummaryParams()"
+          [points]="points()"
+          [timeColumnLabel]="'chart.time' | transloco"
+          [timeFormat]="tooltipTimeFormat()"
+          [valueColumnLabel]="'chart.value' | transloco"
+          [valueFormat]="valueFormat()"
         />
       </div>
 

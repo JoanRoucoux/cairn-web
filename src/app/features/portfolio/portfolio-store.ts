@@ -1,9 +1,9 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import type { Observable } from 'rxjs';
 
-import type { HistoryResponse, IntradayHistoryResponse } from '@core/api-client/cairnAPI.schemas';
+import type { HistoryResponse, IntradayHistoryResponse, PerformanceResponse } from '@core/api-client/cairnAPI.schemas';
 import { HistoryService } from '@core/api-client/history/history.service';
 import { PerformanceService } from '@core/api-client/performance/performance.service';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
@@ -48,8 +48,17 @@ export class PortfolioStore {
     defaultValue: EMPTY_HISTORY,
   });
 
+  // `rxResource` resets `value()` to `undefined` (or `defaultValue`) as soon as its params change,
+  // before the new response lands, which would blank the whole page and the curve on every range
+  // switch. These signals hold onto the last resolved response instead, so the page can show the
+  // previous range's figures while `rangeLoading` marks them stale.
+  readonly #performanceSticky = signal<PerformanceResponse | undefined>(undefined);
+  readonly #historySticky = signal<HistoryOrIntraday>(EMPTY_HISTORY);
+
+  readonly performanceValue = computed(() => this.#performanceSticky());
+
   readonly points = computed<ChartPoint[]>(() => {
-    const value = this.history.value();
+    const value = this.#historySticky();
 
     return 'mode' in value
       ? value.points.map((point) => ({ t: Date.parse(point.date), v: point.totalEur }))
@@ -57,8 +66,25 @@ export class PortfolioStore {
   });
 
   readonly reconstructed = computed(() => {
-    const value = this.history.value();
+    const value = this.#historySticky();
 
     return 'mode' in value && value.reconstructed;
   });
+
+  /** The range-dependent parts (curve, tiles, hero change) reload on a range switch, while the portfolio total does not. */
+  readonly rangeLoading = computed(() => this.performance.isLoading() || this.history.isLoading());
+
+  constructor() {
+    effect(() => {
+      if (this.performance.status() === 'resolved') {
+        this.#performanceSticky.set(this.performance.value());
+      }
+    });
+
+    effect(() => {
+      if (this.history.status() === 'resolved') {
+        this.#historySticky.set(this.history.value());
+      }
+    });
+  }
 }

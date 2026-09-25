@@ -4,6 +4,8 @@
   "loading": "Chargement de votre patrimoine",
   "error": "Votre patrimoine n'a pas pu être chargé.",
   "chartLabel": "Valeur du patrimoine sur la plage sélectionnée",
+  "chartTitle": "Évolution",
+  "chartSummary": "Patrimoine de {{from}} à {{to}}, {{change}} sur la période",
   "reconstructed": "Au-delà d'un an la courbe est reconstruite à composition constante : exacte aux extrémités, approximative entre les deux.",
   "hero": {
     "label": "Patrimoine",
@@ -20,6 +22,7 @@
     "updatedAt": "À jour à {{time}}"
   },
   "envelopes": {
+    "title": "Enveloppes",
     "share": "du total"
   },
   "movers": {
