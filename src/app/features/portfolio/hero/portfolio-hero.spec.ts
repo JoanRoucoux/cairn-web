@@ -80,4 +80,20 @@ describe('PortfolioHero', () => {
 
     expect(screen.getByTestId('hero-period')).toHaveAttribute('aria-busy', 'false');
   });
+
+  it('should show the sparkline while the range is loaded', async () => {
+    const { container } = await renderHero();
+
+    expect(container.querySelector('app-line-chart')).not.toBeNull();
+  });
+
+  it('should blank the range change, the ratio and the sparkline when the range failed to load, without blanking the total', async () => {
+    const { container } = await renderHero({ rangeError: true });
+
+    expect(container.querySelector('app-line-chart')).toBeNull();
+
+    expect(screen.getByTestId('hero-value')).toHaveTextContent('€298,889');
+    expect(screen.getByTestId('hero-change')).toHaveTextContent('—');
+    expect(screen.getByTestId('hero-period')).not.toHaveTextContent('%');
+  });
 });

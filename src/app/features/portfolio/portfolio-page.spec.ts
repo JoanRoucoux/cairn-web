@@ -226,6 +226,69 @@ describe('PortfolioPage', () => {
     expect(await screen.findByTestId('hero-period')).toHaveAttribute('aria-busy', 'false');
   });
 
+  it('should show an alert instead of stale figures when the range fails to load, keeping the range selector usable', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
+
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/history');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush(emptyHistory);
+    });
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush(null, { status: 500, statusText: 'Server Error' });
+    });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('portfolio.rangeError');
+    // Not the 1d figures the page loaded with: no stale range change or curve survive the error.
+    // ("Today's change", from the portfolio resource rather than performance, is unaffected and
+    // legitimately still reads the same figure - checked separately from the hero's range change.)
+    expect(screen.getByTestId('hero-change')).toHaveTextContent('—');
+    expect(screen.getByText('enums.accountType.PEA').closest('[role="listitem"]')).toHaveTextContent('—');
+    expect(screen.queryByTestId('chart-tooltip')).not.toBeInTheDocument();
+    // The total (range-independent) still shows, and the selector is still there to switch back or retry.
+    expect(screen.getByTestId('hero-value')).toHaveTextContent('€278,146');
+    expect(await screen.findAllByRole('radio')).toHaveLength(6);
+  });
+
+  it('should recover once retried after a range failed to load', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/history');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush(emptyHistory);
+    });
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush(null, { status: 500, statusText: 'Server Error' });
+    });
+    await screen.findByRole('alert');
+
+    await user.click(screen.getByRole('button', { name: 'portfolio.retry' }));
+
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/history');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush(emptyHistory);
+    });
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush({ ...performance, range: 'max' });
+    });
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(await screen.findAllByText('−€712.98')).not.toHaveLength(0);
+  });
+
   it('should re-translate the range options when the active language changes', async () => {
     await renderPage(
       undefined,

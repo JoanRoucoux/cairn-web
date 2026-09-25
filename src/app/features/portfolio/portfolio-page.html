@@ -9,11 +9,12 @@
         [loading]="rangeLoading()"
         [points]="points()"
         [range]="range()"
+        [rangeError]="rangeError()"
         [total]="performance.total"
         [unrealizedGainEur]="portfolio.value().unrealizedGainEur"
       />
 
-      <app-envelope-card [envelopes]="performance.byEnvelope" [loading]="rangeLoading()" />
+      <app-envelope-card [envelopes]="performance.byEnvelope" [loading]="rangeLoading()" [rangeError]="rangeError()" />
     </div>
 
     <ui-card>
@@ -28,17 +29,29 @@
         />
       </div>
 
-      <div [attr.aria-busy]="rangeLoading()" [class.opacity-50]="rangeLoading()">
-        <app-line-chart
-          [axisFormat]="axisFormat()"
-          [label]="chartSummaryKey() | transloco: chartSummaryParams()"
-          [points]="points()"
-          [timeColumnLabel]="'chart.time' | transloco"
-          [timeFormat]="tooltipTimeFormat()"
-          [valueColumnLabel]="'chart.value' | transloco"
-          [valueFormat]="valueFormat()"
-        />
-      </div>
+      @if (rangeError()) {
+        <div
+          class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-(--negative)/25 bg-(--negative)/5 px-4 py-3"
+          role="alert"
+        >
+          <p class="text-[12.5px] text-(--negative)">{{ 'portfolio.rangeError' | transloco }}</p>
+          <button type="button" ui-button variant="outline" (click)="retry()">
+            {{ 'portfolio.retry' | transloco }}
+          </button>
+        </div>
+      } @else {
+        <div [attr.aria-busy]="rangeLoading()" [class.opacity-50]="rangeLoading()">
+          <app-line-chart
+            [axisFormat]="axisFormat()"
+            [label]="chartSummaryKey() | transloco: chartSummaryParams()"
+            [points]="points()"
+            [timeColumnLabel]="'chart.time' | transloco"
+            [timeFormat]="tooltipTimeFormat()"
+            [valueColumnLabel]="'chart.value' | transloco"
+            [valueFormat]="valueFormat()"
+          />
+        </div>
+      }
 
       @if (reconstructed()) {
         <p class="mt-3 text-[11.5px] text-(--subtle-foreground)" data-testid="reconstructed-warning">

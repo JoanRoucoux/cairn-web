@@ -27,6 +27,8 @@ export class PortfolioHero {
   readonly lastPriceAt = input.required<string | null | undefined>();
   /** True while the range switched but `performance`/`history` have not settled on the new range yet. */
   readonly loading = input(false);
+  /** True when `performance`/`history` failed to load for the selected range: the change and period go blank. */
+  readonly rangeError = input(false);
 
   protected readonly periodKey = computed(() => `portfolio.hero.period.${this.range()}`);
 

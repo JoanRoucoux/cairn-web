@@ -75,4 +75,14 @@ describe('EnvelopeCard', () => {
     expect(first).toHaveTextContent('€200,000.00');
     expect(first?.querySelector('[aria-busy]')).toHaveAttribute('aria-busy', 'true');
   });
+
+  it('should blank every delta when the range failed to load, without blanking the value or the share', async () => {
+    await renderCard(envelopes, { rangeError: true });
+
+    const [first] = screen.getAllByRole('listitem');
+
+    expect(first).toHaveTextContent('€200,000.00');
+    expect(first).toHaveTextContent('70.0% portfolio.envelopes.share');
+    expect(first).toHaveTextContent('—');
+  });
 });

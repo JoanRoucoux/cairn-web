@@ -188,6 +188,55 @@ describe('PortfolioStore', () => {
     expect(store.points()).toEqual([]);
   });
 
+  it('should never let a late response for an older range overwrite the currently selected one', async () => {
+    respondWith((candidate) => candidate.flush(portfolio));
+    await flushIntraday();
+    await flushPerformance();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // `HttpTestingController.match()` consumes whatever it finds, so each request is captured the
+    // moment it is first seen and acted on through that same reference - never re-queried by URL.
+    const waitForPerformanceRequest = (range: string): Promise<TestRequest> =>
+      vi.waitFor(() => {
+        const [request] = httpTesting.match(
+          (candidate) => candidate.url === '/api/portfolio/performance' && candidate.params.get('range') === range,
+        );
+
+        expect(request).toBeDefined();
+
+        return request as TestRequest;
+      });
+
+    store.range.set('7d');
+    TestBed.tick();
+    const sevenDayRequest = await waitForPerformanceRequest('7d');
+
+    store.range.set('1y');
+    TestBed.tick();
+    const oneYearRequest = await waitForPerformanceRequest('1y');
+
+    // The newer range resolves first...
+    oneYearRequest.flush({ ...performance, range: '1y' });
+    await vi.waitFor(() => expect(store.performanceValue()?.range).toBe('1y'));
+
+    // ...and rxResource has already cancelled the older one by the time it would resolve late, out
+    // of order: it never gets the chance to win, since it cannot even be flushed any more.
+    expect(() => sevenDayRequest.flush({ ...performance, range: '7d' })).toThrow('cancelled');
+    expect(store.performanceValue()?.range).toBe('1y');
+
+    // The 7d /history request rxResource abandoned alongside its performance counterpart cannot be
+    // flushed either; only the 1y one (if still pending) needs draining for `verify()`.
+    httpTesting
+      .match((candidate) => candidate.url === '/api/history')
+      .forEach((request) => {
+        try {
+          request.flush(history);
+        } catch {
+          // Already cancelled: nothing to drain.
+        }
+      });
+  });
+
   it('should flag the range-dependent resources as loading on a range switch, and clear it once both settle', async () => {
     respondWith((candidate) => candidate.flush(portfolio));
     await flushIntraday();
@@ -208,5 +257,63 @@ describe('PortfolioStore', () => {
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.rangeLoading()).toBe(false);
+  });
+
+  it('should flag a range error without clearing the sticky value from a previous, successful range', async () => {
+    respondWith((candidate) => candidate.flush(portfolio));
+    await flushIntraday();
+    await flushPerformance();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.rangeError()).toBe(false);
+
+    store.range.set('1y');
+    TestBed.tick();
+
+    await vi.waitFor(() =>
+      httpTesting
+        .match((candidate) => candidate.url === '/api/portfolio/performance')[0]
+        ?.flush(null, { status: 500, statusText: 'Server Error' }),
+    );
+    await vi.waitFor(() =>
+      httpTesting.match((candidate) => candidate.url === '/api/history')[0]?.flush({ ...history, points: [] }),
+    );
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.rangeError()).toBe(true);
+    expect(store.rangeLoading()).toBe(false);
+    // Still the 1d snapshot: nothing clears it, so the hero/tiles keep a value/share to show.
+    expect(store.performanceValue()?.range).toBe('1d');
+  });
+
+  it('should recover from a range error on retry', async () => {
+    respondWith((candidate) => candidate.flush(portfolio));
+    await flushIntraday();
+    await flushPerformance();
+
+    store.range.set('1y');
+    TestBed.tick();
+    await vi.waitFor(() =>
+      httpTesting
+        .match((candidate) => candidate.url === '/api/portfolio/performance')[0]
+        ?.flush(null, { status: 500, statusText: 'Server Error' }),
+    );
+    await flushHistory({ ...history, points: [] });
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(store.rangeError()).toBe(true);
+
+    store.retryRange();
+    TestBed.tick();
+
+    await vi.waitFor(() =>
+      httpTesting
+        .match((candidate) => candidate.url === '/api/portfolio/performance')[0]
+        ?.flush({ ...performance, range: '1y' }),
+    );
+    await flushHistory();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.rangeError()).toBe(false);
+    expect(store.performanceValue()?.range).toBe('1y');
   });
 });

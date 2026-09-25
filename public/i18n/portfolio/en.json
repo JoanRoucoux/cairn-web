@@ -3,6 +3,8 @@
   "unknown": "Not available",
   "loading": "Loading your portfolio",
   "error": "Your portfolio could not be loaded.",
+  "rangeError": "Could not load this period",
+  "retry": "Retry",
   "chartLabel": "Portfolio value over the selected range",
   "chartTitle": "Over time",
   "chartSummary": "Net worth from {{from}} to {{to}}, {{change}} over the period",

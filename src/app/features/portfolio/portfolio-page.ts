@@ -1,6 +1,6 @@
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 
-import { type SegmentedOption, UiCard, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { type SegmentedOption, UiButton, UiCard, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';
@@ -24,6 +24,7 @@ import { UnvaluedBanner } from './unvalued/unvalued-banner';
     PortfolioMovers,
     StaleQuotesBanner,
     TranslocoPipe,
+    UiButton,
     UiCard,
     UiSegmented,
     UiSkeleton,
@@ -45,6 +46,7 @@ export class PortfolioPage {
   protected readonly points = this.#store.points;
   protected readonly reconstructed = this.#store.reconstructed;
   protected readonly rangeLoading = this.#store.rangeLoading;
+  protected readonly rangeError = this.#store.rangeError;
 
   // chart.* lives in the preloaded global i18n file (no lazy scope to race), so reacting
   // to language changes through LanguageStore is enough.
@@ -134,5 +136,9 @@ export class PortfolioPage {
   // The library types the option value as `string`; every option here is built from CHART_RANGES.
   protected setRange(value: string): void {
     this.range.set(value as ChartRange);
+  }
+
+  protected retry(): void {
+    this.#store.retryRange();
   }
 }

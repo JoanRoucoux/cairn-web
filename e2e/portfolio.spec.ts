@@ -73,6 +73,35 @@ test.describe('portfolio', () => {
     await expect(portfolio.tooltip).not.toBeVisible();
   });
 
+  test('shows an alert when a range fails to load, and recovers by switching back', async ({ page }) => {
+    const portfolio = new PortfolioPageObject(page);
+
+    await page.route('**/api/portfolio/performance*', async (route) => {
+      const url = new URL(route.request().url());
+
+      if (url.searchParams.get('range') === '1y') {
+        return route.fulfill({ status: 500, json: { message: 'boom' } });
+      }
+
+      return route.fallback();
+    });
+
+    await portfolio.goto();
+    await expect(portfolio.heroValue).toBeVisible();
+
+    await portfolio.pickRange('1Y');
+
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.getByRole('radio', { name: '1Y' })).toBeChecked();
+    await expect(portfolio.heroValue).toBeVisible();
+
+    await portfolio.pickRange('1D');
+
+    await expect(page.getByRole('alert')).not.toBeVisible();
+    await expect(page.getByRole('radio', { name: '1D' })).toBeChecked();
+    await expect(portfolio.heroValue).toBeVisible();
+  });
+
   test('keeps the skip link reachable as the first tab stop', async ({ page }) => {
     await page.goto('/');
 

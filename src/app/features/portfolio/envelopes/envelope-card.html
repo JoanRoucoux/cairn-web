@@ -14,7 +14,11 @@
         <div class="shrink-0 text-right leading-tight">
           <p class="text-sm font-medium text-(--foreground)">{{ envelope.valueEur | money }}</p>
           <p [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
-            <ui-delta class="text-xs" [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
+            <ui-delta
+              class="text-xs"
+              [unknownLabel]="'portfolio.unknown' | transloco"
+              [value]="rangeError() ? undefined : envelope.changeEur"
+            >
               {{ envelope.changeEur | signedMoney }}
             </ui-delta>
           </p>

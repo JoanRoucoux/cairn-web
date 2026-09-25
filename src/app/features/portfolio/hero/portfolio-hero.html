@@ -2,29 +2,35 @@
   <ui-stat size="hero" [label]="'portfolio.hero.label' | transloco">
     <span data-testid="hero-value" uiStatValue>{{ total().valueEur | wholeMoney }}</span>
 
-    <span uiStatDelta [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
-      <ui-delta emphasis="pill" [unknownLabel]="'portfolio.unknown' | transloco" [value]="total().changeEur">
+    <span data-testid="hero-change" uiStatDelta [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
+      <ui-delta
+        emphasis="pill"
+        [unknownLabel]="'portfolio.unknown' | transloco"
+        [value]="rangeError() ? undefined : total().changeEur"
+      >
         {{ total().changeEur | signedMoney }}
       </ui-delta>
     </span>
 
     <span data-testid="hero-period" uiStatCaption [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
-      @if (total().changeRatio !== null && total().changeRatio !== undefined) {
+      @if (!rangeError() && total().changeRatio !== null && total().changeRatio !== undefined) {
         {{ total().changeRatio | ratio: { signed: true } }}
       }
       {{ periodKey() | transloco }}
     </span>
 
-    <app-line-chart
-      class="w-28"
-      uiStatAside
-      variant="sparkline"
-      [class.opacity-40]="loading()"
-      [height]="44"
-      [label]="'portfolio.chartLabel' | transloco"
-      [points]="points()"
-      [width]="112"
-    />
+    @if (!rangeError()) {
+      <app-line-chart
+        class="w-28"
+        uiStatAside
+        variant="sparkline"
+        [class.opacity-40]="loading()"
+        [height]="44"
+        [label]="'portfolio.chartLabel' | transloco"
+        [points]="points()"
+        [width]="112"
+      />
+    }
   </ui-stat>
 
   <div class="min-h-5 grow"></div>

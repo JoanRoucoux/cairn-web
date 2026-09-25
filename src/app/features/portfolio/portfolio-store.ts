@@ -30,6 +30,9 @@ export class PortfolioStore {
     stream: () => this.#portfolioApiClient.getPortfolio(),
   });
 
+  // `rxResource` cancels the in-flight request for a range it has already moved on from (proven in
+  // portfolio-store.spec.ts: flushing a superseded one throws "Cannot flush a cancelled request"),
+  // so a late, out-of-order response for an older range never reaches `value()`/the effects below.
   readonly performance = rxResource({
     params: () => this.range(),
     stream: ({ params }) => this.#performanceApiClient.getPortfolioPerformance({ range: params }),
@@ -74,7 +77,21 @@ export class PortfolioStore {
   /** The range-dependent parts (curve, tiles, hero change) reload on a range switch, while the portfolio total does not. */
   readonly rangeLoading = computed(() => this.performance.isLoading() || this.history.isLoading());
 
+  /**
+   * True once either resource has settled in error for the *currently selected* range - not for a
+   * range switched away from, since `status()` (unlike the sticky signals above) always reflects
+   * the live resource, never a past one.
+   */
+  readonly rangeError = computed(() => this.performance.status() === 'error' || this.history.status() === 'error');
+
+  retryRange(): void {
+    this.performance.reload();
+    this.history.reload();
+  }
+
   constructor() {
+    // `.value()` throws while the resource is in an error state, so `status()` is checked first
+    // and short-circuits before `.value()` is ever read.
     effect(() => {
       if (this.performance.status() === 'resolved') {
         this.#performanceSticky.set(this.performance.value());

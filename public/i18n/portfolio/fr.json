@@ -3,6 +3,8 @@
   "unknown": "Non disponible",
   "loading": "Chargement de votre patrimoine",
   "error": "Votre patrimoine n'a pas pu être chargé.",
+  "rangeError": "Impossible de charger cette période",
+  "retry": "Réessayer",
   "chartLabel": "Valeur du patrimoine sur la plage sélectionnée",
   "chartTitle": "Évolution",
   "chartSummary": "Patrimoine de {{from}} à {{to}}, {{change}} sur la période",
