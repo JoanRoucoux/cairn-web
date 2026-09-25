@@ -6,17 +6,15 @@ export type HoldingCashDraft = {
   amount: number | null;
 };
 
-// A factory so each dialog instance gets its own model object.
-export const initialHoldingCashDraft = (): HoldingCashDraft => ({
-  amount: null,
+export const initialHoldingCashDraft = (balance = 0): HoldingCashDraft => ({
+  amount: balance,
 });
 
 export const holdingCashDraftSchema = (messages: FormMessages): Schema<HoldingCashDraft> => {
-  // A minimum just above zero refuses both zero and a negative amount.
-  const belowMin = messages.min(0.01);
+  const belowMin = messages.min(0);
 
   return schema((cash) => {
     required(cash.amount, { message: () => messages.required() });
-    min(cash.amount, 0.01, { message: () => belowMin() });
+    min(cash.amount, 0, { message: () => belowMin() });
   });
 };

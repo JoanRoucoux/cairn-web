@@ -9,11 +9,15 @@ export type AccountGroup = {
   accountName: string;
   accountType: string;
   valueEur: number;
+  cashEur: number;
   unvaluedCount: number;
   unrealizedGainEur: number | null;
   stale: boolean;
   holdings: HoldingResponse[];
 };
+
+const isEurCash = (holding: HoldingResponse): boolean =>
+  holding.assetClass === 'CASH' && holding.priceSource === 'MANUAL' && holding.priceCurrency === 'EUR';
 
 const matches = (holding: HoldingResponse, search: string): boolean =>
   `${holding.instrumentName} ${holding.accountName}`.toLowerCase().includes(search);
@@ -29,15 +33,37 @@ export class HoldingListStore {
     defaultValue: [],
   });
 
+  readonly #allHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
+
+  // Kept off the search filter: the cash line stays in every visible group regardless of what
+  // the user typed, so its balance always comes from the unfiltered list. Also the only source of
+  // an account that holds nothing but cash: it never appears among ordinary positions.
+  readonly #cashByAccount = computed(() => {
+    const cash = new Map<string, { accountName: string; accountType: string; amount: number }>();
+
+    for (const holding of this.#allHoldings()) {
+      if (isEurCash(holding)) {
+        cash.set(holding.accountId, {
+          accountName: holding.accountName,
+          accountType: holding.accountType,
+          amount: holding.quantity,
+        });
+      }
+    }
+
+    return cash;
+  });
+
   readonly #visible = computed(() => {
-    const holdings = this.holdings.hasValue() ? this.holdings.value() : [];
+    const positions = this.#allHoldings().filter((holding) => !isEurCash(holding));
     const search = this.search().trim().toLowerCase();
 
-    return search ? holdings.filter((holding) => matches(holding, search)) : holdings;
+    return search ? positions.filter((holding) => matches(holding, search)) : positions;
   });
 
   readonly groups = computed<AccountGroup[]>(() => {
     const byAccount = new Map<string, AccountGroup>();
+    const cashByAccount = this.#cashByAccount();
 
     for (const holding of this.#visible()) {
       const group = byAccount.get(holding.accountId) ?? {
@@ -45,6 +71,7 @@ export class HoldingListStore {
         accountName: holding.accountName,
         accountType: holding.accountType,
         valueEur: 0,
+        cashEur: cashByAccount.get(holding.accountId)?.amount ?? 0,
         unvaluedCount: 0,
         unrealizedGainEur: 0,
         stale: false,
@@ -72,7 +99,32 @@ export class HoldingListStore {
       byAccount.set(holding.accountId, group);
     }
 
-    return [...byAccount.values()].sort((left, right) => right.valueEur - left.valueEur);
+    // An account with only a cash line owns no ordinary holding, so the loop above never sees it:
+    // seed one directly from the cash holding, unless the search hid it (its account name is the
+    // only thing to match against, since it has no instrument line of its own).
+    const search = this.search().trim().toLowerCase();
+
+    for (const [accountId, info] of cashByAccount) {
+      if (byAccount.has(accountId) || (search && !info.accountName.toLowerCase().includes(search))) {
+        continue;
+      }
+
+      byAccount.set(accountId, {
+        accountId,
+        accountName: info.accountName,
+        accountType: info.accountType,
+        valueEur: 0,
+        cashEur: info.amount,
+        unvaluedCount: 0,
+        unrealizedGainEur: 0,
+        stale: false,
+        holdings: [],
+      });
+    }
+
+    return [...byAccount.values()]
+      .map((group) => ({ ...group, valueEur: group.valueEur + group.cashEur }))
+      .sort((left, right) => right.valueEur - left.valueEur);
   });
 
   readonly totals = computed(() => {

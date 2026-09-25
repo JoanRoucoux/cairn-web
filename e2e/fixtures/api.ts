@@ -1,5 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 
+import { getSession, mockWebauthn } from './webauthn';
+
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
 // fixed JSON here instead, so the suite is self-contained in CI and locally.
 
@@ -54,7 +56,35 @@ const unvaluedHolding = {
   dayChangeRatio: null,
 };
 
-const holdings = [holding, staleHolding, unvaluedHolding];
+const cashHolding = {
+  ...holding,
+  id: '44444444-4444-4444-4444-444444444444',
+  instrumentId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+  instrumentName: 'Euros',
+  isin: null,
+  assetClass: 'CASH',
+  quantity: 732.4,
+  averageCost: 1,
+  price: 1,
+  priceSource: 'MANUAL',
+  marketValueEur: 732.4,
+  unrealizedGainEur: 0,
+};
+
+// Cash-only account: it holds nothing but its Euros line and must still render, with a lineCount
+// of 0 and its balance folded into the header total.
+const cashOnlyHolding = {
+  ...cashHolding,
+  id: '66666666-6666-6666-6666-666666666666',
+  accountId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+  accountName: 'Livret A',
+  accountType: 'SAVINGS',
+  instrumentId: '77777777-7777-7777-7777-777777777777',
+  quantity: 20000,
+  marketValueEur: 20000,
+};
+
+const holdings = [holding, staleHolding, unvaluedHolding, cashHolding, cashOnlyHolding];
 
 const account = {
   id: holding.accountId,
@@ -133,14 +163,6 @@ const jobRuns = [
   },
 ];
 
-const session = {
-  displayName: 'Joan Roucoux',
-  initials: 'JR',
-  passkeys: [
-    { credentialId: 'aXBob25l', label: 'iPhone de Joan', createdAt: '2026-02-01T10:00:00Z', lastUsedAt: null },
-  ],
-};
-
 const refreshReport = {
   refreshed: 2,
   skipped: 0,
@@ -156,7 +178,7 @@ const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/instruments': instruments,
   'GET /api/jobs/runs': jobRuns,
   'POST /api/quotes/refresh': refreshReport,
-  'GET /api/session': session,
+  'GET /api/session': getSession(),
 };
 
 type Handler = (route: Route, match: RegExpExecArray) => Promise<void>;
@@ -227,6 +249,38 @@ const createHolding: Handler = (route) => {
   return route.fulfill({ status: 201, json: saved });
 };
 
+// Stateful on purpose: setting the balance again must show the new amount, and 0 must clear the line.
+const setCashBalance: Handler = (route, [, accountId]) => {
+  const { amount } = route.request().postDataJSON() as { amount: number };
+
+  if (amount < 0) {
+    return route.fulfill({ status: 422, json: { message: 'amount must not be negative' } });
+  }
+
+  const index = holdings.findIndex(
+    (candidate) =>
+      candidate.accountId === accountId && candidate.assetClass === 'CASH' && candidate.priceSource === 'MANUAL',
+  );
+
+  if (amount === 0 && index !== -1) {
+    holdings.splice(index, 1);
+  } else if (amount > 0 && index !== -1) {
+    holdings[index] = { ...holdings[index]!, quantity: amount, marketValueEur: amount };
+  } else if (amount > 0) {
+    const owningAccount = accounts.find((candidate) => candidate.id === accountId);
+    holdings.push({
+      ...cashHolding,
+      accountId,
+      accountName: owningAccount?.name ?? 'Unknown account',
+      accountType: owningAccount?.type ?? 'PEA',
+      quantity: amount,
+      marketValueEur: amount,
+    });
+  }
+
+  return route.fulfill({ status: 204 });
+};
+
 // Stateful on purpose: a created instrument has to show up in the list that follows.
 const createInstrument: Handler = (route) => {
   const saved = {
@@ -278,6 +332,7 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'DELETE', path: new RegExp('^/api/instruments/([^/]+)$'), handle: deleteInstrument },
   { method: 'POST', path: new RegExp('^/api/instruments$'), handle: createInstrument },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
+  { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalance },
 ];
 
 const handleApiRoute = async (route: Route): Promise<void> => {
@@ -302,86 +357,7 @@ const handleApiRoute = async (route: Route): Promise<void> => {
   return route.fulfill({ status: 404, json: { message: `unmocked route: ${method} ${pathname}` } });
 };
 
-// Browser-valid base64url: WebAuthn parses these into ArrayBuffers before the virtual
-// authenticator ever sees them.
-const base64url = (value: string): string =>
-  Buffer.from(value).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+/g, '');
-
-const authenticationOptions = {
-  challenge: base64url('authenticate-challenge'),
-  rpId: 'localhost',
-  timeout: 60000,
-  userVerification: 'required',
-  allowCredentials: [],
-};
-
-const registrationOptions = {
-  rp: { id: 'localhost', name: 'Cairn' },
-  user: {
-    id: base64url('e2e-owner'),
-    name: 'joan',
-    displayName: 'Joan Roucoux',
-  },
-  challenge: base64url('register-challenge'),
-  pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-  timeout: 60000,
-  attestation: 'none',
-  authenticatorSelection: {
-    residentKey: 'required',
-    userVerification: 'required',
-  },
-};
-
-const authenticateWebauthn: Handler = async (route) => {
-  await route.fulfill({ json: authenticationOptions });
-};
-
-const loginWebauthn: Handler = async (route) => {
-  await route.fulfill({ json: { authenticated: true, redirectUrl: '/' } });
-};
-
-const registerWebauthnOptions: Handler = async (route) => {
-  await route.fulfill({ json: registrationOptions });
-};
-
-// Stateful on purpose: the account screen reloads the session after registering, and the new
-// passkey has to show up in the list it re-reads.
-const registerWebauthn: Handler = async (route) => {
-  session.passkeys.push({
-    credentialId: base64url('new-passkey'),
-    label:
-      ((route.request().postDataJSON() as { publicKey?: { label?: string } }).publicKey?.label as string) ??
-      'New passkey',
-    createdAt: new Date().toISOString(),
-    lastUsedAt: null,
-  });
-
-  await route.fulfill({ json: { success: true } });
-};
-
-const WEBAUTHN_ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
-  { method: 'POST', path: new RegExp('^/webauthn/authenticate/options$'), handle: authenticateWebauthn },
-  { method: 'POST', path: new RegExp('^/login/webauthn$'), handle: loginWebauthn },
-  { method: 'POST', path: new RegExp('^/webauthn/register/options$'), handle: registerWebauthnOptions },
-  { method: 'POST', path: new RegExp('^/webauthn/register$'), handle: registerWebauthn },
-];
-
-const handleWebauthnRoute = async (route: Route): Promise<void> => {
-  const request = route.request();
-  const { pathname } = new URL(request.url());
-  const method = request.method();
-
-  for (const { method: expected, path, handle } of WEBAUTHN_ROUTES) {
-    if (method === expected && path.test(pathname)) {
-      return handle(route, [] as unknown as RegExpExecArray);
-    }
-  }
-
-  return route.fulfill({ status: 404, json: { message: `unmocked route: ${method} ${pathname}` } });
-};
-
 export const mockApi = async (page: Page): Promise<void> => {
   await page.route('**/api/**', handleApiRoute);
-  await page.route('**/webauthn/**', handleWebauthnRoute);
-  await page.route('**/login/webauthn', handleWebauthnRoute);
+  await mockWebauthn(page);
 };
