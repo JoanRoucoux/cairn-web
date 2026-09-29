@@ -4,7 +4,7 @@
   "password": "Mot de passe",
   "submit": "Se connecter",
   "submitting": "Connexion...",
-  "refused": "Cet identifiant et ce mot de passe ne correspondent pas.",
+  "refused": "Identifiant ou mot de passe incorrect.",
   "failed": "La connexion n'a pas pu être envoyée. Réessayez.",
   "passkey": "Se connecter avec une clé d'accès",
   "passkeySubmitting": "Connexion...",
