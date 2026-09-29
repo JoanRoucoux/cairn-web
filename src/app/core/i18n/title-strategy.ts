@@ -6,7 +6,7 @@ import { TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
-const APP_TITLE = 'Angular Starter Web';
+const APP_TITLE = 'Cairn';
 
 @Injectable({
   providedIn: 'root',
