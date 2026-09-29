@@ -1,25 +1,59 @@
 @if (portfolio.hasValue()) {
-  <div class="grid gap-4 lg:grid-cols-2">
-    <ui-card>
-      <app-allocation-breakdown
-        [heading]="'portfolio.allocation.byAssetClass' | transloco"
-        [rows]="portfolio.value().byAssetClass"
-      />
-      <p class="text-caption mt-5 border-t border-(--hairline) pt-4 leading-relaxed text-(--subtle-foreground)">
-        {{ 'portfolio.allocation.scaleNote' | transloco }}
-      </p>
-    </ui-card>
-
-    <ui-card>
-      <app-allocation-breakdown
-        [heading]="'portfolio.allocation.byAccount' | transloco"
-        [rows]="portfolio.value().byAccount"
-      />
-    </ui-card>
-  </div>
-} @else if (portfolio.error()) {
-  <p class="mt-4 text-(--negative)" role="alert">{{ 'portfolio.pageError' | transloco }}</p>
-} @else {
-  <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>
-  <ui-skeleton class="mt-4" [height]="28" [lines]="6" />
+  <p class="text-body mb-4 text-(--muted-foreground)">
+    {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()" />
+  </p>
 }
+
+<div class="grid gap-4 lg:grid-cols-2">
+  <div
+    class="rounded-container flex flex-col gap-2 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
+  >
+    <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAssetClass' | transloco }}</h2>
+    <ui-async
+      [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
+      [errorTitle]="'portfolio.allocation.byAssetClassErrorTitle' | transloco"
+      [retryLabel]="'portfolio.retry' | transloco"
+      [state]="assetClassState()"
+      (retry)="retry()"
+    >
+      <span asyncLoading><ui-skeleton shape="ring" /></span>
+      <span asyncEmpty class="text-label text-(--muted-foreground)">{{
+        'portfolio.allocation.empty' | transloco
+      }}</span>
+      <ui-donut
+        [label]="'portfolio.allocation.byAssetClass' | transloco"
+        [othersLabel]="'portfolio.allocation.others' | transloco"
+        [shareFormat]="formatShare"
+        [slices]="assetClassSlices()"
+        [valueFormat]="formatEur"
+        (sliceSelect)="onAssetClassSelect($event)"
+      />
+    </ui-async>
+  </div>
+
+  <div
+    class="rounded-container flex flex-col gap-2 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
+  >
+    <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAccount' | transloco }}</h2>
+    <ui-async
+      [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
+      [errorTitle]="'portfolio.allocation.byAccountErrorTitle' | transloco"
+      [retryLabel]="'portfolio.retry' | transloco"
+      [state]="accountState()"
+      (retry)="retry()"
+    >
+      <span asyncLoading><ui-skeleton shape="ring" /></span>
+      <span asyncEmpty class="text-label text-(--muted-foreground)">{{
+        'portfolio.allocation.empty' | transloco
+      }}</span>
+      <ui-donut
+        [label]="'portfolio.allocation.byAccount' | transloco"
+        [othersLabel]="'portfolio.allocation.others' | transloco"
+        [shareFormat]="formatShare"
+        [slices]="accountSlices()"
+        [valueFormat]="formatEur"
+        (sliceSelect)="onAccountSelect($event)"
+      />
+    </ui-async>
+  </div>
+</div>

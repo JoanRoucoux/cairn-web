@@ -1,61 +1,75 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { form, submit } from '@angular/forms/signals';
 
-import { firstValueFrom } from 'rxjs';
+import { type AsyncState } from '@joanroucoux/cairn-ui';
 
 import { AccountService } from '@core/api-client/account/account.service';
-import type { AccountType } from '@core/api-client/cairnAPI.schemas';
+import type { AccountType, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
-import { formMessages } from '@shared/forms/form-messages';
+export type AccountView = {
+  id: string;
+  name: string;
+  type: AccountType;
+  institution: string;
+  valueEur: number | null;
+  lineCount: number;
+};
 
-import { accountDraftSchema, initialAccountDraft } from './account-form';
+const isEurCash = (holding: HoldingResponse): boolean =>
+  holding.assetClass === 'CASH' && holding.priceSource === 'MANUAL' && holding.priceCurrency === 'EUR';
 
 @Injectable()
 export class AccountListStore {
   #accountsApiClient = inject(AccountService);
+  #portfolioApiClient = inject(PortfolioService);
 
-  readonly #model = signal(initialAccountDraft());
-
-  readonly #messages = formMessages();
-
-  readonly form = form(this.#model, accountDraftSchema(this.#messages));
-
-  readonly error = signal(false);
-
-  readonly accounts = rxResource({
+  readonly #accounts = rxResource({
     stream: () => this.#accountsApiClient.listAccounts(),
     defaultValue: [],
   });
 
-  async create(): Promise<boolean> {
-    this.error.set(false);
-    let created = false;
+  readonly #portfolio = rxResource({
+    stream: () => this.#portfolioApiClient.getPortfolio(),
+  });
 
-    await submit(this.form, async () => {
-      try {
-        const model = this.#model();
-        // The cast drops the empty placeholder option: required(account.type) is what guarantees
-        // submit() never reaches this line with one.
-        await firstValueFrom(
-          this.#accountsApiClient.createAccount({
-            name: model.name,
-            type: model.type as AccountType,
-            institution: model.institution,
-          }),
-        );
-        this.accounts.reload();
-        created = true;
-      } catch {
-        this.error.set(true);
-      }
+  readonly state = computed<AsyncState>(() => {
+    if (this.#accounts.error() || this.#portfolio.error()) {
+      return 'error';
+    }
+    if (this.#accounts.isLoading() || this.#portfolio.isLoading()) {
+      return 'loading';
+    }
+
+    return this.accounts().length === 0 ? 'empty' : 'ready';
+  });
+
+  readonly accounts = computed<AccountView[]>(() => {
+    if (!this.#accounts.hasValue() || !this.#portfolio.hasValue()) {
+      return [];
+    }
+
+    const holdings = this.#portfolio.value().holdings;
+
+    return this.#accounts.value().map((account) => {
+      const own = holdings.filter((holding) => holding.accountId === account.id);
+      const lineCount = own.filter((holding) => !isEurCash(holding)).length;
+      const unvalued = own.some((holding) => holding.marketValueEur === null || holding.marketValueEur === undefined);
+      const valueEur = unvalued ? null : own.reduce((sum, holding) => sum + (holding.marketValueEur as number), 0);
+
+      return {
+        id: account.id,
+        name: account.name,
+        type: account.type,
+        institution: account.institution,
+        valueEur,
+        lineCount,
+      };
     });
+  });
 
-    return created;
-  }
-
-  reset(): void {
-    this.#model.set(initialAccountDraft());
-    this.form().reset();
+  retry(): void {
+    this.#accounts.reload();
+    this.#portfolio.reload();
   }
 }

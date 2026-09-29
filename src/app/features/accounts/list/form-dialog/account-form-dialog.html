@@ -1,0 +1,54 @@
+<ui-dialog
+  data-testid="account-form-dialog"
+  [heading]="(account() ? 'accounts.form.editTitle' : 'accounts.form.createTitle') | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field
+    [error]="nameConflict() ? ('accounts.form.nameConflict' | transloco) : undefined"
+    [label]="'accounts.name' | transloco"
+  >
+    <input data-testid="account-form-name" type="text" uiInput [formField]="form.name" (input)="onNameInput()" />
+  </ui-field>
+
+  <ui-field [label]="'accounts.type' | transloco">
+    <select data-testid="account-form-type" uiSelect [formField]="form.type">
+      <option value="">{{ 'accounts.choose' | transloco }}</option>
+      @for (type of accountTypes; track type) {
+        <option [value]="type">{{ 'enums.accountType.' + type | transloco }}</option>
+      }
+    </select>
+  </ui-field>
+
+  <ui-field [label]="'accounts.institution' | transloco">
+    <input data-testid="account-form-institution" type="text" uiInput [formField]="form.institution" />
+  </ui-field>
+
+  @if (error()) {
+    <p class="text-label text-(--negative)" data-testid="account-form-error" role="alert">
+      {{ 'accounts.form.error' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="account-form-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="form().submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'accounts.form.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="account-form-submit"
+    dialogActions
+    type="button"
+    ui-button
+    [disabled]="form().submitting()"
+    (click)="confirm()"
+  >
+    {{ 'accounts.form.submit' | transloco }}
+  </button>
+</ui-dialog>

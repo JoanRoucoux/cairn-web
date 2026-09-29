@@ -1,5 +1,6 @@
 import type { Page, Route } from '@playwright/test';
 
+import { buildAccountCrudHandlers } from './account-crud';
 import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdings';
 import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstrument } from './instruments';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
@@ -160,7 +161,6 @@ const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/history/intraday': intradayHistory,
   'GET /api/holdings': holdings,
   'GET /api/accounts': accounts,
-  'POST /api/accounts': account,
   'GET /api/instruments': instruments,
   'GET /api/session': getSession(),
 };
@@ -232,6 +232,8 @@ const createHolding: Handler = (route) => {
 
   return route.fulfill({ status: 201, json: saved });
 };
+
+const { createAccount, updateAccount, deleteAccount } = buildAccountCrudHandlers(accounts, holdings);
 
 // Stateful on purpose: setting the balance again must show the new amount, and 0 must clear the line.
 const setCashBalance: Handler = (route, [, accountId]) => {
@@ -317,6 +319,9 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'POST', path: new RegExp('^/api/instruments$'), handle: createInstrument },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalance },
+  { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)$'), handle: updateAccount },
+  { method: 'DELETE', path: new RegExp('^/api/accounts/([^/]+)$'), handle: deleteAccount },
+  { method: 'POST', path: new RegExp('^/api/accounts$'), handle: createAccount },
 ];
 
 const handleApiRoute = async (route: Route): Promise<void> => {

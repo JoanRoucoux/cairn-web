@@ -9,7 +9,13 @@
   "allocation": {
     "byAssetClass": "By asset class",
     "byAccount": "By account",
-    "scaleNote": "Bars are scaled to the largest row, not to the total - otherwise the smallest classes would be invisible."
+    "total": "Total",
+    "others": "Others",
+    "empty": "Nothing to break down yet.",
+    "byAssetClassErrorTitle": "The breakdown by asset class could not be loaded",
+    "byAccountErrorTitle": "The breakdown by account could not be loaded",
+    "errorMessage": "The server did not answer.",
+    "lineCount": "{{count}} holdings"
   },
   "total": {
     "title": "Net worth",

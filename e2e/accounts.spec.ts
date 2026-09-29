@@ -1,29 +1,128 @@
 import { expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
-
-const FIELDS = ['account-name', 'account-type', 'account-institution'];
+import { AccountsPageObject } from './pages/accounts-page';
 
 test.describe('accounts', () => {
   test.beforeEach(async ({ page }) => {
     await mockApi(page);
-    await page.goto('/accounts');
-    await expect(page.getByRole('heading', { name: 'Accounts' })).toBeVisible();
+  });
+
+  test('shows each account with its envelope, institution, value and line count', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    const row = accounts.rowFor('PEA Boursorama');
+    await expect(row).toContainText('PEA');
+    await expect(row).toContainText('Boursorama');
+    await expect(row).toContainText('holdings');
+  });
+
+  test('counts zero lines for an account holding only its EUR cash balance, while its value still shows it', async ({
+    page,
+  }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    const row = accounts.rowFor('Livret A');
+    await expect(row).toContainText('0 holdings');
+    await expect(page.getByTestId('account-empty-hint').filter({ hasText: 'no line yet' })).toBeVisible();
   });
 
   test('names the envelopes instead of showing their contract codes', async ({ page }) => {
-    await expect(page.getByTestId('account-type').getByRole('option', { name: 'Securities account' })).toBeAttached();
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.addButton.click();
+    await expect(
+      page.getByTestId('account-form-type').getByRole('option', { name: 'Securities account' }),
+    ).toBeAttached();
   });
 
-  test('says why an empty submit was refused, without breaking the row', async ({ page }) => {
-    const tops = async (): Promise<number[]> =>
-      Promise.all(FIELDS.map(async (id) => Math.round((await page.getByTestId(id).boundingBox())!.y)));
-    const before = await tops();
-    expect(new Set(before).size).toBe(1);
+  test('says which fields are missing instead of refusing in silence', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
 
-    await page.getByTestId('account-create').click();
+    await accounts.addButton.click();
+    await page.getByTestId('account-form-submit').click();
 
     await expect(page.getByRole('alert')).toHaveCount(3);
-    expect(await tops()).toEqual(before);
+  });
+
+  test('creates an account and sees it in the list', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.addButton.click();
+    await page.getByTestId('account-form-name').fill('Wise EUR');
+    await page.getByTestId('account-form-type').selectOption('CTO');
+    await page.getByTestId('account-form-institution').fill('Boursorama');
+    await page.getByTestId('account-form-submit').click();
+
+    await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeHidden();
+    await expect(accounts.rowFor('Wise EUR')).toBeVisible();
+  });
+
+  test('renames an account and sees the change in the list', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.openMenuFor('Livret A');
+    await accounts.editButtonFor('Livret A').click();
+    await page.getByTestId('account-form-name').fill('Livret A (Fortuneo)');
+    await page.getByTestId('account-form-submit').click();
+
+    await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeHidden();
+    await expect(accounts.rowFor('Livret A (Fortuneo)')).toBeVisible();
+  });
+
+  test('shows a field error on the name, not a generic failure, when it is already taken', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.openMenuFor('Livret A');
+    await accounts.editButtonFor('Livret A').click();
+    await page.getByTestId('account-form-name').fill('PEA Boursorama');
+    await page.getByTestId('account-form-submit').click();
+
+    await expect(page.getByText('already has this name')).toBeVisible();
+    await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByTestId('account-form-error')).toHaveCount(0);
+  });
+
+  test('deletes an empty account and sees it gone from the list', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.addButton.click();
+    await page.getByTestId('account-form-name').fill('Wise EUR');
+    await page.getByTestId('account-form-type').selectOption('CTO');
+    await page.getByTestId('account-form-institution').fill('Boursorama');
+    await page.getByTestId('account-form-submit').click();
+    await expect(accounts.rowFor('Wise EUR')).toBeVisible();
+
+    await accounts.openMenuFor('Wise EUR');
+    await accounts.deleteButtonFor('Wise EUR').click();
+    await page.getByTestId('account-delete-confirm').click();
+
+    await expect(page.getByTestId('account-delete-dialog').locator('dialog')).toBeHidden();
+    await expect(accounts.rowFor('Wise EUR')).toHaveCount(0);
+  });
+
+  test('refuses to delete an account that still holds lines, keeps the dialog open and the account listed', async ({
+    page,
+  }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.openMenuFor('PEA Boursorama');
+    await accounts.deleteButtonFor('PEA Boursorama').click();
+    await page.getByTestId('account-delete-confirm').click();
+
+    await expect(page.getByTestId('account-delete-refused')).toBeVisible();
+    await expect(page.getByTestId('account-delete-dialog').locator('dialog')).toBeVisible();
+
+    await page.getByTestId('account-delete-cancel').click();
+    await expect(accounts.rowFor('PEA Boursorama')).toBeVisible();
   });
 });

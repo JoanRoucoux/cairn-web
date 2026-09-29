@@ -1,46 +1,99 @@
-<ui-card>
-  <div class="flex flex-col gap-4">
-    <div class="grid gap-4 sm:grid-cols-3">
-      <ui-field [label]="'accounts.name' | transloco">
-        <input data-testid="account-name" type="text" uiInput [formField]="form.name" />
-      </ui-field>
-      <ui-field [label]="'accounts.type' | transloco">
-        <select data-testid="account-type" uiSelect [formField]="form.type">
-          <option value="">{{ 'accounts.choose' | transloco }}</option>
-          @for (type of accountTypes; track type) {
-            <option [value]="type">{{ 'enums.accountType.' + type | transloco }}</option>
-          }
-        </select>
-      </ui-field>
-      <ui-field [label]="'accounts.institution' | transloco">
-        <input data-testid="account-institution" type="text" uiInput [formField]="form.institution" />
-      </ui-field>
-    </div>
-    <button class="sm:self-start" data-testid="account-create" type="button" ui-button (click)="onCreate()">
-      {{ 'accounts.add' | transloco }}
-    </button>
-  </div>
+<div class="flex flex-wrap items-center justify-between gap-3">
+  <p class="text-body text-(--muted-foreground)" data-testid="accounts-summary">
+    {{ 'accounts.summary' | transloco: { count: accounts().length } }}
+  </p>
+  <button data-testid="account-add" type="button" ui-button (click)="onAdd()">
+    <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
+    {{ 'accounts.add' | transloco }}
+  </button>
+</div>
 
-  @if (error()) {
-    <p class="text-label mt-3 text-(--negative)" role="alert">{{ 'accounts.createError' | transloco }}</p>
-  }
-</ui-card>
+<ui-async
+  class="mt-4 block"
+  [errorMessage]="'accounts.errorMessage' | transloco"
+  [errorTitle]="'accounts.errorTitle' | transloco"
+  [retryLabel]="'accounts.retry' | transloco"
+  [state]="state()"
+  (retry)="retry()"
+>
+  <span asyncLoading><ui-skeleton shape="row" [lines]="5" /></span>
+  <span asyncEmpty class="text-(--muted-foreground)">{{ 'accounts.empty' | transloco }}</span>
 
-@if (accounts.error()) {
-  <p class="mt-4 text-(--negative)" role="alert">{{ 'accounts.error' | transloco }}</p>
-} @else if (accounts.value().length === 0) {
-  <p class="mt-4 text-(--muted-foreground)" role="status">{{ 'accounts.empty' | transloco }}</p>
-} @else {
-  <ul class="mt-4 flex flex-col gap-2" role="list">
-    @for (account of accounts.value(); track account.id) {
+  <ul
+    class="rounded-container flex flex-col gap-0.5 bg-(--card) p-1 shadow-[inset_0_0_0_1px_var(--border)]"
+    role="list"
+  >
+    @for (account of accounts(); track account.id) {
       <li>
-        <ui-card class="flex items-center justify-between gap-3" padding="sm">
-          <span class="text-label font-medium">{{ account.name }}</span>
-          <span class="text-caption tracking-[0.05em] text-(--muted-foreground)">
-            {{ 'enums.accountType.' + account.type | transloco }}
-          </span>
-        </ui-card>
+        <div class="flex items-center gap-1" data-testid="account-row">
+          <a
+            class="flex-1"
+            data-testid="account-link"
+            routerLink="/holdings"
+            ui-row
+            [queryParams]="{ account: account.name }"
+          >
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="text-body truncate font-medium">{{ account.name }}</span>
+              <span class="text-label truncate text-(--subtle-foreground)">
+                {{ 'enums.accountType.' + account.type | transloco }} &middot; {{ account.institution }}
+              </span>
+            </span>
+            <span class="flex flex-none flex-col items-end whitespace-nowrap">
+              <ui-amount class="text-body font-medium" currency="EUR" [value]="account.valueEur" />
+              <span class="text-label text-(--muted-foreground)">
+                {{ 'accounts.lineCount' | transloco: { count: account.lineCount } }}
+              </span>
+            </span>
+          </a>
+
+          <button
+            data-testid="account-menu-trigger"
+            size="icon"
+            type="button"
+            ui-button
+            variant="ghost"
+            [attr.aria-label]="'accounts.actions' | transloco: { name: account.name }"
+            [uiMenuTrigger]="menu"
+          >
+            <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
+          </button>
+          <ui-menu #menu [label]="'accounts.actions' | transloco: { name: account.name }">
+            <button data-testid="account-edit" type="button" uiMenuItem (click)="onEdit(account)">
+              {{ 'accounts.edit' | transloco }}
+            </button>
+            <button
+              data-testid="account-delete"
+              destructive
+              type="button"
+              uiMenuItem
+              (click)="accountToDelete.set(account)"
+            >
+              {{ 'accounts.delete.action' | transloco }}
+            </button>
+          </ui-menu>
+        </div>
+
+        @if (account.lineCount === 0) {
+          <div
+            class="rounded-control mx-1 mb-1 flex items-center justify-between gap-3 bg-(--background) px-3 py-2"
+            data-testid="account-empty-hint"
+          >
+            <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmpty' | transloco }}</span>
+            <a data-testid="account-empty-cta" routerLink="/holdings" ui-button variant="outline">
+              {{ 'accounts.rowEmptyAction' | transloco }}
+            </a>
+          </div>
+        }
       </li>
     }
   </ul>
+</ui-async>
+
+@if (formOpen()) {
+  <app-account-form-dialog [account]="accountToEdit()" (dismissed)="onFormDismissed()" (savedForm)="onFormSaved()" />
+}
+
+@if (accountToDelete(); as account) {
+  <app-account-delete-dialog [account]="account" (deleted)="onDeleted()" (dismissed)="accountToDelete.set(undefined)" />
 }
