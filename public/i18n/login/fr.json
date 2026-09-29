@@ -1,16 +1,15 @@
 {
-  "title": "Connexion à Cairn",
-  "subtitle": "Votre portefeuille, et celui de personne d'autre.",
+  "tagline": "Suivi de patrimoine",
   "username": "Identifiant",
   "password": "Mot de passe",
   "submit": "Se connecter",
   "submitting": "Connexion...",
   "refused": "Cet identifiant et ce mot de passe ne correspondent pas.",
   "failed": "La connexion n'a pas pu être envoyée. Réessayez.",
-  "passkey": "Se connecter avec une passkey",
+  "passkey": "Se connecter avec une clé d'accès",
   "passkeySubmitting": "Connexion...",
-  "passkeyRefused": "Cette passkey n'est pas reconnue.",
-  "passkeyUnsupported": "Ce navigateur ne gère pas les passkeys.",
+  "passkeyRefused": "Cette clé d'accès n'est pas reconnue.",
+  "passkeyUnsupported": "Ce navigateur ne gère pas les clés d'accès.",
   "passkeyFailed": "La connexion a échoué, réessayez.",
-  "passwordToggle": "Utiliser mon mot de passe"
+  "passwordToggle": "Utiliser un mot de passe"
 }

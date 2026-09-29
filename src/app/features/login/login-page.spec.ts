@@ -180,6 +180,31 @@ describe('LoginPage', () => {
     expect(await screen.findByTestId('login-passkey-failed')).toBeInTheDocument();
   });
 
+  it('should move focus to the username field when the password form unfolds', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-password-toggle'));
+    TestBed.tick();
+
+    await vi.waitFor(() => expect(screen.getByTestId('login-username')).toHaveFocus());
+  });
+
+  it('should move focus to the password field after a refusal, keeping the username', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await fillIn(user, 'wrong');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    TestBed.tick();
+
+    await vi.waitFor(() => expect(screen.getByTestId('login-password')).toHaveFocus());
+    expect(screen.getByTestId('login-username')).toHaveValue('joan');
+  });
+
   it('should fold the password form behind a toggle and let it work once expanded', async () => {
     const user = userEvent.setup();
     await renderPage();

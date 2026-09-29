@@ -1,6 +1,5 @@
 {
-  "title": "Sign in to Cairn",
-  "subtitle": "Your portfolio, and nobody else's.",
+  "tagline": "Wealth tracking",
   "username": "Username",
   "password": "Password",
   "submit": "Sign in",
@@ -12,5 +11,5 @@
   "passkeyRefused": "This passkey was not recognized.",
   "passkeyUnsupported": "This browser cannot use passkeys.",
   "passkeyFailed": "Sign-in failed, try again.",
-  "passwordToggle": "Use my password instead"
+  "passwordToggle": "Use a password"
 }

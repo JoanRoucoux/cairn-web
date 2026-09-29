@@ -58,6 +58,17 @@ describe('ProfileStore', () => {
     await settleSession();
   });
 
+  it('should reflect and change the hide-amounts preference', async () => {
+    expect(store.hideAmounts()).toBe(false);
+
+    store.setHideAmounts(true);
+
+    expect(store.hideAmounts()).toBe(true);
+    expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
+
+    await settleSession();
+  });
+
   it('should revoke a passkey and reload the session', async () => {
     await settleSession();
 

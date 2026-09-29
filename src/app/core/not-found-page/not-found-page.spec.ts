@@ -26,4 +26,11 @@ describe('NotFoundPage', () => {
 
     expect(screen.getByRole('link', { name: 'notFound.home' })).toHaveAttribute('href', '/');
   });
+
+  it('should show the symbol and the error caption, with no dependency on a surrounding shell', async () => {
+    await renderPage();
+
+    expect(document.querySelector('svg')).toBeInTheDocument();
+    expect(screen.getByText('notFound.error404')).toBeInTheDocument();
+  });
 });

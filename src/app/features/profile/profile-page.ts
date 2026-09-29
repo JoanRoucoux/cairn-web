@@ -6,12 +6,24 @@ import {
   UiAvatar,
   UiButton,
   UiCard,
+  UiRow,
   UiSegmented,
+  UiSwitch,
   UiTable,
   UiTd,
   UiTh,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
+import {
+  LucideBook,
+  LucideChevronRight,
+  LucideDownload,
+  LucideFileText,
+  LucideKeyRound,
+  LucideLogOut,
+  LucideTrash2,
+  LucideUpload,
+} from '@lucide/angular';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
@@ -25,6 +37,14 @@ import { ProfileStore } from './profile-store';
 @Component({
   selector: 'app-profile-page',
   imports: [
+    LucideBook,
+    LucideChevronRight,
+    LucideDownload,
+    LucideFileText,
+    LucideKeyRound,
+    LucideLogOut,
+    LucideTrash2,
+    LucideUpload,
     ProfilePasskeyDialog,
     RelativeDatePipe,
     RouterLink,
@@ -32,7 +52,9 @@ import { ProfileStore } from './profile-store';
     UiAvatar,
     UiButton,
     UiCard,
+    UiRow,
     UiSegmented,
+    UiSwitch,
     UiTable,
     UiTd,
     UiTh,
@@ -46,9 +68,11 @@ export class ProfilePage {
 
   protected readonly owner = this.#store.owner;
   protected readonly passkeys = this.#store.passkeys;
+  protected readonly onlyKey = computed(() => this.passkeys().length === 1);
   protected readonly revocationRefused = this.#store.revocationRefused;
   protected readonly theme = this.#store.theme;
   protected readonly language = this.#store.language;
+  protected readonly hideAmounts = this.#store.hideAmounts;
 
   protected readonly passkeyDialogOpen = signal(false);
 
@@ -78,6 +102,10 @@ export class ProfilePage {
 
   protected onLanguageChange(lang: string): void {
     this.#store.setLanguage(lang);
+  }
+
+  protected onHideAmountsChange(event: Event): void {
+    this.#store.setHideAmounts((event.target as HTMLInputElement).checked);
   }
 
   // Resets the input so picking the same corrected file again still fires a change event.

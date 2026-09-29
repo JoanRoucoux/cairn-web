@@ -92,7 +92,7 @@ test.describe('passkeys', () => {
     });
 
     await page.goto('/login');
-    await expect(page.getByRole('heading', { name: 'Sign in to Cairn' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Cairn' })).toBeVisible();
 
     await seedResidentCredential(page);
 

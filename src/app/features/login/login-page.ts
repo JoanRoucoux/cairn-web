@@ -1,16 +1,19 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, inject, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LucideKeyRound } from '@lucide/angular';
 
 import { PageLoad } from '@core/navigation/page-load';
+
+import { CairnMark } from '@shared/branding/cairn-mark';
 
 import { LoginStore } from './login-store';
 
 @Component({
   selector: 'app-login-page',
-  imports: [FormField, TranslocoPipe, UiButton, UiCard, UiField, UiInput],
+  imports: [CairnMark, FormField, LucideKeyRound, TranslocoPipe, UiButton, UiField, UiInput],
   templateUrl: './login-page.html',
   providers: [LoginStore],
 })
@@ -28,6 +31,25 @@ export class LoginPage {
   protected readonly passkeyFailed = this.#store.passkeyFailed;
 
   protected readonly passwordExpanded = signal(false);
+
+  #host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    afterRenderEffect(() => {
+      if (this.passwordExpanded()) {
+        this.#focus('login-username');
+      }
+    });
+    afterRenderEffect(() => {
+      if (this.refused()) {
+        this.#focus('login-password');
+      }
+    });
+  }
+
+  #focus(testId: string): void {
+    this.#host.nativeElement.querySelector<HTMLInputElement>(`[data-testid="${testId}"]`)?.focus();
+  }
 
   protected async onSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
