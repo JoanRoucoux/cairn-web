@@ -8,14 +8,24 @@ test.describe('portfolio', () => {
     await mockApi(page);
   });
 
-  test('shows six ranges, all at a 44px touch target', async ({ page }) => {
+  test('shows six ranges, all at a 44px touch target', async ({ browser }) => {
+    // The visible pill is shorter than 44px (`min-h-9`): the touch target is an invisible
+    // `::after` overlay sized from `--row-min`, so it has to be read from computed style rather
+    // than the option's own bounding box, and under a touch pointer to see the 44px value.
+    const context = await browser.newContext({ hasTouch: true });
+    const page = await context.newPage();
+    await mockApi(page);
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
 
     await expect(portfolio.ranges).toHaveCount(6);
 
-    const box = await portfolio.ranges.first().boundingBox();
-    expect(box?.height).toBeGreaterThanOrEqual(44);
+    const touchTargetHeight = await portfolio.ranges
+      .first()
+      .evaluate((element) => parseFloat(getComputedStyle(element, '::after').height));
+    expect(touchTargetHeight).toBeGreaterThanOrEqual(44);
+
+    await context.close();
   });
 
   test('shows the hero, the envelope tiles and the curve', async ({ page }) => {

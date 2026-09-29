@@ -49,10 +49,20 @@ test.describe('holdings', () => {
     await expect(page.getByTestId('add-holding')).toBeFocused();
   });
 
-  test('keeps every touch target at 44px', async ({ page }) => {
+  test('keeps every touch target at 44px', async ({ browser }) => {
+    // `ui-button`'s `md` size follows `--row-min`, which is 40px under a mouse and 44px only
+    // under a touch pointer: emulate one to assert the touch-target guarantee this test is named
+    // after.
+    const context = await browser.newContext({ hasTouch: true });
+    const page = await context.newPage();
+    await mockApi(page);
+    await page.goto('/holdings');
+
     const box = await page.getByTestId('add-holding').boundingBox();
 
     expect(box?.height).toBeGreaterThanOrEqual(44);
+
+    await context.close();
   });
 
   test('shows a holding detail page at its route', async ({ page }) => {

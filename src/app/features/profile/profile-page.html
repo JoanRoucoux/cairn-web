@@ -1,19 +1,19 @@
-<h1 class="text-xl font-semibold">{{ 'profile.title' | transloco }}</h1>
+<h1 class="text-title font-semibold">{{ 'profile.title' | transloco }}</h1>
 
 <ui-card class="mt-4">
   <div class="flex items-center gap-3.5 border-b border-(--border) pb-4">
     <ui-avatar [initials]="owner().initials" [label]="'profile.avatarLabel' | transloco" />
     <span class="flex flex-col gap-0.5">
-      <span class="text-base font-semibold">{{ owner().displayName }}</span>
-      <span class="text-xs text-(--muted-foreground)">{{ 'profile.connectedByPasskey' | transloco }}</span>
+      <span class="text-body font-semibold">{{ owner().displayName }}</span>
+      <span class="text-caption text-(--muted-foreground)">{{ 'profile.connectedByPasskey' | transloco }}</span>
     </span>
   </div>
 
   <div class="flex flex-col gap-2 border-b border-(--border) py-3.5">
     <div class="flex min-h-11 items-center gap-3">
-      <span class="grow text-[14.5px]">{{ 'profile.passkeys' | transloco }}</span>
+      <span class="text-body grow">{{ 'profile.passkeys' | transloco }}</span>
       <button
-        class="text-[13px] font-medium underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        class="text-label font-medium underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
         data-testid="manage-passkeys"
         type="button"
         (click)="passkeyDialogOpen.set(true)"
@@ -24,10 +24,10 @@
 
     <ul class="flex flex-col gap-1.5">
       @for (passkey of passkeys(); track passkey.credentialId) {
-        <li class="flex min-h-11 items-center gap-3 rounded-lg bg-(--elevated) px-3 py-2">
+        <li class="rounded-control flex min-h-11 items-center gap-3 bg-(--elevated) px-3 py-2">
           <span class="flex min-w-0 grow flex-col gap-0.5">
-            <span class="truncate text-[13.5px] font-medium">{{ passkey.label }}</span>
-            <span class="text-[11px] text-(--subtle-foreground)">
+            <span class="text-label truncate font-medium">{{ passkey.label }}</span>
+            <span class="text-caption text-(--subtle-foreground)">
               @if (passkey.lastUsedAt) {
                 {{ 'profile.lastUsed' | transloco: { when: passkey.lastUsedAt | relativeDate } }}
               } @else {
@@ -37,7 +37,6 @@
           </span>
           <button
             data-testid="revoke-passkey"
-            size="sm"
             type="button"
             ui-button
             variant="outline"
@@ -51,15 +50,16 @@
     </ul>
 
     @if (revocationRefused()) {
-      <p class="text-[11.5px] text-(--negative)" data-testid="revoke-error" role="alert">
+      <p class="text-caption text-(--negative)" data-testid="revoke-error" role="alert">
         {{ 'profile.revokeRefused' | transloco }}
       </p>
     }
   </div>
 
   <div class="flex min-h-11 flex-wrap items-center gap-3 border-b border-(--border) py-3.5">
-    <span class="grow text-[14.5px]">{{ 'profile.themeLabel' | transloco }}</span>
+    <span class="text-body grow">{{ 'profile.themeLabel' | transloco }}</span>
     <ui-segmented
+      class="block w-full sm:w-[300px]"
       [label]="'profile.themeLabel' | transloco"
       [options]="themeOptions()"
       [value]="theme()"
@@ -68,8 +68,9 @@
   </div>
 
   <div class="flex min-h-11 flex-wrap items-center gap-3 border-b border-(--border) py-3.5">
-    <span class="grow text-[14.5px]">{{ 'profile.languageLabel' | transloco }}</span>
+    <span class="text-body grow">{{ 'profile.languageLabel' | transloco }}</span>
     <ui-segmented
+      class="block w-full sm:w-[300px]"
       [label]="'profile.languageLabel' | transloco"
       [options]="languageOptions()"
       [value]="language()"
@@ -78,7 +79,7 @@
   </div>
 
   <div class="flex min-h-11 flex-wrap items-center gap-3 border-b border-(--border) py-3.5">
-    <span class="grow text-[14.5px]">{{ 'profile.manageData.title' | transloco }}</span>
+    <span class="text-body grow">{{ 'profile.manageData.title' | transloco }}</span>
     <a data-testid="manage-accounts" routerLink="/accounts" ui-button variant="outline">
       {{ 'profile.manageData.accounts' | transloco }}
     </a>
@@ -89,8 +90,8 @@
 
   <div class="flex min-h-11 items-center gap-3 py-3.5">
     <span class="flex grow flex-col gap-0.5">
-      <span class="text-[14.5px]">{{ 'profile.export' | transloco }}</span>
-      <span class="text-[11.5px] text-(--muted-foreground)">{{ 'profile.exportHint' | transloco }}</span>
+      <span class="text-body">{{ 'profile.export' | transloco }}</span>
+      <span class="text-caption text-(--muted-foreground)">{{ 'profile.exportHint' | transloco }}</span>
     </span>
     <a data-testid="export-csv" download href="/api/portfolio/export" ui-button variant="outline">
       {{ 'profile.exportAction' | transloco }}
@@ -100,8 +101,8 @@
   <div class="flex flex-col gap-3 border-t border-(--border) py-3.5">
     <div class="flex min-h-11 items-center gap-3">
       <span class="flex grow flex-col gap-0.5">
-        <span class="text-[14.5px]">{{ 'profile.import' | transloco }}</span>
-        <span class="text-[11.5px] text-(--muted-foreground)">{{ 'profile.importHint' | transloco }}</span>
+        <span class="text-body">{{ 'profile.import' | transloco }}</span>
+        <span class="text-caption text-(--muted-foreground)">{{ 'profile.importHint' | transloco }}</span>
       </span>
       <a data-testid="import-template" download href="/api/portfolio/import/template" ui-button variant="ghost">
         {{ 'profile.importTemplate' | transloco }}
@@ -129,20 +130,20 @@
     />
 
     @if (report(); as summary) {
-      <p class="text-[12.5px] text-(--positive)" data-testid="import-report" role="status">
+      <p class="text-label text-(--positive)" data-testid="import-report" role="status">
         {{ 'profile.importDone' | transloco: summary }}
       </p>
     }
 
     @if (failed()) {
-      <p class="text-[12.5px] text-(--negative)" data-testid="import-failed" role="alert">
+      <p class="text-label text-(--negative)" data-testid="import-failed" role="alert">
         {{ 'profile.importFailed' | transloco }}
       </p>
     }
 
     @if (rejections().length > 0) {
       <div data-testid="import-rejections" role="alert">
-        <p class="mb-2 text-[12.5px] text-(--negative)">
+        <p class="text-label mb-2 text-(--negative)">
           {{ 'profile.importRejected' | transloco: { count: rejections().length } }}
         </p>
         <div class="overflow-x-auto">

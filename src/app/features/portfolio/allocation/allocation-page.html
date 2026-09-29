@@ -1,4 +1,4 @@
-<h1 class="text-xl font-semibold">{{ 'portfolio.allocation.title' | transloco }}</h1>
+<h1 class="text-title font-semibold">{{ 'portfolio.allocation.title' | transloco }}</h1>
 
 @if (portfolio.hasValue()) {
   <div class="mt-4 grid gap-4 lg:grid-cols-2">
@@ -7,7 +7,7 @@
         [heading]="'portfolio.allocation.byAssetClass' | transloco"
         [rows]="portfolio.value().byAssetClass"
       />
-      <p class="mt-5 border-t border-(--hairline) pt-4 text-xs leading-relaxed text-(--subtle-foreground)">
+      <p class="text-caption mt-5 border-t border-(--hairline) pt-4 leading-relaxed text-(--subtle-foreground)">
         {{ 'portfolio.allocation.scaleNote' | transloco }}
       </p>
     </ui-card>

@@ -8,7 +8,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   template: `
     @if (offline()) {
       <p
-        class="bg-(--stale)/12 px-4 py-2 text-center text-[12.5px] text-(--stale)"
+        class="text-label bg-(--stale)/12 px-4 py-2 text-center text-(--stale)"
         data-testid="offline-banner"
         role="status"
       >

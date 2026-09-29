@@ -1,5 +1,5 @@
 <div class="flex flex-wrap items-center justify-between gap-3">
-  <h1 class="text-xl font-semibold">{{ (editing() ? 'instruments.edit.title' : 'instruments.add') | transloco }}</h1>
+  <h1 class="text-title font-semibold">{{ (editing() ? 'instruments.edit.title' : 'instruments.add') | transloco }}</h1>
   @if (editing()) {
     <button
       data-testid="instrument-delete"
@@ -68,7 +68,7 @@
   </div>
 
   @if (error()) {
-    <p class="mt-4 text-sm text-(--negative)" role="alert">{{ 'instruments.saveError' | transloco }}</p>
+    <p class="text-label mt-4 text-(--negative)" role="alert">{{ 'instruments.saveError' | transloco }}</p>
   }
 
   <button

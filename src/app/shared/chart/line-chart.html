@@ -102,7 +102,7 @@
 
   @if (active(); as point) {
     <div
-      class="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-md border border-(--hairline) bg-(--card) px-2.5 py-1.5 text-xs whitespace-nowrap shadow-md"
+      class="rounded-control text-caption pointer-events-none absolute -translate-x-1/2 -translate-y-full border border-(--hairline) bg-(--card) px-2.5 py-1.5 whitespace-nowrap shadow-md"
       data-testid="chart-tooltip"
       role="status"
       [style]="tooltipStyle(point)"

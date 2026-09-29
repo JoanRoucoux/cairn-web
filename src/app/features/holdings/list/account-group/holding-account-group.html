@@ -1,6 +1,6 @@
-<div class="overflow-hidden rounded-xl border border-(--border) bg-(--card)" data-testid="account-group">
+<div class="rounded-container overflow-hidden border border-(--border) bg-(--card)" data-testid="account-group">
   <div class="flex min-h-11 items-center gap-3 px-3.5 pt-3">
-    <span class="min-w-0 grow truncate text-sm font-semibold" [id]="'account-name-' + group().accountId">{{
+    <span class="text-label min-w-0 grow truncate font-semibold" [id]="'account-name-' + group().accountId">{{
       group().accountName
     }}</span>
   </div>
@@ -18,7 +18,7 @@
       "
     >
       <span
-        class="grow text-[10.5px] tracking-[0.05em] text-(--subtle-foreground)"
+        class="text-caption grow tracking-[0.05em] text-(--subtle-foreground)"
         [id]="'account-summary-' + group().accountId"
       >
         {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
@@ -43,10 +43,13 @@
         </svg>
       }
 
-      <span class="shrink-0 text-right text-sm font-semibold tabular-nums" [id]="'account-value-' + group().accountId">
+      <span
+        class="text-label shrink-0 text-right font-semibold tabular-nums"
+        [id]="'account-value-' + group().accountId"
+      >
         {{ group().valueEur | money }}
         @if (group().unvaluedCount > 0) {
-          <span class="block text-[10.5px] font-normal text-(--muted-foreground)">
+          <span class="text-caption block font-normal text-(--muted-foreground)">
             {{ 'holdings.unvaluedCount' | transloco: { count: group().unvaluedCount } }}
           </span>
         }
@@ -115,7 +118,6 @@
                 <div class="flex justify-end gap-1.5">
                   <button
                     data-testid="edit-holding"
-                    size="md"
                     type="button"
                     ui-button
                     variant="ghost"
@@ -126,7 +128,6 @@
                   </button>
                   <button
                     data-testid="delete-holding"
-                    size="md"
                     type="button"
                     ui-button
                     variant="ghost"
@@ -152,7 +153,6 @@
               <div class="flex justify-end gap-1.5">
                 <button
                   data-testid="edit-cash"
-                  size="md"
                   type="button"
                   ui-button
                   variant="ghost"

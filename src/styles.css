@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 @import '@joanroucoux/cairn-ui/styles/tokens.css';
+@import '@joanroucoux/cairn-ui/styles/theme.css';
+/* fonts.css is listed in angular.json instead: Tailwind's @import would not rebase its url()s. */
 
 /* Tailwind does not scan node_modules: without this, the classes used inside cairn-ui templates
    are never generated. */
@@ -7,15 +9,10 @@
 
 body {
   margin: 0;
-  font-family:
-    'Space Grotesk',
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
+  font-family: var(--font-sans);
   color: var(--foreground);
   background-color: var(--background);
+  -webkit-font-smoothing: antialiased;
 }
 
 /* The ambient gradient of the retained direction. Painted on body rather than on a component so
