@@ -17,17 +17,25 @@ const portfolio = {
   generatedAt: '2026-08-21T20:00:00Z',
   byAssetClass: [],
   byAccount: [],
-  holdings: [],
+  holdings: [
+    { id: 'h1', dayChangeEur: 120.5 },
+    { id: 'h2', dayChangeEur: -300.25 },
+    { id: 'h3', dayChangeEur: 12.1 },
+    { id: 'h4', dayChangeEur: null },
+    { id: 'h5', dayChangeEur: 45 },
+    { id: 'h6', dayChangeEur: -8.4 },
+    { id: 'h7', dayChangeEur: 500.1 },
+  ],
 } as unknown as PortfolioResponse;
 
 const performance = {
-  range: '1d',
-  from: '2026-08-20',
+  range: '1m',
+  from: '2026-07-21',
   to: '2026-08-21',
   reconstructed: false,
   lastPriceAt: '2026-08-21T16:32:00Z',
   total: { valueEur: 278146.45, changeEur: -712.98, changeRatio: -0.0026 },
-  byEnvelope: [],
+  byEnvelope: [{ accountType: 'PEA', valueEur: 278146.45, share: 1, changeEur: -712.98, changeRatio: -0.0026 }],
 };
 
 const intraday: IntradayHistoryResponse = {
@@ -50,12 +58,12 @@ describe('PortfolioStore', () => {
   let store: PortfolioStore;
   let httpTesting: HttpTestingController;
 
-  const respondWith = (respond: (request: TestRequest) => void): void => {
-    TestBed.tick();
-    respond(portfolioRequest());
-  };
-
   const portfolioRequest = (): TestRequest => httpTesting.expectOne((candidate) => candidate.url === '/api/portfolio');
+
+  const flushPortfolio = (body: PortfolioResponse = portfolio): void => {
+    TestBed.tick();
+    portfolioRequest().flush(body);
+  };
 
   const flushIntraday = async (body: IntradayHistoryResponse = intraday): Promise<void> => {
     await vi.waitFor(() => httpTesting.match((candidate) => candidate.url === '/api/history/intraday')[0]?.flush(body));
@@ -65,11 +73,13 @@ describe('PortfolioStore', () => {
     await vi.waitFor(() => httpTesting.match((candidate) => candidate.url === '/api/history')[0]?.flush(body));
   };
 
-  const flushPerformance = async (): Promise<void> => {
+  const flushPerformance = async (body = performance): Promise<void> => {
     await vi.waitFor(() =>
-      httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance')[0]?.flush(performance),
+      httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance')[0]?.flush(body),
     );
   };
+
+  const settle = async (): Promise<void> => TestBed.inject(ApplicationRef).whenStable();
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -81,65 +91,153 @@ describe('PortfolioStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  it('should start on the one-day range', () => {
-    expect(store.range()).toBe('1d');
+  it('should start on the one-month range', () => {
+    expect(store.range()).toBe('1m');
   });
 
-  it('should expose the portfolio returned by the API', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
-    await flushPerformance();
-
-    expect(store.portfolio.value()?.totalEur).toBe(278146.45);
+  it('should flag every block as loading before its response lands', () => {
+    expect(store.totalState()).toBe('loading');
+    expect(store.curveState()).toBe('loading');
+    expect(store.envelopesState()).toBe('loading');
+    expect(store.moversState()).toBe('loading');
   });
 
-  it('should expose the performance returned by the API', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
+  it('should flag every block as ready once its response lands', async () => {
+    flushPortfolio();
+    await flushHistory();
     await flushPerformance();
+    await settle();
 
-    expect(store.performance.value()?.total.changeEur).toBe(-712.98);
+    expect(store.totalState()).toBe('ready');
+    expect(store.curveState()).toBe('ready');
+    expect(store.envelopesState()).toBe('ready');
+    expect(store.moversState()).toBe('ready');
   });
 
-  it('should load the intraday history for the default one-day range', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
+  it('should flag the total and movers blocks as empty when the portfolio has no holding', async () => {
+    flushPortfolio({ ...portfolio, holdings: [] });
+    await flushHistory();
     await flushPerformance();
+    await settle();
 
-    const request = await vi.waitFor(() => {
-      const [pending] = httpTesting.match((candidate) => candidate.url === '/api/history/intraday');
-      expect(pending).toBeDefined();
-      return pending as TestRequest;
+    expect(store.totalState()).toBe('empty');
+    expect(store.moversState()).toBe('empty');
+  });
+
+  it('should flag the movers block as empty when no holding moved today', async () => {
+    flushPortfolio({
+      ...portfolio,
+      holdings: [{ id: 'h1', dayChangeEur: 0 } as never, { id: 'h2', dayChangeEur: null } as never],
+    });
+    await flushHistory();
+    await flushPerformance();
+    await settle();
+
+    expect(store.moversState()).toBe('empty');
+  });
+
+  it('should flag the curve block as empty when the history has no point', async () => {
+    flushPortfolio();
+    await flushHistory({ ...history, points: [] });
+    await flushPerformance();
+    await settle();
+
+    expect(store.curveState()).toBe('empty');
+  });
+
+  it('should flag the envelopes block as empty when there is no envelope', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance({ ...performance, byEnvelope: [] });
+    await settle();
+
+    expect(store.envelopesState()).toBe('empty');
+  });
+
+  it('should flag only the total and movers blocks as errored when the portfolio call fails', async () => {
+    TestBed.tick();
+    portfolioRequest().flush(null, { status: 500, statusText: 'Server Error' });
+    await flushHistory();
+    await flushPerformance();
+    await settle();
+
+    expect(store.totalState()).toBe('error');
+    expect(store.moversState()).toBe('error');
+    expect(store.curveState()).toBe('ready');
+    expect(store.envelopesState()).toBe('ready');
+  });
+
+  it('should flag allFailed only once the three calls have failed', async () => {
+    TestBed.tick();
+    portfolioRequest().flush(null, { status: 500, statusText: 'Server Error' });
+    await vi.waitFor(() => {
+      const [request] = httpTesting.match((candidate) => candidate.url === '/api/history');
+      expect(request).toBeDefined();
+      request?.flush(null, { status: 500, statusText: 'Server Error' });
     });
 
-    expect(request.request.params.get('date')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    request.flush(intraday);
+    expect(store.allFailed()).toBe(false);
+
+    await vi.waitFor(() => {
+      const [request] = httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance');
+      expect(request).toBeDefined();
+      request?.flush(null, { status: 500, statusText: 'Server Error' });
+    });
+
+    expect(store.allFailed()).toBe(true);
   });
 
-  it('should turn intraday points into chart points', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
+  it('should reissue only GET /portfolio on retryTotal', async () => {
+    flushPortfolio();
+    await flushHistory();
     await flushPerformance();
-    await TestBed.inject(ApplicationRef).whenStable();
+    await settle();
 
-    expect(store.points()).toEqual([
-      { t: Date.parse('2026-08-21T08:00:00Z'), v: 278859.43 },
-      { t: Date.parse('2026-08-21T16:00:00Z'), v: 278146.45 },
-    ]);
+    store.retryTotal();
+    TestBed.tick();
+
+    httpTesting.expectOne((candidate) => candidate.url === '/api/portfolio').flush(portfolio);
+    httpTesting.verify();
   });
 
-  it('should switch to the constant-mix history for a range beyond one day', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
+  it('should reissue only the history call on retryCurve', async () => {
+    flushPortfolio();
+    await flushHistory();
     await flushPerformance();
+    await settle();
 
-    store.range.set('5y');
+    store.retryCurve();
     TestBed.tick();
 
     await flushHistory();
-    await vi.waitFor(() =>
-      httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance')[0]?.flush(performance),
-    );
-    await TestBed.inject(ApplicationRef).whenStable();
+  });
+
+  it('should reissue only the performance call on retryEnvelopes', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance();
+    await settle();
+
+    store.retryEnvelopes();
+    TestBed.tick();
+
+    await flushPerformance();
+  });
+
+  it('should keep the five largest movers by absolute day change, excluding null changes', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance();
+    await settle();
+
+    expect(store.movers().map((holding) => holding.id)).toEqual(['h7', 'h2', 'h1', 'h5', 'h3']);
+  });
+
+  it('should turn constant-mix history points into chart points by default', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance();
+    await settle();
 
     expect(store.points()).toEqual([
       { t: Date.parse('2026-08-20'), v: 278859.43 },
@@ -147,9 +245,45 @@ describe('PortfolioStore', () => {
     ]);
   });
 
-  it('should flag a reconstructed series so the page can warn', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
+  it('should switch to the intraday history for the one-day range', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance();
+
+    store.range.set('1d');
+    TestBed.tick();
+
     await flushIntraday();
+    await flushPerformance({ ...performance, range: '1d' });
+    await settle();
+
+    expect(store.points()).toEqual([
+      { t: Date.parse('2026-08-21T08:00:00Z'), v: 278859.43 },
+      { t: Date.parse('2026-08-21T16:00:00Z'), v: 278146.45 },
+    ]);
+  });
+
+  it('should request the whole available history for the max range', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance();
+
+    store.range.set('max');
+    TestBed.tick();
+
+    const request = await vi.waitFor(() => {
+      const [pending] = httpTesting.match((candidate) => candidate.url === '/api/history');
+      expect(pending).toBeDefined();
+      return pending as TestRequest;
+    });
+    expect(request.request.params.get('from')).toBe('1900-01-01');
+    request.flush(history);
+    await flushPerformance();
+  });
+
+  it('should flag a reconstructed series so the page can warn', async () => {
+    flushPortfolio();
+    await flushHistory();
     await flushPerformance();
 
     store.range.set('5y');
@@ -160,39 +294,17 @@ describe('PortfolioStore', () => {
         .match((candidate) => candidate.url === '/api/history')[0]
         ?.flush({ mode: 'constant-mix', reconstructed: true, points: [{ date: '2021-08-21', totalEur: 1 }] }),
     );
-    await vi.waitFor(() =>
-      httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance')[0]?.flush(performance),
-    );
-    await TestBed.inject(ApplicationRef).whenStable();
+    await flushPerformance();
+    await settle();
 
     expect(store.reconstructed()).toBe(true);
   });
 
-  it('should reload the performance when the range changes', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
-    await flushPerformance();
-
-    store.range.set('7d');
-    TestBed.tick();
-
-    await flushHistory();
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush({ ...performance, range: '7d' });
-    });
-  });
-
-  it('should hold an empty series while the history is loading', () => {
-    expect(store.points()).toEqual([]);
-  });
-
   it('should never let a late response for an older range overwrite the currently selected one', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
+    flushPortfolio();
+    await flushHistory();
     await flushPerformance();
-    await TestBed.inject(ApplicationRef).whenStable();
+    await settle();
 
     // `HttpTestingController.match()` consumes whatever it finds, so each request is captured the
     // moment it is first seen and acted on through that same reference - never re-queried by URL.
@@ -217,12 +329,11 @@ describe('PortfolioStore', () => {
 
     // The newer range resolves first...
     oneYearRequest.flush({ ...performance, range: '1y' });
-    await vi.waitFor(() => expect(store.performanceValue()?.range).toBe('1y'));
+    await vi.waitFor(() => expect(store.envelopesState()).toBe('ready'));
 
     // ...and rxResource has already cancelled the older one by the time it would resolve late, out
     // of order: it never gets the chance to win, since it cannot even be flushed any more.
     expect(() => sevenDayRequest.flush({ ...performance, range: '7d' })).toThrow('cancelled');
-    expect(store.performanceValue()?.range).toBe('1y');
 
     // The 7d /history request rxResource abandoned alongside its performance counterpart cannot be
     // flushed either; only the 1y one (if still pending) needs draining for `verify()`.
@@ -235,85 +346,5 @@ describe('PortfolioStore', () => {
           // Already cancelled: nothing to drain.
         }
       });
-  });
-
-  it('should flag the range-dependent resources as loading on a range switch, and clear it once both settle', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
-    await flushPerformance();
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.rangeLoading()).toBe(false);
-
-    store.range.set('7d');
-    TestBed.tick();
-
-    expect(store.rangeLoading()).toBe(true);
-
-    await flushHistory();
-    await vi.waitFor(() =>
-      httpTesting.match((candidate) => candidate.url === '/api/portfolio/performance')[0]?.flush(performance),
-    );
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.rangeLoading()).toBe(false);
-  });
-
-  it('should flag a range error without clearing the sticky value from a previous, successful range', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
-    await flushPerformance();
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.rangeError()).toBe(false);
-
-    store.range.set('1y');
-    TestBed.tick();
-
-    await vi.waitFor(() =>
-      httpTesting
-        .match((candidate) => candidate.url === '/api/portfolio/performance')[0]
-        ?.flush(null, { status: 500, statusText: 'Server Error' }),
-    );
-    await vi.waitFor(() =>
-      httpTesting.match((candidate) => candidate.url === '/api/history')[0]?.flush({ ...history, points: [] }),
-    );
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.rangeError()).toBe(true);
-    expect(store.rangeLoading()).toBe(false);
-    // Still the 1d snapshot: nothing clears it, so the hero/tiles keep a value/share to show.
-    expect(store.performanceValue()?.range).toBe('1d');
-  });
-
-  it('should recover from a range error on retry', async () => {
-    respondWith((candidate) => candidate.flush(portfolio));
-    await flushIntraday();
-    await flushPerformance();
-
-    store.range.set('1y');
-    TestBed.tick();
-    await vi.waitFor(() =>
-      httpTesting
-        .match((candidate) => candidate.url === '/api/portfolio/performance')[0]
-        ?.flush(null, { status: 500, statusText: 'Server Error' }),
-    );
-    await flushHistory({ ...history, points: [] });
-    await TestBed.inject(ApplicationRef).whenStable();
-    expect(store.rangeError()).toBe(true);
-
-    store.retryRange();
-    TestBed.tick();
-
-    await vi.waitFor(() =>
-      httpTesting
-        .match((candidate) => candidate.url === '/api/portfolio/performance')[0]
-        ?.flush({ ...performance, range: '1y' }),
-    );
-    await flushHistory();
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.rangeError()).toBe(false);
-    expect(store.performanceValue()?.range).toBe('1y');
   });
 });

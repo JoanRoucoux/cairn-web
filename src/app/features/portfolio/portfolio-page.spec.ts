@@ -4,11 +4,11 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
-import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import type { HistoryResponse, IntradayHistoryResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
+import type { HistoryResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -22,16 +22,17 @@ const portfolio = {
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
   staleCount: 2,
-  unvaluedCount: 3,
   generatedAt: '2026-08-21T20:00:00Z',
   byAssetClass: [],
   byAccount: [],
-  holdings: [],
+  holdings: [
+    { id: 'h1', instrumentName: 'Amundi MSCI World', accountName: 'PEA', marketValueEur: 100, dayChangeEur: 12.5 },
+  ],
 } as unknown as PortfolioResponse;
 
 const performance = {
-  range: '1d',
-  from: '2026-08-20',
+  range: '1m',
+  from: '2026-07-21',
   to: '2026-08-21',
   reconstructed: false,
   lastPriceAt: '2026-08-21T16:32:00Z',
@@ -39,7 +40,14 @@ const performance = {
   byEnvelope: [{ accountType: 'PEA', valueEur: 278146.45, share: 1, changeEur: -712.98, changeRatio: -0.0026 }],
 };
 
-const emptyIntraday: IntradayHistoryResponse = { points: [] };
+const history: HistoryResponse = {
+  mode: 'constant-mix',
+  reconstructed: false,
+  points: [
+    { date: '2026-08-20', totalEur: 278859.43 },
+    { date: '2026-08-21', totalEur: 278146.45 },
+  ],
+};
 const emptyHistory: HistoryResponse = { mode: 'constant-mix', reconstructed: false, points: [] };
 
 describe('PortfolioPage', () => {
@@ -48,105 +56,117 @@ describe('PortfolioPage', () => {
   const renderPage = async (
     respondToPortfolio: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
       request.flush(portfolio),
-    intraday: IntradayHistoryResponse = emptyIntraday,
-    translations = getTranslocoTestingModule(),
-    locale = 'en-GB',
+    respondToPerformance: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
+      request.flush(performance),
+    respondToHistory: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
+      request.flush(history),
   ): Promise<void> => {
     await render(PortfolioPage, {
-      imports: [translations],
+      imports: [getTranslocoTestingModule()],
       providers: [
         provideZonelessChangeDetection(),
         provideRouter([]),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: locale },
-        // Provided by the route in the app, the test must mirror it.
+        { provide: LOCALE_ID, useValue: 'en-GB' },
         provideTranslocoScope('portfolio'),
         PortfolioStore,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
     respondToPortfolio(httpTesting.expectOne((request) => request.url === '/api/portfolio'));
-    await vi.waitFor(() => httpTesting.match((request) => request.url === '/api/history/intraday')[0]?.flush(intraday));
+    await vi.waitFor(() => respondToHistory(httpTesting.expectOne((request) => request.url === '/api/history')));
     await vi.waitFor(() =>
-      httpTesting.match((request) => request.url === '/api/portfolio/performance')[0]?.flush(performance),
+      respondToPerformance(httpTesting.expectOne((request) => request.url === '/api/portfolio/performance')),
     );
   };
 
   afterEach(() => httpTesting.verify());
 
-  it('should display the total portfolio value without cents', async () => {
+  it('should display the total portfolio value', async () => {
     await renderPage();
 
-    expect(await screen.findByText('€278,146')).toBeInTheDocument();
+    expect(await screen.findByTestId('total-value')).toHaveTextContent('€278,146.45');
   });
 
-  it('should display the range change as a signed amount', async () => {
-    await renderPage();
-
-    expect(await screen.findAllByText('−€712.98')).not.toHaveLength(0);
-  });
-
-  it('should display one tile per envelope', async () => {
+  it('should display one envelope row per envelope', async () => {
     await renderPage();
 
     expect(await screen.findByText('enums.accountType.PEA')).toBeInTheDocument();
   });
 
-  it('should warn about stale quotes', async () => {
+  it('should render the curve', async () => {
     await renderPage();
 
-    expect(await screen.findByTestId('stale-banner')).toBeInTheDocument();
+    expect(await screen.findByRole('img')).toBeInTheDocument();
   });
 
-  it('should warn about unvalued holdings', async () => {
+  it('should render the movers', async () => {
     await renderPage();
 
-    expect(await screen.findByTestId('unvalued-banner')).toBeInTheDocument();
+    expect((await screen.findAllByText('Amundi MSCI World')).length).toBeGreaterThan(0);
   });
 
-  it('should offer the six ranges', async () => {
-    await renderPage();
+  it('should render only portfolio-empty when the portfolio has no holding', async () => {
+    await renderPage((request) => request.flush({ ...portfolio, holdings: [] }));
 
-    expect(await screen.findAllByRole('radio')).toHaveLength(6);
+    expect(await screen.findByText('portfolio.empty.title')).toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('should warn when the curve is reconstructed', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.click(await screen.findByRole('radio', { name: 'chart.range.5y' }));
-
-    await vi.waitFor(() =>
-      httpTesting
-        .match((request) => request.url === '/api/history')[0]
-        ?.flush({ mode: 'constant-mix', reconstructed: true, points: [] }),
-    );
-    await vi.waitFor(() =>
-      httpTesting
-        .match((request) => request.url === '/api/portfolio/performance')[0]
-        ?.flush({ ...performance, range: '5y', reconstructed: true }),
-    );
-
-    expect(await screen.findByTestId('reconstructed-warning')).toBeInTheDocument();
-  });
-
-  it('should show an error message when the portfolio fails to load', async () => {
+  it('should show the total and movers blocks in error when the portfolio call fails, keeping the curve and the envelopes', async () => {
     await renderPage((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
 
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    const alerts = await screen.findAllByRole('alert');
+    expect(alerts.map((alert) => alert.textContent)).toEqual([
+      expect.stringContaining('portfolio.total.error'),
+      expect.stringContaining('portfolio.movers.error'),
+    ]);
+    expect(await screen.findByRole('img')).toBeInTheDocument();
+    expect(await screen.findByText('enums.accountType.PEA')).toBeInTheDocument();
   });
 
-  it('should not reload the intraday history when the current range is re-picked', async () => {
+  it('should show the page-level error only when every call fails', async () => {
+    await renderPage(
+      (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
+      (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
+      (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('portfolio.pageError');
+  });
+
+  it('should recover a failed block once its retry is pressed', async () => {
+    const user = userEvent.setup();
+    await renderPage((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
+
+    await screen.findAllByRole('alert');
+    const [retry] = await screen.findAllByRole('button', { name: 'portfolio.error.retry' });
+    await user.click(retry as HTMLElement);
+
+    httpTesting.expectOne((request) => request.url === '/api/portfolio').flush(portfolio);
+    await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('should request the intraday history and the performance for the one-day range', async () => {
     const user = userEvent.setup();
     await renderPage();
 
     await user.click(await screen.findByRole('radio', { name: 'chart.range.1d' }));
 
-    expect(httpTesting.match((request) => request.url === '/api/history/intraday')).toHaveLength(0);
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/history/intraday');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush({ points: [] });
+    });
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush({ ...performance, range: '1d' });
+    });
   });
 
-  it('should request the constant-mix history and performance when a range is picked', async () => {
+  it('should request the constant-mix history and the performance for a picked range beyond one day', async () => {
     const user = userEvent.setup();
     await renderPage();
 
@@ -164,145 +184,42 @@ describe('PortfolioPage', () => {
     });
   });
 
-  it('should summarize the curve for assistive technology once points are available', async () => {
-    const points: IntradayHistoryResponse = {
-      points: [
-        { at: '2026-08-27T09:00:00Z', totalEur: 278000 },
-        { at: '2026-08-27T18:00:00Z', totalEur: 278146.45 },
-      ],
-    };
-    await renderPage(undefined, points);
-
-    expect(await screen.findByRole('img', { name: 'portfolio.chartSummary' })).toBeInTheDocument();
-  });
-
-  it('should format the 1d axis in the locale-appropriate hour style', async () => {
-    const points: IntradayHistoryResponse = {
-      points: [
-        { at: '2026-08-27T09:00:00Z', totalEur: 278000 },
-        { at: '2026-08-27T18:00:00Z', totalEur: 278146.45 },
-      ],
-    };
-    await renderPage(undefined, points, getTranslocoTestingModule(), 'en-GB');
-
-    const ticks = await screen.findAllByTestId('chart-axis-tick');
-
-    expect(ticks[0]?.textContent?.trim()).toMatch(/^\d{1,2}:\d{2}$/);
-  });
-
-  it('should format the 1d axis with the French hour marker', async () => {
-    const points: IntradayHistoryResponse = {
-      points: [
-        { at: '2026-08-27T09:00:00Z', totalEur: 278000 },
-        { at: '2026-08-27T18:00:00Z', totalEur: 278146.45 },
-      ],
-    };
-    await renderPage(undefined, points, getTranslocoTestingModule(), 'fr-FR');
-
-    const ticks = await screen.findAllByTestId('chart-axis-tick');
-
-    expect(ticks[0]?.textContent?.trim()).toMatch(/^\d{1,2} h$/);
-  });
-
-  it('should mark the range change and the curve as busy while the new range is loading', async () => {
+  it('should retry only the history call when the curve alone failed', async () => {
     const user = userEvent.setup();
-    await renderPage();
-
-    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
-
-    expect((await screen.findByTestId('hero-period')).getAttribute('aria-busy')).toBe('true');
-
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/history');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush(emptyHistory);
-    });
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush({ ...performance, range: 'max' });
-    });
-
-    expect(await screen.findByTestId('hero-period')).toHaveAttribute('aria-busy', 'false');
-  });
-
-  it('should show an alert instead of stale figures when the range fails to load, keeping the range selector usable', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
-
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/history');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush(emptyHistory);
-    });
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush(null, { status: 500, statusText: 'Server Error' });
-    });
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('portfolio.rangeError');
-    // Not the 1d figures the page loaded with: no stale range change or curve survive the error.
-    // ("Today's change", from the portfolio resource rather than performance, is unaffected and
-    // legitimately still reads the same figure - checked separately from the hero's range change.)
-    expect(screen.getByTestId('hero-change')).toHaveTextContent('—');
-    expect(screen.getByText('enums.accountType.PEA').closest('[role="listitem"]')).toHaveTextContent('—');
-    expect(screen.queryByTestId('chart-tooltip')).not.toBeInTheDocument();
-    // The total (range-independent) still shows, and the selector is still there to switch back or retry.
-    expect(screen.getByTestId('hero-value')).toHaveTextContent('€278,146');
-    expect(await screen.findAllByRole('radio')).toHaveLength(6);
-  });
-
-  it('should recover once retried after a range failed to load', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/history');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush(emptyHistory);
-    });
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush(null, { status: 500, statusText: 'Server Error' });
-    });
-    await screen.findByRole('alert');
-
-    await user.click(screen.getByRole('button', { name: 'portfolio.retry' }));
-
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/history');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush(emptyHistory);
-    });
-    await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
-      expect(pending).toHaveLength(1);
-      pending[0]?.flush({ ...performance, range: 'max' });
-    });
-
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(await screen.findAllByText('−€712.98')).not.toHaveLength(0);
-  });
-
-  it('should re-translate the range options when the active language changes', async () => {
-    await renderPage(
-      undefined,
-      emptyIntraday,
-      getTranslocoTestingModule({
-        langs: { en: { 'chart.range.1d': '1D' }, fr: { 'chart.range.1d': '1J' } },
-      }),
+    await renderPage(undefined, undefined, (request) =>
+      request.flush(null, { status: 500, statusText: 'Server Error' }),
     );
 
-    expect(await screen.findByRole('radio', { name: '1D' })).toBeInTheDocument();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('portfolio.curve.error');
 
-    TestBed.inject(TranslocoService).setActiveLang('fr');
-    TestBed.tick();
+    await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
 
-    expect(await screen.findByRole('radio', { name: '1J' })).toBeInTheDocument();
+    httpTesting.expectOne((request) => request.url === '/api/history').flush(history);
+    await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('should recover once the movers block retry is pressed', async () => {
+    const user = userEvent.setup();
+    await renderPage((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
+
+    const [, moversRetry] = await screen.findAllByRole('button', { name: 'portfolio.error.retry' });
+    await user.click(moversRetry as HTMLElement);
+
+    httpTesting.expectOne((request) => request.url === '/api/portfolio').flush(portfolio);
+    await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('should retry only the performance call when the envelopes alone failed', async () => {
+    const user = userEvent.setup();
+    await renderPage(undefined, (request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('portfolio.envelopes.error');
+
+    await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
+
+    httpTesting.expectOne((request) => request.url === '/api/portfolio/performance').flush(performance);
+    await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 });

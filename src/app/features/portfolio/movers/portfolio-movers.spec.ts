@@ -1,7 +1,9 @@
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import { type RenderResult, render, screen } from '@testing-library/angular';
+import type { AsyncState } from '@joanroucoux/cairn-ui';
+import { render, screen, within } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -9,52 +11,68 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { PortfolioMovers } from './portfolio-movers';
 
-const holding = (overrides: Partial<HoldingResponse>): HoldingResponse =>
-  ({
+const movers = [
+  {
     id: 'h1',
-    instrumentId: 'i1',
-    instrumentName: 'Ethereum',
-    accountName: 'Binance',
-    marketValueEur: 9580.84,
-    dayChangeEur: 316.54,
-    ...overrides,
-  }) as HoldingResponse;
+    instrumentName: 'Amundi MSCI World',
+    accountName: 'PEA Boursorama',
+    marketValueEur: 83277.6,
+    dayChangeEur: 142.8,
+    dayChangeRatio: 0.0017,
+  },
+] as unknown as HoldingResponse[];
 
-const renderMovers = (holdings: HoldingResponse[]): Promise<RenderResult<PortfolioMovers>> =>
+const renderComponent = (state: AsyncState = 'ready', data = movers): ReturnType<typeof render> =>
   render(PortfolioMovers, {
-    inputs: { holdings },
     imports: [getTranslocoTestingModule()],
-    providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
+    inputs: { state, movers: data },
+    providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'fr-FR' }],
   });
 
 describe('PortfolioMovers', () => {
-  it('should list the four largest absolute moves of the day', async () => {
-    await renderMovers([
-      holding({ id: 'a', instrumentName: 'Small', dayChangeEur: 1 }),
-      holding({ id: 'b', instrumentName: 'Big loss', dayChangeEur: -900 }),
-      holding({ id: 'c', instrumentName: 'Big gain', dayChangeEur: 800 }),
-      holding({ id: 'd', instrumentName: 'Medium', dayChangeEur: 400 }),
-      holding({ id: 'e', instrumentName: 'Another', dayChangeEur: 300 }),
-    ]);
+  it('should link each mover to its holding detail, in the list and in the table', async () => {
+    await renderComponent();
 
-    const items = await screen.findAllByRole('listitem');
-    expect(items).toHaveLength(4);
-    expect(items[0]).toHaveTextContent('Big loss');
+    const list = within(await screen.findByTestId('movers-list'));
+    const table = within(await screen.findByTestId('movers-table'));
+
+    expect(list.getByRole('link', { name: /Amundi MSCI World/ })).toHaveAttribute('href', '/holdings/h1');
+    expect(table.getByRole('link', { name: 'Amundi MSCI World' })).toHaveAttribute('href', '/holdings/h1');
   });
 
-  it('should ignore holdings whose day change is unknown', async () => {
-    await renderMovers([
-      holding({ id: 'a', dayChangeEur: null }),
-      holding({ id: 'b', dayChangeEur: undefined }),
-      holding({ id: 'c', dayChangeEur: 10 }),
-    ]);
+  it('should render the table headers', async () => {
+    await renderComponent();
 
-    expect(await screen.findAllByRole('listitem')).toHaveLength(1);
+    const table = within(await screen.findByTestId('movers-table'));
+
+    expect(table.getByText('portfolio.movers.columns.line')).toBeInTheDocument();
+    expect(table.getByText('portfolio.movers.columns.account')).toBeInTheDocument();
+    expect(table.getByText('portfolio.movers.columns.value')).toBeInTheDocument();
+    expect(table.getByText('portfolio.movers.columns.day')).toBeInTheDocument();
+    expect(table.getByText('portfolio.movers.columns.dayPercent')).toBeInTheDocument();
   });
 
-  it('should link each row to its holding', async () => {
-    await renderMovers([holding({ id: 'h9' })]);
+  it('should show the empty message when nothing moved today', async () => {
+    await renderComponent('empty', []);
 
-    expect(await screen.findByRole('link', { name: /Ethereum/ })).toHaveAttribute('href', '/holdings/h9');
+    expect(await screen.findByText('portfolio.movers.empty')).toBeInTheDocument();
+  });
+
+  it('should show a skeleton while loading', async () => {
+    await renderComponent('loading');
+
+    expect(await screen.findByTestId('movers-loading')).toBeInTheDocument();
+  });
+
+  it('should show an error with a working retry', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderComponent('error');
+    const retried = vi.fn();
+    fixture.componentInstance.retry.subscribe(retried);
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
+
+    expect(retried).toHaveBeenCalledOnce();
   });
 });

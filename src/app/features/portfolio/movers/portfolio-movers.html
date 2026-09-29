@@ -1,26 +1,117 @@
-<h2 class="text-caption mb-3 font-semibold tracking-[0.08em] text-(--muted-foreground) uppercase">
-  {{ 'portfolio.movers.title' | transloco }}
-</h2>
+<div class="flex h-full flex-col gap-3">
+  <h2 class="text-title font-semibold text-(--foreground)">{{ 'portfolio.movers.title' | transloco }}</h2>
 
-<ul class="flex flex-col gap-2" role="list">
-  @for (mover of movers(); track mover.id) {
-    <li>
-      <a
-        class="rounded-container flex items-center justify-between gap-3 border border-(--border) bg-(--card) px-3.5 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-        data-testid="mover-row"
-        [routerLink]="['/holdings', mover.id]"
-      >
-        <span class="flex min-w-0 flex-col gap-0.5">
-          <span class="text-label truncate font-medium">{{ mover.instrumentName }}</span>
-          <span class="text-caption text-(--subtle-foreground)">{{ mover.accountName }}</span>
-        </span>
-        <span class="flex shrink-0 flex-col items-end gap-0.5">
-          <ui-amount class="text-label font-semibold" currency="EUR" [value]="mover.marketValueEur" />
-          <ui-delta class="text-caption" [unknownLabel]="'portfolio.unknown' | transloco" [value]="mover.dayChangeEur">
-            <ui-amount currency="EUR" signed [value]="mover.dayChangeEur" />
-          </ui-delta>
-        </span>
-      </a>
-    </li>
-  }
-</ul>
+  <ui-async
+    [errorMessage]="'portfolio.error.message' | transloco"
+    [errorTitle]="'portfolio.movers.error' | transloco"
+    [retryLabel]="'portfolio.error.retry' | transloco"
+    [state]="state()"
+    (retry)="retry.emit()"
+  >
+    <div asyncLoading class="flex flex-col gap-3" data-testid="movers-loading">
+      @for (row of [1, 2, 3, 4, 5]; track row) {
+        <ui-skeleton shape="row" />
+      }
+    </div>
+
+    <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.movers.empty' | transloco }}</p>
+
+    <div class="flex flex-col divide-y divide-(--hairline) lg:hidden" data-testid="movers-list">
+      @for (mover of movers(); track mover.id) {
+        <a
+          class="flex items-center justify-between gap-3 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+          ui-row
+          [routerLink]="['/holdings', mover.id]"
+        >
+          <span class="flex min-w-0 flex-col gap-0.5">
+            <span class="text-label truncate font-medium">{{ mover.instrumentName }}</span>
+            <span class="text-caption text-(--subtle-foreground)">{{ mover.accountName }}</span>
+          </span>
+          <span class="flex shrink-0 flex-col items-end gap-0.5">
+            <ui-amount class="text-label font-medium" currency="EUR" [value]="mover.marketValueEur" />
+            <ui-delta
+              class="text-caption"
+              [unknownLabel]="'portfolio.unknown' | transloco"
+              [value]="mover.dayChangeEur"
+            >
+              <ui-amount currency="EUR" signed [value]="mover.dayChangeEur" />
+            </ui-delta>
+          </span>
+          <svg
+            aria-hidden="true"
+            class="shrink-0 text-(--subtle-foreground)"
+            fill="none"
+            height="16"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="1.75"
+            viewBox="0 0 24 24"
+            width="16"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </a>
+      }
+    </div>
+
+    <div class="hidden overflow-x-auto lg:block" data-testid="movers-table">
+      <table uiTable>
+        <thead>
+          <tr uiTr>
+            <th uiTh>{{ 'portfolio.movers.columns.line' | transloco }}</th>
+            <th uiTh>{{ 'portfolio.movers.columns.account' | transloco }}</th>
+            <th numeric uiTh>{{ 'portfolio.movers.columns.value' | transloco }}</th>
+            <th numeric uiTh>{{ 'portfolio.movers.columns.day' | transloco }}</th>
+            <th numeric uiTh>{{ 'portfolio.movers.columns.dayPercent' | transloco }}</th>
+            <th uiTh></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (mover of movers(); track mover.id) {
+            <tr uiTr>
+              <td uiTd>
+                <a
+                  class="block max-w-64 truncate font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+                  [routerLink]="['/holdings', mover.id]"
+                >
+                  {{ mover.instrumentName }}
+                </a>
+              </td>
+              <td uiTd>{{ mover.accountName }}</td>
+              <td numeric uiTd>
+                <ui-amount currency="EUR" [value]="mover.marketValueEur" />
+              </td>
+              <td numeric uiTd>
+                <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="mover.dayChangeEur">
+                  <ui-amount currency="EUR" signed [value]="mover.dayChangeEur" />
+                </ui-delta>
+              </td>
+              <td numeric uiTd>
+                <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="mover.dayChangeRatio">
+                  {{ mover.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+                </ui-delta>
+              </td>
+              <td uiTd>
+                <svg
+                  aria-hidden="true"
+                  class="text-(--subtle-foreground)"
+                  fill="none"
+                  height="16"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.75"
+                  viewBox="0 0 24 24"
+                  width="16"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </ui-async>
+</div>

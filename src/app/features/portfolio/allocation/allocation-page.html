@@ -18,7 +18,7 @@
     </ui-card>
   </div>
 } @else if (portfolio.error()) {
-  <p class="mt-4 text-(--negative)" role="alert">{{ 'portfolio.error' | transloco }}</p>
+  <p class="mt-4 text-(--negative)" role="alert">{{ 'portfolio.pageError' | transloco }}</p>
 } @else {
   <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>
   <ui-skeleton class="mt-4" [height]="28" [lines]="6" />

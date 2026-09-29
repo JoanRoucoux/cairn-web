@@ -1,47 +1,61 @@
 {
   "unknown": "Non disponible",
   "loading": "Chargement de votre patrimoine",
-  "error": "Votre patrimoine n'a pas pu être chargé.",
-  "rangeError": "Impossible de charger cette période",
-  "retry": "Réessayer",
-  "chartLabel": "Valeur du patrimoine sur la plage sélectionnée",
-  "chartTitle": "Évolution",
-  "chartSummary": "Patrimoine de {{from}} à {{to}}, {{change}} sur la période",
-  "reconstructed": "Au-delà d'un an la courbe est reconstruite à composition constante : exacte aux extrémités, approximative entre les deux.",
-  "hero": {
-    "label": "Patrimoine",
-    "period": {
-      "1d": "aujourd'hui",
-      "7d": "sur 7 jours",
-      "1m": "sur 1 mois",
-      "1y": "sur 1 an",
-      "5y": "sur 5 ans",
-      "max": "au total"
-    },
-    "unrealizedGain": "Plus-value latente",
-    "day": "Variation du jour",
-    "updatedAt": "À jour à {{time}}"
-  },
-  "envelopes": {
-    "title": "Enveloppes",
-    "share": "du total"
-  },
-  "movers": {
-    "title": "Ce qui bouge"
-  },
-  "stale": {
-    "message_one": "{{count}} cours date de plus de 4 jours",
-    "message_other": "{{count}} cours datent de plus de 4 jours",
-    "action": "Voir les lignes"
+  "pageError": "Votre patrimoine n'a pas pu être chargé.",
+  "error": {
+    "message": "Le serveur n'a pas répondu.",
+    "retry": "Réessayer"
   },
   "allocation": {
     "byAssetClass": "Par classe d'actif",
     "byAccount": "Par compte",
     "scaleNote": "Les barres sont à l'échelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
   },
-  "unvalued": {
-    "message_one": "{{count}} ligne non valorisée",
-    "message_other": "{{count}} lignes non valorisées",
-    "action": "Voir les lignes"
+  "total": {
+    "title": "Patrimoine",
+    "error": "Le total n'a pas pu être chargé",
+    "today": "aujourd'hui",
+    "unrealizedGain": "Plus-value latente",
+    "staleCount_one": "{{count}} cours en retard",
+    "staleCount_other": "{{count}} cours en retard"
+  },
+  "curve": {
+    "label": "Valeur du patrimoine sur la plage sélectionnée",
+    "summary": "Patrimoine de {{from}} à {{to}}, {{change}} sur la période",
+    "error": "La courbe n'a pas pu être chargée",
+    "empty": "Pas encore d'historique pour cette période.",
+    "reconstructed": "Courbe reconstruite : la composition actuelle appliquée aux cours passés, pas la valeur mesurée à l'époque.",
+    "period": {
+      "1d": "aujourd'hui",
+      "7d": "sur 7 jours",
+      "1m": "sur 1 mois",
+      "1y": "sur 1 an",
+      "5y": "sur 5 ans",
+      "max": "depuis le début"
+    }
+  },
+  "envelopes": {
+    "title": "Par enveloppe",
+    "error": "Les enveloppes n'ont pas pu être chargées",
+    "empty": "Aucune enveloppe pour l'instant.",
+    "share": "du total"
+  },
+  "movers": {
+    "title": "Ce qui bouge aujourd'hui",
+    "error": "Les lignes qui bougent n'ont pas pu être chargées",
+    "empty": "Rien n'a bougé aujourd'hui.",
+    "columns": {
+      "line": "Ligne",
+      "account": "Compte",
+      "value": "Valeur",
+      "day": "Jour",
+      "dayPercent": "Jour en %"
+    }
+  },
+  "empty": {
+    "title": "Aucune ligne pour l'instant",
+    "description": "Ajoutez une première ligne, en choisissant son compte et son titre, ou importez tout le portefeuille depuis un fichier CSV.",
+    "addHolding": "Ajouter une ligne",
+    "importCsv": "Importer un CSV"
   }
 }

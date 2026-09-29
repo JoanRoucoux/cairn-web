@@ -34,8 +34,18 @@
       </p>
 
       @if (holding.price !== null && holding.price !== undefined) {
-        <div class="mt-4">
-          <app-line-chart [height]="120" [label]="'holdings.chartLabel' | transloco" [points]="points()" />
+        <div class="mt-4 h-40">
+          <ui-line-chart
+            [axisFormat]="chart().axis"
+            [deltaFormat]="chart().delta"
+            [label]="'holdings.chartLabel' | transloco"
+            [points]="points()"
+            [startLabel]="startLabel()"
+            [timeColumnLabel]="'chart.time' | transloco"
+            [timeFormat]="chart().time"
+            [valueColumnLabel]="'chart.value' | transloco"
+            [valueFormat]="chart().value"
+          />
         </div>
 
         <div class="mt-3">

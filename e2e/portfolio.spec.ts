@@ -25,19 +25,19 @@ test.describe('portfolio', () => {
     await context.close();
   });
 
-  test('shows the hero, the envelope tiles and the curve', async ({ page }) => {
+  test('shows the total, the envelopes and the curve', async ({ page }) => {
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
 
-    await expect(portfolio.heroValue).toBeVisible();
-    await expect(portfolio.tiles.first()).toBeVisible();
+    await expect(portfolio.totalValue).toBeVisible();
+    await expect(portfolio.envelopeRows.first()).toBeVisible();
     await expect(portfolio.chart).toBeVisible();
   });
 
   test('reloads the performance and the history when the range changes', async ({ page }) => {
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
-    await expect(portfolio.heroValue).toBeVisible();
+    await expect(portfolio.totalValue).toBeVisible();
 
     const performanceRequest = page.waitForRequest((request) => request.url().includes('/api/portfolio/performance'));
     const historyRequest = page.waitForRequest((request) => request.url().includes('/api/history'));
@@ -80,33 +80,71 @@ test.describe('portfolio', () => {
     await expect(portfolio.tooltip).not.toBeVisible();
   });
 
-  test('shows an alert when a range fails to load, and recovers by switching back', async ({ page }) => {
+  test('links a mover to its holding detail', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     const portfolio = new PortfolioPageObject(page);
+    await portfolio.goto();
 
-    await page.route('**/api/portfolio/performance*', async (route) => {
-      const url = new URL(route.request().url());
+    const firstRow = portfolio.moversTable.getByRole('row').nth(1);
+    const link = firstRow.getByRole('link').first();
+    const href = await link.getAttribute('href');
 
-      if (url.searchParams.get('range') === '1y') {
+    await link.click();
+
+    await expect(page).toHaveURL(href as string);
+  });
+
+  test('shows the total and movers blocks in error when /api/portfolio fails, and recovers on retry', async ({
+    page,
+  }) => {
+    let fail = true;
+
+    await page.route('**/api/portfolio', async (route) => {
+      if (route.request().method() === 'GET' && fail) {
         return route.fulfill({ status: 500, json: { message: 'boom' } });
       }
 
       return route.fallback();
     });
 
+    const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
-    await expect(portfolio.heroValue).toBeVisible();
 
-    await portfolio.pickRange('1Y');
+    await expect(page.getByRole('alert')).toHaveCount(2);
+    await expect(portfolio.chart).toBeVisible();
 
-    await expect(page.getByRole('alert')).toBeVisible();
-    await expect(page.getByRole('radio', { name: '1Y' })).toBeChecked();
-    await expect(portfolio.heroValue).toBeVisible();
+    fail = false;
+    await page.getByRole('button', { name: 'Retry' }).first().click();
 
-    await portfolio.pickRange('1D');
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(portfolio.totalValue).toBeVisible();
+  });
 
-    await expect(page.getByRole('alert')).not.toBeVisible();
-    await expect(page.getByRole('radio', { name: '1D' })).toBeChecked();
-    await expect(portfolio.heroValue).toBeVisible();
+  test('hides every amount when the app masks amounts, keeping the curve shape and the percentages', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => localStorage.setItem('cairn-hide-amounts', '1'));
+    const portfolio = new PortfolioPageObject(page);
+    await portfolio.goto();
+
+    await expect(portfolio.chart).toBeVisible();
+
+    const noAmountDigits = /\d[\d\u202f]*(,\d+)?\u00a0\u20ac/;
+    expect(await portfolio.totalValue.innerText()).not.toMatch(noAmountDigits);
+
+    const box = await portfolio.chart.boundingBox();
+    if (!box) {
+      throw new Error('the chart has no bounding box');
+    }
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(portfolio.tooltip).toBeVisible();
+    expect(await portfolio.tooltip.innerText()).not.toMatch(noAmountDigits);
+
+    const table = portfolio.chart.locator('xpath=following-sibling::table');
+    expect(await table.innerText()).not.toMatch(noAmountDigits);
+
+    const bodyText = await page.locator('body').innerText();
+    expect(bodyText).not.toMatch(noAmountDigits);
   });
 
   test('keeps the skip link reachable as the first tab stop', async ({ page }) => {

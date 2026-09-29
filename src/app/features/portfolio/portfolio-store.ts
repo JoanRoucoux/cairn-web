@@ -1,15 +1,21 @@
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, type Signal, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
+import { type AsyncState, type ChartPoint } from '@joanroucoux/cairn-ui';
 import type { Observable } from 'rxjs';
 
-import type { HistoryResponse, IntradayHistoryResponse, PerformanceResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  HistoryResponse,
+  HoldingResponse,
+  IntradayHistoryResponse,
+  PerformanceResponse,
+  PortfolioResponse,
+} from '@core/api-client/cairnAPI.schemas';
 import { HistoryService } from '@core/api-client/history/history.service';
 import { PerformanceService } from '@core/api-client/performance/performance.service';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
-import type { ChartPoint } from '@shared/chart/chart-scale';
 import { parisDateString } from '@shared/format/paris-date';
 
 type HistoryOrIntraday = HistoryResponse | IntradayHistoryResponse;
@@ -18,21 +24,42 @@ const EMPTY_HISTORY: HistoryOrIntraday = { mode: 'constant-mix', reconstructed: 
 
 const EPOCH = '1900-01-01';
 
+const MOVER_COUNT = 5;
+
+type ResourceStatus = 'idle' | 'error' | 'loading' | 'reloading' | 'resolved' | 'local';
+
+type ResourceLike<T> = {
+  status: Signal<ResourceStatus>;
+  value: Signal<T | undefined>;
+};
+
+const isSettled = (status: ResourceStatus): boolean => status === 'resolved' || status === 'local';
+
+const toAsyncState = <T>(resource: ResourceLike<T>, isEmpty: (value: T) => boolean): AsyncState => {
+  const status = resource.status();
+
+  if (status === 'error') {
+    return 'error';
+  }
+
+  return isSettled(status) ? (isEmpty(resource.value() as T) ? 'empty' : 'ready') : 'loading';
+};
+
+const settledValue = <T>(resource: ResourceLike<T>, fallback: T): T =>
+  isSettled(resource.status()) ? (resource.value() as T) : fallback;
+
 @Injectable()
 export class PortfolioStore {
   #portfolioApiClient = inject(PortfolioService);
   #historyApiClient = inject(HistoryService);
   #performanceApiClient = inject(PerformanceService);
 
-  readonly range = signal<ChartRange>('1d');
+  readonly range = signal<ChartRange>('1m');
 
   readonly portfolio = rxResource({
     stream: () => this.#portfolioApiClient.getPortfolio(),
   });
 
-  // `rxResource` cancels the in-flight request for a range it has already moved on from (proven in
-  // portfolio-store.spec.ts: flushing a superseded one throws "Cannot flush a cancelled request"),
-  // so a late, out-of-order response for an older range never reaches `value()`/the effects below.
   readonly performance = rxResource({
     params: () => this.range(),
     stream: ({ params }) => this.#performanceApiClient.getPortfolioPerformance({ range: params }),
@@ -51,17 +78,10 @@ export class PortfolioStore {
     defaultValue: EMPTY_HISTORY,
   });
 
-  // `rxResource` resets `value()` to `undefined` (or `defaultValue`) as soon as its params change,
-  // before the new response lands, which would blank the whole page and the curve on every range
-  // switch. These signals hold onto the last resolved response instead, so the page can show the
-  // previous range's figures while `rangeLoading` marks them stale.
-  readonly #performanceSticky = signal<PerformanceResponse | undefined>(undefined);
-  readonly #historySticky = signal<HistoryOrIntraday>(EMPTY_HISTORY);
-
-  readonly performanceValue = computed(() => this.#performanceSticky());
+  readonly #historyValue = computed(() => settledValue(this.history, EMPTY_HISTORY));
 
   readonly points = computed<ChartPoint[]>(() => {
-    const value = this.#historySticky();
+    const value = this.#historyValue();
 
     return 'mode' in value
       ? value.points.map((point) => ({ t: Date.parse(point.date), v: point.totalEur }))
@@ -69,39 +89,55 @@ export class PortfolioStore {
   });
 
   readonly reconstructed = computed(() => {
-    const value = this.#historySticky();
+    const value = this.#historyValue();
 
     return 'mode' in value && value.reconstructed;
   });
 
-  /** The range-dependent parts (curve, tiles, hero change) reload on a range switch, while the portfolio total does not. */
-  readonly rangeLoading = computed(() => this.performance.isLoading() || this.history.isLoading());
+  readonly portfolioValue = computed<PortfolioResponse | undefined>(() => settledValue(this.portfolio, undefined));
 
-  /**
-   * True once either resource has settled in error for the *currently selected* range - not for a
-   * range switched away from, since `status()` (unlike the sticky signals above) always reflects
-   * the live resource, never a past one.
-   */
-  readonly rangeError = computed(() => this.performance.status() === 'error' || this.history.status() === 'error');
+  readonly performanceValue = computed<PerformanceResponse | undefined>(() =>
+    settledValue(this.performance, undefined),
+  );
 
-  retryRange(): void {
-    this.performance.reload();
+  readonly totalState = computed<AsyncState>(() =>
+    toAsyncState(this.portfolio, (value) => value.holdings.length === 0),
+  );
+
+  readonly curveState = computed<AsyncState>(() => toAsyncState(this.history, (value) => value.points.length === 0));
+
+  readonly envelopesState = computed<AsyncState>(() =>
+    toAsyncState(this.performance, (value) => value.byEnvelope.length === 0),
+  );
+
+  readonly moversState = computed<AsyncState>(() =>
+    toAsyncState(this.portfolio, (value) => !value.holdings.some((holding) => Boolean(holding.dayChangeEur))),
+  );
+
+  readonly allFailed = computed(
+    () =>
+      this.portfolio.status() === 'error' && this.history.status() === 'error' && this.performance.status() === 'error',
+  );
+
+  readonly movers = computed<HoldingResponse[]>(() =>
+    (this.portfolioValue()?.holdings ?? [])
+      .filter(
+        (candidate): candidate is HoldingResponse & { dayChangeEur: number } =>
+          candidate.dayChangeEur !== null && candidate.dayChangeEur !== undefined,
+      )
+      .sort((left, right) => Math.abs(right.dayChangeEur) - Math.abs(left.dayChangeEur))
+      .slice(0, MOVER_COUNT),
+  );
+
+  retryTotal(): void {
+    this.portfolio.reload();
+  }
+
+  retryCurve(): void {
     this.history.reload();
   }
 
-  constructor() {
-    // `.value()` throws while the resource is in an error state, so `status()` is checked first
-    // and short-circuits before `.value()` is ever read.
-    effect(() => {
-      if (this.performance.status() === 'resolved') {
-        this.#performanceSticky.set(this.performance.value());
-      }
-    });
-
-    effect(() => {
-      if (this.history.status() === 'resolved') {
-        this.#historySticky.set(this.history.value());
-      }
-    });
+  retryEnvelopes(): void {
+    this.performance.reload();
   }
 }
