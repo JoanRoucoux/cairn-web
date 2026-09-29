@@ -1,0 +1,58 @@
+<tr data-testid="holding-row" uiTr [class.bg-(--soft)]="selected()">
+  <td uiTd>
+    <a
+      class="block max-w-56 truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+      queryParamsHandling="preserve"
+      [routerLink]="['/holdings', holding().id]"
+    >
+      {{ holding().instrumentName }}
+    </a>
+    <ui-badge variant="outline">{{ 'enums.assetClass.' + holding().assetClass | transloco }}</ui-badge>
+  </td>
+  @if (!compact()) {
+    <td numeric uiTd>
+      <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
+    </td>
+    <td numeric uiTd>
+      <ui-amount currency="EUR" [value]="holding().averageCost" />
+    </td>
+    <td numeric uiTd>
+      <div class="flex flex-col items-end">
+        <ui-amount currency="EUR" [value]="holding().price" />
+        @if (holding().stale) {
+          <span class="text-caption font-medium text-(--stale)">{{
+            'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
+          }}</span>
+        } @else if (holding().price === null || holding().price === undefined) {
+          <span class="text-caption text-(--muted-foreground)">{{ 'holdings.manualQuote.open' | transloco }}</span>
+        }
+      </div>
+    </td>
+  }
+  <td numeric uiTd>
+    <ui-amount currency="EUR" [value]="holding().marketValueEur" />
+  </td>
+  @if (!compact()) {
+    <td numeric uiTd>
+      <div class="flex flex-col items-end">
+        <ui-delta
+          class="whitespace-nowrap"
+          [unknownLabel]="'holdings.unknown' | transloco"
+          [value]="holding().unrealizedGainEur"
+        >
+          <ui-amount currency="EUR" signed [value]="holding().unrealizedGainEur" />
+        </ui-delta>
+        @if (holding().unrealizedGainRatio !== null && holding().unrealizedGainRatio !== undefined) {
+          <span class="text-caption text-(--muted-foreground)">
+            {{ holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
+          </span>
+        }
+      </div>
+    </td>
+  }
+  <td numeric uiTd>
+    <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().dayChangeRatio">
+      {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+    </ui-delta>
+  </td>
+</tr>

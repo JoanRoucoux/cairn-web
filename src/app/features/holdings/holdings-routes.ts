@@ -15,11 +15,14 @@ export const HOLDINGS_ROUTES: Routes = [
         component: HoldingListPage,
         title: 'pageTitle.holdings',
         data: { headerKey: 'pageTitle.holdings' },
-      },
-      {
-        path: ':holdingId',
-        component: HoldingDetailPage,
-        title: 'pageTitle.holdingDetail',
+        children: [
+          {
+            path: ':holdingId',
+            component: HoldingDetailPage,
+            title: 'pageTitle.holdingDetail',
+            data: { headerKey: 'pageTitle.holdings', mobileHeaderHidden: true },
+          },
+        ],
       },
     ],
   },
