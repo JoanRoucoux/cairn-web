@@ -1,15 +1,22 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
-import { type SegmentedOption, UiBadge, UiCard, UiDelta, UiSegmented, UiSkeleton } from '@joanroucoux/cairn-ui';
+import {
+  type SegmentedOption,
+  UiAmount,
+  UiBadge,
+  UiCard,
+  UiDelta,
+  UiSegmented,
+  UiSkeleton,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { LineChart } from '@shared/chart/line-chart';
-import { MoneyPipe } from '@shared/format/money-pipe';
+import { decimalPlaces } from '@shared/format/decimal-places';
 import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
-import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
 
 import { HoldingDetailStore } from './holding-detail-store';
 import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
@@ -19,10 +26,9 @@ import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
   imports: [
     LineChart,
     ManualQuoteDialog,
-    MoneyPipe,
     RelativeDatePipe,
-    SignedMoneyPipe,
     TranslocoPipe,
+    UiAmount,
     UiBadge,
     UiCard,
     UiDelta,
@@ -36,6 +42,8 @@ export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
+
+  protected readonly decimalPlaces = decimalPlaces;
 
   protected readonly holding = this.#store.holding;
   protected readonly holdings = this.#store.holdings;

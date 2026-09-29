@@ -12,7 +12,7 @@
         <ui-meter [label]="row.label" [tone]="row.tone" [value]="row.scaled" [valueText]="row.valueText" />
       </span>
       <span class="text-label text-right text-(--muted-foreground) tabular-nums">{{ row.share | ratio }}</span>
-      <span class="text-label text-right font-semibold tabular-nums">{{ row.valueEur | money }}</span>
+      <ui-amount class="text-label text-right font-semibold" currency="EUR" [value]="row.valueEur" />
     </div>
   }
 </div>

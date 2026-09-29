@@ -30,7 +30,7 @@ import { pluralKey } from '@shared/format/plural-key';
           <path d="M12 7v5l3 2" />
         </svg>
         <span>{{ messageKey() | transloco: { count: count() } }}</span>
-        <a class="ml-auto font-semibold underline underline-offset-2" routerLink="/sources">
+        <a class="ml-auto font-semibold underline underline-offset-2" routerLink="/holdings">
           {{ 'portfolio.unvalued.action' | transloco }}
         </a>
       </div>

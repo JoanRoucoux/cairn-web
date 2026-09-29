@@ -23,8 +23,6 @@ export const getTranslocoTestingModule = (
       'instruments/fr': {},
       'accounts/en': {},
       'accounts/fr': {},
-      'sources/en': {},
-      'sources/fr': {},
       'profile/en': {},
       'profile/fr': {},
     },

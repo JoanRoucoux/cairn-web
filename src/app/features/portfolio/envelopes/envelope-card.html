@@ -12,14 +12,16 @@
         </div>
 
         <div class="shrink-0 text-right leading-tight">
-          <p class="text-label font-medium text-(--foreground)">{{ envelope.valueEur | money }}</p>
+          <p class="text-label font-medium text-(--foreground)">
+            <ui-amount currency="EUR" [value]="envelope.valueEur" />
+          </p>
           <p [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
             <ui-delta
               class="text-caption"
               [unknownLabel]="'portfolio.unknown' | transloco"
               [value]="rangeError() ? undefined : envelope.changeEur"
             >
-              {{ envelope.changeEur | signedMoney }}
+              <ui-amount currency="EUR" signed [value]="envelope.changeEur" />
             </ui-delta>
           </p>
         </div>

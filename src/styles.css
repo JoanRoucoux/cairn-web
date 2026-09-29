@@ -6,6 +6,12 @@
    are never generated. */
 @source '../node_modules/@joanroucoux/cairn-ui';
 
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -14,12 +20,16 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* The ambient gradient of the retained direction. Painted on body rather than on a component so
-   it survives route changes without re-rendering. */
-body::before {
-  position: fixed;
-  z-index: -1;
-  content: '';
-  inset: 0;
-  background: radial-gradient(90% 38% at 62% -6%, var(--glow), transparent 64%);
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+button,
+[role='button'],
+[role='tab'],
+[role='menuitem'] {
+  -webkit-user-select: none;
+  user-select: none;
 }

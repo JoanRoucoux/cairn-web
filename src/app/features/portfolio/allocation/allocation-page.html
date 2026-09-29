@@ -1,7 +1,5 @@
-<h1 class="text-title font-semibold">{{ 'portfolio.allocation.title' | transloco }}</h1>
-
 @if (portfolio.hasValue()) {
-  <div class="mt-4 grid gap-4 lg:grid-cols-2">
+  <div class="grid gap-4 lg:grid-cols-2">
     <ui-card>
       <app-allocation-breakdown
         [heading]="'portfolio.allocation.byAssetClass' | transloco"

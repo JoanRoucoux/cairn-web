@@ -16,27 +16,19 @@
     </header>
 
     <ui-card>
-      @if (holding.marketValueEur !== null && holding.marketValueEur !== undefined) {
-        <p class="text-display leading-none font-semibold tabular-nums">{{ holding.marketValueEur | money }}</p>
-      } @else {
-        <p class="text-display leading-none font-semibold tabular-nums">&mdash;</p>
-      }
+      <ui-amount class="text-display leading-none font-semibold" currency="EUR" [value]="holding.marketValueEur" />
       <p class="mt-2.5 flex flex-wrap items-center gap-3">
         <span class="flex items-center gap-1.5">
           <span class="text-caption text-(--muted-foreground)">{{ 'holdings.columns.unrealized' | transloco }}</span>
           <ui-delta emphasis="pill" [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
-            {{ holding.unrealizedGainEur | signedMoney }}
+            <ui-amount currency="EUR" signed [value]="holding.unrealizedGainEur" />
           </ui-delta>
         </span>
         <span class="text-label text-(--muted-foreground) tabular-nums">
-          {{ holding.quantity }} &times;
-          @if (holding.price !== null && holding.price !== undefined) {
-            {{ holding.price | money }}
-          } @else {
-            &mdash;
-          }
+          <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" /> &times;
+          <ui-amount currency="EUR" [value]="holding.price" />
           @if (holding.averageCost !== null && holding.averageCost !== undefined) {
-            &middot; {{ 'holdings.averageCost' | transloco }} {{ holding.averageCost | money }}
+            &middot; {{ 'holdings.averageCost' | transloco }} <ui-amount currency="EUR" [value]="holding.averageCost" />
           }
         </span>
       </p>

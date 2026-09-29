@@ -15,11 +15,13 @@ export const PORTFOLIO_ROUTES: Routes = [
         path: '',
         component: PortfolioPage,
         title: 'pageTitle.portfolio',
+        data: { headerKey: 'pageTitle.portfolio' },
       },
       {
         path: 'allocation',
         component: AllocationPage,
         title: 'pageTitle.allocation',
+        data: { headerKey: 'pageTitle.allocation' },
       },
     ],
   },

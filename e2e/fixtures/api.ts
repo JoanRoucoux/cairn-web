@@ -153,22 +153,6 @@ const { intradayHistory, performance } = buildPerformanceFixtures(
   buildEnvelopes({ ...holding, marketValueEur: holding.marketValueEur + cashHolding.marketValueEur }, staleHolding),
 );
 
-const jobRuns = [
-  {
-    id: 1,
-    jobName: 'quote-refresh',
-    status: 'COMPLETED',
-    startedAt: '2026-08-27T06:00:00Z',
-    endedAt: '2026-08-27T06:01:00Z',
-  },
-];
-
-const refreshReport = {
-  refreshed: 2,
-  skipped: 0,
-  failures: [{ instrumentId: instrument.id, instrumentName: instrument.name, source: 'YAHOO', message: 'timeout' }],
-};
-
 const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/portfolio': portfolio,
   'GET /api/portfolio/performance': performance,
@@ -178,8 +162,6 @@ const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/accounts': accounts,
   'POST /api/accounts': account,
   'GET /api/instruments': instruments,
-  'GET /api/jobs/runs': jobRuns,
-  'POST /api/quotes/refresh': refreshReport,
   'GET /api/session': getSession(),
 };
 

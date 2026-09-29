@@ -13,6 +13,7 @@ export const ACCOUNTS_ROUTES: Routes = [
         path: '',
         component: AccountListPage,
         title: 'pageTitle.accounts',
+        data: { headerKey: 'pageTitle.accounts' },
       },
     ],
   },

@@ -1,13 +1,12 @@
-<div class="flex flex-wrap items-center justify-between gap-3">
-  <h1 #heading class="text-title font-semibold" tabindex="-1">{{ 'holdings.title' | transloco }}</h1>
+<div class="flex flex-wrap items-center justify-end gap-3">
   <button data-testid="add-holding" type="button" ui-button (click)="onAdd()">
     {{ 'holdings.form.open' | transloco }}
   </button>
 </div>
 
-<p class="text-label mt-1.5 text-(--muted-foreground) tabular-nums">
+<p #summary class="text-label mt-1.5 text-(--muted-foreground) tabular-nums" tabindex="-1">
   {{ 'holdings.summary' | transloco: { lines: totals().lines, accounts: totals().accounts } }} &middot;
-  {{ totals().valueEur | money }}
+  <ui-amount currency="EUR" [value]="totals().valueEur" />
   @if (totals().unvaluedCount > 0) {
     &middot; {{ 'holdings.unvaluedCount' | transloco: { count: totals().unvaluedCount } }}
   }

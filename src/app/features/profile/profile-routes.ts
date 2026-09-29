@@ -13,6 +13,7 @@ export const PROFILE_ROUTES: Routes = [
         path: '',
         component: ProfilePage,
         title: 'pageTitle.profile',
+        data: { headerKey: 'pageTitle.profile' },
       },
     ],
   },

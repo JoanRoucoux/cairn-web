@@ -14,6 +14,7 @@ export const HOLDINGS_ROUTES: Routes = [
         path: '',
         component: HoldingListPage,
         title: 'pageTitle.holdings',
+        data: { headerKey: 'pageTitle.holdings' },
       },
       {
         path: ':holdingId',

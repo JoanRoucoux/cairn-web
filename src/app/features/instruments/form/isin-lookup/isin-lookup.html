@@ -47,7 +47,7 @@
               {{ candidate.source }} &middot; {{ candidate.sourceRef }}
             </span>
           </span>
-          <span class="text-label shrink-0 font-semibold tabular-nums">{{ candidate.probePrice | money }}</span>
+          <ui-amount class="text-label shrink-0 font-semibold" currency="EUR" [value]="candidate.probePrice" />
         </button>
       </li>
     }

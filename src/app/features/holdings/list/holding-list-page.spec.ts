@@ -185,7 +185,7 @@ describe('HoldingListPage', () => {
     expect(await screen.findByText('holdings.form.editTitle')).toBeInTheDocument();
   });
 
-  it('should reload the list and return focus to the heading after a deletion', async () => {
+  it('should reload the list and return focus to the summary after a deletion', async () => {
     const user = userEvent.setup();
     await renderPage();
     await screen.findByText('Esalia');
@@ -197,7 +197,7 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
 
     expect(await screen.findByText('Esalia')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveFocus();
+    expect(screen.getByText(/holdings\.summary/)).toHaveFocus();
   });
 
   it('should reload the list after the cash balance is set', async () => {
