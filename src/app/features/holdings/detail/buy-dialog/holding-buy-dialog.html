@@ -1,0 +1,84 @@
+<ui-dialog
+  data-testid="holding-buy-dialog"
+  width="md"
+  [description]="holding().instrumentName + ' · ' + holding().accountName"
+  [heading]="'holdings.buy.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <div class="grid grid-cols-2 gap-2">
+    <ui-field [label]="'holdings.buy.quantity' | transloco" [unit]="'holdings.buy.unit' | transloco">
+      <input
+        autocomplete="off"
+        data-testid="holding-buy-quantity"
+        inputmode="decimal"
+        type="text"
+        uiInput
+        [value]="quantityText()"
+        (input)="onQuantityInput($event)"
+      />
+    </ui-field>
+    <ui-field [label]="'holdings.buy.price' | transloco" [unit]="'holdings.buy.currencyUnit' | transloco">
+      <input
+        autocomplete="off"
+        data-testid="holding-buy-price"
+        inputmode="decimal"
+        type="text"
+        uiInput
+        [value]="priceText()"
+        (input)="onPriceInput($event)"
+      />
+    </ui-field>
+  </div>
+
+  <p class="text-label mt-2 text-(--muted-foreground)" data-testid="holding-buy-hint">{{ hint() }}</p>
+
+  <div class="rounded-control mt-2 flex flex-col bg-(--background) px-3 py-1">
+    <div class="text-label flex justify-between border-b border-(--hairline) py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.quantity' | transloco }}</span>
+      <span class="flex items-baseline gap-1.5">
+        <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
+        <span class="text-(--subtle-foreground)">&rarr;</span>
+        <span class="font-medium">{{ preview() ? fmtQty(preview()!.quantityAfter) : '—' }}</span>
+      </span>
+    </div>
+    <div class="text-label flex justify-between border-b border-(--hairline) py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.averageCost' | transloco }}</span>
+      <span class="flex items-baseline gap-1.5">
+        <span class="text-(--subtle-foreground)">
+          {{
+            holding().averageCost !== null && holding().averageCost !== undefined
+              ? fmt(holding().averageCost)
+              : ('holdings.unknown' | transloco)
+          }}
+        </span>
+        <span class="text-(--subtle-foreground)">&rarr;</span>
+        <span class="font-medium">{{ preview() ? fmt(preview()!.averageCostAfter) : '—' }}</span>
+      </span>
+    </div>
+    <div class="text-label flex justify-between py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.amount' | transloco }}</span>
+      <span class="font-medium">{{ preview() ? fmt(preview()!.amount) : '—' }}</span>
+    </div>
+  </div>
+
+  @if (error()) {
+    <p class="text-label mt-3 text-(--negative)" data-testid="holding-buy-error" role="alert">
+      {{ 'holdings.buy.error' | transloco }}
+    </p>
+  }
+
+  <button
+    class="mt-4 w-full"
+    data-testid="holding-buy-submit"
+    dialogActions
+    size="xl"
+    type="button"
+    ui-button
+    [disabled]="!valid() || submitting()"
+    [loading]="submitting()"
+    (click)="confirm()"
+  >
+    {{ cta() }}
+  </button>
+</ui-dialog>

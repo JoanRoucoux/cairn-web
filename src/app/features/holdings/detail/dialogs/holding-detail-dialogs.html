@@ -1,0 +1,24 @@
+@if (pricingInstrument(); as pricing) {
+  <app-manual-quote-dialog
+    [instrumentId]="pricing.id"
+    [instrumentName]="pricing.name"
+    (dismissed)="quoteDismissed.emit()"
+    (saved)="quoteSaved.emit()"
+  />
+}
+
+@if (buyOpen()) {
+  <app-holding-buy-dialog [holding]="holding()" (bought)="bought.emit()" (dismissed)="buyDismissed.emit()" />
+}
+
+@if (sellOpen()) {
+  <app-holding-sell-dialog [holding]="holding()" (dismissed)="sellDismissed.emit()" (sold)="sold.emit($event)" />
+}
+
+@if (editOpen()) {
+  <app-holding-edit-dialog [holding]="holding()" (dismissed)="editDismissed.emit()" (savedForm)="edited.emit()" />
+}
+
+@if (deleteOpen()) {
+  <app-holding-delete-dialog [holding]="holding()" (deleted)="deleted.emit()" (dismissed)="deleteDismissed.emit()" />
+}

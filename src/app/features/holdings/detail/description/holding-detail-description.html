@@ -1,0 +1,16 @@
+<ui-card>
+  <p class="text-label leading-relaxed">{{ description() }}</p>
+  @if (externalUrl()) {
+    <p class="mt-3 border-t border-(--hairline) pt-3">
+      <a
+        class="text-label inline-flex items-center gap-1.5 font-medium underline underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        rel="noopener noreferrer"
+        target="_blank"
+        [href]="externalUrl()"
+      >
+        {{ 'holdings.externalLink' | transloco: { source: sourceLabel() } }}
+        <svg lucideExternalLink [size]="14" [strokeWidth]="1.75" />
+      </a>
+    </p>
+  }
+</ui-card>

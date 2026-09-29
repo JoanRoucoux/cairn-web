@@ -1,39 +1,58 @@
-import { Component, LOCALE_ID, computed, inject, signal } from '@angular/core';
+import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 import {
   type SegmentedOption,
   UI_AMOUNT_MASKED,
   UiAmount,
   UiBadge,
+  UiButton,
   UiCard,
   UiDelta,
   UiLineChart,
+  UiMenu,
+  UiMenuItem,
+  UiMenuTrigger,
   UiSegmented,
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { LucideChevronLeft, LucideEllipsis, LucideX } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
-import { decimalPlaces } from '@shared/format/decimal-places';
-import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
+import { RatioPipe } from '@shared/format/ratio-pipe';
+import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+import { HoldingDetailDescription } from './description/holding-detail-description';
+import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
+import { HoldingDetailFacts } from './facts/holding-detail-facts';
 import { HoldingDetailStore } from './holding-detail-store';
-import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
 
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
-    ManualQuoteDialog,
-    RelativeDatePipe,
+    HoldingDetailDescription,
+    HoldingDetailDialogs,
+    HoldingDetailFacts,
+    LucideChevronLeft,
+    LucideEllipsis,
+    LucideX,
+    RatioPipe,
+    RouterLink,
+    ShortDatePipe,
     TranslocoPipe,
     UiAmount,
     UiBadge,
+    UiButton,
     UiCard,
     UiDelta,
     UiLineChart,
+    UiMenu,
+    UiMenuItem,
+    UiMenuTrigger,
     UiSegmented,
     UiSkeleton,
   ],
@@ -42,12 +61,13 @@ import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
 })
 export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
+  #router = inject(Router);
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
 
-  protected readonly decimalPlaces = decimalPlaces;
+  protected readonly menu = viewChild.required<UiMenu>('menu');
 
   protected readonly holding = this.#store.holding;
   protected readonly holdings = this.#store.holdings;
@@ -55,8 +75,8 @@ export class HoldingDetailPage {
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
 
-  // chart.* lives in the preloaded global i18n file (no lazy scope to race), so reacting
-  // to language changes through LanguageStore is enough.
+  protected readonly isCash = computed(() => this.holding()?.assetClass === 'CASH');
+
   protected readonly rangeOptions = computed<SegmentedOption[]>(() => {
     this.#language.activeLang();
     return CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`chart.range.${value}`) }));
@@ -70,15 +90,16 @@ export class HoldingDetailPage {
   protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
 
   protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
+  protected readonly buyOpen = signal(false);
+  protected readonly sellOpen = signal(false);
+  protected readonly editOpen = signal(false);
+  protected readonly deleteOpen = signal(false);
 
-  // enums.* lives in the preloaded global i18n file (no lazy scope to race), so reacting
-  // to language changes through LanguageStore is enough.
   protected readonly priceSourceLabel = computed(() => {
     this.#language.activeLang();
     return this.#transloco.translate(`enums.priceSource.${this.holding()?.priceSource}`);
   });
 
-  // The library types the option value as `string`; every option here is built from CHART_RANGES.
   protected setRange(value: string): void {
     this.range.set(value as ChartRange);
   }
@@ -98,5 +119,44 @@ export class HoldingDetailPage {
 
   protected onQuoteDismissed(): void {
     this.pricingInstrument.set(undefined);
+  }
+
+  protected onBought(): void {
+    this.buyOpen.set(false);
+    this.#store.reload();
+  }
+
+  protected onSold(closed: boolean): void {
+    this.sellOpen.set(false);
+
+    if (closed) {
+      this.backToList();
+    } else {
+      this.#store.reload();
+    }
+  }
+
+  protected onEdited(): void {
+    this.editOpen.set(false);
+    this.#store.reload();
+  }
+
+  protected onDeleted(): void {
+    this.deleteOpen.set(false);
+    this.backToList();
+  }
+
+  protected openEdit(): void {
+    this.menu().close();
+    this.editOpen.set(true);
+  }
+
+  protected openDelete(): void {
+    this.menu().close();
+    this.deleteOpen.set(true);
+  }
+
+  private backToList(): void {
+    void this.#router.navigate(['/holdings'], { queryParamsHandling: 'preserve' });
   }
 }

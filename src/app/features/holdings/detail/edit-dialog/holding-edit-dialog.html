@@ -1,0 +1,44 @@
+<ui-dialog
+  data-testid="holding-edit-dialog"
+  width="md"
+  [description]="holding().instrumentName + ' · ' + holding().accountName"
+  [heading]="'holdings.edit.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field [label]="'holdings.edit.quantity' | transloco">
+    <input data-testid="holding-edit-quantity" step="0.000001" type="number" uiInput [formField]="form.quantity" />
+  </ui-field>
+
+  <ui-field [hint]="'holdings.edit.averageCostHint' | transloco" [label]="'holdings.edit.averageCost' | transloco">
+    <input data-testid="holding-edit-average-cost" step="0.0001" type="number" uiInput [formField]="form.averageCost" />
+  </ui-field>
+
+  @if (error()) {
+    <p class="text-label text-(--negative)" data-testid="holding-edit-error" role="alert">
+      {{ 'holdings.edit.error' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="holding-edit-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="form().submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.edit.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="holding-edit-submit"
+    dialogActions
+    type="button"
+    ui-button
+    [disabled]="form().submitting()"
+    (click)="confirm()"
+  >
+    {{ 'holdings.edit.submit' | transloco }}
+  </button>
+</ui-dialog>
