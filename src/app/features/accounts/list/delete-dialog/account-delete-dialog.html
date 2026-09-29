@@ -1,0 +1,41 @@
+<ui-dialog
+  data-testid="account-delete-dialog"
+  width="md"
+  [description]="'accounts.delete.description' | transloco"
+  [heading]="'accounts.delete.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  @if (refused()) {
+    <p class="text-label text-(--negative)" data-testid="account-delete-refused" role="alert">
+      {{ 'accounts.delete.refused' | transloco: { count: account().lineCount } }}
+    </p>
+  } @else if (error()) {
+    <p class="text-label text-(--negative)" data-testid="account-delete-error" role="alert">
+      {{ 'accounts.delete.error' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="account-delete-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="deleting()"
+    (click)="dismiss()"
+  >
+    {{ 'accounts.delete.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="account-delete-confirm"
+    dialogActions
+    type="button"
+    ui-button
+    variant="destructive"
+    [disabled]="deleting()"
+    (click)="confirm()"
+  >
+    {{ 'accounts.delete.submit' | transloco }}
+  </button>
+</ui-dialog>

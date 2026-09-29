@@ -1,10 +1,34 @@
 {
   "name": "Name",
   "type": "Envelope",
-  "choose": "Choose an envelope",
   "institution": "Institution",
-  "add": "Add an account",
+  "choose": "Choose an envelope",
+  "add": "New account",
+  "summary": "{{count}} accounts",
   "empty": "No account yet.",
-  "error": "Your accounts could not be loaded.",
-  "createError": "That account was refused."
+  "errorTitle": "Accounts could not be loaded",
+  "errorMessage": "The server did not answer.",
+  "retry": "Retry",
+  "lineCount": "{{count}} holdings",
+  "actions": "Actions for {{name}}",
+  "edit": "Edit",
+  "rowEmpty": "This account has no line yet.",
+  "rowEmptyAction": "Add a line",
+  "form": {
+    "createTitle": "New account",
+    "editTitle": "Edit this account",
+    "cancel": "Cancel",
+    "submit": "Save",
+    "error": "That account was refused.",
+    "nameConflict": "An account already has this name."
+  },
+  "delete": {
+    "action": "Delete",
+    "title": "Delete this account?",
+    "description": "This cannot be undone.",
+    "cancel": "Cancel",
+    "submit": "Delete",
+    "refused": "This account still holds {{count}} holdings. Sell or delete them first.",
+    "error": "This account could not be deleted."
+  }
 }

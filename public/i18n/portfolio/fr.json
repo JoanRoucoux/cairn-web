@@ -9,7 +9,13 @@
   "allocation": {
     "byAssetClass": "Par classe d'actif",
     "byAccount": "Par compte",
-    "scaleNote": "Les barres sont à l'échelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
+    "total": "Total",
+    "others": "Autres",
+    "empty": "Aucune donnée à répartir.",
+    "byAssetClassErrorTitle": "La répartition par classe d'actif n'a pas pu être chargée",
+    "byAccountErrorTitle": "La répartition par compte n'a pas pu être chargée",
+    "errorMessage": "Le serveur n'a pas répondu.",
+    "lineCount": "{{count}} lignes"
   },
   "total": {
     "title": "Patrimoine",

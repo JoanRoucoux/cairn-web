@@ -10,11 +10,12 @@ export type AccountDraft = {
   institution: string;
 };
 
-// A factory so each page instance gets its own model object.
-export const initialAccountDraft = (): AccountDraft => ({
-  name: '',
-  type: '',
-  institution: '',
+export type AccountDraftSource = { name: string; type: AccountType; institution: string };
+
+export const initialAccountDraft = (account?: AccountDraftSource): AccountDraft => ({
+  name: account?.name ?? '',
+  type: account?.type ?? '',
+  institution: account?.institution ?? '',
 });
 
 export const accountDraftSchema = (messages: FormMessages): Schema<AccountDraft> =>

@@ -1,10 +1,34 @@
 {
   "name": "Nom",
   "type": "Enveloppe",
-  "choose": "Choisir une enveloppe",
   "institution": "Établissement",
-  "add": "Ajouter un compte",
+  "choose": "Choisir une enveloppe",
+  "add": "Nouveau compte",
+  "summary": "{{count}} comptes",
   "empty": "Aucun compte pour le moment.",
-  "error": "Vos comptes n'ont pas pu être chargés.",
-  "createError": "Ce compte a été refusé."
+  "errorTitle": "Les comptes n'ont pas pu être chargés",
+  "errorMessage": "Le serveur n'a pas répondu.",
+  "retry": "Réessayer",
+  "lineCount": "{{count}} lignes",
+  "actions": "Actions sur {{name}}",
+  "edit": "Modifier",
+  "rowEmpty": "Ce compte n'a encore aucune ligne.",
+  "rowEmptyAction": "Ajouter une ligne",
+  "form": {
+    "createTitle": "Nouveau compte",
+    "editTitle": "Modifier le compte",
+    "cancel": "Annuler",
+    "submit": "Enregistrer",
+    "error": "Ce compte a été refusé.",
+    "nameConflict": "Un compte porte déjà ce nom."
+  },
+  "delete": {
+    "action": "Supprimer",
+    "title": "Supprimer le compte ?",
+    "description": "Cette action est définitive.",
+    "cancel": "Annuler",
+    "submit": "Supprimer",
+    "refused": "Ce compte détient encore {{count}} lignes. Vendez-les ou supprimez-les d'abord.",
+    "error": "Ce compte n'a pas pu être supprimé."
+  }
 }

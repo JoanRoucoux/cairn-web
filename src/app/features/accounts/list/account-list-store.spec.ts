@@ -3,9 +3,22 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
-
 import { AccountListStore } from './account-list-store';
+
+const account = { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama' };
+
+const holding = (overrides: Record<string, unknown> = {}): unknown => ({
+  id: 'h1',
+  accountId: 'a1',
+  assetClass: 'ETF',
+  priceSource: 'YAHOO',
+  priceCurrency: 'EUR',
+  marketValueEur: 100,
+  ...overrides,
+});
+
+const cashHolding = (overrides: Record<string, unknown> = {}): unknown =>
+  holding({ id: 'h-cash', assetClass: 'CASH', priceSource: 'MANUAL', marketValueEur: 50, ...overrides });
 
 describe('AccountListStore', () => {
   let store: AccountListStore;
@@ -13,7 +26,6 @@ describe('AccountListStore', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [getTranslocoTestingModule()],
       providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), AccountListStore],
     });
     store = TestBed.inject(AccountListStore);
@@ -22,58 +34,69 @@ describe('AccountListStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  it('should expose the accounts returned by the API', async () => {
+  const flush = async (holdings: unknown[]): Promise<void> => {
     TestBed.tick();
-    httpTesting
-      .expectOne('/api/accounts')
-      .flush([{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo Bank' }]);
+    httpTesting.expectOne('/api/accounts').flush([account]);
+    httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings });
     await TestBed.inject(ApplicationRef).whenStable();
+  };
 
-    expect(store.accounts.value()).toHaveLength(1);
+  it('should be loading before both calls answer', () => {
+    TestBed.tick();
+
+    expect(store.state()).toBe('loading');
+    httpTesting.expectOne('/api/accounts').flush([account]);
+    httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings: [] });
   });
 
-  it('should reload the list after creating an account', async () => {
-    TestBed.tick();
-    httpTesting.expectOne('/api/accounts').flush([]);
-    await TestBed.inject(ApplicationRef).whenStable();
+  it('should sum market values including cash and count lines excluding the EUR cash holding', async () => {
+    await flush([holding(), holding({ id: 'h2', marketValueEur: 200 }), cashHolding()]);
 
-    store.form.name().value.set('Fortuneo');
-    store.form.type().value.set('CTO');
-    store.form.institution().value.set('Fortuneo');
-    const created = store.create();
-
-    const request = await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'));
-    expect(request.request.body).toEqual({ name: 'Fortuneo', type: 'CTO', institution: 'Fortuneo' });
-    request.flush({});
-
-    await expect(created).resolves.toBe(true);
-    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush([]));
+    expect(store.accounts()).toEqual([
+      { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama', valueEur: 350, lineCount: 2 },
+    ]);
   });
 
-  it('should report a refused account', async () => {
-    TestBed.tick();
-    httpTesting.expectOne('/api/accounts').flush([]);
-    await TestBed.inject(ApplicationRef).whenStable();
+  it('should count zero lines for an account holding only its EUR cash balance, while its value still includes it', async () => {
+    await flush([cashHolding()]);
 
-    store.form.name().value.set('Fortuneo');
-    store.form.type().value.set('CTO');
-    store.form.institution().value.set('Fortuneo');
-    const created = store.create();
-
-    (await vi.waitFor(() => httpTesting.expectOne((candidate) => candidate.method === 'POST'))).flush(null, {
-      status: 422,
-      statusText: 'Unprocessable',
-    });
-
-    await expect(created).resolves.toBe(false);
-    expect(store.error()).toBe(true);
+    expect(store.accounts()).toEqual([
+      { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama', valueEur: 50, lineCount: 0 },
+    ]);
   });
 
-  it('should refuse an incomplete draft', async () => {
+  it('should report a null value when a line is unvalued rather than a partial sum', async () => {
+    await flush([holding(), holding({ id: 'h2', marketValueEur: null })]);
+
+    expect(store.accounts()[0]!.valueEur).toBeNull();
+  });
+
+  it('should report the empty state once loaded with no account', async () => {
     TestBed.tick();
     httpTesting.expectOne('/api/accounts').flush([]);
+    httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings: [] });
     await TestBed.inject(ApplicationRef).whenStable();
 
-    await expect(store.create()).resolves.toBe(false);
+    expect(store.state()).toBe('empty');
+  });
+
+  it('should report the error state when either call fails', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/accounts').flush(null, { status: 500, statusText: 'Server Error' });
+    httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings: [] });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.state()).toBe('error');
+  });
+
+  it('should reload both calls on retry', async () => {
+    await flush([]);
+
+    store.retry();
+
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts')).then((request) => request.flush([account]));
+    await vi
+      .waitFor(() => httpTesting.expectOne('/api/portfolio'))
+      .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
   });
 });
