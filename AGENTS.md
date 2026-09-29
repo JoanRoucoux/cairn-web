@@ -177,6 +177,7 @@ Two conventions worth knowing before touching a screen:
   took a 401, and the interceptor sent the browser back to `/login`, forever. Invisible to curl,
   which has no worker. Anything the server renders itself must be in the negated list before that
   file comes back.
+- `@joanroucoux/cairn-ui/styles/fonts.css` is listed in `angular.json` `styles`, not `@import`ed from `src/styles.css`: Tailwind inlines an `@import` without rebasing its relative `url()`s, so Rubik would silently fall back to the system font.
 - `typescript` is pinned to `~6.0.2`: TypeScript 7 breaks `typescript-eslint` (via `ts-api-utils`). Do not bump until typescript-eslint supports TS 7.
 - `pnpm-workspace.yaml` `allowBuilds` is required for native postinstall scripts (esbuild, lmdb, ...) — do not remove it.
 - GitHub Actions in `.github/workflows/ci.yml` are pinned by commit SHA (Dependabot keeps them updated) — when adding one, pin it the same way.
