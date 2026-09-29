@@ -23,7 +23,14 @@ describe('AccountListPage', () => {
     accounts: unknown[] = [boursorama, livretA],
     holdings: unknown[] = [
       { accountId: 'a1', assetClass: 'ETF', priceSource: 'YAHOO', priceCurrency: 'EUR', marketValueEur: 1000 },
-      { accountId: 'a2', assetClass: 'CASH', priceSource: 'MANUAL', priceCurrency: 'EUR', marketValueEur: 500 },
+      {
+        accountId: 'a2',
+        assetClass: 'CASH',
+        priceSource: 'MANUAL',
+        priceCurrency: 'EUR',
+        accountCash: true,
+        marketValueEur: 500,
+      },
     ],
   ): Promise<void> => {
     await render(AccountListPage, {
@@ -48,7 +55,7 @@ describe('AccountListPage', () => {
     await renderPage();
 
     expect(await screen.findByText('PEA Boursorama')).toBeInTheDocument();
-    expect(screen.getAllByText('accounts.lineCount')).not.toHaveLength(0);
+    expect(screen.getAllByText(/accounts.lineCount_(one|other)/)).not.toHaveLength(0);
   });
 
   it('should show the empty-account hint for an account with only its cash balance', async () => {

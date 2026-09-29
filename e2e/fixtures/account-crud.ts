@@ -1,12 +1,9 @@
 import type { Route } from '@playwright/test';
 
 type AccountFixture = { id: string; name: string; type: string; institution: string };
-type HoldingFixture = { id: string; accountId: string; assetClass: string; priceSource: string; priceCurrency: string };
+type HoldingFixture = { id: string; accountId: string; accountCash: boolean };
 
 type Handler = (route: Route, match: RegExpExecArray) => Promise<void>;
-
-const isEurCashHolding = (holding: HoldingFixture): boolean =>
-  holding.assetClass === 'CASH' && holding.priceSource === 'MANUAL' && holding.priceCurrency === 'EUR';
 
 export const buildAccountCrudHandlers = (
   accounts: AccountFixture[],
@@ -48,7 +45,7 @@ export const buildAccountCrudHandlers = (
     }
 
     const ownHoldings = holdings.filter((candidate) => candidate.accountId === id);
-    const nonCashCount = ownHoldings.filter((candidate) => !isEurCashHolding(candidate)).length;
+    const nonCashCount = ownHoldings.filter((candidate) => !candidate.accountCash).length;
 
     if (nonCashCount > 0) {
       return route.fulfill({

@@ -4,7 +4,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { type AsyncState } from '@joanroucoux/cairn-ui';
 
 import { AccountService } from '@core/api-client/account/account.service';
-import type { AccountType, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import type { AccountType } from '@core/api-client/cairnAPI.schemas';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
 export type AccountView = {
@@ -15,9 +15,6 @@ export type AccountView = {
   valueEur: number | null;
   lineCount: number;
 };
-
-const isEurCash = (holding: HoldingResponse): boolean =>
-  holding.assetClass === 'CASH' && holding.priceSource === 'MANUAL' && holding.priceCurrency === 'EUR';
 
 @Injectable()
 export class AccountListStore {
@@ -53,7 +50,7 @@ export class AccountListStore {
 
     return this.#accounts.value().map((account) => {
       const own = holdings.filter((holding) => holding.accountId === account.id);
-      const lineCount = own.filter((holding) => !isEurCash(holding)).length;
+      const lineCount = own.filter((holding) => !holding.accountCash).length;
       const unvalued = own.some((holding) => holding.marketValueEur === null || holding.marketValueEur === undefined);
       const valueEur = unvalued ? null : own.reduce((sum, holding) => sum + (holding.marketValueEur as number), 0);
 

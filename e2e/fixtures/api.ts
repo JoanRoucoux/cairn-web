@@ -14,6 +14,7 @@ import { getSession, mockWebauthn } from './webauthn';
 // PEA ~88,200 (this holding plus the stale one below); the other 5 envelopes live in
 // ./envelope-holdings.ts, summing with this one to the portfolio total.
 const holding = {
+  accountCash: false,
   id: '11111111-1111-1111-1111-111111111111',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
   accountName: 'PEA Boursorama',
@@ -70,6 +71,7 @@ const unvaluedHolding = {
 // The PEA account's own EUR cash line: part of the PEA envelope, and never a day move.
 const cashHolding = {
   ...holding,
+  accountCash: true,
   id: '44444444-4444-4444-4444-444444444444',
   instrumentId: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
   instrumentName: 'Euros',
@@ -236,6 +238,7 @@ const createHolding: Handler = (route) => {
     accountName: owningAccount?.name ?? 'Unknown account',
     accountType: owningAccount?.type ?? 'PEA',
     instrumentId: body.instrumentId,
+    accountCash: false,
     instrumentName: owningInstrument?.name ?? 'Unknown instrument',
     isin: owningInstrument?.isin ?? null,
     assetClass: owningInstrument?.assetClass ?? 'CASH',
@@ -267,10 +270,7 @@ const setCashBalance: Handler = (route, [, accountId]) => {
     return route.fulfill({ status: 422, json: { message: 'amount must not be negative' } });
   }
 
-  const index = holdings.findIndex(
-    (candidate) =>
-      candidate.accountId === accountId && candidate.assetClass === 'CASH' && candidate.priceSource === 'MANUAL',
-  );
+  const index = holdings.findIndex((candidate) => candidate.accountId === accountId && candidate.accountCash);
 
   if (amount === 0 && index !== -1) {
     holdings.splice(index, 1);

@@ -3,6 +3,7 @@
 // SAVINGS ~20,000 cash only, PER ~9,300, LIFE_INSURANCE ~9,100.
 
 const BASE = {
+  accountCash: false,
   priceCurrency: 'EUR',
   priceAsOf: '2026-08-27T18:00:00Z',
   priceSource: 'YAHOO',
@@ -55,7 +56,8 @@ export const savingsHolding = {
   accountName: 'Livret A',
   accountType: 'SAVINGS',
   instrumentId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb4',
-  instrumentName: 'Livret A cash',
+  instrumentName: 'Euros',
+  accountCash: true,
   isin: null,
   assetClass: 'CASH',
   quantity: 20_000,

@@ -21,9 +21,6 @@ export type AccountGroup = {
   holdings: HoldingResponse[];
 };
 
-const isEurCash = (holding: HoldingResponse): boolean =>
-  holding.assetClass === 'CASH' && holding.priceSource === 'MANUAL' && holding.priceCurrency === 'EUR';
-
 const matches = (holding: HoldingResponse, search: string): boolean =>
   normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''}`).includes(search);
 
@@ -61,7 +58,7 @@ export class HoldingListStore {
     const cash = new Map<string, { accountName: string; accountType: string; amount: number }>();
 
     for (const holding of this.#allHoldings()) {
-      if (isEurCash(holding)) {
+      if (holding.accountCash) {
         cash.set(holding.accountId, {
           accountName: holding.accountName,
           accountType: holding.accountType,
@@ -74,7 +71,7 @@ export class HoldingListStore {
   });
 
   readonly #visible = computed(() => {
-    let positions = this.#allHoldings().filter((holding) => !isEurCash(holding));
+    let positions = this.#allHoldings().filter((holding) => !holding.accountCash);
 
     if (this.staleFilter()) {
       positions = positions.filter((holding) => holding.stale);

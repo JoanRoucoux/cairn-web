@@ -32,7 +32,9 @@ describe('AccountDeleteDialog', () => {
       on: { deleted, dismissed },
       imports: [
         getTranslocoTestingModule({
-          langs: { 'accounts/en': { delete: { refused: '{{count}} lines held' } } },
+          langs: {
+            'accounts/en': { delete: { refused_one: '{{count}} line held', refused_other: '{{count}} lines held' } },
+          },
         }),
       ],
       providers: [
