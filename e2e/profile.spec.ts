@@ -13,7 +13,7 @@ test.describe('profile', () => {
     const profile = new ProfilePageObject(page);
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
-    await expect(portfolio.heroValue).not.toHaveText(/••••/);
+    await expect(portfolio.totalValue).not.toHaveText(/••••/);
 
     await profile.goto();
     await expect(profile.hideAmounts).not.toBeChecked();
@@ -21,10 +21,10 @@ test.describe('profile', () => {
     await expect(profile.hideAmounts).toBeChecked();
 
     await page.locator('a[href="/"]').first().click();
-    await expect(portfolio.heroValue).toHaveText(/••••/);
+    await expect(portfolio.totalValue).toHaveText(/••••/);
 
     await page.reload();
-    await expect(portfolio.heroValue).toHaveText(/••••/);
+    await expect(portfolio.totalValue).toHaveText(/••••/);
   });
 
   test('signs the user out from the profile screen', async ({ page }) => {

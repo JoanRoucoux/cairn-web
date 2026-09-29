@@ -1,74 +1,41 @@
-@if (portfolio.hasValue() && performanceValue(); as performance) {
-  <div class="flex flex-col gap-4">
-    <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[2fr_1fr]">
-      <app-portfolio-hero
-        [dayChangeEur]="portfolio.value().dayChangeEur"
-        [lastPriceAt]="performance.lastPriceAt"
-        [loading]="rangeLoading()"
-        [points]="points()"
-        [range]="range()"
-        [rangeError]="rangeError()"
-        [total]="performance.total"
-        [unrealizedGainEur]="portfolio.value().unrealizedGainEur"
-      />
+@if (isEmpty()) {
+  <app-portfolio-empty />
+} @else if (allFailed()) {
+  <p class="text-(--negative)" role="alert">{{ 'portfolio.pageError' | transloco }}</p>
+} @else {
+  <div class="flex flex-col gap-(--stack-section)">
+    <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_344px]">
+      <div
+        class="rounded-container flex flex-col gap-6 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)] lg:gap-8"
+      >
+        <app-portfolio-total [portfolio]="portfolio()" [state]="totalState()" (retry)="retryTotal()" />
 
-      <app-envelope-card [envelopes]="performance.byEnvelope" [loading]="rangeLoading()" [rangeError]="rangeError()" />
-    </div>
-
-    <ui-card>
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 class="text-label font-medium text-(--foreground)">{{ 'portfolio.chartTitle' | transloco }}</h2>
-
-        <ui-segmented
-          class="block w-full sm:w-[300px]"
-          [label]="'chart.rangeLabel' | transloco"
-          [options]="rangeOptions()"
-          [value]="range()"
-          (valueChange)="setRange($event)"
+        <app-portfolio-curve
+          [formats]="chartFormats()"
+          [points]="points()"
+          [range]="range()"
+          [rangeChangeEur]="performance()?.total?.changeEur"
+          [rangeChangeRatio]="performance()?.total?.changeRatio"
+          [reconstructed]="reconstructed()"
+          [startLabel]="'chart.startLabel' | transloco"
+          [state]="curveState()"
+          (rangeChange)="setRange($event)"
+          (retry)="retryCurve()"
         />
       </div>
 
-      @if (rangeError()) {
-        <div
-          class="rounded-container flex flex-wrap items-center justify-between gap-3 border border-(--negative)/25 bg-(--negative)/5 px-4 py-3"
-          role="alert"
-        >
-          <p class="text-label text-(--negative)">{{ 'portfolio.rangeError' | transloco }}</p>
-          <button type="button" ui-button variant="outline" (click)="retry()">
-            {{ 'portfolio.retry' | transloco }}
-          </button>
-        </div>
-      } @else {
-        <div [attr.aria-busy]="rangeLoading()" [class.opacity-50]="rangeLoading()">
-          <app-line-chart
-            [axisFormat]="axisFormat()"
-            [label]="chartSummaryKey() | transloco: chartSummaryParams()"
-            [points]="points()"
-            [timeColumnLabel]="'chart.time' | transloco"
-            [timeFormat]="tooltipTimeFormat()"
-            [valueColumnLabel]="'chart.value' | transloco"
-            [valueFormat]="valueFormat()"
-          />
-        </div>
-      }
+      <div class="rounded-container bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]">
+        <app-portfolio-envelopes
+          [envelopes]="performance()?.byEnvelope ?? []"
+          [range]="range()"
+          [state]="envelopesState()"
+          (retry)="retryEnvelopes()"
+        />
+      </div>
+    </div>
 
-      @if (reconstructed()) {
-        <p class="text-caption mt-3 text-(--subtle-foreground)" data-testid="reconstructed-warning">
-          {{ 'portfolio.reconstructed' | transloco }}
-        </p>
-      }
-    </ui-card>
-
-    <app-stale-quotes-banner [count]="portfolio.value().staleCount" />
-    <app-unvalued-banner [count]="portfolio.value().unvaluedCount" />
-
-    <app-portfolio-movers [holdings]="portfolio.value().holdings" />
+    <div class="rounded-container bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]">
+      <app-portfolio-movers [movers]="movers()" [state]="moversState()" (retry)="retryTotal()" />
+    </div>
   </div>
-} @else if (portfolio.error() || performance.error()) {
-  <p class="text-(--negative)" role="alert">{{ 'portfolio.error' | transloco }}</p>
-} @else {
-  <p class="sr-only" role="status">{{ 'portfolio.loading' | transloco }}</p>
-  <ui-skeleton class="max-w-64" [height]="34" [lines]="2" />
-  <ui-skeleton class="mt-6" [height]="196" />
-  <ui-skeleton class="mt-6" [height]="56" [lines]="3" />
 }

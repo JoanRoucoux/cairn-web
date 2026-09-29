@@ -144,7 +144,7 @@ describe('HoldingDetailPage', () => {
     await settle();
 
     expect(fixture.debugElement.nativeElement.textContent).toContain('—');
-    expect(screen.queryByTestId('chart-line')).not.toBeInTheDocument();
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByTestId('no-quote-yet')).toBeInTheDocument();
   });
 

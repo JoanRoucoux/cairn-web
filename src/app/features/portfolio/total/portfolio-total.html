@@ -1,0 +1,74 @@
+<div class="flex h-full flex-col gap-4">
+  <h2 class="text-label font-medium text-(--muted-foreground)">{{ 'portfolio.total.title' | transloco }}</h2>
+
+  <ui-async
+    class="flex-1"
+    [errorMessage]="'portfolio.error.message' | transloco"
+    [errorTitle]="'portfolio.total.error' | transloco"
+    [retryLabel]="'portfolio.error.retry' | transloco"
+    [state]="state()"
+    (retry)="retry.emit()"
+  >
+    <div asyncLoading class="flex flex-col gap-3" data-testid="total-loading">
+      <ui-skeleton shape="figure" [height]="44" />
+      <ui-skeleton [height]="16" [lines]="2" />
+    </div>
+
+    <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.empty.title' | transloco }}</p>
+
+    @if (portfolio(); as portfolio) {
+      <div class="flex flex-col gap-2" data-testid="total-value">
+        <ui-amount
+          class="text-display font-semibold"
+          currency="EUR"
+          numeric="proportional"
+          [value]="portfolio.totalEur"
+        />
+
+        <span class="text-label flex flex-wrap items-baseline gap-1.5">
+          <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.dayChangeEur">
+            <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.dayChangeEur" />
+            <span aria-hidden="true"> &middot; </span>
+            {{ portfolio.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+          </ui-delta>
+          <span class="text-(--muted-foreground)">{{ 'portfolio.total.today' | transloco }}</span>
+        </span>
+
+        <span class="text-label flex flex-wrap items-center gap-1.5">
+          <span class="text-(--muted-foreground)">{{ 'portfolio.total.unrealizedGain' | transloco }}</span>
+          <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.unrealizedGainEur">
+            <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.unrealizedGainEur" />
+            @if (portfolio.unrealizedGainRatio !== null && portfolio.unrealizedGainRatio !== undefined) {
+              <span aria-hidden="true"> &middot; </span>
+              {{ portfolio.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
+            }
+          </ui-delta>
+        </span>
+
+        @if (portfolio.staleCount > 0) {
+          <a
+            class="text-label flex min-h-11 items-center gap-1 self-start font-medium text-(--stale)"
+            data-testid="stale-link"
+            routerLink="/holdings"
+            [queryParams]="{ filter: 'stale' }"
+          >
+            {{ staleKey() | transloco: { count: portfolio.staleCount } }}
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="16"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.75"
+              viewBox="0 0 24 24"
+              width="16"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </a>
+        }
+      </div>
+    }
+  </ui-async>
+</div>

@@ -1,11 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, LOCALE_ID, computed, inject, signal } from '@angular/core';
 
 import {
   type SegmentedOption,
+  UI_AMOUNT_MASKED,
   UiAmount,
   UiBadge,
   UiCard,
   UiDelta,
+  UiLineChart,
   UiSegmented,
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
@@ -13,8 +15,8 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
+import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
-import { LineChart } from '@shared/chart/line-chart';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
 
@@ -24,7 +26,6 @@ import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
-    LineChart,
     ManualQuoteDialog,
     RelativeDatePipe,
     TranslocoPipe,
@@ -32,6 +33,7 @@ import { ManualQuoteDialog } from './manual-quote/manual-quote-dialog';
     UiBadge,
     UiCard,
     UiDelta,
+    UiLineChart,
     UiSegmented,
     UiSkeleton,
   ],
@@ -42,6 +44,8 @@ export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
+  #locale = inject(LOCALE_ID);
+  #masked = inject(UI_AMOUNT_MASKED);
 
   protected readonly decimalPlaces = decimalPlaces;
 
@@ -57,6 +61,13 @@ export class HoldingDetailPage {
     this.#language.activeLang();
     return CHART_RANGES.map((value) => ({ value, label: this.#transloco.translate(`chart.range.${value}`) }));
   });
+
+  protected readonly startLabel = computed(() => {
+    this.#language.activeLang();
+    return this.#transloco.translate('chart.startLabel');
+  });
+
+  protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
 
   protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
 

@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
+import type { ChartPoint } from '@joanroucoux/cairn-ui';
 import { map } from 'rxjs';
 
 import { HoldingService } from '@core/api-client/holding/holding.service';
@@ -9,7 +10,6 @@ import { InstrumentService } from '@core/api-client/instrument/instrument.servic
 import { QuoteService } from '@core/api-client/quote/quote.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
-import type { ChartPoint } from '@shared/chart/chart-scale';
 
 const EPOCH = '1900-01-01';
 

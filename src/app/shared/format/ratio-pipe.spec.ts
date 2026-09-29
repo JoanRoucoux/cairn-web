@@ -29,4 +29,12 @@ describe('RatioPipe', () => {
   it('should return an empty string for null', () => {
     expect(pipe().transform(null)).toBe('');
   });
+
+  it('should format with two decimals when asked', () => {
+    expect(pipe().transform(0.1534, { decimals: 2 })).toBe('15.34%');
+  });
+
+  it('should sign a two-decimal value', () => {
+    expect(pipe().transform(-0.038, { signed: true, decimals: 2 })).toBe('−3.80%');
+  });
 });
