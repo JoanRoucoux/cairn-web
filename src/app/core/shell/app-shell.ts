@@ -57,8 +57,17 @@ export class AppShell {
     initialValue: this.#currentHeaderKey(),
   });
 
+  protected readonly mobileHeaderHidden = toSignal(
+    this.#navigationEnd.pipe(map(() => this.#currentMobileHeaderHidden())),
+    { initialValue: this.#currentMobileHeaderHidden() },
+  );
+
   #currentHeaderKey(): string | undefined {
     return deepestData(this.#route.root)['headerKey'] as string | undefined;
+  }
+
+  #currentMobileHeaderHidden(): boolean {
+    return deepestData(this.#route.root)['mobileHeaderHidden'] === true;
   }
 
   protected isActive(path: string): boolean {

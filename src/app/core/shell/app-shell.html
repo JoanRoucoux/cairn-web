@@ -24,7 +24,7 @@
       class="flex h-(--header-height) items-center justify-between px-4 lg:border-b lg:border-(--hairline) lg:px-8"
     >
       @if (headerKey(); as key) {
-        <h1 class="text-heading font-semibold">{{ key | transloco }}</h1>
+        <h1 class="text-heading font-semibold" [class.max-lg:hidden]="mobileHeaderHidden()">{{ key | transloco }}</h1>
       } @else {
         <span></span>
       }

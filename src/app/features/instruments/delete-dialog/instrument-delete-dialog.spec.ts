@@ -7,22 +7,16 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import type { InstrumentDetailResponse } from '@core/api-client/cairnAPI.schemas';
-
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
-import { InstrumentDeleteDialog } from './instrument-delete-dialog';
+import { type DeletableInstrument, InstrumentDeleteDialog } from './instrument-delete-dialog';
 
 describe('InstrumentDeleteDialog', () => {
   let httpTesting: HttpTestingController;
   const deleted = vi.fn();
   const dismissed = vi.fn();
 
-  const instrument = {
-    id: 'i1',
-    name: 'BNP Paribas Easy S&P 500',
-    holdingCount: 2,
-  } as InstrumentDetailResponse;
+  const instrument: DeletableInstrument = { id: 'i1', name: 'BNP Paribas Easy S&P 500', holdingCount: 2 };
 
   const renderDialog = async (): Promise<void> => {
     await render(InstrumentDeleteDialog, {

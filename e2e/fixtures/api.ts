@@ -5,6 +5,7 @@ import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdi
 import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstrument } from './instruments';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
+import { buyHolding, resolveInstrument, sellHolding } from './trading';
 import { getSession, mockWebauthn } from './webauthn';
 
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
@@ -179,7 +180,30 @@ const getInstrument: Handler = (route, [, id]) => {
     : route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
 };
 
-const listQuotes: Handler = (route) => route.fulfill({ json: [] });
+const quotePriceByInstrument: Record<string, number> = {
+  [holding.instrumentId]: holding.price,
+  [staleHolding.instrumentId]: staleHolding.price,
+};
+
+const listQuotes: Handler = (route, [, instrumentId]) => {
+  const end = quotePriceByInstrument[instrumentId];
+
+  if (end === undefined) {
+    return route.fulfill({ json: [] });
+  }
+
+  const series = buildTrendSeries(end * 0.92, end, historyDates.length, 20_260_827);
+
+  return route.fulfill({
+    json: historyDates.map((date, index) => ({
+      instrumentId,
+      asOf: `${date}T18:00:00Z`,
+      price: series[index],
+      currency: 'EUR',
+      source: 'YAHOO',
+    })),
+  });
+};
 
 // Stateful on purpose: a quote recorded for a newly created cash instrument must value it.
 const recordQuote: Handler = (route, [, instrumentId]) =>
@@ -313,10 +337,13 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'DELETE', path: new RegExp('^/api/session/passkeys/.+$'), handle: deletePasskey },
   { method: 'GET', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: listQuotes },
   { method: 'POST', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: recordQuote },
+  { method: 'POST', path: new RegExp('^/api/instruments/resolve$'), handle: resolveInstrument },
   { method: 'GET', path: new RegExp('^/api/instruments/([^/]+)$'), handle: getInstrument },
   { method: 'PUT', path: new RegExp('^/api/instruments/([^/]+)$'), handle: updateInstrument },
   { method: 'DELETE', path: new RegExp('^/api/instruments/([^/]+)$'), handle: deleteInstrument },
   { method: 'POST', path: new RegExp('^/api/instruments$'), handle: createInstrument },
+  { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/buy$'), handle: buyHolding(holdings) },
+  { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/sell$'), handle: sellHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalance },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)$'), handle: updateAccount },

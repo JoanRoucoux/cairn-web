@@ -45,6 +45,9 @@
             <span class="text-label truncate font-medium">{{ candidate.name }}</span>
             <span class="text-caption text-(--subtle-foreground) tabular-nums">
               {{ candidate.source }} &middot; {{ candidate.sourceRef }}
+              @if (candidate.exchange) {
+                &middot; {{ candidate.exchange }}
+              }
             </span>
           </span>
           <ui-amount class="text-label shrink-0 font-semibold" currency="EUR" [value]="candidate.probePrice" />

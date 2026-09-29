@@ -37,21 +37,19 @@
 
       <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>
 
-      @if (state() === 'ready') {
-        <div class="h-48 lg:h-72">
-          <ui-line-chart
-            [axisFormat]="formats().axis"
-            [deltaFormat]="formats().delta"
-            [label]="chartLabelKey() | transloco: chartLabelParams()"
-            [points]="points()"
-            [startLabel]="startLabel()"
-            [timeColumnLabel]="'chart.time' | transloco"
-            [timeFormat]="formats().time"
-            [valueColumnLabel]="'chart.value' | transloco"
-            [valueFormat]="formats().value"
-          />
-        </div>
-      }
+      <div class="h-48 lg:h-72">
+        <ui-line-chart
+          [axisFormat]="formats().axis"
+          [deltaFormat]="formats().delta"
+          [label]="chartLabelKey() | transloco: chartLabelParams()"
+          [points]="points()"
+          [startLabel]="startLabel()"
+          [timeColumnLabel]="'chart.time' | transloco"
+          [timeFormat]="formats().time"
+          [valueColumnLabel]="'chart.value' | transloco"
+          [valueFormat]="formats().value"
+        />
+      </div>
 
       @if (reconstructed()) {
         <p class="text-caption mt-2 text-(--subtle-foreground)" data-testid="reconstructed-note">

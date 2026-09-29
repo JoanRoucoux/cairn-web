@@ -14,6 +14,7 @@ export type FormMessages = {
   required: Signal<string>;
   maxLength: (limit: number) => Signal<string>;
   min: (floor: number) => Signal<string>;
+  positive: Signal<string>;
 };
 
 /** Builds the messages. Call it from an injection context: toSignal needs one. */
@@ -31,5 +32,6 @@ export const formMessages = (): FormMessages => {
     required: translate('forms.required'),
     maxLength: (limit) => translate('forms.maxLength', { limit }),
     min: (floor) => translate('forms.min', { floor }),
+    positive: translate('forms.positive'),
   };
 };

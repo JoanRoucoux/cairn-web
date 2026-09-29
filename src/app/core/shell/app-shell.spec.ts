@@ -114,6 +114,22 @@ describe('AppShell', () => {
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 
+  it('should hide the header title on mobile for a route flagged mobileHeaderHidden', async () => {
+    await renderShell([
+      { path: '', component: StubPage, data: { headerKey: 'shell.portfolio', mobileHeaderHidden: true } },
+    ]);
+    await settleSession();
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' })).toHaveClass('max-lg:hidden');
+  });
+
+  it('should keep the header title visible on mobile without the flag', async () => {
+    await renderShell([{ path: '', component: StubPage, data: { headerKey: 'shell.portfolio' } }]);
+    await settleSession();
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' })).not.toHaveClass('max-lg:hidden');
+  });
+
   it('should give the skip link a target', async () => {
     const { container } = await renderShell();
     await settleSession();
