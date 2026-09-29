@@ -1,6 +1,6 @@
 <div class="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4">
-  <h1 class="text-xl font-semibold">{{ 'login.title' | transloco }}</h1>
-  <p class="mt-1 text-[13px] text-(--muted-foreground)">{{ 'login.subtitle' | transloco }}</p>
+  <h1 class="text-title font-semibold">{{ 'login.title' | transloco }}</h1>
+  <p class="text-label mt-1 text-(--muted-foreground)">{{ 'login.subtitle' | transloco }}</p>
 
   <ui-card class="mt-6">
     <div class="flex flex-col gap-4">
@@ -16,17 +16,17 @@
       </button>
 
       @if (passkeyRefused()) {
-        <p class="text-[12.5px] text-(--negative)" data-testid="login-passkey-refused" role="alert">
+        <p class="text-label text-(--negative)" data-testid="login-passkey-refused" role="alert">
           {{ 'login.passkeyRefused' | transloco }}
         </p>
       }
       @if (passkeyUnsupported()) {
-        <p class="text-[12.5px] text-(--negative)" data-testid="login-passkey-unsupported" role="alert">
+        <p class="text-label text-(--negative)" data-testid="login-passkey-unsupported" role="alert">
           {{ 'login.passkeyUnsupported' | transloco }}
         </p>
       }
       @if (passkeyFailed()) {
-        <p class="text-[12.5px] text-(--negative)" data-testid="login-passkey-failed" role="alert">
+        <p class="text-label text-(--negative)" data-testid="login-passkey-failed" role="alert">
           {{ 'login.passkeyFailed' | transloco }}
         </p>
       }
@@ -67,12 +67,12 @@
           </ui-field>
 
           @if (refused()) {
-            <p class="text-[12.5px] text-(--negative)" data-testid="login-refused" role="alert">
+            <p class="text-label text-(--negative)" data-testid="login-refused" role="alert">
               {{ 'login.refused' | transloco }}
             </p>
           }
           @if (failed()) {
-            <p class="text-[12.5px] text-(--negative)" data-testid="login-failed" role="alert">
+            <p class="text-label text-(--negative)" data-testid="login-failed" role="alert">
               {{ 'login.failed' | transloco }}
             </p>
           }

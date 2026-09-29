@@ -5,7 +5,7 @@ import { form, submit } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
-import type { CreateAccountRequestType } from '@core/api-client/cairnAPI.schemas';
+import type { AccountType } from '@core/api-client/cairnAPI.schemas';
 
 import { formMessages } from '@shared/forms/form-messages';
 
@@ -40,7 +40,7 @@ export class AccountListStore {
         await firstValueFrom(
           this.#accountsApiClient.createAccount({
             name: model.name,
-            type: model.type as CreateAccountRequestType,
+            type: model.type as AccountType,
             institution: model.institution,
           }),
         );

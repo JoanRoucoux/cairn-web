@@ -5,11 +5,7 @@ import { Router } from '@angular/router';
 import { UiButton, UiCard, UiField, UiInput, UiSelect, UiTextarea } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import {
-  CreateInstrumentRequestAssetClass,
-  CreateInstrumentRequestPriceSource,
-  type InstrumentCandidateResponse,
-} from '@core/api-client/cairnAPI.schemas';
+import { AssetClass, type InstrumentCandidateResponse, PriceSource } from '@core/api-client/cairnAPI.schemas';
 
 import { InstrumentDeleteDialog } from './delete-dialog/instrument-delete-dialog';
 import { InstrumentFormStore } from './instrument-form-store';
@@ -44,8 +40,8 @@ export class InstrumentFormPage {
   protected readonly instrument = this.#store.instrument;
   protected readonly editing = computed(() => this.#store.instrumentId() !== undefined);
 
-  protected readonly assetClasses = Object.values(CreateInstrumentRequestAssetClass);
-  protected readonly priceSources = Object.values(CreateInstrumentRequestPriceSource);
+  protected readonly assetClasses = Object.values(AssetClass);
+  protected readonly priceSources = Object.values(PriceSource);
   // Cairn values a portfolio in euros only: PortfolioService rejects any other currency outright.
   protected readonly currencies = ['EUR'];
 

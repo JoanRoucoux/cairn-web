@@ -11,7 +11,7 @@ import { pluralKey } from '@shared/format/plural-key';
   template: `
     @if (count() > 0) {
       <div
-        class="flex items-center gap-2.5 rounded-xl border border-(--stale)/25 bg-(--stale)/5 px-4 py-3 text-[12.5px] text-(--stale)"
+        class="rounded-container text-label flex items-center gap-2.5 border border-(--stale)/25 bg-(--stale)/5 px-4 py-3 text-(--stale)"
         data-testid="stale-banner"
         role="status"
       >

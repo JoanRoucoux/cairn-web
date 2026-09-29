@@ -1,10 +1,6 @@
 import { type Schema, maxLength, required, schema } from '@angular/forms/signals';
 
-import type {
-  CreateInstrumentRequestAssetClass,
-  CreateInstrumentRequestPriceSource,
-  InstrumentDetailResponse,
-} from '@core/api-client/cairnAPI.schemas';
+import type { AssetClass, InstrumentDetailResponse, PriceSource } from '@core/api-client/cairnAPI.schemas';
 
 import type { FormMessages } from '@shared/forms/form-messages';
 
@@ -12,8 +8,8 @@ export type InstrumentDraft = {
   name: string;
   isin: string;
   currency: string;
-  assetClass: CreateInstrumentRequestAssetClass;
-  priceSource: CreateInstrumentRequestPriceSource;
+  assetClass: AssetClass;
+  priceSource: PriceSource;
   sourceRef: string;
   description: string;
 };

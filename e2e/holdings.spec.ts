@@ -49,10 +49,17 @@ test.describe('holdings', () => {
     await expect(page.getByTestId('add-holding')).toBeFocused();
   });
 
-  test('keeps every touch target at 44px', async ({ page }) => {
+  test('keeps every touch target at 44px', async ({ browser }) => {
+    const context = await browser.newContext({ hasTouch: true });
+    const page = await context.newPage();
+    await mockApi(page);
+    await page.goto('/holdings');
+
     const box = await page.getByTestId('add-holding').boundingBox();
 
     expect(box?.height).toBeGreaterThanOrEqual(44);
+
+    await context.close();
   });
 
   test('shows a holding detail page at its route', async ({ page }) => {

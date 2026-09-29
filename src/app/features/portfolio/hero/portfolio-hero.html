@@ -37,7 +37,7 @@
 
   <div class="flex gap-6 border-t border-(--hairline) pt-4">
     <div>
-      <p class="text-[11px] font-medium text-(--muted-foreground)">
+      <p class="text-caption font-medium text-(--muted-foreground)">
         {{ 'portfolio.hero.unrealizedGain' | transloco }}
       </p>
       <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="unrealizedGainEur()">
@@ -47,7 +47,7 @@
 
     @if (range() !== '1d') {
       <div>
-        <p class="text-[11px] font-medium text-(--muted-foreground)">{{ 'portfolio.hero.day' | transloco }}</p>
+        <p class="text-caption font-medium text-(--muted-foreground)">{{ 'portfolio.hero.day' | transloco }}</p>
         <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="dayChangeEur()">
           {{ dayChangeEur() | signedMoney }}
         </ui-delta>
@@ -56,7 +56,7 @@
   </div>
 
   @if (updatedAt(); as updatedAt) {
-    <p class="mt-4 text-[11.5px] text-(--subtle-foreground)" data-testid="updated-at">
+    <p class="text-caption mt-4 text-(--subtle-foreground)" data-testid="updated-at">
       {{ 'portfolio.hero.updatedAt' | transloco: { time: updatedAt } }}
     </p>
   }
