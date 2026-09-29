@@ -20,7 +20,7 @@
   "importTemplate": "Télécharger le modèle CSV",
   "importTemplateHint": "Les colonnes attendues par l'import",
   "instrumentsHint": "Le catalogue des titres suivis",
-  "importDone": "Terminé : {{accountsCreated}} comptes et {{instrumentsCreated}} instruments créés, {{holdingsCreated}} positions ajoutées, {{holdingsUpdated}} mises à jour.",
+  "importDone": "Terminé : {{accountsCreated}} comptes et {{instrumentsCreated}} instruments créés, {{holdingsCreated}} lignes ajoutées, {{holdingsUpdated}} mises à jour.",
   "importFailed": "L'import n'a pas pu être envoyé. Réessayez.",
   "importRejected": "Rien n'a été importé. Corrigez ces {{count}} ligne(s) puis réessayez.",
   "importLine": "Ligne",

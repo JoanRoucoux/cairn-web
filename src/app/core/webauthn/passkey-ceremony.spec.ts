@@ -114,14 +114,14 @@ describe('PasskeyCeremony', () => {
     });
 
     it('should resolve refused without triggering a full page reload, through the real interceptor chain', async () => {
-      const assign = vi.fn();
+      const replace = vi.fn();
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [
           provideZonelessChangeDetection(),
           provideHttpClient(withInterceptors([authRedirectInterceptor])),
           provideHttpClientTesting(),
-          { provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } },
+          { provide: DOCUMENT, useValue: { defaultView: { location: { replace } } } },
         ],
       });
       ceremony = TestBed.inject(PasskeyCeremony);
@@ -138,7 +138,7 @@ describe('PasskeyCeremony', () => {
       loginRequest.flush(null, { status: 401, statusText: 'Unauthorized' });
 
       await expect(outcome).resolves.toBe('refused');
-      expect(assign).not.toHaveBeenCalled();
+      expect(replace).not.toHaveBeenCalled();
     });
 
     it('should resolve cancelled and send no second request when the user dismisses the prompt', async () => {

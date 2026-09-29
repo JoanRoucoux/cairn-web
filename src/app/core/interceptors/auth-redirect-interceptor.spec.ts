@@ -6,19 +6,19 @@ import { TestBed } from '@angular/core/testing';
 import { authRedirectInterceptor } from './auth-redirect-interceptor';
 
 describe('authRedirectInterceptor', () => {
-  let assign: ReturnType<typeof vi.fn>;
+  let replace: ReturnType<typeof vi.fn>;
   let http: HttpClient;
   let controller: HttpTestingController;
 
   beforeEach(() => {
-    assign = vi.fn();
+    replace = vi.fn();
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authRedirectInterceptor])),
         provideHttpClientTesting(),
         {
           provide: DOCUMENT,
-          useValue: { defaultView: { location: { assign } } },
+          useValue: { defaultView: { location: { replace } } },
         },
       ],
     });
@@ -33,7 +33,7 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/api/portfolio').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('/login'));
+    await vi.waitFor(() => expect(replace).toHaveBeenCalledWith('/login'));
   });
 
   it('should navigate once when several requests fail at the same time', async () => {
@@ -44,8 +44,8 @@ describe('authRedirectInterceptor', () => {
       controller.expectOne(url).flush(null, { status: 401, statusText: 'Unauthorized' });
     }
 
-    await vi.waitFor(() => expect(assign).toHaveBeenCalled());
-    expect(assign).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(replace).toHaveBeenCalled());
+    expect(replace).toHaveBeenCalledTimes(1);
   });
 
   it('should leave other error statuses alone', async () => {
@@ -53,7 +53,7 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/api/portfolio').flush(null, { status: 422, statusText: 'Unprocessable' });
 
-    expect(assign).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it('should not redirect on a failing logout, which would loop', async () => {
@@ -61,7 +61,7 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/logout').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(assign).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it('should not redirect when the sign-in attempt itself is refused', async () => {
@@ -69,7 +69,7 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/api/authenticate').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(assign).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it('should not redirect when the passkey sign-in ceremony is refused', async () => {
@@ -77,7 +77,7 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/login/webauthn').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(assign).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it('should not redirect when fetching passkey sign-in options is refused', async () => {
@@ -85,7 +85,7 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/webauthn/authenticate/options').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    expect(assign).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it('should still redirect when passkey registration is refused, since it means the session expired', async () => {
@@ -93,6 +93,6 @@ describe('authRedirectInterceptor', () => {
 
     controller.expectOne('/webauthn/register').flush(null, { status: 401, statusText: 'Unauthorized' });
 
-    await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('/login'));
+    await vi.waitFor(() => expect(replace).toHaveBeenCalledWith('/login'));
   });
 });

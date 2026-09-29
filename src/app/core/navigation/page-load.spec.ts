@@ -4,15 +4,15 @@ import { TestBed } from '@angular/core/testing';
 import { PageLoad } from './page-load';
 
 describe('PageLoad', () => {
-  it('should leave the application and load the given path', () => {
-    const assign = vi.fn();
+  it('should leave the application and load the given path in place of the current history entry', () => {
+    const replace = vi.fn();
     TestBed.configureTestingModule({
-      providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { assign } } } }],
+      providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { replace } } } }],
     });
 
     TestBed.inject(PageLoad).to('/');
 
-    expect(assign).toHaveBeenCalledWith('/');
+    expect(replace).toHaveBeenCalledWith('/');
   });
 
   it('should do nothing where there is no window, rather than throw', () => {

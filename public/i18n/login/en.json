@@ -4,7 +4,7 @@
   "password": "Password",
   "submit": "Sign in",
   "submitting": "Signing in...",
-  "refused": "That username and password do not match.",
+  "refused": "Incorrect username or password.",
   "failed": "Sign-in could not be sent. Try again.",
   "passkey": "Sign in with a passkey",
   "passkeySubmitting": "Signing in...",

@@ -31,7 +31,7 @@ describe('AppTitleStrategy', () => {
 
     strategy.updateTitle(mockSnapshotWithTitle(strategy, 'pageTitle.home'));
 
-    expect(titleService.getTitle()).toBe('Home | Angular Starter Web');
+    expect(titleService.getTitle()).toBe('Home | Cairn');
   });
 
   it('should fall back to the app name when the route has no title', () => {
@@ -40,7 +40,7 @@ describe('AppTitleStrategy', () => {
 
     strategy.updateTitle(mockSnapshotWithTitle(strategy, undefined));
 
-    expect(titleService.getTitle()).toBe('Angular Starter Web');
+    expect(titleService.getTitle()).toBe('Cairn');
   });
 
   it('should expose the page title for the route announcer', () => {
@@ -62,7 +62,7 @@ describe('AppTitleStrategy', () => {
     translocoService.setActiveLang('fr');
     TestBed.tick();
 
-    expect(titleService.getTitle()).toBe('Accueil | Angular Starter Web');
+    expect(titleService.getTitle()).toBe('Accueil | Cairn');
   });
 
   it('should leave the title untouched when the language changes before any navigation', () => {

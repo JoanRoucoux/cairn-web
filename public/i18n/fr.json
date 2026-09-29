@@ -2,8 +2,8 @@
   "pageTitle": {
     "portfolio": "Patrimoine",
     "allocation": "Répartition",
-    "holdings": "Positions",
-    "holdingDetail": "Détail de la position",
+    "holdings": "Lignes",
+    "holdingDetail": "Détail de la ligne",
     "instruments": "Instruments",
     "instrumentCreate": "Ajouter un instrument",
     "instrumentEdit": "Modifier un instrument",
@@ -53,7 +53,7 @@
   "shell": {
     "primary": "Principale",
     "portfolio": "Patrimoine",
-    "holdings": "Positions",
+    "holdings": "Lignes",
     "allocation": "Répartition",
     "accounts": "Comptes",
     "account": "Mon compte",
