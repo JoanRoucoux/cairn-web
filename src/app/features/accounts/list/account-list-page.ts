@@ -4,7 +4,7 @@ import { FormField } from '@angular/forms/signals';
 import { UiButton, UiCard, UiField, UiInput, UiSelect } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { CreateAccountRequestType } from '@core/api-client/cairnAPI.schemas';
+import { AccountType } from '@core/api-client/cairnAPI.schemas';
 
 import { AccountListStore } from './account-list-store';
 
@@ -20,7 +20,7 @@ export class AccountListPage {
   protected readonly accounts = this.#store.accounts;
   protected readonly error = this.#store.error;
   protected readonly form = this.#store.form;
-  protected readonly accountTypes = Object.values(CreateAccountRequestType);
+  protected readonly accountTypes = Object.values(AccountType);
 
   protected async onCreate(): Promise<void> {
     if (await this.#store.create()) {

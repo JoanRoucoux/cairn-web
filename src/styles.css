@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import '@joanroucoux/cairn-ui/styles/tokens.css';
 @import '@joanroucoux/cairn-ui/styles/theme.css';
-/* fonts.css is listed in angular.json instead: Tailwind's @import would not rebase its url()s. */
 
 /* Tailwind does not scan node_modules: without this, the classes used inside cairn-ui templates
    are never generated. */

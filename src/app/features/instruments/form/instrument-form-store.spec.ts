@@ -6,11 +6,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { of } from 'rxjs';
 
-import type {
-  CreateInstrumentRequestAssetClass,
-  CreateInstrumentRequestPriceSource,
-  InstrumentCandidateResponse,
-} from '@core/api-client/cairnAPI.schemas';
+import type { AssetClass, InstrumentCandidateResponse, PriceSource } from '@core/api-client/cairnAPI.schemas';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -110,8 +106,8 @@ describe('InstrumentFormStore', () => {
     // The selects offer no empty option, so this state is unreachable through the UI; the schema
     // still guards it, and the cast mirrors how an emptied enum field is represented elsewhere.
     store.form.currency().value.set('');
-    store.form.assetClass().value.set('' as CreateInstrumentRequestAssetClass);
-    store.form.priceSource().value.set('' as CreateInstrumentRequestPriceSource);
+    store.form.assetClass().value.set('' as AssetClass);
+    store.form.priceSource().value.set('' as PriceSource);
 
     await expect(store.save()).resolves.toBe(false);
     httpTesting.expectNone('/api/instruments');

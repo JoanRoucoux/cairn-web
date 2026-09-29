@@ -1,12 +1,12 @@
 import { type Schema, required, schema } from '@angular/forms/signals';
 
-import type { CreateAccountRequestType } from '@core/api-client/cairnAPI.schemas';
+import type { AccountType } from '@core/api-client/cairnAPI.schemas';
 
 import type { FormMessages } from '@shared/forms/form-messages';
 
 export type AccountDraft = {
   name: string;
-  type: CreateAccountRequestType | '';
+  type: AccountType | '';
   institution: string;
 };
 

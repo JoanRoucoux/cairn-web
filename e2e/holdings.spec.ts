@@ -50,9 +50,6 @@ test.describe('holdings', () => {
   });
 
   test('keeps every touch target at 44px', async ({ browser }) => {
-    // `ui-button`'s `md` size follows `--row-min`, which is 40px under a mouse and 44px only
-    // under a touch pointer: emulate one to assert the touch-target guarantee this test is named
-    // after.
     const context = await browser.newContext({ hasTouch: true });
     const page = await context.newPage();
     await mockApi(page);
