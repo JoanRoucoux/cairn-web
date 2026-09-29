@@ -49,6 +49,14 @@ describe('IsinLookup', () => {
     expect(screen.getByText('€33.31')).toBeInTheDocument();
   });
 
+  it('should show the exchange when the source names one', async () => {
+    await renderLookup({
+      candidates: [{ ...candidates[0], exchange: 'Euronext Paris' }] as InstrumentCandidateResponse[],
+    });
+
+    expect(screen.getByText(/Euronext Paris/)).toBeInTheDocument();
+  });
+
   it('should offer manual entry when nothing resolves', async () => {
     await renderLookup({ notFound: true });
 

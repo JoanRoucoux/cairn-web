@@ -7,33 +7,29 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import type { InstrumentDetailResponse } from '@core/api-client/cairnAPI.schemas';
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
-import { InstrumentDeleteDialog } from './instrument-delete-dialog';
+import { HoldingDeleteDialog } from './holding-delete-dialog';
 
-describe('InstrumentDeleteDialog', () => {
+const holding = { id: 'h1', instrumentName: 'BNP Paribas Easy S&P 500' } as unknown as HoldingResponse;
+
+describe('HoldingDeleteDialog', () => {
   let httpTesting: HttpTestingController;
   const deleted = vi.fn();
   const dismissed = vi.fn();
 
-  const instrument = {
-    id: 'i1',
-    name: 'BNP Paribas Easy S&P 500',
-    holdingCount: 2,
-  } as InstrumentDetailResponse;
-
   const renderDialog = async (): Promise<void> => {
-    await render(InstrumentDeleteDialog, {
-      inputs: { instrument },
+    await render(HoldingDeleteDialog, {
+      inputs: { holding },
       on: { deleted, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        provideTranslocoScope('instruments'),
+        provideTranslocoScope('holdings'),
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -45,22 +41,22 @@ describe('InstrumentDeleteDialog', () => {
     dismissed.mockClear();
   });
 
-  it('should name the instrument being deleted', async () => {
+  it('names the holding being deleted', async () => {
     await renderDialog();
 
-    expect(screen.getByTestId('instrument-delete-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-delete-dialog')).toBeInTheDocument();
   });
 
-  it('should emit dismissed on cancel', async () => {
+  it('emits dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.click(screen.getByTestId('instrument-delete-cancel'));
+    await user.click(screen.getByTestId('holding-delete-cancel'));
 
     expect(dismissed).toHaveBeenCalled();
   });
 
-  it('should emit dismissed when the native dialog closes', async () => {
+  it('emits dismissed when the native dialog closes', async () => {
     await renderDialog();
 
     screen.getByRole('dialog').dispatchEvent(new Event('close'));
@@ -68,27 +64,32 @@ describe('InstrumentDeleteDialog', () => {
     expect(dismissed).toHaveBeenCalled();
   });
 
-  it('should emit deleted once the instrument is removed', async () => {
+  it('deletes the holding and emits deleted', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.click(screen.getByTestId('instrument-delete-confirm'));
+    await user.click(screen.getByTestId('holding-delete-confirm'));
 
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1').flush(null));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
     await vi.waitFor(() => expect(deleted).toHaveBeenCalled());
   });
 
-  it('should stay open and show an error when the API refuses', async () => {
+  it('shows a generic error when the API refuses', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.click(screen.getByTestId('instrument-delete-confirm'));
+    await user.click(screen.getByTestId('holding-delete-confirm'));
 
-    await vi.waitFor(() =>
-      httpTesting.expectOne('/api/instruments/i1').flush(null, { status: 500, statusText: 'Server error' }),
-    );
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush(null, {
+      status: 500,
+      statusText: 'Server error',
+    });
 
-    expect(await screen.findByTestId('instrument-delete-error')).toBeInTheDocument();
+    expect(await screen.findByTestId('holding-delete-error')).toBeInTheDocument();
     expect(deleted).not.toHaveBeenCalled();
   });
 });

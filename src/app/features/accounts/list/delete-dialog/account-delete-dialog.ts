@@ -3,6 +3,8 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { pluralKey } from '@shared/format/plural-key';
+
 import type { AccountView } from '../account-list-store';
 import { AccountDeleteStore } from './account-delete-store';
 
@@ -13,6 +15,7 @@ import { AccountDeleteStore } from './account-delete-store';
   providers: [AccountDeleteStore],
 })
 export class AccountDeleteDialog {
+  protected readonly pluralKey = pluralKey;
   #store = inject(AccountDeleteStore);
 
   readonly account = input.required<AccountView>();

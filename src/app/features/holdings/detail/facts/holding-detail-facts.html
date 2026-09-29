@@ -1,0 +1,39 @@
+<dl class="flex flex-col gap-2.5 px-1">
+  <div class="text-caption flex justify-between">
+    <dt class="text-(--subtle-foreground)">{{ 'holdings.columns.quantity' | transloco }}</dt>
+    <dd class="tabular-nums">
+      <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
+    </dd>
+  </div>
+  <div class="text-caption flex justify-between">
+    <dt class="text-(--subtle-foreground)">{{ 'holdings.averageCost' | transloco }}</dt>
+    @if (holding().averageCost !== null && holding().averageCost !== undefined) {
+      <dd class="tabular-nums"><ui-amount currency="EUR" [value]="holding().averageCost" /></dd>
+    } @else {
+      <dd>{{ 'holdings.unknownAverageCost' | transloco }}</dd>
+    }
+  </div>
+  <div class="text-caption flex justify-between">
+    <dt class="text-(--subtle-foreground)">{{ 'holdings.priceSource' | transloco }}</dt>
+    <dd class="tabular-nums">{{ 'enums.priceSource.' + holding().priceSource | transloco }}</dd>
+  </div>
+  <div class="text-caption flex justify-between">
+    <dt class="text-(--subtle-foreground)">{{ 'holdings.lastQuote' | transloco }}</dt>
+    @if (holding().priceAsOf) {
+      <dd class="tabular-nums" [class.text-(--stale)]="holding().stale">
+        {{ 'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate } }} &middot;
+        {{ priceSourceLabel() }}
+      </dd>
+    } @else {
+      <dd class="tabular-nums">&mdash;</dd>
+    }
+  </div>
+  <div class="text-caption flex justify-between">
+    <dt class="text-(--subtle-foreground)">{{ 'holdings.detail.isin' | transloco }}</dt>
+    <dd class="tabular-nums">{{ holding().isin || '—' }}</dd>
+  </div>
+  <div class="text-caption flex justify-between">
+    <dt class="text-(--subtle-foreground)">{{ 'holdings.detail.class' | transloco }}</dt>
+    <dd>{{ 'enums.assetClass.' + holding().assetClass | transloco }}</dd>
+  </div>
+</dl>

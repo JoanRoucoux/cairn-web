@@ -7,7 +7,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AssetClass, type InstrumentCandidateResponse, PriceSource } from '@core/api-client/cairnAPI.schemas';
 
-import { InstrumentDeleteDialog } from './delete-dialog/instrument-delete-dialog';
+import { InstrumentDeleteDialog } from '../delete-dialog/instrument-delete-dialog';
 import { InstrumentFormStore } from './instrument-form-store';
 import { IsinLookup } from './isin-lookup/isin-lookup';
 

@@ -42,7 +42,7 @@
             <span class="flex flex-none flex-col items-end whitespace-nowrap">
               <ui-amount class="text-body font-medium" currency="EUR" [value]="account.valueEur" />
               <span class="text-label text-(--muted-foreground)">
-                {{ 'accounts.lineCount' | transloco: { count: account.lineCount } }}
+                {{ pluralKey('accounts.lineCount', account.lineCount) | transloco: { count: account.lineCount } }}
               </span>
             </span>
           </a>

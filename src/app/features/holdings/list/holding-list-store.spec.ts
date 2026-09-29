@@ -2,6 +2,9 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+
+import { of } from 'rxjs';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -54,6 +57,7 @@ const holdings = [
     accountName: 'Saxo Investor',
     accountType: 'PEA',
     instrumentName: 'Euros',
+    accountCash: true,
     assetClass: 'CASH',
     priceSource: 'MANUAL',
     priceCurrency: 'EUR',
@@ -68,6 +72,7 @@ const holdings = [
     accountName: 'Livret A',
     accountType: 'SAVINGS',
     instrumentName: 'Euros',
+    accountCash: true,
     assetClass: 'CASH',
     priceSource: 'MANUAL',
     priceCurrency: 'EUR',
@@ -78,6 +83,12 @@ const holdings = [
   },
 ] as unknown as HoldingResponse[];
 
+const accounts = [
+  { id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' },
+  { id: 'a2', name: 'Esalia', type: 'PEE', institution: 'Amundi ESR' },
+  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' },
+];
+
 describe('HoldingListStore', () => {
   let store: HoldingListStore;
   let httpTesting: HttpTestingController;
@@ -85,16 +96,26 @@ describe('HoldingListStore', () => {
   const load = async (): Promise<void> => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
-  beforeEach(() => {
+  const configure = (queryParams: Record<string, string> = {}): void => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), HoldingListStore],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap(queryParams)) } },
+        HoldingListStore,
+      ],
     });
     store = TestBed.inject(HoldingListStore);
     httpTesting = TestBed.inject(HttpTestingController);
-  });
+  };
+
+  beforeEach(() => configure());
 
   afterEach(() => httpTesting.verify());
 
@@ -130,15 +151,20 @@ describe('HoldingListStore', () => {
     expect(store.groups()[1]!.stale).toBe(false);
   });
 
-  it('should filter on instrument and account name, case-insensitively', async () => {
+  it('should filter on the instrument name, case-insensitively', async () => {
     await load();
 
     store.search.set('AMUNDI');
     expect(store.groups()).toHaveLength(1);
     expect(store.groups()[0]!.holdings).toHaveLength(1);
+  });
+
+  it('should not match on the account name of an ordinary holding', async () => {
+    await load();
 
     store.search.set('esalia');
-    expect(store.groups()[0]!.accountName).toBe('Esalia');
+
+    expect(store.groups().flatMap((group) => group.holdings)).toHaveLength(0);
   });
 
   it('should count lines and accounts', async () => {
@@ -208,6 +234,17 @@ describe('HoldingListStore', () => {
     expect(esalia?.cashEur).toBe(0);
   });
 
+  it('should default a cash-only account institution to blank when it is missing from the accounts list', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    httpTesting.expectOne('/api/accounts').flush(accounts.filter((account) => account.id !== 'a3'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    const livretA = store.groups().find((group) => group.accountName === 'Livret A');
+
+    expect(livretA?.institution).toBe('');
+  });
+
   it('should keep the cash balance in a visible group even when the search hides every position', async () => {
     await load();
 
@@ -228,5 +265,80 @@ describe('HoldingListStore', () => {
 
   it('should hold empty groups while loading', () => {
     expect(store.groups()).toEqual([]);
+  });
+
+  it('should ignore accents in the search', async () => {
+    const accented = [...holdings, { ...holdings[0]!, id: 'h7', instrumentName: 'Société Générale' }];
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(accented);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    store.search.set('societe');
+
+    expect(
+      store
+        .groups()
+        .flatMap((group) => group.holdings)
+        .some((holding) => holding.id === 'h7'),
+    ).toBe(true);
+  });
+
+  it('should filter to holdings with a stale quote from a query param', async () => {
+    configure({ filter: 'stale' });
+    expect(store.staleFilter()).toBe(true);
+    await load();
+
+    expect(store.groups()).toHaveLength(1);
+    expect(store.groups()[0]!.accountName).toBe('Esalia');
+  });
+
+  it('should not seed a cash-only account while the stale filter is active', async () => {
+    configure({ filter: 'stale' });
+    await load();
+
+    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(false);
+  });
+
+  it('should filter to one account from a query param', async () => {
+    configure({ account: 'Saxo Investor' });
+    expect(store.accountFilter()).toBe('Saxo Investor');
+    await load();
+
+    expect(store.groups()).toHaveLength(1);
+    expect(store.groups()[0]!.accountName).toBe('Saxo Investor');
+  });
+
+  it('should filter positions to one asset class from a query param', async () => {
+    const classed = holdings.map((holding) => ({ ...holding, assetClass: holding.assetClass ?? 'ETF' }));
+    configure({ assetClass: 'ETF' });
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(classed);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.assetClassFilter()).toBe('ETF');
+    expect(
+      store
+        .groups()
+        .flatMap((group) => group.holdings)
+        .every((holding) => holding.assetClass === 'ETF'),
+    ).toBe(true);
+  });
+
+  it('should carry the account institution onto each group', async () => {
+    await load();
+
+    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+
+    expect(saxo?.institution).toBe('Saxo');
+  });
+
+  it('should leave the filters unset without matching query params', async () => {
+    await load();
+
+    expect(store.staleFilter()).toBe(false);
+    expect(store.accountFilter()).toBeNull();
+    expect(store.assetClassFilter()).toBeNull();
   });
 });

@@ -1,13 +1,18 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 
-import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import { AccountService } from '@core/api-client/account/account.service';
+import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
+
+import { normalizeSearch } from '@shared/format/normalize-search';
 
 export type AccountGroup = {
   accountId: string;
   accountName: string;
   accountType: string;
+  institution: string;
   valueEur: number;
   cashEur: number;
   unvaluedCount: number;
@@ -16,33 +21,44 @@ export type AccountGroup = {
   holdings: HoldingResponse[];
 };
 
-const isEurCash = (holding: HoldingResponse): boolean =>
-  holding.assetClass === 'CASH' && holding.priceSource === 'MANUAL' && holding.priceCurrency === 'EUR';
-
 const matches = (holding: HoldingResponse, search: string): boolean =>
-  `${holding.instrumentName} ${holding.accountName}`.toLowerCase().includes(search);
+  normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''}`).includes(search);
 
 @Injectable()
 export class HoldingListStore {
   #holdingsApiClient = inject(HoldingService);
+  #accountsApiClient = inject(AccountService);
+  #route = inject(ActivatedRoute);
 
   readonly search = signal('');
+
+  readonly #queryParamMap = toSignal(this.#route.queryParamMap);
+
+  readonly staleFilter = computed(() => this.#queryParamMap()?.get('filter') === 'stale');
+  readonly accountFilter = computed(() => this.#queryParamMap()?.get('account') ?? null);
+  readonly assetClassFilter = computed(() => (this.#queryParamMap()?.get('assetClass') as AssetClass | null) ?? null);
 
   readonly holdings = rxResource({
     stream: () => this.#holdingsApiClient.listHoldings(),
     defaultValue: [],
   });
 
+  readonly accounts = rxResource({
+    stream: () => this.#accountsApiClient.listAccounts(),
+    defaultValue: [],
+  });
+
+  readonly #institutionByAccount = computed(
+    () => new Map(this.accounts.value().map((account) => [account.id, account.institution])),
+  );
+
   readonly #allHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
 
-  // Kept off the search filter: the cash line stays in every visible group regardless of what
-  // the user typed, so its balance always comes from the unfiltered list. Also the only source of
-  // an account that holds nothing but cash: it never appears among ordinary positions.
   readonly #cashByAccount = computed(() => {
     const cash = new Map<string, { accountName: string; accountType: string; amount: number }>();
 
     for (const holding of this.#allHoldings()) {
-      if (isEurCash(holding)) {
+      if (holding.accountCash) {
         cash.set(holding.accountId, {
           accountName: holding.accountName,
           accountType: holding.accountType,
@@ -55,8 +71,19 @@ export class HoldingListStore {
   });
 
   readonly #visible = computed(() => {
-    const positions = this.#allHoldings().filter((holding) => !isEurCash(holding));
-    const search = this.search().trim().toLowerCase();
+    let positions = this.#allHoldings().filter((holding) => !holding.accountCash);
+
+    if (this.staleFilter()) {
+      positions = positions.filter((holding) => holding.stale);
+    }
+
+    const assetClass = this.assetClassFilter();
+
+    if (assetClass) {
+      positions = positions.filter((holding) => holding.assetClass === assetClass);
+    }
+
+    const search = normalizeSearch(this.search().trim());
 
     return search ? positions.filter((holding) => matches(holding, search)) : positions;
   });
@@ -70,6 +97,7 @@ export class HoldingListStore {
         accountId: holding.accountId,
         accountName: holding.accountName,
         accountType: holding.accountType,
+        institution: this.#institutionByAccount().get(holding.accountId) ?? '',
         valueEur: 0,
         cashEur: cashByAccount.get(holding.accountId)?.amount ?? 0,
         unvaluedCount: 0,
@@ -99,32 +127,35 @@ export class HoldingListStore {
       byAccount.set(holding.accountId, group);
     }
 
-    // An account with only a cash line owns no ordinary holding, so the loop above never sees it:
-    // seed one directly from the cash holding, unless the search hid it (its account name is the
-    // only thing to match against, since it has no instrument line of its own).
-    const search = this.search().trim().toLowerCase();
+    const search = normalizeSearch(this.search().trim());
 
-    for (const [accountId, info] of cashByAccount) {
-      if (byAccount.has(accountId) || (search && !info.accountName.toLowerCase().includes(search))) {
-        continue;
+    if (!this.staleFilter() && !this.assetClassFilter()) {
+      for (const [accountId, info] of cashByAccount) {
+        if (byAccount.has(accountId) || (search && !normalizeSearch(info.accountName).includes(search))) {
+          continue;
+        }
+
+        byAccount.set(accountId, {
+          accountId,
+          accountName: info.accountName,
+          accountType: info.accountType,
+          institution: this.#institutionByAccount().get(accountId) ?? '',
+          valueEur: 0,
+          cashEur: info.amount,
+          unvaluedCount: 0,
+          unrealizedGainEur: 0,
+          stale: false,
+          holdings: [],
+        });
       }
-
-      byAccount.set(accountId, {
-        accountId,
-        accountName: info.accountName,
-        accountType: info.accountType,
-        valueEur: 0,
-        cashEur: info.amount,
-        unvaluedCount: 0,
-        unrealizedGainEur: 0,
-        stale: false,
-        holdings: [],
-      });
     }
 
-    return [...byAccount.values()]
+    const account = this.accountFilter();
+    const groups = [...byAccount.values()]
       .map((group) => ({ ...group, valueEur: group.valueEur + group.cashEur }))
       .sort((left, right) => right.valueEur - left.valueEur);
+
+    return account ? groups.filter((group) => group.accountName === account) : groups;
   });
 
   readonly totals = computed(() => {

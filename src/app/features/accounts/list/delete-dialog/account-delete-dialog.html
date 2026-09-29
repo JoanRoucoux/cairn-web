@@ -8,7 +8,7 @@
 >
   @if (refused()) {
     <p class="text-label text-(--negative)" data-testid="account-delete-refused" role="alert">
-      {{ 'accounts.delete.refused' | transloco: { count: account().lineCount } }}
+      {{ pluralKey('accounts.delete.refused', account().lineCount) | transloco: { count: account().lineCount } }}
     </p>
   } @else if (error()) {
     <p class="text-label text-(--negative)" data-testid="account-delete-error" role="alert">

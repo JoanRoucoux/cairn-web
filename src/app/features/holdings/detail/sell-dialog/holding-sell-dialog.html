@@ -1,0 +1,106 @@
+<ui-dialog
+  data-testid="holding-sell-dialog"
+  width="md"
+  [description]="holding().instrumentName + ' · ' + holding().accountName"
+  [heading]="'holdings.sell.title' | transloco"
+  [open]="open()"
+  (dismissed)="dismiss()"
+>
+  <ui-field
+    [error]="over() ? hint() : undefined"
+    [label]="'holdings.sell.quantity' | transloco"
+    [unit]="'holdings.sell.unit' | transloco"
+  >
+    <input
+      autocomplete="off"
+      data-testid="holding-sell-quantity"
+      inputmode="decimal"
+      type="text"
+      uiInput
+      [value]="quantityText()"
+      (input)="onQuantityInput($event)"
+    />
+  </ui-field>
+
+  <div class="mt-2 flex items-center justify-between gap-3">
+    @if (!over()) {
+      <p class="text-label text-(--muted-foreground)" data-testid="holding-sell-hint">{{ hint() }}</p>
+    } @else {
+      <span></span>
+    }
+    <button data-testid="holding-sell-all" type="button" ui-button variant="ghost" (click)="fillAll()">
+      {{ 'holdings.sell.sellAll' | transloco }}
+    </button>
+  </div>
+
+  <div class="rounded-control mt-2 flex flex-col bg-(--background) px-3 py-1">
+    <div class="text-label flex justify-between border-b border-(--hairline) py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.quantity' | transloco }}</span>
+      <span class="flex items-baseline gap-1.5">
+        <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
+        <span class="text-(--subtle-foreground)">&rarr;</span>
+        <span class="font-medium">{{
+          preview() ? (closes() ? ('holdings.sell.closes' | transloco) : fmtQty(preview()!.quantityAfter)) : '—'
+        }}</span>
+      </span>
+    </div>
+    <div class="text-label flex justify-between border-b border-(--hairline) py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.averageCost' | transloco }}</span>
+      <span class="flex items-baseline gap-1.5">
+        <span class="font-medium">{{
+          holding().averageCost !== null && holding().averageCost !== undefined
+            ? fmt(holding().averageCost)
+            : ('holdings.sell.rows.averageCostUnknown' | transloco)
+        }}</span>
+        <span class="text-(--subtle-foreground)">{{ 'holdings.sell.rows.averageCostNote' | transloco }}</span>
+      </span>
+    </div>
+    <div class="text-label flex justify-between border-b border-(--hairline) py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGain' | transloco }}</span>
+      @if (preview()?.realizedGain !== null && preview()?.realizedGain !== undefined) {
+        <span
+          class="font-medium"
+          [class.text-(--negative)]="preview()!.realizedGain! < 0"
+          [class.text-(--positive)]="preview()!.realizedGain! > 0"
+        >
+          {{ fmt(preview()!.realizedGain) }}
+        </span>
+      } @else if (holding().averageCost === null || holding().averageCost === undefined) {
+        <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGainUnknown' | transloco }}</span>
+      } @else {
+        <span class="text-(--muted-foreground)">&mdash;</span>
+      }
+    </div>
+    <div class="text-label flex justify-between py-2.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.amount' | transloco }}</span>
+      <span class="font-medium">{{ preview() ? fmt(preview()!.amount) : '—' }}</span>
+    </div>
+  </div>
+
+  @if (closes()) {
+    <p class="text-label mt-3 flex items-start gap-2" data-testid="holding-sell-closes-warning" role="status">
+      {{ 'holdings.sell.closesWarning' | transloco: { account: holding().accountName } }}
+    </p>
+  }
+
+  @if (error()) {
+    <p class="text-label mt-3 text-(--negative)" data-testid="holding-sell-error" role="alert">
+      {{ 'holdings.sell.error' | transloco }}
+    </p>
+  }
+
+  <button
+    class="mt-4 w-full"
+    data-testid="holding-sell-submit"
+    dialogActions
+    size="xl"
+    type="button"
+    ui-button
+    [disabled]="!valid() || submitting()"
+    [loading]="submitting()"
+    [variant]="closes() ? 'destructive' : 'primary'"
+    (click)="confirm()"
+  >
+    {{ cta() }}
+  </button>
+</ui-dialog>

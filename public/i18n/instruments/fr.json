@@ -13,6 +13,10 @@
   "sourceRef": "Référence de la source",
   "description": "Description",
   "descriptionHint": "280 caractères maximum. Affichée sur l'écran de détail d'une ligne.",
+  "lines": "Lignes",
+  "noLines": "Aucune",
+  "actionsFor": "Actions sur {{name}}",
+  "actions": "Actions",
   "save": "Enregistrer",
   "saveError": "Cet instrument a été refusé. Vérifiez le nom et la source du cours.",
   "lookup": {

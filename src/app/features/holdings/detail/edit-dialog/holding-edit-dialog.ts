@@ -1,23 +1,23 @@
 import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiDialog, UiField, UiInput, UiSelect } from '@joanroucoux/cairn-ui';
+import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { HoldingFormDialogStore } from './holding-form-dialog-store';
+import { HoldingEditDialogStore } from './holding-edit-dialog-store';
 
 @Component({
-  selector: 'app-holding-form-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput, UiSelect],
-  templateUrl: './holding-form-dialog.html',
-  providers: [HoldingFormDialogStore],
+  selector: 'app-holding-edit-dialog',
+  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  templateUrl: './holding-edit-dialog.html',
+  providers: [HoldingEditDialogStore],
 })
-export class HoldingFormDialog {
-  #store = inject(HoldingFormDialogStore);
+export class HoldingEditDialog {
+  #store = inject(HoldingEditDialogStore);
 
-  readonly holding = input<HoldingResponse | undefined>(undefined);
+  readonly holding = input.required<HoldingResponse>();
   readonly savedForm = output<void>();
   readonly dismissed = output<void>();
 
@@ -25,8 +25,6 @@ export class HoldingFormDialog {
   protected readonly open = signal(true);
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
-  protected readonly accounts = this.#store.accounts;
-  protected readonly instruments = this.#store.instruments;
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -37,7 +35,7 @@ export class HoldingFormDialog {
     // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="holding-form-cancel"]')?.focus();
+        this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="holding-edit-cancel"]')?.focus();
       }
     });
   }
@@ -48,7 +46,7 @@ export class HoldingFormDialog {
   }
 
   protected async confirm(): Promise<void> {
-    if (await this.#store.save(this.holding()?.id)) {
+    if (await this.#store.save(this.holding().id)) {
       this.open.set(false);
       this.savedForm.emit();
     }

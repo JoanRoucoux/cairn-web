@@ -3,9 +3,13 @@ import { Component, inject, input, output, signal } from '@angular/core';
 import { UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
-import type { InstrumentDetailResponse } from '@core/api-client/cairnAPI.schemas';
-
 import { InstrumentDeleteStore } from './instrument-delete-store';
+
+export type DeletableInstrument = {
+  id: string;
+  name: string;
+  holdingCount: number;
+};
 
 @Component({
   selector: 'app-instrument-delete-dialog',
@@ -17,7 +21,7 @@ export class InstrumentDeleteDialog {
   #store = inject(InstrumentDeleteStore);
   #transloco = inject(TranslocoService);
 
-  readonly instrument = input.required<InstrumentDetailResponse>();
+  readonly instrument = input.required<DeletableInstrument>();
   readonly deleted = output<void>();
   readonly dismissed = output<void>();
 

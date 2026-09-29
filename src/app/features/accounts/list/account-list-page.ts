@@ -14,6 +14,8 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePlus } from '@lucide/angular';
 
+import { pluralKey } from '@shared/format/plural-key';
+
 import { AccountListStore, type AccountView } from './account-list-store';
 import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
 import { AccountFormDialog, type AccountFormTarget } from './form-dialog/account-form-dialog';
@@ -43,6 +45,7 @@ export class AccountListPage {
   #store = inject(AccountListStore);
 
   protected readonly accounts = this.#store.accounts;
+  protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
 
   protected readonly formOpen = signal(false);

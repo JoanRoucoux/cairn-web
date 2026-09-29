@@ -9,7 +9,8 @@
   "errorTitle": "Accounts could not be loaded",
   "errorMessage": "The server did not answer.",
   "retry": "Retry",
-  "lineCount": "{{count}} holdings",
+  "lineCount_one": "{{count}} holding",
+  "lineCount_other": "{{count}} holdings",
   "actions": "Actions for {{name}}",
   "edit": "Edit",
   "rowEmpty": "This account has no line yet.",
@@ -28,7 +29,8 @@
     "description": "This cannot be undone.",
     "cancel": "Cancel",
     "submit": "Delete",
-    "refused": "This account still holds {{count}} holdings. Sell or delete them first.",
+    "refused_one": "This account still holds {{count}} holding. Sell or delete it first.",
+    "refused_other": "This account still holds {{count}} holdings. Sell or delete them first.",
     "error": "This account could not be deleted."
   }
 }

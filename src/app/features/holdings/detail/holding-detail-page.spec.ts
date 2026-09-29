@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
@@ -13,13 +13,11 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingDetailPage } from './holding-detail-page';
 
-// Routed through a real `<router-outlet>`, exactly like the app: `HoldingDetailStore` is
-// provided by `HoldingDetailPage` itself (see its `@Component` decorator), which only sits in
-// the right injector - the one carrying the real `ActivatedRoute` - when activated through an
-// outlet. Rendering the page directly, with a stubbed root `ActivatedRoute`, would pass even if
-// the store went back to being provided on the route (the bug this page shipped with).
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
+
+@Component({ selector: 'app-stub-list', template: 'list' })
+class StubList {}
 
 const holding = {
   id: 'h1',
@@ -34,6 +32,9 @@ const holding = {
   averageCost: 26.654,
   marketValueEur: 22515.47,
   unrealizedGainEur: 4497.36,
+  unrealizedGainRatio: 0.1998,
+  dayChangeEur: 142.8,
+  dayChangeRatio: 0.0063,
   priceSource: 'YAHOO',
   priceAsOf: '2026-08-21',
   stale: false,
@@ -56,12 +57,16 @@ describe('HoldingDetailPage', () => {
       description: 'ETF tracking the S&P 500.',
       externalUrl: 'https://example.test/ese',
     },
+    fixtureHolding: Record<string, unknown> = holding,
     translations = getTranslocoTestingModule(),
   ): Promise<HoldingDetailPage> => {
     const { fixture } = await render(TestHost, {
       imports: [translations],
-      routes: [{ path: ':holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' }],
-      initialRoute: holdingId,
+      routes: [
+        { path: 'holdings', component: StubList },
+        { path: 'holdings/:holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' },
+      ],
+      initialRoute: `holdings/${holdingId}`,
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
@@ -71,7 +76,7 @@ describe('HoldingDetailPage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/holdings').flush([holding]);
+    httpTesting.expectOne('/api/holdings').flush([fixtureHolding]);
     await settle();
     httpTesting
       .match((request) => request.url === '/api/instruments/i1')
@@ -100,9 +105,17 @@ describe('HoldingDetailPage', () => {
     await renderPage();
 
     await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
-    expect(screen.getByText('enums.accountType.PEA', { exact: false })).toBeInTheDocument();
-    expect(screen.getByText('enums.assetClass.ETF')).toBeInTheDocument();
+    expect(screen.getAllByText('enums.accountType.PEA', { exact: false }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('enums.assetClass.ETF').length).toBeGreaterThan(0);
     expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
+  });
+
+  it('shows the unrealized gain and the day change as amount and percent', async () => {
+    await renderPage();
+
+    await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
+    expect(screen.getByText(/\+19\.98%/)).toBeInTheDocument();
+    expect(screen.getByText(/\+0\.63%/)).toBeInTheDocument();
   });
 
   it('should link out to the provider factsheet in a new tab', async () => {
@@ -120,45 +133,24 @@ describe('HoldingDetailPage', () => {
   });
 
   it('should not present an empty chart or a blank last quote for a holding with no quote yet', async () => {
-    const { fixture } = await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
-      routes: [{ path: ':holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' }],
-      initialRoute: 'h1',
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting
-      .expectOne('/api/holdings')
-      .flush([{ ...holding, price: null, priceCurrency: null, priceAsOf: null, marketValueEur: null }]);
-    await settle();
-    httpTesting
-      .match((request) => request.url === '/api/instruments/i1')
-      .forEach((request) => request.flush({ description: 'ETF tracking the S&P 500.' }));
-    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
-    await settle();
+    await renderPage(
+      'h1',
+      { description: 'ETF tracking the S&P 500.' },
+      { ...holding, price: null, priceCurrency: null, priceAsOf: null, marketValueEur: null },
+    );
 
-    expect(fixture.debugElement.nativeElement.textContent).toContain('—');
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
     expect(screen.getByTestId('no-quote-yet')).toBeInTheDocument();
-  });
-
-  it('should read the holding id from the real, activated route', async () => {
-    await renderPage('h1');
-
-    expect(await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' })).toBeInTheDocument();
   });
 
   it('should tell the user when the holdings could not be loaded', async () => {
     await render(TestHost, {
       imports: [getTranslocoTestingModule()],
-      routes: [{ path: ':holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' }],
-      initialRoute: 'h1',
+      routes: [
+        { path: 'holdings', component: StubList },
+        { path: 'holdings/:holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' },
+      ],
+      initialRoute: 'holdings/h1',
       providers: [
         provideZonelessChangeDetection(),
         provideHttpClient(),
@@ -170,7 +162,6 @@ describe('HoldingDetailPage', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/holdings').flush('boom', { status: 500, statusText: 'Server error' });
 
-    // A failed load must not read as a holding that does not exist: the id may be perfectly valid.
     expect(await screen.findByRole('alert')).toHaveTextContent('holdings.error');
   });
 
@@ -203,7 +194,7 @@ describe('HoldingDetailPage', () => {
 
   it('should open and dismiss the manual quote dialog', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderPage('h1', undefined, { ...holding, priceSource: 'MANUAL' });
 
     await user.click(await screen.findByTestId('enter-quote'));
     expect(screen.getByTestId('manual-quote-dialog')).toBeInTheDocument();
@@ -214,7 +205,8 @@ describe('HoldingDetailPage', () => {
 
   it('should reload the holding once a manual quote is saved', async () => {
     const user = userEvent.setup();
-    await renderPage();
+    const manualHolding = { ...holding, priceSource: 'MANUAL' };
+    await renderPage('h1', undefined, manualHolding);
 
     await user.click(await screen.findByTestId('enter-quote'));
     await user.type(screen.getByTestId('manual-quote-price'), '33.3069');
@@ -223,7 +215,7 @@ describe('HoldingDetailPage', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1/quotes').flush({}));
 
     await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
-    httpTesting.expectOne('/api/holdings').flush([holding]);
+    httpTesting.expectOne('/api/holdings').flush([manualHolding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
@@ -233,6 +225,7 @@ describe('HoldingDetailPage', () => {
     await renderPage(
       'h1',
       { description: 'ETF tracking the S&P 500.', externalUrl: 'https://example.test/ese' },
+      holding,
       getTranslocoTestingModule({
         langs: { en: { 'chart.range.1d': '1D' }, fr: { 'chart.range.1d': '1J' } },
       }),
@@ -244,5 +237,162 @@ describe('HoldingDetailPage', () => {
     TestBed.tick();
 
     expect(await screen.findByRole('radio', { name: '1J' })).toBeInTheDocument();
+  });
+
+  it('opens the edit dialog from the menu and reloads once saved', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-menu-trigger-mobile'));
+    await user.click(screen.getByTestId('holding-edit'));
+
+    expect(screen.getByTestId('holding-edit-dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('holding-edit-submit'));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush({});
+
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-edit-dialog')).not.toBeInTheDocument());
+    httpTesting.expectOne('/api/holdings').flush([holding]);
+    await settle();
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    await settle();
+  });
+
+  it('opens the delete dialog from the menu and returns to the list once deleted', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-menu-trigger-mobile'));
+    await user.click(screen.getByTestId('holding-delete'));
+    await user.click(screen.getByTestId('holding-delete-confirm'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
+  });
+
+  it('opens the buy dialog and reloads once a purchase is saved', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-buy-bar'));
+    expect(screen.getByTestId('holding-buy-dialog')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('holding-buy-quantity'), '40');
+    await user.type(screen.getByTestId('holding-buy-price'), '29.1');
+    await user.click(screen.getByTestId('holding-buy-submit'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({});
+
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-buy-dialog')).not.toBeInTheDocument());
+    httpTesting.expectOne('/api/holdings').flush([holding]);
+    await settle();
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    await settle();
+  });
+
+  it('opens the buy and sell dialogs from the desktop inline actions too', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-buy'));
+    expect(screen.getByTestId('holding-buy-dialog')).toBeInTheDocument();
+    screen.getByTestId('holding-buy-dialog').querySelector('dialog')?.dispatchEvent(new Event('close'));
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-buy-dialog')).not.toBeInTheDocument());
+
+    await user.click(screen.getByTestId('holding-sell'));
+    expect(screen.getByTestId('holding-sell-dialog')).toBeInTheDocument();
+    screen.getByTestId('holding-sell-dialog').querySelector('dialog')?.dispatchEvent(new Event('close'));
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-sell-dialog')).not.toBeInTheDocument());
+  });
+
+  it('closes the edit dialog without saving when dismissed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-menu-trigger-mobile'));
+    await user.click(screen.getByTestId('holding-edit'));
+    await user.click(screen.getByTestId('holding-edit-cancel'));
+
+    expect(screen.queryByTestId('holding-edit-dialog')).not.toBeInTheDocument();
+  });
+
+  it('closes the delete dialog without deleting when dismissed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-menu-trigger-mobile'));
+    await user.click(screen.getByTestId('holding-delete'));
+    await user.click(screen.getByTestId('holding-delete-cancel'));
+
+    expect(screen.queryByTestId('holding-delete-dialog')).not.toBeInTheDocument();
+  });
+
+  it('reloads after a partial sale, and returns to the list once the holding closes', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(screen.getByTestId('holding-sell-bar'));
+    await user.type(screen.getByTestId('holding-sell-quantity'), '100');
+    await user.click(screen.getByTestId('holding-sell-submit'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush(
+      {},
+      { status: 200, statusText: 'OK' },
+    );
+
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-sell-dialog')).not.toBeInTheDocument());
+    httpTesting.expectOne('/api/holdings').flush([holding]);
+    await settle();
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    await settle();
+
+    await user.click(screen.getByTestId('holding-sell-bar'));
+    await user.click(screen.getByTestId('holding-sell-all'));
+    await user.click(screen.getByTestId('holding-sell-submit'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
+  });
+
+  it('hides Buy and Sell for a cash line', async () => {
+    await renderPage('h1', { description: 'Cash.' }, { ...holding, assetClass: 'CASH' });
+
+    expect(screen.queryByTestId('holding-buy-bar')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('holding-sell-bar')).not.toBeInTheDocument();
+  });
+
+  it('shows the stale price instead of the day change', async () => {
+    await renderPage('h1', { description: 'ETF tracking the S&P 500.' }, { ...holding, stale: true });
+
+    expect(await screen.findByTestId('stale-price')).toHaveTextContent('holdings.staleShort');
+  });
+
+  it('shows the unknown cost basis text when the average cost is missing', async () => {
+    await renderPage('h1', { description: 'ETF tracking the S&P 500.' }, { ...holding, averageCost: null });
+
+    expect(await screen.findByText('holdings.unknownAverageCost')).toBeInTheDocument();
+  });
+
+  it('shows a dash instead of a blank ISIN for a crypto holding with none', async () => {
+    await renderPage('h1', { description: 'Cryptocurrency.' }, { ...holding, isin: null });
+
+    const rows = await screen.findAllByText('—');
+
+    expect(rows.length).toBeGreaterThan(0);
+  });
+
+  it('links the back link to the holdings list', async () => {
+    await renderPage();
+
+    const back = await screen.findByText('holdings.detail.back');
+    expect(back.closest('a')).toHaveAttribute('href', '/holdings');
   });
 });

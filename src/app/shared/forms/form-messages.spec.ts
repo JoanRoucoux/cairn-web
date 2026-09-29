@@ -9,7 +9,16 @@ describe('formMessages', () => {
     TestBed.configureTestingModule({
       imports: [
         getTranslocoTestingModule({
-          langs: { en: { forms: { required: 'Required', maxLength: 'At most {{limit}}', min: 'At least {{floor}}' } } },
+          langs: {
+            en: {
+              forms: {
+                required: 'Required',
+                maxLength: 'At most {{limit}}',
+                min: 'At least {{floor}}',
+                positive: 'Must be positive',
+              },
+            },
+          },
         }),
       ],
     });
@@ -22,6 +31,7 @@ describe('formMessages', () => {
       expect(messages.required()).toBe('Required');
       expect(messages.maxLength(280)()).toBe('At most 280');
       expect(messages.min(0)()).toBe('At least 0');
+      expect(messages.positive()).toBe('Must be positive');
     });
   });
 });

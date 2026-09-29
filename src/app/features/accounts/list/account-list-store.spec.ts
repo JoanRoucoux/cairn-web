@@ -18,7 +18,14 @@ const holding = (overrides: Record<string, unknown> = {}): unknown => ({
 });
 
 const cashHolding = (overrides: Record<string, unknown> = {}): unknown =>
-  holding({ id: 'h-cash', assetClass: 'CASH', priceSource: 'MANUAL', marketValueEur: 50, ...overrides });
+  holding({
+    id: 'h-cash',
+    assetClass: 'CASH',
+    priceSource: 'MANUAL',
+    accountCash: true,
+    marketValueEur: 50,
+    ...overrides,
+  });
 
 describe('AccountListStore', () => {
   let store: AccountListStore;
@@ -63,6 +70,12 @@ describe('AccountListStore', () => {
     expect(store.accounts()).toEqual([
       { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama', valueEur: 50, lineCount: 0 },
     ]);
+  });
+
+  it('should count a savings booklet as a line, although it is cash in euros too', async () => {
+    await flush([cashHolding({ id: 'h-livret', accountCash: false, marketValueEur: 20000 })]);
+
+    expect(store.accounts()[0]!.lineCount).toBe(1);
   });
 
   it('should report a null value when a line is unvalued rather than a partial sum', async () => {

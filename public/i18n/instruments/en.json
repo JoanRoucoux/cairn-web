@@ -13,6 +13,10 @@
   "sourceRef": "Source reference",
   "description": "Description",
   "descriptionHint": "Up to 280 characters. Shown on the holding detail screen.",
+  "lines": "Holdings",
+  "noLines": "None",
+  "actionsFor": "Actions on {{name}}",
+  "actions": "Actions",
   "save": "Save instrument",
   "saveError": "That instrument was refused. Check the name and the price source.",
   "lookup": {

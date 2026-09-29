@@ -1,57 +1,135 @@
-<div class="flex flex-wrap items-center justify-end gap-3">
-  <button data-testid="add-holding" type="button" ui-button (click)="onAdd()">
-    {{ 'holdings.form.open' | transloco }}
-  </button>
-</div>
-
-<p #summary class="text-label mt-1.5 text-(--muted-foreground) tabular-nums" tabindex="-1">
-  {{ 'holdings.summary' | transloco: { lines: totals().lines, accounts: totals().accounts } }} &middot;
-  <ui-amount currency="EUR" [value]="totals().valueEur" />
-  @if (totals().unvaluedCount > 0) {
-    &middot; {{ 'holdings.unvaluedCount' | transloco: { count: totals().unvaluedCount } }}
-  }
-</p>
-
-<div class="mt-4">
-  <ui-field labelHidden [label]="'holdings.searchLabel' | transloco">
-    <input
-      data-testid="holdings-search"
-      type="search"
-      uiInput
-      [placeholder]="'holdings.searchPlaceholder' | transloco"
-      [value]="search()"
-      (input)="onSearchInput($event)"
-    />
-  </ui-field>
-</div>
-
-@if (holdings.error()) {
-  <p class="mt-4 text-(--negative)" role="alert">{{ 'holdings.error' | transloco }}</p>
-} @else if (holdings.isLoading()) {
-  <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
-  <ui-skeleton class="mt-4" [height]="52" [lines]="5" />
-} @else if (groups().length === 0) {
-  <p class="mt-4 text-(--muted-foreground)" role="status">{{ 'holdings.empty' | transloco }}</p>
-} @else {
-  <div class="mt-4 flex flex-col gap-2.5">
-    @for (group of groups(); track group.accountId; let first = $first) {
-      <app-holding-account-group
-        [expanded]="first"
-        [group]="group"
-        (edit)="onEdit($event)"
-        (editCash)="accountToEditCashFor.set($event)"
-        (remove)="holdingToDelete.set($event)"
+<div class="flex flex-wrap items-center gap-3">
+  <div class="min-w-[12rem] flex-1">
+    <ui-field labelHidden [label]="'holdings.searchLabel' | transloco">
+      <input
+        data-testid="holdings-search"
+        type="search"
+        uiInput
+        [placeholder]="'holdings.searchPlaceholder' | transloco"
+        [value]="search()"
+        (input)="onSearchInput($event)"
       />
+    </ui-field>
+  </div>
+
+  <div class="lg:hidden">
+    <button
+      aria-label="{{ 'holdings.addLine' | transloco }}"
+      data-testid="add-holding"
+      size="icon"
+      type="button"
+      ui-button
+      (click)="addOpen.set(true)"
+    >
+      <svg lucidePlus [size]="20" [strokeWidth]="1.75" />
+    </button>
+  </div>
+
+  <div class="hidden lg:block">
+    <button data-testid="add-holding-desktop" type="button" ui-button (click)="addOpen.set(true)">
+      <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
+      {{ 'holdings.addLine' | transloco }}
+    </button>
+  </div>
+</div>
+
+@if (staleFilter() || accountFilter() || assetClassFilter()) {
+  <div class="mt-3 flex flex-wrap gap-2">
+    @if (staleFilter()) {
+      <a
+        class="rounded-pill text-caption inline-flex items-center gap-1.5 bg-(--muted) px-2.5 py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        data-testid="filter-chip-stale"
+        queryParamsHandling="merge"
+        routerLink="."
+        [attr.aria-label]="'holdings.filters.remove' | transloco: { label: 'holdings.filters.stale' | transloco }"
+        [queryParams]="{ filter: null }"
+      >
+        {{ 'holdings.filters.stale' | transloco }}
+        <svg lucideX [size]="12" [strokeWidth]="2" />
+      </a>
+    }
+    @if (accountFilter(); as account) {
+      <a
+        class="rounded-pill text-caption inline-flex items-center gap-1.5 bg-(--muted) px-2.5 py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        data-testid="filter-chip-account"
+        queryParamsHandling="merge"
+        routerLink="."
+        [attr.aria-label]="
+          'holdings.filters.remove' | transloco: { label: 'holdings.filters.account' | transloco: { name: account } }
+        "
+        [queryParams]="{ account: null }"
+      >
+        {{ 'holdings.filters.account' | transloco: { name: account } }}
+        <svg lucideX [size]="12" [strokeWidth]="2" />
+      </a>
+    }
+    @if (assetClassFilter(); as assetClass) {
+      <a
+        class="rounded-pill text-caption inline-flex items-center gap-1.5 bg-(--muted) px-2.5 py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
+        data-testid="filter-chip-asset-class"
+        queryParamsHandling="merge"
+        routerLink="."
+        [attr.aria-label]="
+          'holdings.filters.remove'
+            | transloco
+              : {
+                  label:
+                    'holdings.filters.assetClass' | transloco: { name: 'enums.assetClass.' + assetClass | transloco },
+                }
+        "
+        [queryParams]="{ assetClass: null }"
+      >
+        {{ 'holdings.filters.assetClass' | transloco: { name: 'enums.assetClass.' + assetClass | transloco } }}
+        <svg lucideX [size]="12" [strokeWidth]="2" />
+      </a>
     }
   </div>
 }
 
-@if (formOpen()) {
-  <app-holding-form-dialog [holding]="holdingToEdit()" (dismissed)="onFormDismissed()" (savedForm)="onFormSaved()" />
-}
+<p class="text-label mt-3 text-(--muted-foreground) tabular-nums" data-testid="holdings-summary" tabindex="-1">
+  {{ summaryText() }} &middot;
+  <ui-amount currency="EUR" [value]="totals().valueEur" />
+  @if (totals().unvaluedCount > 0) {
+    &middot; {{ unvaluedCountText() }}
+  }
+</p>
 
-@if (holdingToDelete(); as holding) {
-  <app-holding-delete-dialog [holding]="holding" (deleted)="onDeleted()" (dismissed)="holdingToDelete.set(undefined)" />
+<div class="mt-4 grid grid-cols-1 items-start gap-4" [class]="compact() ? 'lg:grid-cols-[1fr_400px]' : ''">
+  <div class="min-w-0" [class.max-lg:hidden]="compact()">
+    @if (holdings.error()) {
+      <p class="text-(--negative)" role="alert">{{ 'holdings.error' | transloco }}</p>
+    } @else if (holdings.isLoading()) {
+      <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
+      <ui-skeleton [height]="52" [lines]="5" />
+    } @else if (groups().length === 0 && search().trim()) {
+      <p class="text-(--muted-foreground)" role="status">
+        {{ 'holdings.noSearchResults' | transloco: { query: search() } }}
+      </p>
+      <p class="text-label mt-1 text-(--subtle-foreground)">{{ 'holdings.noSearchResultsHint' | transloco }}</p>
+    } @else if (groups().length === 0) {
+      <p class="text-(--muted-foreground)" role="status">{{ 'holdings.empty' | transloco }}</p>
+    } @else {
+      <div class="flex flex-col gap-2.5">
+        @for (group of groups(); track group.accountId; let first = $first) {
+          <app-holding-account-group
+            [compact]="compact()"
+            [expanded]="first"
+            [group]="group"
+            [selectedHoldingId]="selectedHoldingId()"
+            (editCash)="accountToEditCashFor.set($event)"
+          />
+        }
+      </div>
+    }
+  </div>
+
+  <aside class="lg:sticky lg:top-6" [class.hidden]="!compact()">
+    <router-outlet />
+  </aside>
+</div>
+
+@if (addOpen()) {
+  <app-holding-add-dialog (dismissed)="onAddDismissed()" (saved)="onAddSaved()" />
 }
 
 @if (groupToEditCashFor(); as group) {

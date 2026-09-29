@@ -13,6 +13,7 @@ const group: AccountGroup = {
   accountId: 'a1',
   accountName: 'Esalia',
   accountType: 'PEE',
+  institution: 'Amundi ESR',
   valueEur: 119258,
   cashEur: 0,
   unvaluedCount: 0,
@@ -25,27 +26,36 @@ const group: AccountGroup = {
       assetClass: 'FUND',
       quantity: 412.5,
       price: 289.11,
+      priceAsOf: '2026-09-24',
       marketValueEur: 119258,
       unrealizedGainEur: null,
+      unrealizedGainRatio: null,
       averageCost: null,
+      dayChangeRatio: null,
       stale: true,
     },
   ],
 } as unknown as AccountGroup;
 
-const renderGroup = (input: AccountGroup = group, expanded = true): ReturnType<typeof render> =>
+const renderGroup = (
+  input: AccountGroup = group,
+  expanded = true,
+  compact = false,
+  selectedHoldingId: string | undefined = undefined,
+): ReturnType<typeof render> =>
   render(HoldingAccountGroup, {
-    inputs: { group: input, expanded },
+    inputs: { group: input, expanded, compact, selectedHoldingId },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
 
 describe('HoldingAccountGroup', () => {
-  it('should name the account and its envelope', async () => {
+  it('should name the account, its envelope and its institution', async () => {
     await renderGroup();
 
     expect(await screen.findByText('Esalia')).toBeInTheDocument();
     expect(screen.getByText(/enums\.accountType\.PEE/)).toBeInTheDocument();
+    expect(screen.getByText(/Amundi ESR/)).toBeInTheDocument();
   });
 
   it('announces the account name on the toggle, which sits outside it next to the cash button', async () => {
@@ -88,22 +98,49 @@ describe('HoldingAccountGroup', () => {
     expect(await screen.findByText('enums.assetClass.FUND')).toBeInTheDocument();
   });
 
+  it('should show the stale date instead of a day change', async () => {
+    await renderGroup();
+
+    expect(await screen.findAllByText('holdings.staleShort')).not.toHaveLength(0);
+  });
+
+  it('should show the day change ratio and the unrealized gain ratio for a fresh, valued line', async () => {
+    await renderGroup({
+      ...group,
+      holdings: [
+        {
+          ...group.holdings[0],
+          stale: false,
+          dayChangeRatio: 0.0125,
+          unrealizedGainRatio: 0.084,
+        } as (typeof group.holdings)[0],
+      ],
+    });
+
+    expect(await screen.findAllByText('+1.25%')).not.toHaveLength(0);
+    expect(await screen.findAllByText('+8.40%')).not.toHaveLength(0);
+  });
+
   it('should render a dash for an unvalued line instead of an empty or zero cell', async () => {
     await renderGroup({
       ...group,
-      holdings: [{ ...group.holdings[0], price: null, marketValueEur: null } as (typeof group.holdings)[0]],
+      holdings: [
+        { ...group.holdings[0], price: null, marketValueEur: null, stale: false } as (typeof group.holdings)[0],
+      ],
     });
 
-    const row = await screen.findByTestId('holding-row');
+    const rows = await screen.findAllByTestId('holding-row');
+    const row = rows[0]!;
 
     expect(row.textContent).toContain('—');
     expect(row.textContent).not.toContain('€0.00');
+    expect(row.textContent).toContain('holdings.manualQuote.open');
   });
 
   it('should signal the unvalued lines folded out of an account subtotal', async () => {
     await renderGroup({ ...group, unvaluedCount: 2 });
 
-    expect(await screen.findByText('holdings.unvaluedCount')).toBeInTheDocument();
+    expect(await screen.findByText('holdings.unvaluedCount_other')).toBeInTheDocument();
   });
 
   it('should not signal unvalued lines when every line has a value', async () => {
@@ -112,47 +149,54 @@ describe('HoldingAccountGroup', () => {
     expect(screen.queryByText(/unvaluedCount/)).not.toBeInTheDocument();
   });
 
-  it('should link each line to its detail screen', async () => {
+  it('should link each line to its detail screen and preserve the query params', async () => {
     await renderGroup();
 
-    expect(await screen.findByRole('link', { name: /FCPE Actions/ })).toHaveAttribute('href', '/holdings/h3');
+    const links = await screen.findAllByRole('link', { name: /FCPE Actions/ });
+
+    for (const link of links) {
+      expect(link).toHaveAttribute('href', '/holdings/h3');
+    }
   });
 
-  it('should name every column', async () => {
+  it('should show the full seven columns when not compact', async () => {
     await renderGroup();
 
     expect(await screen.findAllByRole('columnheader')).toHaveLength(7);
   });
 
-  it('should emit the holding to edit', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await renderGroup();
-    const emitted = vi.fn();
-    fixture.componentInstance.edit.subscribe(emitted);
+  it('should show only three columns when compact', async () => {
+    await renderGroup(group, true, true);
 
-    await user.click(await screen.findByTestId('edit-holding'));
-
-    expect(emitted).toHaveBeenCalledWith(group.holdings[0]);
+    expect(await screen.findAllByRole('columnheader')).toHaveLength(3);
   });
 
-  it('should emit the holding to delete', async () => {
-    const user = userEvent.setup();
-    const { fixture } = await renderGroup();
-    const emitted = vi.fn();
-    fixture.componentInstance.remove.subscribe(emitted);
+  it('should highlight the open row', async () => {
+    await renderGroup(group, true, false, 'h3');
 
-    await user.click(await screen.findByTestId('delete-holding'));
+    const rows = await screen.findAllByTestId('holding-row');
 
-    expect(emitted).toHaveBeenCalledWith(group.holdings[0]);
+    expect(rows[0]).toHaveClass('bg-(--soft)');
   });
 
-  it('should emit the account whose cash balance is edited', async () => {
+  it('should emit the account whose cash balance is edited from the desktop row', async () => {
     const user = userEvent.setup();
     const { fixture } = await renderGroup();
     const emitted = vi.fn();
     fixture.componentInstance.editCash.subscribe(emitted);
 
-    await user.click(await screen.findByTestId('edit-cash'));
+    await user.click((await screen.findAllByTestId('edit-cash'))[0]!);
+
+    expect(emitted).toHaveBeenCalledWith(group.accountId);
+  });
+
+  it('should emit the account whose cash balance is edited from the mobile row', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderGroup();
+    const emitted = vi.fn();
+    fixture.componentInstance.editCash.subscribe(emitted);
+
+    await user.click((await screen.findAllByTestId('edit-cash-mobile'))[0]!);
 
     expect(emitted).toHaveBeenCalledWith(group.accountId);
   });
@@ -160,27 +204,17 @@ describe('HoldingAccountGroup', () => {
   it('should render the cash line as the last row, muted when empty', async () => {
     await renderGroup();
 
-    const row = await screen.findByTestId('cash-row');
+    const rows = await screen.findAllByTestId('cash-row');
 
-    expect(row).toHaveTextContent('€0.00');
+    expect(rows[0]).toHaveTextContent('€0.00');
   });
 
   it('should render the cash line with the account balance when it has one', async () => {
     await renderGroup({ ...group, cashEur: 732.4 });
 
-    const row = await screen.findByTestId('cash-row');
+    const rows = await screen.findAllByTestId('cash-row');
 
-    expect(row).toHaveTextContent('€732.40');
-  });
-
-  it('should hold the secondary columns back on a narrow viewport', async () => {
-    await renderGroup();
-
-    expect(screen.getByRole('columnheader', { name: 'holdings.columns.averageCost' })).toHaveClass(
-      'hidden',
-      'lg:table-cell',
-    );
-    expect(screen.getByRole('columnheader', { name: 'holdings.columns.value' })).not.toHaveClass('hidden');
+    expect(rows[0]).toHaveTextContent('€732.40');
   });
 
   it('should start collapsed when asked', async () => {

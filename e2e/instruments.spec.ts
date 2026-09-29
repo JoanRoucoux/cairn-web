@@ -38,7 +38,9 @@ test.describe('instruments', () => {
 
     await page.waitForURL('**/instruments');
     await expect(page.getByTestId('instrument-row')).toHaveCount(2);
-    await expect(page.getByText('Bitcoin')).toBeVisible();
+    const row = page.getByTestId('instrument-row').filter({ hasText: 'Bitcoin' });
+    await expect(row.getByRole('link', { name: 'Bitcoin' })).toBeVisible();
+    await expect(row).toContainText('None');
   });
 
   test('edits an instrument and sees the change in the list', async ({ page }) => {
@@ -56,6 +58,7 @@ test.describe('instruments', () => {
 
   test('deletes an instrument and sees it gone from the list', async ({ page }) => {
     await page.goto('/instruments');
+    await expect(page.getByTestId('instrument-row')).toHaveCount(1);
     await page.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await page.getByTestId('instrument-delete').click();
@@ -63,5 +66,26 @@ test.describe('instruments', () => {
 
     await page.waitForURL('**/instruments');
     await expect(page.getByTestId('instrument-row')).toHaveCount(0);
+  });
+
+  test('shows one column per field', async ({ page }) => {
+    await page.goto('/instruments');
+    await expect(page.getByTestId('instrument-row')).toHaveCount(1);
+
+    const row = page.getByTestId('instrument-row').first();
+    await expect(row).toContainText('Amundi MSCI World');
+    await expect(row).toContainText('FR0010756098');
+    await expect(row).toContainText('Tracker');
+    await expect(row).toContainText('Yahoo Finance');
+  });
+
+  test('edits and deletes an instrument from the catalogue row menu', async ({ page }) => {
+    await page.goto('/instruments');
+    await expect(page.getByTestId('instrument-row')).toHaveCount(1);
+
+    await page.getByTestId('instrument-menu-trigger').click();
+    await page.getByTestId('instrument-menu-edit').click();
+
+    await expect(page.getByTestId('instrument-name')).toHaveValue('Amundi MSCI World');
   });
 });

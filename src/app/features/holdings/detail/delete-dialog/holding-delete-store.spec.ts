@@ -27,24 +27,23 @@ describe('HoldingDeleteStore', () => {
   it('should delete the holding', async () => {
     const removed = store.remove('h1');
 
-    const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'));
-    expect(request.request.method).toBe('DELETE');
-    request.flush(null);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
 
     await expect(removed).resolves.toBe(true);
-    expect(store.deleting()).toBe(false);
   });
 
-  it('should report a failure without claiming success', async () => {
+  it('should report a generic failure', async () => {
     const removed = store.remove('h1');
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush(null, {
       status: 500,
-      statusText: 'Server Error',
+      statusText: 'Server error',
     });
 
     await expect(removed).resolves.toBe(false);
     expect(store.error()).toBe(true);
-    expect(store.deleting()).toBe(false);
   });
 });

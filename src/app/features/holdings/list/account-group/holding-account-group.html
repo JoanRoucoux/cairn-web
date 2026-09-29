@@ -21,8 +21,8 @@
         class="text-caption grow tracking-[0.05em] text-(--subtle-foreground)"
         [id]="'account-summary-' + group().accountId"
       >
-        {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
-        {{ 'holdings.lineCount' | transloco: { count: group().holdings.length } }}
+        {{ 'enums.accountType.' + group().accountType | transloco }} &middot; {{ group().institution }} &middot;
+        {{ pluralKey('holdings.lineCount', group().holdings.length) | transloco: { count: group().holdings.length } }}
       </span>
 
       @if (group().stale) {
@@ -50,113 +50,125 @@
         <ui-amount currency="EUR" [value]="group().valueEur" />
         @if (group().unvaluedCount > 0) {
           <span class="text-caption block font-normal text-(--muted-foreground)">
-            {{ 'holdings.unvaluedCount' | transloco: { count: group().unvaluedCount } }}
+            {{
+              pluralKey('holdings.unvaluedCount', group().unvaluedCount) | transloco: { count: group().unvaluedCount }
+            }}
           </span>
         }
       </span>
     </summary>
 
-    <div class="overflow-x-auto border-t border-(--hairline)">
+    <div class="flex flex-col gap-1 border-t border-(--hairline) p-1.5 lg:hidden">
+      @for (holding of group().holdings; track holding.id) {
+        <a
+          class="flex min-h-14 items-center gap-2"
+          data-testid="holding-row-mobile"
+          queryParamsHandling="preserve"
+          ui-row
+          [routerLink]="['/holdings', holding.id]"
+          [selected]="holding.id === selectedHoldingId()"
+        >
+          <div class="flex min-w-0 flex-1 flex-col">
+            <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
+            @if (holding.stale) {
+              <span class="text-label font-medium text-(--stale)">{{
+                'holdings.staleShort' | transloco: { date: holding.priceAsOf | shortDate }
+              }}</span>
+            } @else if (holding.price === null || holding.price === undefined) {
+              <span class="text-label text-(--muted-foreground)">{{ 'holdings.manualQuote.open' | transloco }}</span>
+            } @else {
+              <span class="text-label text-(--muted-foreground) tabular-nums">
+                <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
+                &times;
+                <ui-amount currency="EUR" [value]="holding.price" />
+              </span>
+            }
+          </div>
+          <div class="flex flex-col items-end whitespace-nowrap tabular-nums">
+            <span class="text-body font-medium">
+              <ui-amount currency="EUR" [value]="holding.marketValueEur" />
+            </span>
+            @if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
+              <ui-delta
+                class="text-label"
+                [unknownLabel]="'holdings.unknown' | transloco"
+                [value]="holding.unrealizedGainRatio"
+              >
+                {{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
+              </ui-delta>
+            }
+          </div>
+        </a>
+      }
+
+      <button
+        class="rounded-control flex min-h-11 items-center justify-between gap-2 px-2 py-1.5 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+        data-testid="edit-cash-mobile"
+        type="button"
+        [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        (click)="editCash.emit(group().accountId)"
+      >
+        <span class="text-body">{{ 'holdings.cash.line' | transloco }}</span>
+        <ui-amount
+          class="text-body font-medium tabular-nums"
+          currency="EUR"
+          [class.text-(--muted-foreground)]="group().cashEur === 0"
+          [value]="group().cashEur"
+        />
+      </button>
+    </div>
+
+    <div class="hidden overflow-x-auto border-t border-(--hairline) lg:block">
       <table uiTable>
         <thead>
-          <tr>
+          <tr uiTr>
             <th uiTh>{{ 'holdings.columns.line' | transloco }}</th>
-            <th from="md" numeric uiTh>{{ 'holdings.columns.quantity' | transloco }}</th>
-            <th from="lg" numeric uiTh>{{ 'holdings.columns.averageCost' | transloco }}</th>
-            <th from="md" numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
+            @if (!compact()) {
+              <th numeric uiTh>{{ 'holdings.columns.quantity' | transloco }}</th>
+              <th numeric uiTh>{{ 'holdings.columns.averageCost' | transloco }}</th>
+              <th numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
+            }
             <th numeric uiTh>{{ 'holdings.columns.value' | transloco }}</th>
-            <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
-            <th uiTh>
-              <span class="sr-only">{{ 'holdings.columns.actions' | transloco }}</span>
-            </th>
+            @if (!compact()) {
+              <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
+            }
+            <th numeric uiTh>{{ 'holdings.columns.day' | transloco }}</th>
           </tr>
         </thead>
         <tbody>
           @for (holding of group().holdings; track holding.id) {
-            <tr data-testid="holding-row">
-              <td uiTd>
-                <a
-                  class="block max-w-56 truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-                  [routerLink]="['/holdings', holding.id]"
-                >
-                  {{ holding.instrumentName }}
-                </a>
-                <ui-badge variant="outline">{{ 'enums.assetClass.' + holding.assetClass | transloco }}</ui-badge>
-              </td>
-              <td from="md" numeric uiTd>
-                <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
-              </td>
-              <td from="lg" numeric uiTd>
-                <ui-amount currency="EUR" [value]="holding.averageCost" />
-              </td>
-              <td from="md" numeric uiTd>
-                <ui-amount currency="EUR" [value]="holding.price" />
-              </td>
-              <td numeric uiTd>
-                <ui-amount currency="EUR" [value]="holding.marketValueEur" />
-              </td>
-              <td numeric uiTd>
-                <ui-delta
-                  class="whitespace-nowrap"
-                  [unknownLabel]="'holdings.unknown' | transloco"
-                  [value]="holding.unrealizedGainEur"
-                >
-                  <ui-amount currency="EUR" signed [value]="holding.unrealizedGainEur" />
-                </ui-delta>
-              </td>
-              <td uiTd>
-                <div class="flex justify-end gap-1.5">
-                  <button
-                    data-testid="edit-holding"
-                    type="button"
-                    ui-button
-                    variant="ghost"
-                    [attr.aria-label]="'holdings.editRow' | transloco: { name: holding.instrumentName }"
-                    (click)="edit.emit(holding)"
-                  >
-                    {{ 'holdings.editRowShort' | transloco }}
-                  </button>
-                  <button
-                    data-testid="delete-holding"
-                    type="button"
-                    ui-button
-                    variant="ghost"
-                    [attr.aria-label]="'holdings.deleteRow' | transloco: { name: holding.instrumentName }"
-                    (click)="remove.emit(holding)"
-                  >
-                    {{ 'holdings.deleteRowShort' | transloco }}
-                  </button>
-                </div>
-              </td>
-            </tr>
+            <app-holding-account-group-row
+              [compact]="compact()"
+              [holding]="holding"
+              [selected]="holding.id === selectedHoldingId()"
+            />
           }
-          <tr data-testid="cash-row">
+          <tr data-testid="cash-row" uiTr>
             <td uiTd>{{ 'holdings.cash.line' | transloco }}</td>
-            <td from="md" numeric uiTd></td>
-            <td from="lg" numeric uiTd></td>
-            <td from="md" numeric uiTd></td>
+            @if (!compact()) {
+              <td numeric uiTd></td>
+              <td numeric uiTd></td>
+              <td numeric uiTd></td>
+            }
             <td numeric uiTd>
-              <ui-amount
-                currency="EUR"
-                [class.text-(--muted-foreground)]="group().cashEur === 0"
-                [value]="group().cashEur"
-              />
+              <button
+                class="focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
+                data-testid="edit-cash"
+                type="button"
+                [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+                (click)="editCash.emit(group().accountId)"
+              >
+                <ui-amount
+                  currency="EUR"
+                  [class.text-(--muted-foreground)]="group().cashEur === 0"
+                  [value]="group().cashEur"
+                />
+              </button>
             </td>
+            @if (!compact()) {
+              <td numeric uiTd></td>
+            }
             <td numeric uiTd></td>
-            <td uiTd>
-              <div class="flex justify-end gap-1.5">
-                <button
-                  data-testid="edit-cash"
-                  type="button"
-                  ui-button
-                  variant="ghost"
-                  [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
-                  (click)="editCash.emit(group().accountId)"
-                >
-                  {{ 'holdings.editRowShort' | transloco }}
-                </button>
-              </div>
-            </td>
           </tr>
         </tbody>
       </table>
