@@ -8,7 +8,6 @@
     "instrumentCreate": "Ajouter un instrument",
     "instrumentEdit": "Modifier un instrument",
     "accounts": "Comptes",
-    "sources": "Sources",
     "profile": "Mon compte",
     "notFound": "Page introuvable",
     "login": "Connexion"
@@ -54,7 +53,7 @@
     "portfolio": "Patrimoine",
     "holdings": "Positions",
     "allocation": "Répartition",
-    "sources": "Sources",
+    "accounts": "Comptes",
     "account": "Mon compte",
     "skipToContent": "Aller au contenu",
     "offline": "Vous êtes hors ligne. Les valeurs peuvent être périmées."

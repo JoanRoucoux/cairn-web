@@ -4,6 +4,7 @@ import { TitleStrategy, provideRouter } from '@angular/router';
 
 import { TranslocoService } from '@jsverse/transloco';
 
+import { provideAmountVisibility } from '@core/amounts/amount-visibility';
 import { XSRF_COOKIE_NAME, XSRF_HEADER_NAME } from '@core/http/xsrf';
 import { AppTitleStrategy } from '@core/i18n/title-strategy';
 import { provideTranslocoGlobal } from '@core/i18n/transloco-provider';
@@ -30,5 +31,6 @@ export const appConfig: ApplicationConfig = {
     },
     provideServiceWorkerRemoval(),
     provideThemeInit(),
+    provideAmountVisibility(),
   ],
 };

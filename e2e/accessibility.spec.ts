@@ -6,7 +6,6 @@ const screens = [
   '/holdings',
   '/holdings/11111111-1111-1111-1111-111111111111',
   '/allocation',
-  '/sources',
   '/profile',
   '/accounts',
   '/instruments',
@@ -57,6 +56,8 @@ test('has no accessibility violation on /profile with the add-passkey dialog ope
   await page.goto('/profile');
   await page.waitForLoadState('networkidle');
   await page.getByTestId('manage-passkeys').click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.waitForFunction(() => document.getAnimations().every((animation) => animation.playState !== 'running'));
 
   const results = await makeAxeBuilder().analyze();
 

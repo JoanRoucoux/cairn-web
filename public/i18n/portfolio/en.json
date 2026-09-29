@@ -1,5 +1,4 @@
 {
-  "title": "Portfolio",
   "unknown": "Not available",
   "loading": "Loading your portfolio",
   "error": "Your portfolio could not be loaded.",
@@ -33,10 +32,9 @@
   "stale": {
     "message_one": "{{count}} quote is more than four days old",
     "message_other": "{{count}} quotes are more than four days old",
-    "action": "View sources"
+    "action": "View holdings"
   },
   "allocation": {
-    "title": "Allocation",
     "byAssetClass": "By asset class",
     "byAccount": "By account",
     "scaleNote": "Bars are scaled to the largest row, not to the total - otherwise the smallest classes would be invisible."
@@ -44,6 +42,6 @@
   "unvalued": {
     "message_one": "{{count}} holding has no quote yet",
     "message_other": "{{count}} holdings have no quote yet",
-    "action": "View sources"
+    "action": "View holdings"
   }
 }

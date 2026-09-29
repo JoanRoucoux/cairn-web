@@ -15,9 +15,9 @@
           <span class="text-caption text-(--subtle-foreground)">{{ mover.accountName }}</span>
         </span>
         <span class="flex shrink-0 flex-col items-end gap-0.5">
-          <span class="text-label font-semibold tabular-nums">{{ mover.marketValueEur | money }}</span>
+          <ui-amount class="text-label font-semibold" currency="EUR" [value]="mover.marketValueEur" />
           <ui-delta class="text-caption" [unknownLabel]="'portfolio.unknown' | transloco" [value]="mover.dayChangeEur">
-            {{ mover.dayChangeEur | signedMoney }}
+            <ui-amount currency="EUR" signed [value]="mover.dayChangeEur" />
           </ui-delta>
         </span>
       </a>

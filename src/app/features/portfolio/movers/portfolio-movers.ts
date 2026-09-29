@@ -1,19 +1,16 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiDelta } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiDelta } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
-
-import { MoneyPipe } from '@shared/format/money-pipe';
-import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
 
 const MOVER_COUNT = 4;
 
 @Component({
   selector: 'app-portfolio-movers',
-  imports: [MoneyPipe, RouterLink, SignedMoneyPipe, TranslocoPipe, UiDelta],
+  imports: [RouterLink, TranslocoPipe, UiAmount, UiDelta],
   templateUrl: './portfolio-movers.html',
 })
 export class PortfolioMovers {

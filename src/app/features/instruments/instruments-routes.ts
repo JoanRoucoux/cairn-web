@@ -14,6 +14,7 @@ export const INSTRUMENTS_ROUTES: Routes = [
         path: '',
         component: InstrumentListPage,
         title: 'pageTitle.instruments',
+        data: { headerKey: 'pageTitle.instruments' },
       },
       {
         // Declared before any :instrumentId route so 'new' is not matched as an identifier.

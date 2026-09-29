@@ -27,10 +27,10 @@ describe('UnvaluedBanner', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
-  it('should link to the sources screen', async () => {
+  it('should link to the holdings screen', async () => {
     await renderBanner(3);
 
-    expect(screen.getByRole('link', { name: 'portfolio.unvalued.action' })).toHaveAttribute('href', '/sources');
+    expect(screen.getByRole('link', { name: 'portfolio.unvalued.action' })).toHaveAttribute('href', '/holdings');
   });
 
   it('should use the singular message key for a count of one', async () => {

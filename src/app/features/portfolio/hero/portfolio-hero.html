@@ -1,6 +1,13 @@
 <ui-card class="flex h-full flex-col">
   <ui-stat size="hero" [label]="'portfolio.hero.label' | transloco">
-    <span data-testid="hero-value" uiStatValue>{{ total().valueEur | wholeMoney }}</span>
+    <ui-amount
+      currency="EUR"
+      data-testid="hero-value"
+      numeric="proportional"
+      uiStatValue
+      [fractionDigits]="0"
+      [value]="total().valueEur"
+    />
 
     <span data-testid="hero-change" uiStatDelta [attr.aria-busy]="loading()" [class.opacity-40]="loading()">
       <ui-delta
@@ -8,7 +15,7 @@
         [unknownLabel]="'portfolio.unknown' | transloco"
         [value]="rangeError() ? undefined : total().changeEur"
       >
-        {{ total().changeEur | signedMoney }}
+        <ui-amount currency="EUR" signed whenMasked="hide" [value]="total().changeEur" />
       </ui-delta>
     </span>
 
@@ -41,7 +48,7 @@
         {{ 'portfolio.hero.unrealizedGain' | transloco }}
       </p>
       <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="unrealizedGainEur()">
-        {{ unrealizedGainEur() | signedMoney }}
+        <ui-amount currency="EUR" signed [value]="unrealizedGainEur()" />
       </ui-delta>
     </div>
 
@@ -49,7 +56,7 @@
       <div>
         <p class="text-caption font-medium text-(--muted-foreground)">{{ 'portfolio.hero.day' | transloco }}</p>
         <ui-delta class="mt-1" [unknownLabel]="'portfolio.unknown' | transloco" [value]="dayChangeEur()">
-          {{ dayChangeEur() | signedMoney }}
+          <ui-amount currency="EUR" signed [value]="dayChangeEur()" />
         </ui-delta>
       </div>
     }

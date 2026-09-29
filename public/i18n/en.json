@@ -8,7 +8,6 @@
     "instrumentCreate": "Add an instrument",
     "instrumentEdit": "Edit an instrument",
     "accounts": "Accounts",
-    "sources": "Sources",
     "profile": "My account",
     "notFound": "Page not found",
     "login": "Sign in"
@@ -54,7 +53,7 @@
     "portfolio": "Portfolio",
     "holdings": "Holdings",
     "allocation": "Allocation",
-    "sources": "Sources",
+    "accounts": "Accounts",
     "account": "My account",
     "skipToContent": "Skip to content",
     "offline": "You are offline. Values may be out of date."

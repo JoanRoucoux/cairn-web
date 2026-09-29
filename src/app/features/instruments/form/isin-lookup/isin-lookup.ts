@@ -1,15 +1,13 @@
 import { Component, input, output, signal } from '@angular/core';
 
-import { UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { MoneyPipe } from '@shared/format/money-pipe';
-
 @Component({
   selector: 'app-isin-lookup',
-  imports: [MoneyPipe, TranslocoPipe, UiButton, UiField, UiInput],
+  imports: [TranslocoPipe, UiAmount, UiButton, UiField, UiInput],
   templateUrl: './isin-lookup.html',
 })
 export class IsinLookup {

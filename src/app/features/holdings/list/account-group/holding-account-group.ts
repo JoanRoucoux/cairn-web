@@ -1,19 +1,18 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiBadge, UiButton, UiDelta, UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiBadge, UiButton, UiDelta, UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { MoneyPipe } from '@shared/format/money-pipe';
-import { SignedMoneyPipe } from '@shared/format/signed-money-pipe';
+import { decimalPlaces } from '@shared/format/decimal-places';
 
 import type { AccountGroup } from '../holding-list-store';
 
 @Component({
   selector: 'app-holding-account-group',
-  imports: [MoneyPipe, RouterLink, SignedMoneyPipe, TranslocoPipe, UiBadge, UiButton, UiDelta, UiTable, UiTd, UiTh],
+  imports: [RouterLink, TranslocoPipe, UiAmount, UiBadge, UiButton, UiDelta, UiTable, UiTd, UiTh],
   templateUrl: './holding-account-group.html',
 })
 export class HoldingAccountGroup {
@@ -23,4 +22,6 @@ export class HoldingAccountGroup {
   readonly edit = output<HoldingResponse>();
   readonly remove = output<HoldingResponse>();
   readonly editCash = output<string>();
+
+  protected readonly decimalPlaces = decimalPlaces;
 }

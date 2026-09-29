@@ -47,7 +47,7 @@
         class="text-label shrink-0 text-right font-semibold tabular-nums"
         [id]="'account-value-' + group().accountId"
       >
-        {{ group().valueEur | money }}
+        <ui-amount currency="EUR" [value]="group().valueEur" />
         @if (group().unvaluedCount > 0) {
           <span class="text-caption block font-normal text-(--muted-foreground)">
             {{ 'holdings.unvaluedCount' | transloco: { count: group().unvaluedCount } }}
@@ -83,27 +83,17 @@
                 </a>
                 <ui-badge variant="outline">{{ 'enums.assetClass.' + holding.assetClass | transloco }}</ui-badge>
               </td>
-              <td from="md" numeric uiTd>{{ holding.quantity }}</td>
+              <td from="md" numeric uiTd>
+                <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
+              </td>
               <td from="lg" numeric uiTd>
-                @if (holding.averageCost !== null && holding.averageCost !== undefined) {
-                  {{ holding.averageCost | money }}
-                } @else {
-                  &mdash;
-                }
+                <ui-amount currency="EUR" [value]="holding.averageCost" />
               </td>
               <td from="md" numeric uiTd>
-                @if (holding.price !== null && holding.price !== undefined) {
-                  {{ holding.price | money }}
-                } @else {
-                  &mdash;
-                }
+                <ui-amount currency="EUR" [value]="holding.price" />
               </td>
               <td numeric uiTd>
-                @if (holding.marketValueEur !== null && holding.marketValueEur !== undefined) {
-                  {{ holding.marketValueEur | money }}
-                } @else {
-                  &mdash;
-                }
+                <ui-amount currency="EUR" [value]="holding.marketValueEur" />
               </td>
               <td numeric uiTd>
                 <ui-delta
@@ -111,7 +101,7 @@
                   [unknownLabel]="'holdings.unknown' | transloco"
                   [value]="holding.unrealizedGainEur"
                 >
-                  {{ holding.unrealizedGainEur | signedMoney }}
+                  <ui-amount currency="EUR" signed [value]="holding.unrealizedGainEur" />
                 </ui-delta>
               </td>
               <td uiTd>
@@ -146,7 +136,11 @@
             <td from="lg" numeric uiTd></td>
             <td from="md" numeric uiTd></td>
             <td numeric uiTd>
-              <span [class.text-(--muted-foreground)]="group().cashEur === 0">{{ group().cashEur | money }}</span>
+              <ui-amount
+                currency="EUR"
+                [class.text-(--muted-foreground)]="group().cashEur === 0"
+                [value]="group().cashEur"
+              />
             </td>
             <td numeric uiTd></td>
             <td uiTd>

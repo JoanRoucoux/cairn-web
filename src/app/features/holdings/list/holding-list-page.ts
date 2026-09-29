@@ -1,11 +1,9 @@
 import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 
-import { UiButton, UiField, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiButton, UiField, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
-
-import { MoneyPipe } from '@shared/format/money-pipe';
 
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
@@ -20,8 +18,8 @@ import { HoldingListStore } from './holding-list-store';
     HoldingCashDialog,
     HoldingDeleteDialog,
     HoldingFormDialog,
-    MoneyPipe,
     TranslocoPipe,
+    UiAmount,
     UiButton,
     UiField,
     UiInput,
@@ -33,7 +31,7 @@ import { HoldingListStore } from './holding-list-store';
 export class HoldingListPage {
   #store = inject(HoldingListStore);
 
-  private readonly heading = viewChild.required<ElementRef<HTMLElement>>('heading');
+  private readonly summary = viewChild.required<ElementRef<HTMLElement>>('summary');
 
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
@@ -74,7 +72,7 @@ export class HoldingListPage {
   protected onDeleted(): void {
     this.holdingToDelete.set(undefined);
     this.holdings.reload();
-    this.heading().nativeElement.focus();
+    this.summary().nativeElement.focus();
   }
 
   protected onCashSaved(): void {

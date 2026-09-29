@@ -1,5 +1,4 @@
 {
-  "title": "Patrimoine",
   "unknown": "Non disponible",
   "loading": "Chargement de votre patrimoine",
   "error": "Votre patrimoine n'a pas pu être chargé.",
@@ -33,10 +32,9 @@
   "stale": {
     "message_one": "{{count}} cours date de plus de 4 jours",
     "message_other": "{{count}} cours datent de plus de 4 jours",
-    "action": "Voir les sources"
+    "action": "Voir les lignes"
   },
   "allocation": {
-    "title": "Répartition",
     "byAssetClass": "Par classe d'actif",
     "byAccount": "Par compte",
     "scaleNote": "Les barres sont à l'échelle de la plus grande ligne, pas du total - sinon les petites classes deviendraient invisibles."
@@ -44,6 +42,6 @@
   "unvalued": {
     "message_one": "{{count}} ligne non valorisée",
     "message_other": "{{count}} lignes non valorisées",
-    "action": "Voir les sources"
+    "action": "Voir les lignes"
   }
 }

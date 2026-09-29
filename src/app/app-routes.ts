@@ -27,10 +27,6 @@ export const routes: Routes = [
         loadChildren: () => import('./features/instruments/instruments-routes').then((m) => m.INSTRUMENTS_ROUTES),
       },
       {
-        path: 'sources',
-        loadChildren: () => import('./features/sources/sources-routes').then((m) => m.SOURCES_ROUTES),
-      },
-      {
         path: 'profile',
         loadChildren: () => import('./features/profile/profile-routes').then((m) => m.PROFILE_ROUTES),
       },
