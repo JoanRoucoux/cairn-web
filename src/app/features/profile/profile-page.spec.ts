@@ -65,7 +65,10 @@ describe('ProfilePage', () => {
   let httpTesting: HttpTestingController;
   let register: ReturnType<typeof vi.fn<() => Promise<PasskeyOutcome>>>;
 
-  const renderPage = async (translations = getTranslocoTestingModule()): Promise<void> => {
+  const renderPage = async (
+    translations = getTranslocoTestingModule(),
+    sessionOverride: typeof session = session,
+  ): Promise<void> => {
     localStorage.clear();
     register = vi.fn();
     await render(ProfilePage, {
@@ -82,7 +85,7 @@ describe('ProfilePage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(sessionOverride);
   };
 
   afterEach(() => httpTesting.verify());
@@ -284,17 +287,32 @@ describe('ProfilePage', () => {
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
   });
 
-  it('should link out to accounts and instruments management', async () => {
+  it('should link out to the instrument catalog, accounts having moved to the navigation', async () => {
     await renderPage();
 
-    expect(await screen.findByRole('link', { name: 'profile.manageData.accounts' })).toHaveAttribute(
-      'href',
-      '/accounts',
-    );
-    expect(screen.getByRole('link', { name: 'profile.manageData.instruments' })).toHaveAttribute(
-      'href',
-      '/instruments',
-    );
+    expect(await screen.findByTestId('manage-instruments')).toHaveAttribute('href', '/instruments');
+    expect(screen.queryByTestId('manage-accounts')).not.toBeInTheDocument();
+  });
+
+  it('should reflect and change the stored hide-amounts preference', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    const toggle = await screen.findByTestId('hide-amounts');
+    expect(toggle).not.toBeChecked();
+
+    await user.click(toggle);
+
+    expect(toggle).toBeChecked();
+    expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
+  });
+
+  it('should hide the delete button for the only remaining passkey and explain why', async () => {
+    await renderPage(getTranslocoTestingModule(), { ...session, passkeys: [session.passkeys[0]!] });
+
+    expect(await screen.findByText('iPhone de Joan')).toBeInTheDocument();
+    expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
+    expect(screen.getByText('profile.onlyKey')).toBeInTheDocument();
   });
 
   it('should send the browser to the sign-in page after signing out, not navigate in place', async () => {

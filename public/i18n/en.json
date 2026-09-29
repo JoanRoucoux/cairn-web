@@ -13,9 +13,10 @@
     "login": "Sign in"
   },
   "notFound": {
-    "title": "Page not found",
-    "description": "The requested page does not exist.",
-    "home": "Back to home"
+    "title": "This page does not exist",
+    "description": "The link may be old, or the holding may have been removed.",
+    "home": "Back to the portfolio",
+    "error404": "Error 404"
   },
   "chart": {
     "rangeLabel": "Time range",

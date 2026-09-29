@@ -1,87 +1,97 @@
 <div class="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4">
-  <h1 class="text-title font-semibold">{{ 'login.title' | transloco }}</h1>
-  <p class="text-label mt-1 text-(--muted-foreground)">{{ 'login.subtitle' | transloco }}</p>
-
-  <ui-card class="mt-6">
-    <div class="flex flex-col gap-4">
-      <button
-        data-testid="login-passkey"
-        size="lg"
-        type="button"
-        ui-button
-        [disabled]="passkeySubmitting()"
-        (click)="onPasskeySignIn()"
-      >
-        {{ (passkeySubmitting() ? 'login.passkeySubmitting' : 'login.passkey') | transloco }}
-      </button>
-
-      @if (passkeyRefused()) {
-        <p class="text-label text-(--negative)" data-testid="login-passkey-refused" role="alert">
-          {{ 'login.passkeyRefused' | transloco }}
-        </p>
-      }
-      @if (passkeyUnsupported()) {
-        <p class="text-label text-(--negative)" data-testid="login-passkey-unsupported" role="alert">
-          {{ 'login.passkeyUnsupported' | transloco }}
-        </p>
-      }
-      @if (passkeyFailed()) {
-        <p class="text-label text-(--negative)" data-testid="login-passkey-failed" role="alert">
-          {{ 'login.passkeyFailed' | transloco }}
-        </p>
-      }
-
-      <button
-        aria-controls="login-password-form"
-        data-testid="login-password-toggle"
-        type="button"
-        ui-button
-        variant="ghost"
-        [attr.aria-expanded]="passwordExpanded()"
-        (click)="togglePassword()"
-      >
-        {{ 'login.passwordToggle' | transloco }}
-      </button>
-
-      @if (passwordExpanded()) {
-        <!-- novalidate: the native required-field validation would block submit() from ever running. -->
-        <form class="flex flex-col gap-4" id="login-password-form" novalidate (submit)="onSubmit($event)">
-          <ui-field [label]="'login.username' | transloco">
-            <input
-              autocomplete="username"
-              data-testid="login-username"
-              type="text"
-              uiInput
-              [formField]="form.username"
-            />
-          </ui-field>
-
-          <ui-field [label]="'login.password' | transloco">
-            <input
-              autocomplete="current-password"
-              data-testid="login-password"
-              type="password"
-              uiInput
-              [formField]="form.password"
-            />
-          </ui-field>
-
-          @if (refused()) {
-            <p class="text-label text-(--negative)" data-testid="login-refused" role="alert">
-              {{ 'login.refused' | transloco }}
-            </p>
-          }
-          @if (failed()) {
-            <p class="text-label text-(--negative)" data-testid="login-failed" role="alert">
-              {{ 'login.failed' | transloco }}
-            </p>
-          }
-
-          <button data-testid="login-submit" size="lg" type="submit" ui-button [disabled]="form().submitting()">
-            {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
-          </button>
-        </form>
-      }
+  <div class="flex flex-col items-center gap-3 text-center">
+    <app-cairn-mark [size]="56" />
+    <div class="flex flex-col gap-1">
+      <h1 class="text-[44px] leading-none font-bold tracking-tight">Cairn</h1>
+      <p class="text-body text-(--muted-foreground)">{{ 'login.tagline' | transloco }}</p>
     </div>
-  </ui-card>
+  </div>
+
+  <div class="mt-8 flex flex-col gap-4">
+    <button
+      data-testid="login-passkey"
+      size="xl"
+      type="button"
+      ui-button
+      [disabled]="passkeySubmitting()"
+      (click)="onPasskeySignIn()"
+    >
+      <svg lucideKeyRound [size]="20" [strokeWidth]="1.75" />
+      {{ (passkeySubmitting() ? 'login.passkeySubmitting' : 'login.passkey') | transloco }}
+    </button>
+
+    @if (passkeyRefused()) {
+      <p
+        class="text-label rounded-control bg-(--card) p-3 text-(--negative) shadow-[inset_0_0_0_1px_var(--border)]"
+        data-testid="login-passkey-refused"
+        role="alert"
+      >
+        {{ 'login.passkeyRefused' | transloco }}
+      </p>
+    }
+    @if (passkeyUnsupported()) {
+      <p
+        class="text-label rounded-control bg-(--card) p-3 text-(--negative) shadow-[inset_0_0_0_1px_var(--border)]"
+        data-testid="login-passkey-unsupported"
+        role="alert"
+      >
+        {{ 'login.passkeyUnsupported' | transloco }}
+      </p>
+    }
+    @if (passkeyFailed()) {
+      <p
+        class="text-label rounded-control bg-(--card) p-3 text-(--negative) shadow-[inset_0_0_0_1px_var(--border)]"
+        data-testid="login-passkey-failed"
+        role="alert"
+      >
+        {{ 'login.passkeyFailed' | transloco }}
+      </p>
+    }
+
+    <button
+      aria-controls="login-password-form"
+      class="self-center"
+      data-testid="login-password-toggle"
+      type="button"
+      ui-button
+      variant="ghost"
+      [attr.aria-expanded]="passwordExpanded()"
+      (click)="togglePassword()"
+    >
+      {{ 'login.passwordToggle' | transloco }}
+    </button>
+
+    @if (passwordExpanded()) {
+      <form class="flex flex-col gap-4" id="login-password-form" novalidate (submit)="onSubmit($event)">
+        <ui-field [label]="'login.username' | transloco">
+          <input autocomplete="username" data-testid="login-username" type="text" uiInput [formField]="form.username" />
+        </ui-field>
+
+        <ui-field [label]="'login.password' | transloco">
+          <input
+            autocomplete="current-password"
+            data-testid="login-password"
+            type="password"
+            uiInput
+            [formField]="form.password"
+          />
+        </ui-field>
+
+        @if (refused()) {
+          <p class="text-label text-(--negative)" data-testid="login-refused" role="alert">
+            {{ 'login.refused' | transloco }}
+          </p>
+        }
+        @if (failed()) {
+          <p class="text-label text-(--negative)" data-testid="login-failed" role="alert">
+            {{ 'login.failed' | transloco }}
+          </p>
+        }
+
+        <button data-testid="login-submit" size="xl" type="submit" ui-button [loading]="form().submitting()">
+          {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
+        </button>
+      </form>
+    }
+  </div>
 </div>

@@ -1,10 +1,15 @@
-<div class="flex flex-col items-center gap-4 py-24 text-center">
-  <h1 class="text-4xl font-bold tracking-tight">{{ 'notFound.title' | transloco }}</h1>
-  <p class="text-title max-w-xl text-(--muted-foreground)">{{ 'notFound.description' | transloco }}</p>
-  <a
-    class="rounded-control text-label mt-2 inline-flex items-center justify-center bg-(--primary) px-4 py-2 font-medium text-(--primary-foreground) transition-colors hover:bg-(--primary)/90"
-    routerLink="/"
-  >
+<div class="flex flex-col items-center gap-6 py-24 text-center">
+  <app-cairn-mark [size]="64" />
+
+  <div class="flex max-w-sm flex-col gap-2">
+    <h1 class="text-heading font-semibold tracking-tight">{{ 'notFound.title' | transloco }}</h1>
+    <p class="text-body text-(--muted-foreground)">{{ 'notFound.description' | transloco }}</p>
+  </div>
+
+  <a routerLink="/" size="lg" ui-button>
+    <svg lucideHouse [size]="20" [strokeWidth]="1.75" />
     {{ 'notFound.home' | transloco }}
   </a>
+
+  <span class="text-label text-(--subtle-foreground)">{{ 'notFound.error404' | transloco }}</span>
 </div>

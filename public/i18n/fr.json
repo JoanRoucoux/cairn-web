@@ -13,9 +13,10 @@
     "login": "Connexion"
   },
   "notFound": {
-    "title": "Page introuvable",
-    "description": "La page demandée n'existe pas.",
-    "home": "Retour à l'accueil"
+    "title": "Cette page n'existe pas",
+    "description": "Le lien est peut-être ancien, ou la ligne a été supprimée.",
+    "home": "Revenir au portefeuille",
+    "error404": "Erreur 404"
   },
   "chart": {
     "rangeLabel": "Plage de temps",
