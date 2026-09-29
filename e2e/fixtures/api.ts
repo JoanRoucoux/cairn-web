@@ -373,7 +373,17 @@ const handleApiRoute = async (route: Route): Promise<void> => {
   return route.fulfill({ status: 404, json: { message: `unmocked route: ${method} ${pathname}` } });
 };
 
+const initialState = structuredClone({ holdings, accounts, instruments });
+
+const resetState = (): void => {
+  const fresh = structuredClone(initialState);
+  holdings.splice(0, holdings.length, ...fresh.holdings);
+  accounts.splice(0, accounts.length, ...fresh.accounts);
+  instruments.splice(0, instruments.length, ...fresh.instruments);
+};
+
 export const mockApi = async (page: Page): Promise<void> => {
+  resetState();
   await page.route('**/api/**', handleApiRoute);
   await mockWebauthn(page);
 };
