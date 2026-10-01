@@ -62,7 +62,6 @@
               class="-mb-3 flex min-h-11 items-center gap-1 self-start rounded-sm font-medium text-(--stale) hover:underline hover:underline-offset-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) lg:mb-0 lg:min-h-0 lg:gap-0.5"
               data-testid="stale-link"
               routerLink="/holdings"
-              [queryParams]="{ filter: 'stale' }"
             >
               {{ staleKey() | transloco: { count: portfolio.staleCount } }}
               <svg
