@@ -5,7 +5,8 @@
   </div>
 
   <ui-async
-    class="flex-1 [&>[role=alert]]:mt-2"
+    class="flex-1"
+    [class.mt-2]="state() === 'error'"
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.envelopes.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
@@ -19,7 +20,7 @@
             <div [style.width.px]="width"><ui-skeleton [height]="16" /></div>
             <div class="w-26"><ui-skeleton [height]="16" /></div>
           </div>
-          <div class="rounded-pill h-1 bg-(--muted)"></div>
+          <div aria-hidden="true"><ui-meter label="" size="sm" valueText="" [value]="0" /></div>
         </div>
       }
     </div>
@@ -31,16 +32,16 @@
         <div class="flex flex-col gap-1.5 px-2 py-2.5" role="listitem">
           <div class="text-body flex items-baseline justify-between gap-3 tabular-nums">
             <span class="font-medium">{{ 'enums.accountType.' + envelope.accountType | transloco }}</span>
-            <ui-amount class="font-medium" currency="EUR" [value]="envelope.valueEur" />
+            <span class="font-medium"><ui-amount currency="EUR" [value]="envelope.valueEur" /></span>
           </div>
 
-          <div class="rounded-pill h-1 overflow-hidden bg-(--muted)">
-            <div
-              class="rounded-pill h-full bg-(--ramp-2)"
-              data-testid="envelope-bar"
-              [style.width.%]="envelope.share * 100"
-            ></div>
-          </div>
+          <ui-meter
+            size="sm"
+            [label]="'enums.accountType.' + envelope.accountType | transloco"
+            [tone]="2"
+            [value]="envelope.share"
+            [valueText]="(envelope.share | ratio) + ' ' + ('portfolio.envelopes.share' | transloco)"
+          />
 
           <div class="text-label flex items-baseline justify-between gap-3 tabular-nums">
             <span class="text-(--subtle-foreground)"
@@ -48,7 +49,7 @@
             >
             <span class="lg:hidden" data-testid="envelope-change-percent">
               <ui-delta
-                class="font-normal"
+                weight="regular"
                 [unknownLabel]="'portfolio.unknown' | transloco"
                 [value]="envelope.changeRatio"
               >
@@ -56,11 +57,7 @@
               </ui-delta>
             </span>
             <span class="hidden lg:inline" data-testid="envelope-change-full">
-              <ui-delta
-                class="font-normal"
-                [unknownLabel]="'portfolio.unknown' | transloco"
-                [value]="envelope.changeEur"
-              >
+              <ui-delta weight="regular" [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
                 <ui-amount currency="EUR" signed [value]="envelope.changeEur" />
                 <span aria-hidden="true"> &middot; </span>
                 {{ envelope.changeRatio | ratio: { signed: true, decimals: 2 } }}

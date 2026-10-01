@@ -2,7 +2,7 @@
   <h2 class="text-label font-medium text-(--muted-foreground)">{{ 'portfolio.total.title' | transloco }}</h2>
 
   <ui-async
-    class="block [&>[role=alert]]:mt-1"
+    [class.mt-1]="state() === 'error'"
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.total.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
@@ -19,21 +19,14 @@
 
     @if (portfolio(); as portfolio) {
       <div class="flex flex-col gap-1" data-testid="total-value">
-        <ui-amount
-          class="text-display font-semibold"
-          currency="EUR"
-          numeric="proportional"
-          [value]="portfolio.totalEur"
-        />
+        <span class="text-display font-semibold">
+          <ui-amount currency="EUR" numeric="proportional" [value]="portfolio.totalEur" />
+        </span>
 
         <div class="text-label mt-1 flex flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-6 lg:gap-y-1">
           <div class="flex flex-col gap-0.5 lg:contents">
             <span class="flex gap-1.5">
-              <ui-delta
-                class="font-medium"
-                [unknownLabel]="'portfolio.unknown' | transloco"
-                [value]="portfolio.dayChangeEur"
-              >
+              <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.dayChangeEur">
                 <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.dayChangeEur" />
                 <span aria-hidden="true"> &middot; </span>
                 {{ portfolio.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
@@ -43,11 +36,7 @@
 
             <span class="flex gap-1.5">
               <span class="text-(--muted-foreground)">{{ 'portfolio.total.unrealizedGain' | transloco }}</span>
-              <ui-delta
-                class="font-medium"
-                [unknownLabel]="'portfolio.unknown' | transloco"
-                [value]="portfolio.unrealizedGainEur"
-              >
+              <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.unrealizedGainEur">
                 <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.unrealizedGainEur" />
                 @if (portfolio.unrealizedGainRatio !== null && portfolio.unrealizedGainRatio !== undefined) {
                   <span aria-hidden="true"> &middot; </span>

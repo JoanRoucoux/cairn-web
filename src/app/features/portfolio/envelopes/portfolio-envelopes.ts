@@ -1,6 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { type AsyncState, UiAmount, UiAsync, UiDelta, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { type AsyncState, UiAmount, UiAsync, UiDelta, UiMeter, UiSkeleton } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { EnvelopePerformanceResponse } from '@core/api-client/cairnAPI.schemas';
@@ -10,7 +10,7 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 
 @Component({
   selector: 'app-portfolio-envelopes',
-  imports: [RatioPipe, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiSkeleton],
+  imports: [RatioPipe, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiMeter, UiSkeleton],
   templateUrl: './portfolio-envelopes.html',
 })
 export class PortfolioEnvelopes {

@@ -1,6 +1,8 @@
 @if (blocking()) {
   <ui-async
-    class="flex flex-1 flex-col [&>[role=alert]]:min-h-63 [&>[role=alert]]:flex-1 [&>[role=alert]]:items-center [&>[role=alert]]:justify-center [&>[role=alert]]:text-center lg:[&>[role=alert]]:min-h-93"
+    align="center"
+    class="flex min-h-63 flex-1 flex-col lg:min-h-93"
+    fill
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.curve.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
@@ -26,7 +28,7 @@
         <div class="w-50" data-testid="curve-range-loading"><ui-skeleton [height]="14" /></div>
       } @else if (state() !== 'error') {
         @if (rangeChangeEur() !== undefined) {
-          <ui-delta class="font-medium" [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
+          <ui-delta size="inherit" [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
             <ui-amount currency="EUR" signed whenMasked="hide" [value]="rangeChangeEur()" />
             <span aria-hidden="true"> &middot; </span>
             {{ rangeChangeRatio() | ratio: { signed: true, decimals: 2 } }}

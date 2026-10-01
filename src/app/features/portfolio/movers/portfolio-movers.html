@@ -2,7 +2,7 @@
   <h2 class="text-title font-semibold text-(--foreground) lg:px-2">{{ 'portfolio.movers.title' | transloco }}</h2>
 
   <ui-async
-    class="[&>[role=alert]]:my-2"
+    [class.my-2]="state() === 'error'"
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.movers.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
@@ -28,21 +28,14 @@
 
     <div class="-mx-2 flex flex-col lg:hidden" data-testid="movers-list">
       @for (mover of movers(); track mover.id) {
-        <a
-          class="rounded-control flex min-h-18 items-center gap-2 px-2 py-1.5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
-          [routerLink]="['/holdings', mover.id]"
-        >
+        <a gap="sm" padding="sm" size="xl" ui-row [routerLink]="['/holdings', mover.id]">
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body truncate font-medium">{{ mover.instrumentName }}</span>
             <span class="text-label text-(--subtle-foreground)">{{ mover.accountName }}</span>
           </span>
           <span class="flex shrink-0 flex-col items-end whitespace-nowrap tabular-nums">
-            <ui-amount class="text-body font-medium" currency="EUR" [value]="mover.marketValueEur" />
-            <ui-delta
-              class="text-label font-normal"
-              [unknownLabel]="'portfolio.unknown' | transloco"
-              [value]="mover.dayChangeRatio"
-            >
+            <span class="text-body font-medium"><ui-amount currency="EUR" [value]="mover.marketValueEur" /></span>
+            <ui-delta weight="regular" [unknownLabel]="'portfolio.unknown' | transloco" [value]="mover.dayChangeRatio">
               {{ mover.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
             </ui-delta>
           </span>
@@ -64,67 +57,68 @@
       }
     </div>
 
-    <div class="hidden flex-col lg:flex" data-testid="movers-table" role="table">
-      <div
-        class="text-caption grid h-9 grid-cols-[minmax(0,1fr)_200px_150px_130px_100px_16px] items-center gap-4 px-2 font-medium tracking-(--tracking-caption) text-(--subtle-foreground) shadow-[inset_0_-1px_0_var(--hairline)]"
-        role="row"
-      >
-        <span role="columnheader">{{ 'portfolio.movers.columns.line' | transloco }}</span>
-        <span role="columnheader">{{ 'portfolio.movers.columns.account' | transloco }}</span>
-        <span class="text-right" role="columnheader">{{ 'portfolio.movers.columns.value' | transloco }}</span>
-        <span class="text-right" role="columnheader">{{ 'portfolio.movers.columns.day' | transloco }}</span>
-        <span class="text-right" role="columnheader">{{ 'portfolio.movers.columns.dayPercent' | transloco }}</span>
-        <span role="columnheader"></span>
-      </div>
-      <div class="h-1" role="presentation"></div>
-      @for (mover of movers(); track mover.id) {
-        <div
-          class="text-body rounded-control relative grid min-h-12 grid-cols-[minmax(0,1fr)_200px_150px_130px_100px_16px] items-center gap-4 px-2 tabular-nums hover:bg-(--glow) active:bg-(--soft) has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-(--ring)"
-          role="row"
-        >
-          <span class="truncate font-medium" role="cell">
-            <a class="outline-none after:absolute after:inset-0" [routerLink]="['/holdings', mover.id]">
-              {{ mover.instrumentName }}
-            </a>
-          </span>
-          <span class="text-label text-(--muted-foreground)" role="cell">{{ mover.accountName }}</span>
-          <span class="text-right font-medium" role="cell">
-            <ui-amount currency="EUR" [value]="mover.marketValueEur" />
-          </span>
-          <span class="text-right" role="cell">
-            <ui-delta
-              class="text-body! font-normal"
-              [unknownLabel]="'portfolio.unknown' | transloco"
-              [value]="mover.dayChangeEur"
-            >
-              <ui-amount currency="EUR" signed [value]="mover.dayChangeEur" />
-            </ui-delta>
-          </span>
-          <span class="text-right" role="cell">
-            <ui-delta
-              class="text-body! font-normal"
-              [unknownLabel]="'portfolio.unknown' | transloco"
-              [value]="mover.dayChangeRatio"
-            >
-              {{ mover.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
-            </ui-delta>
-          </span>
-          <svg
-            aria-hidden="true"
-            class="text-(--subtle-foreground)"
-            fill="none"
-            height="16"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="1.75"
-            viewBox="0 0 24 24"
-            width="16"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        </div>
-      }
-    </div>
+    <table class="max-lg:hidden" data-testid="movers-table" row="48" uiTable>
+      <thead>
+        <tr uiTr>
+          <th primary uiTh>{{ 'portfolio.movers.columns.line' | transloco }}</th>
+          <th uiTh width="216px">{{ 'portfolio.movers.columns.account' | transloco }}</th>
+          <th numeric uiTh width="166px">{{ 'portfolio.movers.columns.value' | transloco }}</th>
+          <th numeric uiTh width="146px">{{ 'portfolio.movers.columns.day' | transloco }}</th>
+          <th numeric uiTh width="116px">{{ 'portfolio.movers.columns.dayPercent' | transloco }}</th>
+          <th uiTh width="32px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (mover of movers(); track mover.id) {
+          <tr interactive uiTr>
+            <td primary uiTd>
+              <a uiRowLink [routerLink]="['/holdings', mover.id]">{{ mover.instrumentName }}</a>
+            </td>
+            <td uiTd>
+              <span class="text-label text-(--muted-foreground)">{{ mover.accountName }}</span>
+            </td>
+            <td numeric uiTd>
+              <span class="font-medium"><ui-amount currency="EUR" [value]="mover.marketValueEur" /></span>
+            </td>
+            <td numeric uiTd>
+              <ui-delta
+                size="inherit"
+                weight="regular"
+                [unknownLabel]="'portfolio.unknown' | transloco"
+                [value]="mover.dayChangeEur"
+              >
+                <ui-amount currency="EUR" signed [value]="mover.dayChangeEur" />
+              </ui-delta>
+            </td>
+            <td numeric uiTd>
+              <ui-delta
+                size="inherit"
+                weight="regular"
+                [unknownLabel]="'portfolio.unknown' | transloco"
+                [value]="mover.dayChangeRatio"
+              >
+                {{ mover.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+              </ui-delta>
+            </td>
+            <td uiTd>
+              <svg
+                aria-hidden="true"
+                class="text-(--subtle-foreground)"
+                fill="none"
+                height="16"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.75"
+                viewBox="0 0 24 24"
+                width="16"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
   </ui-async>
 </div>
