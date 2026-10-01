@@ -9,9 +9,9 @@
   <p class="text-body text-(--muted-foreground)">{{ description() }}</p>
 
   @if (error()) {
-    <p class="text-label text-(--negative)" data-testid="holding-delete-error" role="alert">
+    <ui-alert data-testid="holding-delete-error">
       {{ 'holdings.delete.error' | transloco }}
-    </p>
+    </ui-alert>
   }
 
   <button

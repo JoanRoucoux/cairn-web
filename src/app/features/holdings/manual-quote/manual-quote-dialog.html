@@ -15,9 +15,9 @@
   </ui-field>
 
   @if (error()) {
-    <p class="text-label text-(--negative)" data-testid="manual-quote-error" role="alert">
+    <ui-alert data-testid="manual-quote-error">
       {{ 'holdings.manualQuote.error' | transloco }}
-    </p>
+    </ui-alert>
   }
 
   <button

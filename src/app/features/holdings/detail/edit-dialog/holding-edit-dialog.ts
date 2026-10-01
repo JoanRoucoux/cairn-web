@@ -1,7 +1,7 @@
 import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -12,7 +12,7 @@ import { HoldingEditDialogStore } from './holding-edit-dialog-store';
 
 @Component({
   selector: 'app-holding-edit-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-edit-dialog.html',
   providers: [HoldingEditDialogStore],
 })

@@ -70,13 +70,7 @@ export class HoldingListPage {
   #destroyRef = inject(DestroyRef);
 
   readonly #transloco = inject(TranslocoService);
-  readonly #allLabel = toSignal(this.#transloco.selectTranslate('classFilter.all', {}, 'holdings'), {
-    initialValue: '',
-  });
-  readonly #classLabels = toSignal(
-    this.#transloco.selectTranslate(CLASS_ORDER.map((assetClass) => `enums.assetClass.${assetClass}`)),
-    { initialValue: [] as string[] },
-  );
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
@@ -94,13 +88,15 @@ export class HoldingListPage {
   });
 
   protected readonly chips = computed<FilterChipOption[]>(() => {
+    this.#translocoEvents();
+
     const counts = this.state() === 'ready' ? this.#store.classCounts() : null;
 
     return [
-      { value: ALL, label: this.#allLabel(), count: counts?.total },
-      ...CLASS_ORDER.map((assetClass, index) => ({
+      { value: ALL, label: this.#transloco.translate('holdings.classFilter.all'), count: counts?.total },
+      ...CLASS_ORDER.map((assetClass) => ({
         value: assetClass,
-        label: this.#classLabels()[index]!,
+        label: this.#transloco.translate(`enums.assetClass.${assetClass}`),
         count: counts?.byClass[assetClass],
       })),
     ];

@@ -26,7 +26,7 @@
     <ui-amount currency="EUR" [value]="group().valueEur" />
   </span>
 </header>
-<ui-card padding="none">
+<ui-card clip padding="none">
   <div class="flex flex-col px-2 py-1.5">
     @for (holding of group().holdings; track holding.id) {
       <a
