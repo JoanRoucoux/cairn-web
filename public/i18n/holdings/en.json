@@ -25,7 +25,7 @@
   "errorMessage": "The server did not answer. Check your connection, then try again.",
   "retry": "Retry",
   "notFound": "This holding no longer exists.",
-  "chartLabel": "Price over the selected range",
+  "chartLabel": "Value over the selected range",
   "externalLink": "Page on {{domain}}",
   "columns": {
     "line": "Holding",
@@ -86,7 +86,8 @@
       "1y": "over 1 year",
       "5y": "over 5 years",
       "max": "since purchase"
-    }
+    },
+    "panel": "Holding detail"
   },
   "unvaluedCount_one": "{{count}} unvalued",
   "unvaluedCount_other": "{{count}} unvalued",

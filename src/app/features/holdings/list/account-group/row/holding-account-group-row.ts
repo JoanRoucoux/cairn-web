@@ -7,8 +7,8 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
+import { deltaTone, isMissing } from '../../../delta-tone';
 import { isBooklet } from '../../holding-list-store';
-import { deltaTone, isMissing } from '../delta-tone';
 import { HoldingEnterQuote } from './enter-quote/holding-enter-quote';
 import { HoldingLineCell } from './line-cell/holding-line-cell';
 import { HoldingQuoteCell } from './quote-cell/holding-quote-cell';

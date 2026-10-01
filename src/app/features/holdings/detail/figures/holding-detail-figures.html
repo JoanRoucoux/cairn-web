@@ -2,7 +2,7 @@
   <span class="text-label font-medium text-(--muted-foreground) lg:hidden">{{
     'holdings.detail.value' | transloco
   }}</span>
-  <ui-amount class="text-display font-semibold" currency="EUR" [value]="holding().marketValueEur" />
+  <ui-amount class="text-display block font-semibold" currency="EUR" [value]="holding().marketValueEur" />
   <div class="text-label mt-1 flex flex-col gap-0.5 tabular-nums lg:flex-row lg:flex-wrap lg:gap-x-4">
     <span class="flex gap-1.5">
       <span class="text-(--muted-foreground)">{{ 'holdings.detail.unrealized' | transloco }}</span>

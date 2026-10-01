@@ -1,62 +1,54 @@
-<dl class="contents">
-  <div class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3">
-    <dt class="text-label text-(--muted-foreground)">{{ 'holdings.columns.quantity' | transloco }}</dt>
-    <dd class="text-label max-lg:text-body text-right tabular-nums">
-      <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
-    </dd>
-  </div>
-  <div
-    class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3 max-lg:shadow-[inset_0_1px_0_var(--hairline)]"
-  >
-    <dt class="text-label text-(--muted-foreground)">{{ 'holdings.averageCost' | transloco }}</dt>
-    <dd class="flex flex-col items-end text-right">
-      @if (holding().averageCost === null || holding().averageCost === undefined) {
-        <span class="text-label max-lg:text-body">{{ 'holdings.detail.unknownCost' | transloco }}</span>
-        <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.detail.firstBuyFixes' | transloco }}</span>
-      } @else {
-        <span class="text-label max-lg:text-body tabular-nums">
-          <ui-amount currency="EUR" [value]="holding().averageCost" />
-        </span>
-      }
-    </dd>
-  </div>
-  <div
-    class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3 max-lg:shadow-[inset_0_1px_0_var(--hairline)]"
-  >
-    <dt class="text-label text-(--muted-foreground)">{{ 'holdings.columns.price' | transloco }}</dt>
-    <dd class="flex flex-col items-end text-right">
+<div class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3">
+  <dt class="text-label text-(--muted-foreground)">{{ 'holdings.columns.quantity' | transloco }}</dt>
+  <dd class="text-label max-lg:text-body text-right tabular-nums">
+    <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
+  </dd>
+</div>
+<div class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3 max-lg:shadow-[inset_0_1px_0_var(--hairline)]">
+  <dt class="text-label text-(--muted-foreground)">{{ 'holdings.averageCost' | transloco }}</dt>
+  <dd class="flex flex-col items-end text-right">
+    @if (holding().averageCost === null || holding().averageCost === undefined) {
+      <span class="text-label max-lg:text-body">{{ 'holdings.detail.unknownCost' | transloco }}</span>
+      <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.detail.firstBuyFixes' | transloco }}</span>
+    } @else {
       <span class="text-label max-lg:text-body tabular-nums">
-        <ui-amount currency="EUR" [value]="holding().price" />
+        <ui-amount currency="EUR" [value]="holding().averageCost" />
       </span>
-      @if (holding().priceAsOf) {
-        <span
-          class="text-caption"
-          data-testid="quote-line"
-          [class]="holding().stale ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
-        >
-          @if (holding().stale) {
-            {{ 'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate } }}
-          } @else if (quoteTime(); as time) {
-            {{ 'holdings.detail.quoteAt' | transloco: { date: holding().priceAsOf | shortDate, time: time } }}
-          } @else {
-            {{ 'holdings.detail.quoteOn' | transloco: { date: holding().priceAsOf | shortDate } }}
-          }
-          &middot; {{ priceSourceLabel() }}
-        </span>
-      }
-    </dd>
-  </div>
-  <div
-    class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3 max-lg:shadow-[inset_0_1px_0_var(--hairline)]"
-  >
-    <dt class="text-label text-(--muted-foreground)">
-      {{ (crypto() ? 'holdings.detail.symbol' : 'holdings.detail.isin') | transloco }}
-    </dt>
-    <dd class="flex flex-col items-end text-right">
-      <span class="text-label max-lg:text-body tabular-nums">{{ identifier() || '—' }}</span>
-      <span class="text-caption text-(--subtle-foreground)">{{
-        'enums.assetClass.' + holding().assetClass | transloco
-      }}</span>
-    </dd>
-  </div>
-</dl>
+    }
+  </dd>
+</div>
+<div class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3 max-lg:shadow-[inset_0_1px_0_var(--hairline)]">
+  <dt class="text-label text-(--muted-foreground)">{{ 'holdings.columns.price' | transloco }}</dt>
+  <dd class="flex flex-col items-end text-right">
+    <span class="text-label max-lg:text-body tabular-nums">
+      <ui-amount [currency]="holding().priceCurrency ?? 'EUR'" [value]="holding().price" />
+    </span>
+    @if (holding().priceAsOf) {
+      <span
+        class="text-caption"
+        data-testid="quote-line"
+        [class]="holding().stale ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
+      >
+        @if (holding().stale) {
+          {{ 'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate } }}
+        } @else if (quoteTime(); as time) {
+          {{ 'holdings.detail.quoteAt' | transloco: { date: holding().priceAsOf | shortDate, time: time } }}
+        } @else {
+          {{ 'holdings.detail.quoteOn' | transloco: { date: holding().priceAsOf | shortDate } }}
+        }
+        &middot; {{ priceSourceLabel() }}
+      </span>
+    }
+  </dd>
+</div>
+<div class="flex items-baseline justify-between gap-4 py-2.5 max-lg:py-3 max-lg:shadow-[inset_0_1px_0_var(--hairline)]">
+  <dt class="text-label text-(--muted-foreground)">
+    {{ (crypto() ? 'holdings.detail.symbol' : 'holdings.detail.isin') | transloco }}
+  </dt>
+  <dd class="flex flex-col items-end text-right">
+    <span class="text-label max-lg:text-body tabular-nums">{{ holding().isin || '—' }}</span>
+    <span class="text-caption text-(--subtle-foreground)">{{
+      'enums.assetClass.' + holding().assetClass | transloco
+    }}</span>
+  </dd>
+</div>

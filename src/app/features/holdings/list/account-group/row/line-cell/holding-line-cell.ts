@@ -9,8 +9,8 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+import { isMissing } from '../../../../delta-tone';
 import { isBooklet } from '../../../holding-list-store';
-import { isMissing } from '../../delta-tone';
 
 @Component({
   selector: 'td[app-holding-line-cell]',

@@ -10,8 +10,8 @@ import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+import { deltaTone, isMissing } from '../../../delta-tone';
 import { type AccountGroup, isBooklet } from '../../holding-list-store';
-import { deltaTone, isMissing } from '../delta-tone';
 import { groupCount } from '../group-count';
 
 @Component({

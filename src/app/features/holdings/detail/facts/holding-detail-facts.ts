@@ -9,7 +9,7 @@ import { decimalPlaces } from '@shared/format/decimal-places';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 @Component({
-  selector: 'app-holding-detail-facts',
+  selector: 'dl[app-holding-detail-facts]',
   imports: [ShortDatePipe, TranslocoPipe, UiAmount],
   templateUrl: './holding-detail-facts.html',
   host: {
@@ -20,19 +20,17 @@ import { ShortDatePipe } from '@shared/format/short-date-pipe';
 export class HoldingDetailFacts {
   readonly holding = input.required<HoldingResponse>();
   readonly priceSourceLabel = input.required<string>();
-  readonly symbol = input<string | null | undefined>(null);
 
   readonly #locale = inject(LOCALE_ID);
 
   protected readonly decimalPlaces = decimalPlaces;
 
   protected readonly crypto = computed(() => this.holding().assetClass === 'CRYPTO');
-  protected readonly identifier = computed(() => this.holding().isin || this.symbol() || '');
 
   protected readonly quoteTime = computed(() => {
-    const { assetClass, priceAsOf, stale } = this.holding();
+    const { assetClass, priceFetchedAt, stale } = this.holding();
 
-    if (stale || assetClass === 'FUND' || !priceAsOf?.includes('T')) {
+    if (stale || assetClass === 'FUND' || !priceFetchedAt) {
       return null;
     }
 
@@ -40,6 +38,6 @@ export class HoldingDetailFacts {
       hour: '2-digit',
       minute: '2-digit',
       timeZone: 'Europe/Paris',
-    }).format(new Date(priceAsOf));
+    }).format(new Date(priceFetchedAt));
   });
 }

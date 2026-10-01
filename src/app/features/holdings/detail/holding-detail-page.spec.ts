@@ -370,10 +370,24 @@ describe('HoldingDetailPage', () => {
   });
 
   it('draws no description block when the instrument has none', async () => {
-    await renderPage('h1', { description: '' });
+    await renderPage('h1', { description: '', externalUrl: 'https://example.test/ese' });
     await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
 
+    expect(screen.queryByText('ETF tracking the S&P 500.')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /holdings.externalLink/ })).not.toBeInTheDocument();
+  });
+
+  it('moves focus to the detail heading when a line opens', async () => {
+    await renderPage();
+
+    expect(await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' })).toHaveFocus();
+  });
+
+  it('offers the pencil and the trash icon in the menu', async () => {
+    await renderPage();
+
+    expect(await screen.findByTestId('holding-edit')).toContainElement(document.querySelector('svg.lucide-pencil'));
+    expect(screen.getByTestId('holding-delete')).toContainElement(document.querySelector('svg.lucide-trash-2'));
   });
 
   it('links the back link to the holdings list', async () => {

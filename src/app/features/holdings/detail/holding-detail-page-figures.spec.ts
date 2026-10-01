@@ -111,6 +111,6 @@ describe('HoldingDetailPage figures', () => {
   it('shows a dash instead of a blank ISIN for a holding with none', async () => {
     await renderPage({ ...holding, isin: null });
 
-    expect((await screen.findAllByText('—')).length).toBeGreaterThan(0);
+    expect((await screen.findByText('holdings.detail.isin')).parentElement).toHaveTextContent('—');
   });
 });

@@ -29,7 +29,7 @@
   <span narrow uiCellSub>
     <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
     @if (!unpriced()) {
-      &times; <ui-amount currency="EUR" [value]="holding().price" />
+      &times; <ui-amount [currency]="holding().priceCurrency ?? 'EUR'" [value]="holding().price" />
     }
     &middot; {{ 'holdings.averageCost' | transloco }} <ui-amount currency="EUR" [value]="holding().averageCost" />
   </span>

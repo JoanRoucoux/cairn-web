@@ -15,14 +15,16 @@ import {
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideChevronLeft, LucideEllipsis, LucideX } from '@lucide/angular';
+import { LucideChevronLeft, LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
+import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
+import { deltaTone } from '../delta-tone';
 import { HoldingDetailBar } from './bar/holding-detail-bar';
 import { HoldingDetailDescription } from './description/holding-detail-description';
 import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
@@ -33,6 +35,7 @@ import { HoldingDetailStore } from './holding-detail-store';
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
+    FocusOnInit,
     HoldingDetailBar,
     HoldingDetailDescription,
     HoldingDetailDialogs,
@@ -40,6 +43,8 @@ import { HoldingDetailStore } from './holding-detail-store';
     HoldingDetailFigures,
     LucideChevronLeft,
     LucideEllipsis,
+    LucidePencil,
+    LucideTrash2,
     LucideX,
     RatioPipe,
     RouterLink,
@@ -65,6 +70,7 @@ export class HoldingDetailPage {
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
 
+  protected readonly deltaTone = deltaTone;
   protected readonly menu = viewChild.required<UiMenu>('menu');
 
   protected readonly holding = this.#store.holding;

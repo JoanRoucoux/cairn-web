@@ -25,7 +25,7 @@
   "errorMessage": "Le serveur n'a pas répondu. Vérifiez la connexion, puis réessayez.",
   "retry": "Réessayer",
   "notFound": "Cette ligne n'existe plus.",
-  "chartLabel": "Cours sur la plage sélectionnée",
+  "chartLabel": "Valeur sur la plage sélectionnée",
   "externalLink": "Fiche sur {{domain}}",
   "columns": {
     "line": "Ligne",
@@ -86,7 +86,8 @@
       "1y": "sur 1 an",
       "5y": "sur 5 ans",
       "max": "depuis l'achat"
-    }
+    },
+    "panel": "Détail de la ligne"
   },
   "unvaluedCount_one": "{{count}} non valorisée",
   "unvaluedCount_other": "{{count}} non valorisées",

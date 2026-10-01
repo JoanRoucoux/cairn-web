@@ -40,7 +40,7 @@
             } @else {
               <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
               &times;
-              <ui-amount currency="EUR" [value]="holding.price" />
+              <ui-amount [currency]="holding.priceCurrency ?? 'EUR'" [value]="holding.price" />
             }
           </span>
         </div>
