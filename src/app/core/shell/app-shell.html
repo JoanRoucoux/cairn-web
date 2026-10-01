@@ -11,12 +11,7 @@
 
     <nav class="flex flex-col gap-0.5" [attr.aria-label]="'shell.primary' | transloco">
       @for (destination of destinations; track destination.path) {
-        <a
-          class="leading-[normal] aria-[current=page]:text-(--foreground)"
-          ui-nav-item
-          [active]="isActive(destination.path)"
-          [routerLink]="destination.path"
-        >
+        <a class="leading-[normal]" ui-nav-item [active]="isActive(destination.path)" [routerLink]="destination.path">
           <app-shell-destination-icon navIcon [icon]="destination.icon" [size]="20" />
           {{ destination.labelKey | transloco }}
         </a>
@@ -33,28 +28,18 @@
           <span></span>
         }
 
-<<<<<<< HEAD
-      <a
-        class="rounded-pill flex size-11 items-center justify-center focus-visible:outline-2 focus-visible:outline-(--ring)"
-        data-testid="account-link"
-        routerLink="/profile"
-      >
-        <ui-avatar
-          class="lg:text-caption lg:size-8"
-          [initials]="owner().initials"
-          [label]="'shell.account' | transloco"
-        />
-      </a>
-=======
         <a
           class="rounded-pill flex size-11 items-center justify-center transition-transform duration-(--duration-press) ease-(--ease-out) hover:bg-(--glow) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) active:scale-(--press-scale) lg:size-10"
           data-testid="account-link"
           routerLink="/profile"
         >
-          <ui-avatar size="sm" [initials]="owner().initials" [label]="'shell.account' | transloco" />
+          <ui-avatar
+            class="lg:text-caption lg:size-8"
+            [initials]="owner().initials"
+            [label]="'shell.account' | transloco"
+          />
         </a>
       </div>
->>>>>>> 8baa135 (fix(shell): desktop sidebar and header match the V3 frames)
     </header>
 
     <app-offline-banner />
