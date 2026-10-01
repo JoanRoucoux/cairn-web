@@ -124,28 +124,32 @@ describe('AllocationPage', () => {
     expect(screen.queryByText(/·/)).not.toBeInTheDocument();
   });
 
-  it('should link the class rows to the filtered holdings and navigate on a plain click', async () => {
+  it.each([
+    ['ETF', 'etf'],
+    ['FUND', 'fonds'],
+    ['EQUITY', 'actions'],
+    ['CRYPTO', 'crypto'],
+    ['CASH', 'liquidites'],
+  ])('should link the %s class row to the %s slug and navigate on a plain click', async (assetClass, slug) => {
     const user = userEvent.setup();
-    await renderPage();
+    await renderPage({
+      totalEur: 100,
+      items: ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'CASH'].map((code) => ({
+        assetClass: code,
+        valueEur: 20,
+        share: 0.2,
+        lineCount: 1,
+      })),
+    });
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    const [row] = await screen.findAllByRole('link', { name: /ETF/ });
+    const [row] = await screen.findAllByRole('link', { name: new RegExp(assetClass) });
 
-    expect(row).toHaveAttribute('href', '/holdings?classe=etf');
+    expect(row).toHaveAttribute('href', `/holdings?classe=${slug}`);
 
     await user.click(row!);
 
-    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { classe: 'etf' } });
-  });
-
-  it('should link the cash row to the liquidites slug', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
-
-    await user.click((await screen.findAllByRole('link', { name: /CASH/ }))[0]!);
-
-    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { classe: 'liquidites' } });
+    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { classe: slug } });
   });
 
   it('should keep the Others class row a button that goes nowhere', async () => {
