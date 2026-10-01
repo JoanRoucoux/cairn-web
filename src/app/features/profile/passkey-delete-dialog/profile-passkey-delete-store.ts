@@ -1,10 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 
-import { SessionStore } from '@core/session/session-store';
+import { firstValueFrom } from 'rxjs';
+
+import { SessionService } from '@core/api-client/session/session.service';
 
 @Injectable()
 export class ProfilePasskeyDeleteStore {
-  #session = inject(SessionStore);
+  #sessionApiClient = inject(SessionService);
 
   readonly deleting = signal(false);
   readonly refused = signal(false);
@@ -14,10 +16,13 @@ export class ProfilePasskeyDeleteStore {
     this.refused.set(false);
 
     try {
-      const removed = await this.#session.revokePasskey(credentialId);
-      this.refused.set(!removed);
+      await firstValueFrom(this.#sessionApiClient.revokePasskey(credentialId));
 
-      return removed;
+      return true;
+    } catch {
+      this.refused.set(true);
+
+      return false;
     } finally {
       this.deleting.set(false);
     }

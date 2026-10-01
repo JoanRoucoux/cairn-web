@@ -10,7 +10,7 @@
     </a>
   </div>
 
-  @switch (state()) {
+  @switch (identityState()) {
     @case ('ready') {
       <div class="flex items-center gap-3.5 px-5 pt-1 lg:gap-4 lg:px-1 lg:pt-1" data-testid="identity">
         <span
@@ -226,10 +226,10 @@
 
   <app-profile-passkey-list
     [passkeys]="passkeys()"
-    [state]="state()"
+    [state]="passkeysState()"
     (add)="passkeyDialogOpen.set(true)"
     (remove)="passkeyToDelete.set($event)"
-    (retry)="retry()"
+    (retry)="retryPasskeys()"
   />
 
   <button
@@ -253,7 +253,7 @@
 @if (passkeyToDelete(); as passkey) {
   <app-profile-passkey-delete-dialog
     [passkey]="passkey"
-    (deleted)="passkeyToDelete.set(undefined)"
+    (deleted)="onPasskeyDeleted()"
     (dismissed)="passkeyToDelete.set(undefined)"
   />
 }

@@ -6,49 +6,40 @@ import { TestBed } from '@angular/core/testing';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { ProfileStore } from './profile-store';
+import { flushCall, settleProfile } from './profile-testing';
 
-const session = {
-  displayName: 'Joan',
-  initials: 'JO',
-  username: 'joan',
-  signInMethod: 'PASSKEY',
-  passkeys: [
-    {
-      credentialId: 'aXBob25l',
-      label: 'iPhone de Joan',
-      createdAt: '2025-03-12T10:00:00Z',
-      lastUsedAt: '2026-09-25T08:00:00Z',
-      current: true,
-      provider: 'ICLOUD_KEYCHAIN',
-    },
-    {
-      credentialId: 'bWFj',
-      label: 'MacBook',
-      createdAt: '2025-03-12T10:05:00Z',
-      lastUsedAt: '2026-09-24T20:00:00Z',
-      current: false,
-    },
-    {
-      credentialId: 'eXVi',
-      label: 'YubiKey',
-      createdAt: '2025-11-04T10:00:00Z',
-      lastUsedAt: '2026-09-02T09:00:00Z',
-      current: false,
-      provider: 'SECURITY_KEY',
-    },
-    { credentialId: 'bmV2ZXI', label: 'Neuf', createdAt: '2026-09-20T10:00:00Z', lastUsedAt: null, current: false },
-  ],
-};
+const passkeys = [
+  {
+    credentialId: 'aXBob25l',
+    label: 'iPhone de Joan',
+    createdAt: '2025-03-12T10:00:00Z',
+    lastUsedAt: '2026-09-25T08:00:00Z',
+    current: true,
+    provider: 'ICLOUD_KEYCHAIN',
+  },
+  {
+    credentialId: 'bWFj',
+    label: 'MacBook',
+    createdAt: '2025-03-12T10:05:00Z',
+    lastUsedAt: '2026-09-24T20:00:00Z',
+    current: false,
+  },
+  {
+    credentialId: 'eXVi',
+    label: 'YubiKey',
+    createdAt: '2025-11-04T10:00:00Z',
+    lastUsedAt: '2026-09-02T09:00:00Z',
+    current: false,
+    provider: 'SECURITY_KEY',
+  },
+  { credentialId: 'bmV2ZXI', label: 'Neuf', createdAt: '2026-09-20T10:00:00Z', lastUsedAt: null, current: false },
+];
 
 describe('ProfileStore', () => {
   let store: ProfileStore;
   let httpTesting: HttpTestingController;
 
-  const settle = async (instruments: unknown[] = []): Promise<void> => {
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush(instruments);
-    await TestBed.inject(ApplicationRef).whenStable();
-  };
+  const settle = (instruments: object[] = []): Promise<void> => settleProfile(httpTesting, { passkeys, instruments });
 
   beforeEach(() => {
     localStorage.clear();
@@ -75,7 +66,7 @@ describe('ProfileStore', () => {
   it('should expose the owner, how the session was opened and the current theme', async () => {
     await settle();
 
-    expect(store.state()).toBe('ready');
+    expect(store.identityState()).toBe('ready');
     expect(store.owner().initials).toBe('JO');
     expect(store.username()).toBe('joan');
     expect(store.signInMethod()).toBe('PASSKEY');
@@ -122,11 +113,7 @@ describe('ProfileStore', () => {
   });
 
   it('should count a use after midnight in Paris but before midnight UTC as today', async () => {
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush({
-      ...session,
-      passkeys: [{ ...session.passkeys[1]!, lastUsedAt: '2026-09-24T22:30:00Z' }],
-    });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
+    await settleProfile(httpTesting, { passkeys: [{ ...passkeys[1]!, lastUsedAt: '2026-09-24T22:30:00Z' }] });
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.passkeys()[0]?.usage.kind).toBe('today');
@@ -157,12 +144,51 @@ describe('ProfileStore', () => {
     await settle();
   });
 
-  it('should reload the session on request', async () => {
+  it('should reload only the passkeys on request', async () => {
     await settle();
 
-    store.reloadSession();
+    store.reloadPasskeys();
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    await flushCall(httpTesting, '/api/session/passkeys', []);
+    expect(store.passkeys()).toEqual([]);
+  });
+
+  it('should keep the identity ready while the passkeys load', async () => {
+    await flushCall(httpTesting, '/api/session', {
+      displayName: 'Joan',
+      initials: 'JO',
+      username: 'joan',
+      signInMethod: 'PASSKEY',
+    });
+    TestBed.tick();
+
+    expect(store.identityState()).toBe('ready');
+    expect(store.passkeysState()).toBe('loading');
+
+    await flushCall(httpTesting, '/api/session/passkeys', passkeys);
+    await flushCall(httpTesting, '/api/instruments', []);
+  });
+
+  it('should keep the identity ready when the passkeys fail, then recover on reload', async () => {
+    await flushCall(httpTesting, '/api/session', {
+      displayName: 'Joan',
+      initials: 'JO',
+      username: 'joan',
+      signInMethod: 'PASSKEY',
+    });
+    await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
+    await flushCall(httpTesting, '/api/instruments', []);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.identityState()).toBe('ready');
+    expect(store.passkeysState()).toBe('error');
+    expect(store.passkeys()).toEqual([]);
+
+    store.reloadPasskeys();
+    await flushCall(httpTesting, '/api/session/passkeys', passkeys);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.passkeysState()).toBe('ready');
   });
 
   it('should sign the user out', async () => {

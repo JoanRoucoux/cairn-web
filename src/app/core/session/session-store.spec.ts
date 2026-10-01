@@ -10,17 +10,6 @@ const session = {
   initials: 'JR',
   username: 'joan',
   signInMethod: 'PASSKEY',
-  passkeys: [
-    {
-      credentialId: 'aXBob25l',
-      label: 'iPhone de Joan',
-      createdAt: '2026-02-01T10:00:00Z',
-      lastUsedAt: null,
-      current: true,
-      provider: 'ICLOUD_KEYCHAIN',
-    },
-    { credentialId: 'bWFj', label: 'MacBook', createdAt: '2026-02-02T10:00:00Z', lastUsedAt: null, current: false },
-  ],
 };
 
 describe('SessionStore', () => {
@@ -52,7 +41,6 @@ describe('SessionStore', () => {
 
   it('should hold an empty identity while the session is in flight', async () => {
     expect(store.owner().initials).toBe('');
-    expect(store.passkeys()).toEqual([]);
 
     await settleSession();
   });
@@ -80,56 +68,6 @@ describe('SessionStore', () => {
 
     expect(store.state()).toBe('error');
     expect(store.owner().initials).toBe('');
-    expect(store.passkeys()).toEqual([]);
-  });
-
-  it('should keep the passkeys on screen while the session reloads', async () => {
-    await settleSession();
-
-    store.reload();
-
-    expect(store.state()).toBe('ready');
-    expect(store.passkeys()).toHaveLength(2);
-    (await vi.waitFor(() => http.expectOne('/api/session'))).flush(session);
-  });
-
-  it('should list the registered passkeys', async () => {
-    await settleSession();
-
-    expect(store.passkeys()).toHaveLength(2);
-    expect(store.passkeys()[0]?.label).toBe('iPhone de Joan');
-  });
-
-  it('should reload the session after revoking a passkey', async () => {
-    await settleSession();
-
-    const revoked = store.revokePasskey('bWFj');
-
-    const request = await vi.waitFor(() => http.expectOne('/api/session/passkeys/bWFj'));
-    expect(request.request.method).toBe('DELETE');
-    request.flush(null);
-
-    await expect(revoked).resolves.toBe(true);
-    (await vi.waitFor(() => http.expectOne('/api/session'))).flush(session);
-  });
-
-  it('should report a refused revocation rather than throwing', async () => {
-    await settleSession();
-
-    const revoked = store.revokePasskey('aXBob25l');
-
-    const request = await vi.waitFor(() => http.expectOne('/api/session/passkeys/aXBob25l'));
-    request.flush(null, { status: 409, statusText: 'Conflict' });
-
-    await expect(revoked).resolves.toBe(false);
-  });
-
-  it('should reload the session on request', async () => {
-    await settleSession();
-
-    store.reload();
-
-    (await vi.waitFor(() => http.expectOne('/api/session'))).flush(session);
   });
 
   it('should post to the Spring Security logout endpoint', async () => {

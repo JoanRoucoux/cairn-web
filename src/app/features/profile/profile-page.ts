@@ -63,7 +63,8 @@ export class ProfilePage {
   #store = inject(ProfileStore);
   #signIn = inject(SignInRedirect);
 
-  protected readonly state = this.#store.state;
+  protected readonly identityState = this.#store.identityState;
+  protected readonly passkeysState = this.#store.passkeysState;
   protected readonly owner = this.#store.owner;
   protected readonly username = this.#store.username;
   protected readonly signInMethod = this.#store.signInMethod;
@@ -125,8 +126,13 @@ export class ProfilePage {
     this.#store.reloadPasskeys();
   }
 
-  protected retry(): void {
-    this.#store.reloadSession();
+  protected onPasskeyDeleted(): void {
+    this.passkeyToDelete.set(undefined);
+    this.#store.reloadPasskeys();
+  }
+
+  protected retryPasskeys(): void {
+    this.#store.reloadPasskeys();
   }
 
   // Navigation stays in the page: the store returns, the page decides where to go.

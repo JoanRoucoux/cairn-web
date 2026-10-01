@@ -1,9 +1,12 @@
 import { Injectable, LOCALE_ID, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
+import { type AsyncState } from '@joanroucoux/cairn-ui';
+
 import { AmountVisibility } from '@core/amounts/amount-visibility';
 import type { PasskeyResponse } from '@core/api-client/cairnAPI.schemas';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
+import { SessionService } from '@core/api-client/session/session.service';
 import { LanguageStore } from '@core/i18n/language-store';
 import { SessionStore } from '@core/session/session-store';
 import { type ThemePreference, ThemeStore } from '@core/theme/theme-store';
@@ -36,6 +39,7 @@ export class ProfileStore {
   #language = inject(LanguageStore);
   #amountVisibility = inject(AmountVisibility);
   #instrumentsApiClient = inject(InstrumentService);
+  #sessionApiClient = inject(SessionService);
 
   #dateFormat = new Intl.DateTimeFormat(inject(LOCALE_ID), {
     timeZone: 'Europe/Paris',
@@ -48,7 +52,18 @@ export class ProfileStore {
     stream: () => this.#instrumentsApiClient.listInstruments(),
   });
 
-  readonly state = this.#session.state;
+  readonly #passkeys = rxResource({
+    stream: () => this.#sessionApiClient.listPasskeys(),
+  });
+
+  readonly identityState = this.#session.state;
+  readonly passkeysState = computed<AsyncState>(() => {
+    if (this.#passkeys.error()) {
+      return 'error';
+    }
+
+    return this.#passkeys.hasValue() ? 'ready' : 'loading';
+  });
   readonly owner = this.#session.owner;
   readonly username = this.#session.username;
   readonly signInMethod = this.#session.signInMethod;
@@ -63,7 +78,7 @@ export class ProfileStore {
   readonly passkeys = computed<PasskeyView[]>(() => {
     const now = new Date();
 
-    return this.#session.passkeys().map((passkey) => ({
+    return (this.#passkeys.hasValue() ? this.#passkeys.value() : []).map((passkey) => ({
       credentialId: passkey.credentialId,
       label: passkey.label,
       current: passkey.current,
@@ -89,8 +104,8 @@ export class ProfileStore {
     await this.#session.signOut();
   }
 
-  reloadSession(): void {
-    this.#session.reload();
+  reloadPasskeys(): void {
+    this.#passkeys.reload();
   }
 
   #usage(passkey: PasskeyResponse, now: Date): PasskeyUsage {

@@ -88,11 +88,7 @@ test.describe('profile', () => {
         current: false,
       },
     ];
-    await page.route('**/api/session', (route) =>
-      route.fulfill({
-        json: { displayName: 'Joan', initials: 'JO', username: 'joan', signInMethod: 'PASSKEY', passkeys },
-      }),
-    );
+    await page.route('**/api/session/passkeys', (route) => route.fulfill({ json: passkeys }));
     let deleted = false;
     await page.route('**/api/session/passkeys/bWFj', (route) => {
       deleted = true;
@@ -115,5 +111,31 @@ test.describe('profile', () => {
 
     await expect(profile.deleteDialog).toHaveCount(0);
     expect(deleted).toBe(true);
+  });
+
+  test('keeps the identity and retries only the passkeys when that call fails', async ({ page }) => {
+    const profile = new ProfilePageObject(page);
+    let passkeyCalls = 0;
+    let sessionCalls = 0;
+    await page.route('**/api/session', (route) => {
+      sessionCalls += 1;
+
+      return route.fallback();
+    });
+    await page.route('**/api/session/passkeys', (route) => {
+      passkeyCalls += 1;
+
+      return passkeyCalls === 1 ? route.fulfill({ status: 500, json: { message: 'boom' } }) : route.fallback();
+    });
+    await profile.goto();
+
+    await expect(page.getByTestId('identity')).toContainText('Joan Roucoux');
+    await expect(page.getByRole('alert')).toBeVisible();
+    await page.getByRole('button', { name: 'Retry' }).click();
+
+    await expect(profile.managePasskeys).toBeVisible();
+    await expect(page.getByTestId('current-passkey')).toBeVisible();
+    expect(passkeyCalls).toBe(2);
+    expect(sessionCalls).toBe(1);
   });
 });

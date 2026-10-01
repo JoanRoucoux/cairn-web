@@ -13,6 +13,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
+import { settleProfile } from './profile-testing';
 
 const CSV_HEADER = 'account;accountType;institution;instrument;isinOrTicker;quantity;averageCost';
 
@@ -25,14 +26,6 @@ const csvFile = (): File =>
     'portfolio.csv',
     { type: 'text/csv' },
   );
-
-const session = {
-  displayName: 'Joan',
-  initials: 'JO',
-  username: 'joan',
-  signInMethod: 'PASSKEY',
-  passkeys: [{ credentialId: 'aXBob25l', label: 'iPhone de Joan', createdAt: '2025-03-12T10:00:00Z', current: true }],
-};
 
 describe('ProfilePage import and export', () => {
   let httpTesting: HttpTestingController;
@@ -52,8 +45,7 @@ describe('ProfilePage import and export', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
+    await settleProfile(httpTesting);
   };
 
   afterEach(() => httpTesting.verify());

@@ -21,8 +21,6 @@ const passkey: PasskeyView = {
   usage: { kind: 'yesterday', date: '' },
 };
 
-const session = { displayName: 'Joan', initials: 'JO', username: 'joan', signInMethod: 'PASSKEY', passkeys: [] };
-
 describe('ProfilePasskeyDeleteDialog', () => {
   let httpTesting: HttpTestingController;
   const deleted = vi.fn();
@@ -41,7 +39,6 @@ describe('ProfilePasskeyDeleteDialog', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
   };
 
   afterEach(() => {
@@ -83,7 +80,6 @@ describe('ProfilePasskeyDeleteDialog', () => {
 
     await user.click(screen.getByTestId('passkey-delete-confirm'));
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
 
     await vi.waitFor(() => expect(deleted).toHaveBeenCalled());
   });

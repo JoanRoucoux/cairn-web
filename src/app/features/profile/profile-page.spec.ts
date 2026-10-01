@@ -17,48 +17,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
-
-type Session = {
-  displayName: string;
-  initials: string;
-  username: string;
-  signInMethod: string;
-  passkeys: Record<string, unknown>[];
-};
-
-const session: Session = {
-  displayName: 'Joan',
-  initials: 'JO',
-  username: 'joan',
-  signInMethod: 'PASSKEY',
-  passkeys: [
-    {
-      credentialId: 'aXBob25l',
-      label: 'iPhone de Joan',
-      createdAt: '2025-03-12T10:00:00Z',
-      lastUsedAt: '2026-09-25T08:00:00Z',
-      current: true,
-      provider: 'ICLOUD_KEYCHAIN',
-    },
-    {
-      credentialId: 'bWFj',
-      label: 'MacBook',
-      createdAt: '2025-03-12T10:05:00Z',
-      lastUsedAt: '2026-09-24T20:00:00Z',
-      current: false,
-      provider: null,
-    },
-    {
-      credentialId: 'eXVi',
-      label: 'YubiKey 5C',
-      createdAt: '2025-11-04T10:00:00Z',
-      lastUsedAt: '2026-09-02T09:00:00Z',
-      current: false,
-      provider: 'SECURITY_KEY',
-    },
-    { credentialId: 'bmV2ZXI', label: 'Neuf', createdAt: '2026-09-20T10:00:00Z', lastUsedAt: null, current: false },
-  ],
-};
+import { flushCall, session, settleProfile } from './profile-testing';
 
 // Simulates the profile scope's real, asynchronous load: the plain TranslocoTestingModule loader
 // resolves scopes synchronously, which cannot reproduce the race between first render and the
@@ -91,7 +50,7 @@ describe('ProfilePage', () => {
 
   const renderPage = async (
     translations = getTranslocoTestingModule(),
-    sessionOverride: Session = session,
+    data: { session?: object; passkeys?: object[] } = {},
   ): Promise<void> => {
     localStorage.clear();
     register = vi.fn();
@@ -110,8 +69,7 @@ describe('ProfilePage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(sessionOverride);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([{}, {}, {}]);
+    await settleProfile(httpTesting, data);
   };
 
   afterEach(() => {
@@ -126,7 +84,7 @@ describe('ProfilePage', () => {
   });
 
   it('should word the sign-in line for a password session', async () => {
-    await renderPage(getTranslocoTestingModule(), { ...session, signInMethod: 'PASSWORD' });
+    await renderPage(getTranslocoTestingModule(), { session: { ...session, signInMethod: 'PASSWORD' } });
 
     expect(await screen.findByTestId('identity')).toHaveTextContent('profile.signedIn.PASSWORD');
   });
@@ -173,7 +131,7 @@ describe('ProfilePage', () => {
     expect(screen.getByTestId('profile-passkey-dialog')).toBeInTheDocument();
   });
 
-  it('should reload the session and close the dialog once a passkey is registered', async () => {
+  it('should reload the passkeys and close the dialog once a passkey is registered', async () => {
     const user = userEvent.setup();
     await renderPage();
     register.mockResolvedValue('ok');
@@ -182,7 +140,7 @@ describe('ProfilePage', () => {
     await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
     await user.click(screen.getByTestId('passkey-register'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    await flushCall(httpTesting, '/api/session/passkeys', []);
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument());
   });
 
@@ -220,8 +178,9 @@ describe('ProfilePage', () => {
     await user.click((await screen.findAllByTestId('revoke-passkey'))[1]!);
     await user.click(await screen.findByTestId('passkey-delete-confirm'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    await flushCall(httpTesting, '/api/session/passkeys/bWFj', null);
+    await flushCall(httpTesting, '/api/session/passkeys', []);
+    httpTesting.expectNone('/api/session');
 
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-delete-dialog')).not.toBeInTheDocument());
   });
@@ -328,8 +287,7 @@ describe('ProfilePage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
+    await settleProfile(httpTesting);
 
     expect(screen.queryByRole('radio', { name: 'Dark' })).not.toBeInTheDocument();
 

@@ -13,14 +13,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
-
-const session = {
-  displayName: 'Joan',
-  initials: 'JO',
-  username: 'joan',
-  signInMethod: 'PASSKEY',
-  passkeys: [{ credentialId: 'aXBob25l', label: 'iPhone de Joan', createdAt: '2025-03-12T10:00:00Z', current: true }],
-};
+import { flushCall, passkeys, session, settleProfile } from './profile-testing';
 
 describe('ProfilePage loading states', () => {
   let httpTesting: HttpTestingController;
@@ -44,30 +37,51 @@ describe('ProfilePage loading states', () => {
 
   afterEach(() => httpTesting.verify());
 
-  it('should show no identity while the session loads, then the owner', async () => {
+  it('should show the identity while the passkeys load, with placeholders for them only', async () => {
     await renderPage();
-
-    expect(screen.queryByTestId('identity')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
+    await flushCall(httpTesting, '/api/session', session);
+    await flushCall(httpTesting, '/api/instruments', []);
 
     expect(await screen.findByTestId('identity')).toBeInTheDocument();
+    expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0);
+
+    await flushCall(httpTesting, '/api/session/passkeys', passkeys);
   });
 
-  it('should retry the session when the keys could not be loaded', async () => {
+  it('should keep the identity when the passkeys fail and retry only that call', async () => {
     const user = userEvent.setup();
     await renderPage();
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(null, { status: 500, statusText: 'Error' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
+    await flushCall(httpTesting, '/api/session', session);
+    await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
+    await flushCall(httpTesting, '/api/instruments', []);
 
     expect(await screen.findByText('profile.passkeysErrorTitle')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'profile.title' })).toBeInTheDocument();
+    expect(screen.getByTestId('identity')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'profile.retry' }));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    await flushCall(httpTesting, '/api/session/passkeys', passkeys);
+    httpTesting.expectNone('/api/session');
     expect(await screen.findByTestId('current-passkey')).toBeInTheDocument();
+  });
+
+  it('should hide the identity and keep a hidden title when the session fails', async () => {
+    await renderPage();
+    await flushCall(httpTesting, '/api/session', null, { status: 500 });
+    await flushCall(httpTesting, '/api/session/passkeys', passkeys);
+    await flushCall(httpTesting, '/api/instruments', []);
+
+    expect(await screen.findByTestId('current-passkey')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'profile.title' })).toBeInTheDocument();
+    expect(screen.queryByTestId('identity')).not.toBeInTheDocument();
+  });
+
+  it('should title the page while the session loads', async () => {
+    await renderPage();
+
+    expect(screen.getByRole('heading', { level: 1, name: 'profile.title' })).toBeInTheDocument();
+
+    await settleProfile(httpTesting);
   });
 });

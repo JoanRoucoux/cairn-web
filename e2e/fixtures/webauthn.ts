@@ -16,17 +16,18 @@ const session = {
   initials: 'JR',
   username: 'joan',
   signInMethod: 'PASSKEY',
-  passkeys: [
-    {
-      credentialId: 'aXBob25l',
-      label: 'iPhone de Joan',
-      createdAt: '2026-02-01T10:00:00Z',
-      lastUsedAt: null,
-      current: true,
-      provider: 'ICLOUD_KEYCHAIN',
-    },
-  ] as Passkey[],
 };
+
+const passkeys: Passkey[] = [
+  {
+    credentialId: 'aXBob25l',
+    label: 'iPhone de Joan',
+    createdAt: '2026-02-01T10:00:00Z',
+    lastUsedAt: null,
+    current: true,
+    provider: 'ICLOUD_KEYCHAIN',
+  },
+];
 
 // Browser-valid base64url: WebAuthn parses these into ArrayBuffers before the virtual
 // authenticator ever sees them.
@@ -73,7 +74,7 @@ const registerWebauthnOptions: Handler = async (route) => {
 // Stateful on purpose: the account screen reloads the session after registering, and the new
 // passkey has to show up in the list it re-reads.
 const registerWebauthn: Handler = async (route) => {
-  session.passkeys.push({
+  passkeys.push({
     credentialId: base64url('new-passkey'),
     label:
       ((route.request().postDataJSON() as { publicKey?: { label?: string } }).publicKey?.label as string) ??
@@ -109,6 +110,8 @@ const handleWebauthnRoute = async (route: Route): Promise<void> => {
 };
 
 export const getSession = (): typeof session => session;
+
+export const getPasskeys = (): Passkey[] => passkeys;
 
 export const mockWebauthn = async (page: Page): Promise<void> => {
   await page.route('**/webauthn/**', handleWebauthnRoute);
