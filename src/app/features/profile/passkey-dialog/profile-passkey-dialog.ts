@@ -1,8 +1,10 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, inject, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
+
+import { focusInitial } from '@shared/dialog/focus-initial';
 
 import { ProfilePasskeyDialogStore } from './profile-passkey-dialog-store';
 
@@ -14,6 +16,7 @@ import { ProfilePasskeyDialogStore } from './profile-passkey-dialog-store';
 })
 export class ProfilePasskeyDialog {
   #store = inject(ProfilePasskeyDialogStore);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly registered = output<void>();
   readonly dismissed = output<void>();
@@ -24,6 +27,15 @@ export class ProfilePasskeyDialog {
   protected readonly submitting = this.#store.submitting;
   protected readonly unsupported = this.#store.unsupported;
   protected readonly failed = this.#store.failed;
+
+  constructor() {
+    // The close cross is the first focusable descendant: showModal() would focus it instead of the field.
+    afterRenderEffect(() => {
+      if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
+        focusInitial(this.#host.nativeElement, 'passkey-label');
+      }
+    });
+  }
 
   protected dismiss(): void {
     this.open.set(false);

@@ -6,6 +6,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { focusInitial } from '@shared/dialog/focus-initial';
+
 import { HoldingEditDialogStore } from './holding-edit-dialog-store';
 
 @Component({
@@ -35,7 +37,7 @@ export class HoldingEditDialog {
     // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="holding-edit-cancel"]')?.focus();
+        focusInitial(this.#host.nativeElement, 'holding-edit-cancel', 'holding-edit-quantity');
       }
     });
   }

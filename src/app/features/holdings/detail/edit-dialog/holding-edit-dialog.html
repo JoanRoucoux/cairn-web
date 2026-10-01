@@ -9,14 +9,7 @@
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.edit.quantity' | transloco">
-    <input
-      autofocus
-      data-testid="holding-edit-quantity"
-      step="0.000001"
-      type="number"
-      uiInput
-      [formField]="form.quantity"
-    />
+    <input data-testid="holding-edit-quantity" step="0.000001" type="number" uiInput [formField]="form.quantity" />
   </ui-field>
 
   <ui-field [hint]="'holdings.edit.averageCostHint' | transloco" [label]="'holdings.edit.averageCost' | transloco">

@@ -15,7 +15,6 @@
   >
     <input
       autocomplete="off"
-      autofocus
       data-testid="holding-sell-quantity"
       inputmode="decimal"
       type="text"
@@ -81,7 +80,7 @@
   </div>
 
   @if (closes()) {
-    <ui-alert class="mt-3" data-testid="holding-sell-closes-warning" variant="warning">
+    <ui-alert class="-mt-1" data-testid="holding-sell-closes-warning" variant="warning">
       {{ 'holdings.sell.closesWarning' | transloco: { account: holding().accountName } }}
     </ui-alert>
   }

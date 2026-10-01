@@ -81,7 +81,6 @@ export default defineConfig([
       '@angular-eslint/template/prefer-self-closing-tags': 'warn',
       '@angular-eslint/template/cyclomatic-complexity': ['warn', { maxComplexity: 10 }],
       '@angular-eslint/template/attributes-order': ['warn', { alphabetical: true }],
-      '@angular-eslint/template/no-autofocus': 'off',
     },
   },
 ]);

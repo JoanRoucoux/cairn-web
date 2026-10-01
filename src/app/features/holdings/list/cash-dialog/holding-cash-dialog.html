@@ -10,7 +10,7 @@
     [hint]="form.amount().value() === 0 ? ('holdings.cash.zeroHint' | transloco) : ''"
     [label]="'holdings.cash.amount' | transloco"
   >
-    <input autofocus data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />
+    <input data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />
   </ui-field>
 
   @if (error()) {

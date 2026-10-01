@@ -4,6 +4,8 @@ import { FormField } from '@angular/forms/signals';
 import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { focusInitial } from '@shared/dialog/focus-initial';
+
 import { HoldingCashStore } from './holding-cash-store';
 
 @Component({
@@ -35,7 +37,7 @@ export class HoldingCashDialog {
     // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="holding-cash-cancel"]')?.focus();
+        focusInitial(this.#host.nativeElement, 'holding-cash-cancel', 'holding-cash-amount');
       }
     });
   }
