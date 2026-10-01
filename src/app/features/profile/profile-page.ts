@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import {
   type SegmentedOption,
   UiAvatar,
+  UiBackLink,
   UiButton,
   UiCard,
   UiRow,
@@ -17,7 +18,6 @@ import {
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import {
   LucideBook,
-  LucideChevronLeft,
   LucideChevronRight,
   LucideDownload,
   LucideFileText,
@@ -38,9 +38,9 @@ import { type PasskeyView, ProfileStore } from './profile-store';
   selector: 'app-profile-page',
   imports: [
     UiAvatar,
+    UiBackLink,
     UiCard,
     LucideBook,
-    LucideChevronLeft,
     LucideChevronRight,
     LucideDownload,
     LucideFileText,

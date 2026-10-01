@@ -1,13 +1,6 @@
 <div class="mx-auto flex max-w-[720px] flex-col gap-4 lg:gap-6">
   <div class="-mx-2 flex h-12 items-center max-lg:-mb-4 lg:hidden">
-    <a
-      class="rounded-control text-body flex h-11 items-center gap-0.5 pr-3 pl-1 font-medium transition-transform duration-(--duration-press) ease-out active:scale-(--press-scale)"
-      data-testid="back-link"
-      routerLink="/"
-    >
-      <svg lucideChevronLeft [size]="22" [strokeWidth]="1.75" />
-      {{ 'profile.back' | transloco }}
-    </a>
+    <a data-testid="back-link" routerLink="/" ui-back-link>{{ 'profile.back' | transloco }}</a>
   </div>
 
   @switch (identityState()) {
@@ -43,163 +36,161 @@
     }
   }
 
-  <ui-card class="flex flex-col gap-3">
-    <h2 class="text-title font-semibold">{{ 'profile.appearance' | transloco }}</h2>
+  <ui-card>
+    <div class="flex flex-col gap-3">
+      <h2 class="text-title font-semibold">{{ 'profile.appearance' | transloco }}</h2>
 
-    <div class="flex flex-col gap-1.5">
-      <span class="text-label leading-[normal] font-medium text-(--muted-foreground)">{{
-        'profile.themeLabel' | transloco
-      }}</span>
-      <ui-segmented
-        class="block"
-        [label]="'profile.themeLabel' | transloco"
-        [options]="themeOptions()"
-        [value]="theme()"
-        (valueChange)="onThemeChange($event)"
-      />
-      <span class="text-caption text-(--subtle-foreground)" data-testid="theme-hint">{{
-        'profile.themeHint.' + theme() | transloco: { scheme: ('profile.scheme.' + systemScheme() | transloco) }
-      }}</span>
-    </div>
+      <div class="flex flex-col gap-1.5">
+        <ui-segmented
+          showLabel
+          [label]="'profile.themeLabel' | transloco"
+          [options]="themeOptions()"
+          [value]="theme()"
+          (valueChange)="onThemeChange($event)"
+        />
+        <span class="text-caption text-(--subtle-foreground)" data-testid="theme-hint">{{
+          'profile.themeHint.' + theme() | transloco: { scheme: ('profile.scheme.' + systemScheme() | transloco) }
+        }}</span>
+      </div>
 
-    <div class="flex flex-col gap-1.5">
-      <span class="text-label leading-[normal] font-medium text-(--muted-foreground)">{{
-        'profile.languageLabel' | transloco
-      }}</span>
-      <ui-segmented
-        class="block"
-        [label]="'profile.languageLabel' | transloco"
-        [options]="languageOptions()"
-        [value]="language()"
-        (valueChange)="onLanguageChange($event)"
-      />
-    </div>
+      <div class="flex flex-col gap-1.5">
+        <ui-segmented
+          showLabel
+          [label]="'profile.languageLabel' | transloco"
+          [options]="languageOptions()"
+          [value]="language()"
+          (valueChange)="onLanguageChange($event)"
+        />
+      </div>
 
-    <div class="flex items-center justify-between gap-4 pt-3 shadow-[inset_0_1px_0_var(--hairline)]">
-      <span class="flex min-w-0 flex-col gap-0.5">
-        <span class="text-body font-medium">{{ 'profile.hideAmounts' | transloco }}</span>
-        <span class="text-label text-(--muted-foreground)">{{ 'profile.hideAmountsHint' | transloco }}</span>
-      </span>
-      <input
-        data-testid="hide-amounts"
-        type="checkbox"
-        uiSwitch
-        [attr.aria-label]="'profile.hideAmounts' | transloco"
-        [checked]="hideAmounts()"
-        (change)="onHideAmountsChange($event)"
-      />
+      <div class="flex items-center justify-between gap-4 pt-3 shadow-[inset_0_1px_0_var(--hairline)]">
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span class="text-body font-medium">{{ 'profile.hideAmounts' | transloco }}</span>
+          <span class="text-label text-(--muted-foreground)">{{ 'profile.hideAmountsHint' | transloco }}</span>
+        </span>
+        <input
+          data-testid="hide-amounts"
+          type="checkbox"
+          uiSwitch
+          [attr.aria-label]="'profile.hideAmounts' | transloco"
+          [checked]="hideAmounts()"
+          (change)="onHideAmountsChange($event)"
+        />
+      </div>
     </div>
   </ui-card>
 
-  <ui-card class="flex flex-col gap-3 pb-2">
-    <h2 class="text-title font-semibold">{{ 'profile.manageData.title' | transloco }}</h2>
+  <ui-card padding="none">
+    <div class="flex flex-col gap-3 px-(--inset-card) pt-(--inset-card) pb-2">
+      <h2 class="text-title font-semibold">{{ 'profile.manageData.title' | transloco }}</h2>
 
-    <div class="-mx-2 -mt-1 flex flex-col">
-      <a data-testid="export-csv" download href="/api/portfolio/export" padding="sm" size="xl" ui-row>
-        <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
-          <svg lucideDownload [size]="18" [strokeWidth]="1.75" />
-        </span>
-        <span class="flex min-w-0 flex-1 flex-col text-left">
-          <span class="text-body font-medium">{{ 'profile.export' | transloco }}</span>
-          <span class="text-caption text-(--subtle-foreground)">{{ 'profile.exportHint' | transloco }}</span>
-        </span>
-        <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
-      </a>
+      <div class="-mx-2 -mt-1 flex flex-col">
+        <a data-testid="export-csv" download href="/api/portfolio/export" padding="sm" size="xl" ui-row>
+          <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
+            <svg lucideDownload [size]="18" [strokeWidth]="1.75" />
+          </span>
+          <span class="flex min-w-0 flex-1 flex-col text-left">
+            <span class="text-body font-medium">{{ 'profile.export' | transloco }}</span>
+            <span class="text-caption text-(--subtle-foreground)">{{ 'profile.exportHint' | transloco }}</span>
+          </span>
+          <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
+        </a>
 
-      <button
-        data-testid="import-csv"
-        padding="sm"
-        size="xl"
-        type="button"
-        ui-row
-        [disabled]="importing()"
-        (click)="fileInput.click()"
-      >
-        <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
-          <svg lucideUpload [size]="18" [strokeWidth]="1.75" />
-        </span>
-        <span class="flex min-w-0 flex-1 flex-col text-left">
-          <span class="text-body font-medium">{{ 'profile.import' | transloco }}</span>
-          <span class="text-caption text-(--subtle-foreground)">{{
-            (importing() ? 'profile.importing' : 'profile.importHint') | transloco
-          }}</span>
-        </span>
-        <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
-      </button>
+        <button
+          data-testid="import-csv"
+          padding="sm"
+          size="xl"
+          type="button"
+          ui-row
+          [disabled]="importing()"
+          (click)="fileInput.click()"
+        >
+          <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
+            <svg lucideUpload [size]="18" [strokeWidth]="1.75" />
+          </span>
+          <span class="flex min-w-0 flex-1 flex-col text-left">
+            <span class="text-body font-medium">{{ 'profile.import' | transloco }}</span>
+            <span class="text-caption text-(--subtle-foreground)">{{
+              (importing() ? 'profile.importing' : 'profile.importHint') | transloco
+            }}</span>
+          </span>
+          <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
+        </button>
 
-      <a data-testid="import-template" download href="/api/portfolio/import/template" padding="sm" size="xl" ui-row>
-        <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
-          <svg lucideFileText [size]="18" [strokeWidth]="1.75" />
-        </span>
-        <span class="flex min-w-0 flex-1 flex-col text-left">
-          <span class="text-body font-medium">{{ 'profile.importTemplate' | transloco }}</span>
-          <span class="text-caption text-(--subtle-foreground)">{{ 'profile.importTemplateHint' | transloco }}</span>
-        </span>
-        <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
-      </a>
+        <a data-testid="import-template" download href="/api/portfolio/import/template" padding="sm" size="xl" ui-row>
+          <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
+            <svg lucideFileText [size]="18" [strokeWidth]="1.75" />
+          </span>
+          <span class="flex min-w-0 flex-1 flex-col text-left">
+            <span class="text-body font-medium">{{ 'profile.importTemplate' | transloco }}</span>
+            <span class="text-caption text-(--subtle-foreground)">{{ 'profile.importTemplateHint' | transloco }}</span>
+          </span>
+          <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
+        </a>
 
-      <a data-testid="manage-instruments" padding="sm" routerLink="/instruments" size="xl" ui-row>
-        <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
-          <svg lucideBook [size]="18" [strokeWidth]="1.75" />
-        </span>
-        <span class="flex min-w-0 flex-1 flex-col text-left">
-          <span class="text-body font-medium">{{ 'profile.manageData.instruments' | transloco }}</span>
-          <span class="text-caption text-(--subtle-foreground)">{{ 'profile.instrumentsHint' | transloco }}</span>
-        </span>
-        @if (instrumentCount() !== null) {
-          <span class="text-label text-(--muted-foreground)" data-testid="instrument-count">{{
-            instrumentCount()
-          }}</span>
-        }
-        <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
-      </a>
+        <a data-testid="manage-instruments" padding="sm" routerLink="/instruments" size="xl" ui-row>
+          <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
+            <svg lucideBook [size]="18" [strokeWidth]="1.75" />
+          </span>
+          <span class="flex min-w-0 flex-1 flex-col text-left">
+            <span class="text-body font-medium">{{ 'profile.manageData.instruments' | transloco }}</span>
+            <span class="text-caption text-(--subtle-foreground)">{{ 'profile.instrumentsHint' | transloco }}</span>
+          </span>
+          @if (instrumentCount() !== null) {
+            <span class="text-label text-(--muted-foreground)" data-testid="instrument-count">{{
+              instrumentCount()
+            }}</span>
+          }
+          <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
+        </a>
 
-      <input
-        #fileInput
-        accept=".csv,text/csv"
-        class="hidden"
-        data-testid="import-file"
-        type="file"
-        (change)="onFileSelected($event)"
-      />
+        <input
+          #fileInput
+          accept=".csv,text/csv"
+          class="hidden"
+          data-testid="import-file"
+          type="file"
+          (change)="onFileSelected($event)"
+        />
 
-      @if (report(); as summary) {
-        <p class="text-label mt-2 text-(--positive)" data-testid="import-report" role="status">
-          {{ 'profile.importDone' | transloco: summary }}
-        </p>
-      }
-
-      @if (failed()) {
-        <p class="text-label mt-2 text-(--negative)" data-testid="import-failed" role="alert">
-          {{ 'profile.importFailed' | transloco }}
-        </p>
-      }
-
-      @if (rejections().length > 0) {
-        <div class="mt-2" data-testid="import-rejections" role="alert">
-          <p class="text-label mb-2 text-(--negative)">
-            {{ 'profile.importRejected' | transloco: { count: rejections().length } }}
+        @if (report(); as summary) {
+          <p class="text-label mt-2 text-(--positive)" data-testid="import-report" role="status">
+            {{ 'profile.importDone' | transloco: summary }}
           </p>
-          <div class="overflow-x-auto">
-            <table uiTable>
-              <thead>
-                <tr>
-                  <th uiTh>{{ 'profile.importLine' | transloco }}</th>
-                  <th uiTh>{{ 'profile.importReason' | transloco }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (rejection of rejections(); track $index) {
+        }
+
+        @if (failed()) {
+          <p class="text-label mt-2 text-(--negative)" data-testid="import-failed" role="alert">
+            {{ 'profile.importFailed' | transloco }}
+          </p>
+        }
+
+        @if (rejections().length > 0) {
+          <div class="mt-2" data-testid="import-rejections" role="alert">
+            <p class="text-label mb-2 text-(--negative)">
+              {{ 'profile.importRejected' | transloco: { count: rejections().length } }}
+            </p>
+            <div class="overflow-x-auto">
+              <table uiTable>
+                <thead>
                   <tr>
-                    <td numeric uiTd>{{ rejection.line }}</td>
-                    <td uiTd>{{ 'profile.importError.' + rejection.code | transloco: rejection }}</td>
+                    <th uiTh>{{ 'profile.importLine' | transloco }}</th>
+                    <th uiTh>{{ 'profile.importReason' | transloco }}</th>
                   </tr>
-                }
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  @for (rejection of rejections(); track $index) {
+                    <tr>
+                      <td numeric uiTd>{{ rejection.line }}</td>
+                      <td uiTd>{{ 'profile.importError.' + rejection.code | transloco: rejection }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      }
+        }
+      </div>
     </div>
   </ui-card>
 
@@ -212,12 +203,12 @@
   />
 
   <button
-    class="text-body! mt-2 flex w-full items-center justify-center gap-2 text-(--negative) max-lg:h-[50px]!"
+    class="mt-2 w-full"
     data-testid="sign-out"
-    size="lg"
+    size="block"
     type="button"
     ui-button
-    variant="outline"
+    variant="outline-destructive"
     (click)="onSignOut()"
   >
     <svg lucideLogOut [size]="18" [strokeWidth]="1.75" />
