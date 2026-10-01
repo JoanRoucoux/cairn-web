@@ -144,7 +144,7 @@
     "title": "Add a holding",
     "close": "Close",
     "account": "Account",
-    "title2": "Title",
+    "title2": "Instrument",
     "titlePlaceholder": "Name or ISIN",
     "catalogHeading": "In the catalogue",
     "onlineHeading": "New instrument, found online",
@@ -170,9 +170,9 @@
     "lineCount_other": "{{count}} holdings",
     "trialPriceCaption": "trial price",
     "trialPrice": "Trial price",
-    "noOtherOnline": "No other title found online.",
+    "noOtherOnline": "No other instrument found online.",
     "onlineSearching": "Searching online",
-    "gainAtProbe": "unrealised gain",
+    "gainAtProbe": "unrealized gain",
     "cancel": "Cancel"
   }
 }

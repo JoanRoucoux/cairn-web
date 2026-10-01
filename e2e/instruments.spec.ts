@@ -16,11 +16,15 @@ test.describe('instruments', () => {
 
     await expect(page.getByRole('alert')).toHaveCount(1);
 
-    const inputBox = await input.boundingBox();
-    const buttonBox = await button.boundingBox();
-    const centreOf = (box: { y: number; height: number }): number => box.y + box.height / 2;
+    const centreOf = async (locator: typeof input): Promise<number> => {
+      const box = await locator.boundingBox();
 
-    expect(centreOf(buttonBox!)).toBeCloseTo(centreOf(inputBox!), 0);
+      return (box?.y ?? 0) + (box?.height ?? 0) / 2;
+    };
+
+    await expect(async () => {
+      expect(await centreOf(button)).toBeCloseTo(await centreOf(input), 0);
+    }).toPass();
   });
 
   test('lists a new instrument as soon as it is created', async ({ page }) => {
