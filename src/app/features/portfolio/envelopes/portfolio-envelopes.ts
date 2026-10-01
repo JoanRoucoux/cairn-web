@@ -19,5 +19,7 @@ export class PortfolioEnvelopes {
   readonly range = input.required<ChartRange>();
   readonly retry = output<void>();
 
+  protected readonly skeletonWidths = [70, 93, 116, 89, 112, 85, 108];
+
   protected readonly periodKey = computed(() => `portfolio.curve.period.${this.range()}`);
 }

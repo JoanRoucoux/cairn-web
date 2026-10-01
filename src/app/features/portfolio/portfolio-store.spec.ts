@@ -3,7 +3,12 @@ import { HttpTestingController, type TestRequest, provideHttpClientTesting } fro
 import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import type { HistoryResponse, IntradayHistoryResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  HistoryResponse,
+  HoldingResponse,
+  IntradayHistoryResponse,
+  PortfolioResponse,
+} from '@core/api-client/cairnAPI.schemas';
 
 import { PortfolioStore } from './portfolio-store';
 
@@ -17,16 +22,18 @@ const portfolio = {
   generatedAt: '2026-08-21T20:00:00Z',
   byAssetClass: [],
   byAccount: [],
-  holdings: [
-    { id: 'h1', dayChangeEur: 120.5 },
-    { id: 'h2', dayChangeEur: -300.25 },
-    { id: 'h3', dayChangeEur: 12.1 },
-    { id: 'h4', dayChangeEur: null },
-    { id: 'h5', dayChangeEur: 45 },
-    { id: 'h6', dayChangeEur: -8.4 },
-    { id: 'h7', dayChangeEur: 500.1 },
-  ],
+  holdings: [{ id: 'h1' }],
 } as unknown as PortfolioResponse;
+
+const holdings = [
+  { id: 'h1', dayChangeRatio: 0.012 },
+  { id: 'h2', dayChangeRatio: -0.03 },
+  { id: 'h3', dayChangeRatio: 0.001 },
+  { id: 'h4', dayChangeRatio: null },
+  { id: 'h5', dayChangeRatio: 0.0045 },
+  { id: 'h6', dayChangeRatio: -0.0008 },
+  { id: 'h7', dayChangeRatio: 0.02 },
+] as unknown as HoldingResponse[];
 
 const performance = {
   range: '1m',
@@ -60,9 +67,12 @@ describe('PortfolioStore', () => {
 
   const portfolioRequest = (): TestRequest => httpTesting.expectOne((candidate) => candidate.url === '/api/portfolio');
 
-  const flushPortfolio = (body: PortfolioResponse = portfolio): void => {
+  const holdingsRequest = (): TestRequest => httpTesting.expectOne((candidate) => candidate.url === '/api/holdings');
+
+  const flushPortfolio = (body: PortfolioResponse = portfolio, holdingsBody: HoldingResponse[] = holdings): void => {
     TestBed.tick();
     portfolioRequest().flush(body);
+    holdingsRequest().flush(holdingsBody);
   };
 
   const flushIntraday = async (body: IntradayHistoryResponse = intraday): Promise<void> => {
@@ -115,7 +125,7 @@ describe('PortfolioStore', () => {
   });
 
   it('should flag the total and movers blocks as empty when the portfolio has no holding', async () => {
-    flushPortfolio({ ...portfolio, holdings: [] });
+    flushPortfolio({ ...portfolio, holdings: [] }, []);
     await flushHistory();
     await flushPerformance();
     await settle();
@@ -125,10 +135,10 @@ describe('PortfolioStore', () => {
   });
 
   it('should flag the movers block as empty when no holding moved today', async () => {
-    flushPortfolio({
-      ...portfolio,
-      holdings: [{ id: 'h1', dayChangeEur: 0 } as never, { id: 'h2', dayChangeEur: null } as never],
-    });
+    flushPortfolio(portfolio, [
+      { id: 'h1', dayChangeRatio: 0 },
+      { id: 'h2', dayChangeRatio: null },
+    ] as unknown as HoldingResponse[]);
     await flushHistory();
     await flushPerformance();
     await settle();
@@ -154,22 +164,37 @@ describe('PortfolioStore', () => {
     expect(store.envelopesState()).toBe('empty');
   });
 
-  it('should flag only the total and movers blocks as errored when the portfolio call fails', async () => {
+  it('should flag only the total block as errored when the portfolio call fails', async () => {
     TestBed.tick();
     portfolioRequest().flush(null, { status: 500, statusText: 'Server Error' });
+    holdingsRequest().flush(holdings);
     await flushHistory();
     await flushPerformance();
     await settle();
 
     expect(store.totalState()).toBe('error');
-    expect(store.moversState()).toBe('error');
+    expect(store.moversState()).toBe('ready');
     expect(store.curveState()).toBe('ready');
     expect(store.envelopesState()).toBe('ready');
   });
 
-  it('should flag allFailed only once the three calls have failed', async () => {
+  it('should flag only the movers block as errored when the holdings call fails', async () => {
+    TestBed.tick();
+    portfolioRequest().flush(portfolio);
+    holdingsRequest().flush(null, { status: 500, statusText: 'Server Error' });
+    await flushHistory();
+    await flushPerformance();
+    await settle();
+
+    expect(store.moversState()).toBe('error');
+    expect(store.totalState()).toBe('ready');
+    expect(store.movers()).toEqual([]);
+  });
+
+  it('should flag allFailed only once the four calls have failed', async () => {
     TestBed.tick();
     portfolioRequest().flush(null, { status: 500, statusText: 'Server Error' });
+    holdingsRequest().flush(null, { status: 500, statusText: 'Server Error' });
     await vi.waitFor(() => {
       const [request] = httpTesting.match((candidate) => candidate.url === '/api/history');
       expect(request).toBeDefined();
@@ -200,6 +225,19 @@ describe('PortfolioStore', () => {
     httpTesting.verify();
   });
 
+  it('should reissue only GET /holdings on retryMovers', async () => {
+    flushPortfolio();
+    await flushHistory();
+    await flushPerformance();
+    await settle();
+
+    store.retryMovers();
+    TestBed.tick();
+
+    holdingsRequest().flush(holdings);
+    httpTesting.verify();
+  });
+
   it('should reissue only the history call on retryCurve', async () => {
     flushPortfolio();
     await flushHistory();
@@ -224,13 +262,13 @@ describe('PortfolioStore', () => {
     await flushPerformance();
   });
 
-  it('should keep the five largest movers by absolute day change, excluding null changes', async () => {
+  it('should keep the five largest movers by absolute day change in percent, excluding null changes', async () => {
     flushPortfolio();
     await flushHistory();
     await flushPerformance();
     await settle();
 
-    expect(store.movers().map((holding) => holding.id)).toEqual(['h7', 'h2', 'h1', 'h5', 'h3']);
+    expect(store.movers().map((holding) => holding.id)).toEqual(['h2', 'h7', 'h1', 'h5', 'h3']);
   });
 
   it('should turn constant-mix history points into chart points by default', async () => {

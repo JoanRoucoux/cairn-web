@@ -33,6 +33,7 @@ export class PortfolioPage {
   protected readonly portfolio = this.#store.portfolioValue;
   protected readonly performance = this.#store.performanceValue;
   protected readonly points = this.#store.points;
+  protected readonly rangeChange = this.#store.rangeChange;
   protected readonly reconstructed = this.#store.reconstructed;
   protected readonly range = this.#store.range;
   protected readonly movers = this.#store.movers;
@@ -47,6 +48,10 @@ export class PortfolioPage {
 
   protected retryTotal(): void {
     this.#store.retryTotal();
+  }
+
+  protected retryMovers(): void {
+    this.#store.retryMovers();
   }
 
   protected retryCurve(): void {

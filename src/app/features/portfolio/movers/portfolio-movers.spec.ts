@@ -40,6 +40,15 @@ describe('PortfolioMovers', () => {
     expect(table.getByRole('link', { name: 'Amundi MSCI World' })).toHaveAttribute('href', '/holdings/h1');
   });
 
+  it('should show the day change in percent, not in euros, under the value on the list', async () => {
+    await renderComponent();
+
+    const list = within(await screen.findByTestId('movers-list'));
+
+    expect(list.getByText('+0,17 %', { exact: false })).toBeInTheDocument();
+    expect(list.queryByText('142,80', { exact: false })).not.toBeInTheDocument();
+  });
+
   it('should render the table headers', async () => {
     await renderComponent();
 

@@ -6,7 +6,7 @@
   <div class="flex flex-col gap-(--stack-section)">
     <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_344px]">
       <div
-        class="rounded-container flex flex-col gap-6 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)] lg:gap-8"
+        class="rounded-container flex flex-col gap-5 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)] lg:gap-8"
       >
         <app-portfolio-total [portfolio]="portfolio()" [state]="totalState()" (retry)="retryTotal()" />
 
@@ -14,8 +14,8 @@
           [formats]="chartFormats()"
           [points]="points()"
           [range]="range()"
-          [rangeChangeEur]="performance()?.total?.changeEur"
-          [rangeChangeRatio]="performance()?.total?.changeRatio"
+          [rangeChangeEur]="rangeChange()?.eur"
+          [rangeChangeRatio]="rangeChange()?.ratio"
           [reconstructed]="reconstructed()"
           [startLabel]="'chart.startLabel' | transloco"
           [state]="curveState()"
@@ -24,7 +24,9 @@
         />
       </div>
 
-      <div class="rounded-container bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]">
+      <div
+        class="rounded-container bg-(--card) px-(--inset-card) pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:px-4 lg:pb-3"
+      >
         <app-portfolio-envelopes
           [envelopes]="performance()?.byEnvelope ?? []"
           [range]="range()"
@@ -34,8 +36,10 @@
       </div>
     </div>
 
-    <div class="rounded-container bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]">
-      <app-portfolio-movers [movers]="movers()" [state]="moversState()" (retry)="retryTotal()" />
+    <div
+      class="rounded-container bg-(--card) px-(--inset-card) pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:px-4 lg:pb-3"
+    >
+      <app-portfolio-movers [movers]="movers()" [state]="moversState()" (retry)="retryMovers()" />
     </div>
   </div>
 }

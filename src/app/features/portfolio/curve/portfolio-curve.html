@@ -1,10 +1,12 @@
 <div
-  class="grid h-full gap-4 [grid-template-areas:'header'_'chart'_'segmented'] lg:grid-cols-[1fr_300px] lg:[grid-template-areas:'header_segmented'_'chart_chart']"
+  class="grid h-full gap-3 [grid-template-areas:'header'_'chart'_'segmented'] lg:grid-cols-[1fr_300px] lg:items-center lg:gap-4 lg:[grid-template-areas:'header_segmented'_'chart_chart']"
 >
-  @if (range() !== '1d') {
-    <div class="text-label flex flex-wrap items-baseline gap-1.5 [grid-area:header]">
+  <div class="text-label lg:text-body flex flex-wrap items-baseline gap-1.5 [grid-area:header]">
+    @if (state() === 'loading') {
+      <div class="w-50" data-testid="curve-range-loading"><ui-skeleton [height]="14" /></div>
+    } @else if (state() !== 'error') {
       @if (rangeChangeEur() !== undefined) {
-        <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
+        <ui-delta class="font-medium" [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
           <ui-amount currency="EUR" signed whenMasked="hide" [value]="rangeChangeEur()" />
           <span aria-hidden="true"> &middot; </span>
           {{ rangeChangeRatio() | ratio: { signed: true, decimals: 2 } }}
@@ -13,11 +15,11 @@
         <span class="text-(--subtle-foreground)">&mdash;</span>
       }
       <span class="text-(--muted-foreground)">{{ periodKey() | transloco }}</span>
-    </div>
-  }
+    }
+  </div>
 
   <ui-segmented
-    class="[grid-area:segmented]"
+    class="[grid-area:segmented] max-lg:[&_label]:h-10 lg:[&_label]:h-8"
     [label]="'chart.rangeLabel' | transloco"
     [options]="rangeOptions()"
     [value]="range()"
@@ -26,18 +28,28 @@
 
   <div class="flex flex-col [grid-area:chart]">
     <ui-async
-      class="flex flex-1 flex-col"
+      class="flex flex-1 flex-col [--inset-card:1rem] [&>[role=alert]]:min-h-55 [&>[role=alert]]:flex-1 [&>[role=alert]]:items-center [&>[role=alert]]:justify-center [&>[role=alert]]:text-center lg:[&>[role=alert]]:min-h-85"
       [errorMessage]="'portfolio.error.message' | transloco"
       [errorTitle]="'portfolio.curve.error' | transloco"
       [retryLabel]="'portfolio.error.retry' | transloco"
       [state]="state()"
       (retry)="retry.emit()"
     >
+<<<<<<< HEAD
       <ui-skeleton asyncLoading class="h-[205px] lg:h-101" data-testid="curve-loading" shape="chart" />
 
       <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>
 
       <div class="h-[205px] lg:h-101">
+=======
+      <div asyncLoading class="flex flex-1 flex-col" data-testid="curve-loading">
+        <ui-skeleton class="flex-1 [&>span]:min-h-50 lg:[&>span]:min-h-75" [height]="200" />
+      </div>
+
+      <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>
+
+      <div class="h-44 lg:h-72">
+>>>>>>> e73bc1b (fix(portfolio): align the dashboard blocks on the V3 mockup)
         <ui-line-chart
           axisGap="auto"
           tooltip="auto"
