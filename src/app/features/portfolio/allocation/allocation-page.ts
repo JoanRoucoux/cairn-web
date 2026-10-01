@@ -17,6 +17,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { AccountResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 import { AllocationStore } from './allocation-store';
@@ -120,6 +121,9 @@ export class AllocationPage {
   }
 }
 
+const lineCountOf = (portfolio: PortfolioResponse, assetClass: string): number =>
+  portfolio.holdings.filter((holding) => holding.assetClass === assetClass).length;
+
 function assetClassSlicesOf(
   portfolio: PortfolioResponse,
   translate: (key: string, params?: Record<string, unknown>) => string,
@@ -131,8 +135,8 @@ function assetClassSlicesOf(
     sublabel:
       row.label === 'CASH'
         ? translate('portfolio.allocation.cashSubtitle')
-        : translate('portfolio.allocation.lineCount', {
-            count: portfolio.holdings.filter((holding) => holding.assetClass === row.label).length,
+        : translate(pluralKey('portfolio.allocation.lineCount', lineCountOf(portfolio, row.label)), {
+            count: lineCountOf(portfolio, row.label),
           }),
   }));
 }

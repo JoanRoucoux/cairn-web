@@ -78,7 +78,15 @@ describe('AllocationPage', () => {
     const cashSubtitle = await screen.findByText('portfolio.allocation.cashSubtitle');
 
     expect(cashSubtitle.parentElement).toHaveTextContent('enums.assetClass.CASH');
-    expect(screen.getByText('portfolio.allocation.lineCount')).toBeInTheDocument();
+    expect(screen.getByText('portfolio.allocation.lineCount_other')).toBeInTheDocument();
+  });
+
+  it('should use the singular form for a class holding a single line', async () => {
+    await renderPage((request) =>
+      request.flush({ ...portfolioBody, holdings: [{ assetClass: 'ETF' }, { assetClass: 'CASH' }] }),
+    );
+
+    expect(await screen.findByText('portfolio.allocation.lineCount_one')).toBeInTheDocument();
   });
 
   it('should show the envelope and institution as the account sub-label', async () => {

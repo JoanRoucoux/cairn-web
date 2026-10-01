@@ -15,7 +15,8 @@
     "byAssetClassErrorTitle": "La répartition par classe n'a pas pu être chargée",
     "byAccountErrorTitle": "La répartition par compte n'a pas pu être chargée",
     "errorMessage": "Le serveur n'a pas répondu.",
-    "lineCount": "{{count}} lignes",
+    "lineCount_one": "{{count}} ligne",
+    "lineCount_other": "{{count}} lignes",
     "cashSubtitle": "Soldes et livrets"
   },
   "total": {

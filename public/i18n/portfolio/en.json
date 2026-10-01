@@ -15,7 +15,8 @@
     "byAssetClassErrorTitle": "The breakdown by class could not be loaded",
     "byAccountErrorTitle": "The breakdown by account could not be loaded",
     "errorMessage": "The server did not answer.",
-    "lineCount": "{{count}} holdings",
+    "lineCount_one": "{{count}} holding",
+    "lineCount_other": "{{count}} holdings",
     "cashSubtitle": "Balances and savings"
   },
   "total": {
