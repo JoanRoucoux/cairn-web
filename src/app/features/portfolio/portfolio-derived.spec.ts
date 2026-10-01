@@ -145,4 +145,21 @@ describe('PortfolioStore derived values', () => {
 
     expect(store.curveBlocking()).toBe(true);
   });
+
+  it('should stay blocking while a retry after a history error is loading', async () => {
+    const store = setup();
+    await vi.waitFor(() => {
+      const [request] = httpTesting.match((candidate) => candidate.url === '/api/history');
+      expect(request).toBeDefined();
+      request?.flush(null, { status: 500, statusText: 'Server Error' });
+    });
+    await vi.waitFor(() => expect(store.history.status()).toBe('error'));
+    TestBed.tick();
+
+    store.retryCurve();
+    TestBed.tick();
+
+    expect(store.history.status()).toBe('reloading');
+    expect(store.curveBlocking()).toBe(true);
+  });
 });
