@@ -9,6 +9,7 @@ import {
   UI_AMOUNT_MASKED,
   UiAmount,
   UiAsync,
+  UiCard,
   UiDonut,
   UiSkeleton,
   formatAmount,
@@ -22,6 +23,25 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 
 import { AllocationStore } from './allocation-store';
 
+const CLASS_SLUGS: Record<string, string> = {
+  ETF: 'etf',
+  FUND: 'fonds',
+  EQUITY: 'actions',
+  CRYPTO: 'crypto',
+  CASH: 'liquidites',
+};
+
+const GRID_BASE =
+  'grid grid-cols-[minmax(0,1fr)] gap-4 @min-[960px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @min-[960px]:gap-6';
+const GRID_CONTENT =
+  '@min-[1113px]:mr-[calc(-1*var(--gutter))] @min-[1113px]:grid-cols-[minmax(0,max-content)_minmax(0,max-content)]';
+
+const OTHERS_ID = 'others';
+
+const GRID_CLASSES_READY = '@min-[1113px]:grid-cols-[minmax(max-content,1fr)_minmax(0,1fr)]';
+const GRID_ACCOUNTS_READY = '@min-[1113px]:grid-cols-[minmax(0,1fr)_minmax(max-content,1fr)]';
+const GRID_NONE_READY = '@min-[1113px]:grid-cols-[1fr_1fr]';
+
 const asyncStateFor = (loading: boolean, failed: boolean, empty: boolean): AsyncState => {
   if (failed) {
     return 'error';
@@ -34,7 +54,7 @@ const asyncStateFor = (loading: boolean, failed: boolean, empty: boolean): Async
 
 @Component({
   selector: 'app-allocation-page',
-  imports: [NgTemplateOutlet, TranslocoPipe, UiAmount, UiAsync, UiDonut, UiSkeleton],
+  imports: [NgTemplateOutlet, TranslocoPipe, UiAmount, UiAsync, UiCard, UiDonut, UiSkeleton],
   templateUrl: './allocation-page.html',
   providers: [AllocationStore, RatioPipe],
 })
@@ -100,15 +120,29 @@ export class AllocationPage {
   protected readonly classSkeleton = [70, 60, 80, 96, 64];
   protected readonly accountSkeleton = [110, 70, 90, 80, 76, 100, 110];
 
-  protected readonly wrapperClass = (state: AsyncState): string => {
-    if (state === 'ready') {
-      return 'block px-2 pt-2 lg:pb-1';
+  protected readonly wrapperClass = (state: AsyncState): string =>
+    state === 'ready' ? 'block px-2 pt-2 lg:pb-1' : 'block p-2';
+
+  protected readonly gridClass = computed(() => {
+    const classes = this.assetClassState() === 'ready';
+    const accounts = this.accountState() === 'ready';
+
+    if (classes && accounts) {
+      return `${GRID_BASE} ${GRID_CONTENT}`;
     }
 
-    return state === 'error'
-      ? 'block p-2 lg:[&>[role=alert]]:items-center lg:[&>[role=alert]]:py-10 lg:[&>[role=alert]]:text-center'
-      : 'block p-2';
-  };
+    if (classes) {
+      return `${GRID_BASE} ${GRID_CLASSES_READY}`;
+    }
+
+    return `${GRID_BASE} ${accounts ? GRID_ACCOUNTS_READY : GRID_NONE_READY}`;
+  });
+
+  protected readonly classHref = (id: string): string | null =>
+    id === OTHERS_ID ? null : `/holdings?classe=${CLASS_SLUGS[id]}`;
+
+  protected readonly accountHref = (id: string): string | null =>
+    id === OTHERS_ID ? null : `/holdings?compte=${encodeURIComponent(id)}`;
 
   protected retryClasses(): void {
     this.#store.retryClasses();
@@ -119,11 +153,19 @@ export class AllocationPage {
   }
 
   protected onAssetClassSelect(id: string): void {
-    this.#router.navigate(['/holdings'], { queryParams: { assetClass: id } });
+    if (id === OTHERS_ID) {
+      return;
+    }
+
+    this.#router.navigate(['/holdings'], { queryParams: { classe: CLASS_SLUGS[id] } });
   }
 
   protected onAccountSelect(id: string): void {
-    this.#router.navigate(['/holdings'], { queryParams: { account: id } });
+    if (id === OTHERS_ID) {
+      return;
+    }
+
+    this.#router.navigate(['/holdings'], { queryParams: { compte: id } });
   }
 }
 
@@ -148,7 +190,7 @@ function accountSlicesOf(allocation: AccountAllocationResponse, translate: (key:
     const institution = account.institution.trim();
 
     return {
-      id: account.name,
+      id: account.id,
       label: account.name,
       value: valueEur,
       sublabel: institution ? `${type} · ${institution}` : type,

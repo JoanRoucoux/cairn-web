@@ -29,24 +29,24 @@ test.describe('allocation', () => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await page.getByRole('button', { name: /ETF/ }).click();
+    await page.getByRole('link', { name: /ETF/ }).click();
     await page.waitForURL('**/holdings?**');
 
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
-    expect(url.searchParams.get('assetClass')).toBe('ETF');
+    expect(url.searchParams.get('classe')).toBe('etf');
   });
 
   test('navigates to the filtered holdings when an account row is activated', async ({ page }) => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await page.getByRole('button', { name: /PEA Boursorama/ }).click();
+    await page.getByRole('link', { name: /PEA Boursorama/ }).click();
     await page.waitForURL('**/holdings?**');
 
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
-    expect(url.searchParams.get('account')).toBe('PEA Boursorama');
+    expect(url.searchParams.get('compte')).not.toBeNull();
   });
 
   test('shows an error on the failing ring only and retries just that call', async ({ page }) => {

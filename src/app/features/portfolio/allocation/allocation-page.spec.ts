@@ -26,7 +26,7 @@ const classesBody = {
 };
 
 const accountItem = (name: string, type: string, institution: string, valueEur: number, share: number): object => ({
-  account: { id: name, name, type, institution },
+  account: { id: `id-${name}`, name, type, institution },
   valueEur,
   share,
   lineCount: 1,
@@ -124,24 +124,72 @@ describe('AllocationPage', () => {
     expect(screen.queryByText(/·/)).not.toBeInTheDocument();
   });
 
-  it('should navigate to the filtered holdings when an asset-class row is activated', async () => {
+  it('should link the class rows to the filtered holdings and navigate on a plain click', async () => {
     const user = userEvent.setup();
     await renderPage();
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    await user.click((await screen.findAllByRole('button', { name: /ETF/ }))[0]!);
+    const [row] = await screen.findAllByRole('link', { name: /ETF/ });
 
-    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { assetClass: 'ETF' } });
+    expect(row).toHaveAttribute('href', '/holdings?classe=etf');
+
+    await user.click(row!);
+
+    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { classe: 'etf' } });
   });
 
-  it('should navigate to the filtered holdings when an account row is activated', async () => {
+  it('should link the cash row to the liquidites slug', async () => {
     const user = userEvent.setup();
     await renderPage();
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    await user.click((await screen.findAllByRole('button', { name: /Esalia/ }))[0]!);
+    await user.click((await screen.findAllByRole('link', { name: /CASH/ }))[0]!);
 
-    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { account: 'Esalia' } });
+    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { classe: 'liquidites' } });
+  });
+
+  it('should keep the Others class row a button that goes nowhere', async () => {
+    const user = userEvent.setup();
+    const classes = ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'CASH', 'ETF', 'FUND', 'EQUITY'].map((assetClass, index) => ({
+      assetClass,
+      valueEur: 8 - index,
+      share: 0.1,
+      lineCount: 1,
+    }));
+    await renderPage({ totalEur: 7, items: classes });
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    await user.click(await screen.findByRole('button', { name: /portfolio.allocation.others/ }));
+
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('should link the account rows to the filtered holdings by account id', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    const [row] = await screen.findAllByRole('link', { name: /Esalia/ });
+
+    expect(row).toHaveAttribute('href', '/holdings?compte=id-Esalia');
+
+    await user.click(row!);
+
+    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { compte: 'id-Esalia' } });
+  });
+
+  it('should keep the Others row a button that goes nowhere', async () => {
+    const user = userEvent.setup();
+    const many = {
+      totalEur: 7,
+      items: Array.from({ length: 8 }, (_, index) => accountItem('A' + index, 'PEA', 'Saxo', 8 - index, 0.1)),
+    };
+    await renderPage(classesBody, many);
+    const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    await user.click(await screen.findByRole('button', { name: /portfolio.allocation.others/ }));
+
+    expect(navigate).not.toHaveBeenCalled();
   });
 
   it('should fail the classes ring on its own and retry only that call', async () => {
