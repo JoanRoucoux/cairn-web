@@ -27,7 +27,7 @@
       </button>
     </div>
 
-    <ui-menu #menu [label]="'holdings.detail.menu' | transloco">
+    <ui-menu #menu class="w-50" [label]="'holdings.detail.menu' | transloco">
       <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
         {{ 'holdings.edit.open' | transloco }}
       </button>

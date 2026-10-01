@@ -1,5 +1,8 @@
 <ui-dialog
   data-testid="account-form-dialog"
+  layout="form"
+  width="528px"
+  [closeLabel]="'dialog.close' | transloco"
   [heading]="(account() ? 'accounts.form.editTitle' : 'accounts.form.createTitle') | transloco"
   [open]="open()"
   (dismissed)="dismiss()"
@@ -8,7 +11,14 @@
     [error]="nameConflict() ? ('accounts.form.nameConflict' | transloco) : undefined"
     [label]="'accounts.name' | transloco"
   >
-    <input data-testid="account-form-name" type="text" uiInput [formField]="form.name" (input)="onNameInput()" />
+    <input
+      autofocus
+      data-testid="account-form-name"
+      type="text"
+      uiInput
+      [formField]="form.name"
+      (input)="onNameInput()"
+    />
   </ui-field>
 
   <ui-field [label]="'accounts.type' | transloco">
@@ -31,6 +41,7 @@
   }
 
   <button
+    class="max-lg:hidden"
     data-testid="account-form-cancel"
     dialogActions
     type="button"

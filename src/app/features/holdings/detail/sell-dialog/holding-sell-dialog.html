@@ -1,6 +1,8 @@
 <ui-dialog
   data-testid="holding-sell-dialog"
-  width="md"
+  truncateDescription
+  width="528px"
+  [closeLabel]="'dialog.close' | transloco"
   [description]="holding().instrumentName + ' · ' + holding().accountName"
   [heading]="'holdings.sell.title' | transloco"
   [open]="open()"
@@ -13,6 +15,7 @@
   >
     <input
       autocomplete="off"
+      autofocus
       data-testid="holding-sell-quantity"
       inputmode="decimal"
       type="text"
@@ -78,9 +81,9 @@
   </div>
 
   @if (closes()) {
-    <p class="text-label mt-3 flex items-start gap-2" data-testid="holding-sell-closes-warning" role="status">
+    <ui-alert class="mt-3" data-testid="holding-sell-closes-warning" variant="warning">
       {{ 'holdings.sell.closesWarning' | transloco: { account: holding().accountName } }}
-    </p>
+    </ui-alert>
   }
 
   @if (error()) {
@@ -90,10 +93,20 @@
   }
 
   <button
-    class="mt-4 w-full"
+    class="max-lg:hidden"
+    data-testid="holding-sell-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.sell.cancel' | transloco }}
+  </button>
+  <button
     data-testid="holding-sell-submit"
     dialogActions
-    size="xl"
     type="button"
     ui-button
     [disabled]="!valid() || submitting()"

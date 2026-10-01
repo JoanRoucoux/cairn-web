@@ -85,6 +85,15 @@ describe('HoldingBuyDialog', () => {
     expect(screen.getByText('€24.49')).toBeInTheDocument();
   });
 
+  it('emits dismissed when Annuler is clicked', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('holding-buy-cancel'));
+
+    expect(dismissed).toHaveBeenCalled();
+  });
+
   it('emits dismissed on cancel via the native dialog close', async () => {
     await renderDialog();
 

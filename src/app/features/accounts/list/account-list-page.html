@@ -58,7 +58,7 @@
           >
             <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
           </button>
-          <ui-menu #menu [label]="'accounts.actions' | transloco: { name: account.name }">
+          <ui-menu #menu class="w-52.5" [label]="'accounts.actions' | transloco: { name: account.name }">
             <button data-testid="account-edit" type="button" uiMenuItem (click)="onEdit(account)">
               {{ 'accounts.edit' | transloco }}
             </button>

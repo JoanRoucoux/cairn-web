@@ -34,7 +34,11 @@
         data-testid="account-link"
         routerLink="/profile"
       >
-        <ui-avatar size="sm" [initials]="owner().initials" [label]="'shell.account' | transloco" />
+        <ui-avatar
+          class="lg:text-caption lg:size-8"
+          [initials]="owner().initials"
+          [label]="'shell.account' | transloco"
+        />
       </a>
     </header>
 

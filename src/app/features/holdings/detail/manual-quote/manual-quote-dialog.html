@@ -1,12 +1,13 @@
 <ui-dialog
   data-testid="manual-quote-dialog"
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.manualQuote.title' | transloco: { name: instrumentName() }"
   [open]="open()"
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.manualQuote.asOf' | transloco">
-    <input data-testid="manual-quote-as-of" type="date" uiInput [formField]="form.asOf" />
+    <input autofocus data-testid="manual-quote-as-of" type="date" uiInput [formField]="form.asOf" />
   </ui-field>
 
   <ui-field [label]="'holdings.manualQuote.price' | transloco">

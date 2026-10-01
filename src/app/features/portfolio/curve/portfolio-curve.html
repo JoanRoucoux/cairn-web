@@ -33,12 +33,14 @@
       [state]="state()"
       (retry)="retry.emit()"
     >
-      <ui-skeleton asyncLoading class="h-48 lg:h-72" data-testid="curve-loading" shape="chart" />
+      <ui-skeleton asyncLoading class="h-[205px] lg:h-101" data-testid="curve-loading" shape="chart" />
 
       <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>
 
-      <div class="h-48 lg:h-72">
+      <div class="h-[205px] lg:h-101">
         <ui-line-chart
+          axisGap="auto"
+          tooltip="auto"
           [axisFormat]="formats().axis"
           [deltaFormat]="formats().delta"
           [label]="chartLabelKey() | transloco: chartLabelParams()"

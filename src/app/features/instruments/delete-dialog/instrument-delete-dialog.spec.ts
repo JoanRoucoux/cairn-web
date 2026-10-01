@@ -57,7 +57,7 @@ describe('InstrumentDeleteDialog', () => {
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
 
-    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+    screen.getByRole('alertdialog').dispatchEvent(new Event('close'));
 
     expect(dismissed).toHaveBeenCalled();
   });

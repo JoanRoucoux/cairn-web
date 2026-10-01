@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="holding-cash-dialog"
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.cash.title' | transloco: { name: accountName() }"
   [open]="open()"
   (dismissed)="dismiss()"
@@ -9,7 +10,7 @@
     [hint]="form.amount().value() === 0 ? ('holdings.cash.zeroHint' | transloco) : ''"
     [label]="'holdings.cash.amount' | transloco"
   >
-    <input data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />
+    <input autofocus data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />
   </ui-field>
 
   @if (error()) {

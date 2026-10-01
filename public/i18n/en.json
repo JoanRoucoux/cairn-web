@@ -60,6 +60,9 @@
     "skipToContent": "Skip to content",
     "offline": "You are offline. Values may be out of date."
   },
+  "dialog": {
+    "close": "Close"
+  },
   "forms": {
     "required": "This field is required.",
     "maxLength": "Use at most {{limit}} characters.",

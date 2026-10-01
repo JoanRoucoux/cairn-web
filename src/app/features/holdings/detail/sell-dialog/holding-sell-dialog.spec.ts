@@ -162,6 +162,15 @@ describe('HoldingSellDialog', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 
+  it('emits dismissed when Annuler is clicked', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('holding-sell-cancel'));
+
+    expect(dismissed).toHaveBeenCalled();
+  });
+
   it('emits dismissed on cancel via the native dialog close', async () => {
     await renderDialog();
 

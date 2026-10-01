@@ -60,6 +60,9 @@
     "skipToContent": "Aller au contenu",
     "offline": "Vous êtes hors ligne. Les valeurs peuvent être périmées."
   },
+  "dialog": {
+    "close": "Fermer"
+  },
   "forms": {
     "required": "Ce champ est obligatoire.",
     "maxLength": "Utiliser au plus {{limit}} caractères.",

@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="profile-passkey-dialog"
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [description]="'profile.addPasskeyDescription' | transloco"
   [heading]="'profile.addPasskeyTitle' | transloco"
   [open]="open()"
@@ -9,7 +10,7 @@
   <!-- novalidate: the native required/maxlength validation would block submit() from ever running. -->
   <form id="profile-passkey-form" novalidate (submit)="onSubmit($event)">
     <ui-field [label]="'profile.addPasskeyLabel' | transloco">
-      <input data-testid="passkey-label" type="text" uiInput [formField]="form.label" />
+      <input autofocus data-testid="passkey-label" type="text" uiInput [formField]="form.label" />
     </ui-field>
 
     @if (unsupported()) {
