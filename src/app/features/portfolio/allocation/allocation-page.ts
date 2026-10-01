@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
@@ -32,7 +33,7 @@ const asyncStateFor = (loading: boolean, failed: boolean, empty: boolean): Async
 
 @Component({
   selector: 'app-allocation-page',
-  imports: [TranslocoPipe, UiAmount, UiAsync, UiDonut, UiSkeleton],
+  imports: [NgTemplateOutlet, TranslocoPipe, UiAmount, UiAsync, UiDonut, UiSkeleton],
   templateUrl: './allocation-page.html',
   providers: [AllocationStore, RatioPipe],
 })
@@ -93,6 +94,19 @@ export class AllocationPage {
 
   protected readonly formatShare = (share: number): string => this.#ratio.transform(share);
 
+  protected readonly classSkeleton = [70, 60, 80, 96, 64];
+  protected readonly accountSkeleton = [110, 70, 90, 80, 76, 100, 110];
+
+  protected readonly wrapperClass = (state: AsyncState): string => {
+    if (state === 'ready') {
+      return 'block px-2 pt-2 lg:pb-1';
+    }
+
+    return state === 'error'
+      ? 'block p-2 lg:[&>[role=alert]]:items-center lg:[&>[role=alert]]:py-10 lg:[&>[role=alert]]:text-center'
+      : 'block p-2';
+  };
+
   protected retry(): void {
     this.#store.retry();
   }
@@ -114,9 +128,12 @@ function assetClassSlicesOf(
     id: row.label,
     label: translate(`enums.assetClass.${row.label}`),
     value: row.valueEur,
-    sublabel: translate('portfolio.allocation.lineCount', {
-      count: portfolio.holdings.filter((holding) => holding.assetClass === row.label).length,
-    }),
+    sublabel:
+      row.label === 'CASH'
+        ? translate('portfolio.allocation.cashSubtitle')
+        : translate('portfolio.allocation.lineCount', {
+            count: portfolio.holdings.filter((holding) => holding.assetClass === row.label).length,
+          }),
   }));
 }
 

@@ -4,19 +4,24 @@
   </p>
 }
 
-<div class="grid gap-4 lg:grid-cols-2">
+<div class="grid gap-4 lg:grid-cols-[minmax(0,auto)_minmax(0,auto)] lg:items-stretch">
   <div
-    class="rounded-container flex flex-col gap-2 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
+    class="rounded-container flex flex-col gap-1 bg-(--card) px-2 pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:gap-2 lg:px-4 lg:pb-3"
   >
     <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAssetClass' | transloco }}</h2>
     <ui-async
+      [class]="wrapperClass(assetClassState())"
       [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
       [errorTitle]="'portfolio.allocation.byAssetClassErrorTitle' | transloco"
-      [retryLabel]="'portfolio.retry' | transloco"
+      [retryLabel]="'portfolio.error.retry' | transloco"
       [state]="assetClassState()"
       (retry)="retry()"
     >
-      <span asyncLoading><ui-skeleton shape="ring" /></span>
+      <div asyncLoading class="flex flex-col items-center gap-4 lg:flex-row lg:gap-8">
+        <ui-skeleton class="lg:hidden" shape="ring" [size]="232" />
+        <ui-skeleton class="max-lg:hidden" shape="ring" [size]="240" />
+        <ng-container *ngTemplateOutlet="legendSkeleton; context: { $implicit: classSkeleton }" />
+      </div>
       <span asyncEmpty class="text-label text-(--muted-foreground)">{{
         'portfolio.allocation.empty' | transloco
       }}</span>
@@ -32,17 +37,22 @@
   </div>
 
   <div
-    class="rounded-container flex flex-col gap-2 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
+    class="rounded-container flex flex-col gap-1 bg-(--card) px-2 pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:gap-2 lg:px-4 lg:pb-3"
   >
     <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAccount' | transloco }}</h2>
     <ui-async
+      [class]="wrapperClass(accountState())"
       [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
       [errorTitle]="'portfolio.allocation.byAccountErrorTitle' | transloco"
-      [retryLabel]="'portfolio.retry' | transloco"
+      [retryLabel]="'portfolio.error.retry' | transloco"
       [state]="accountState()"
       (retry)="retry()"
     >
-      <span asyncLoading><ui-skeleton shape="ring" /></span>
+      <div asyncLoading class="flex flex-col items-center gap-4 lg:flex-row lg:gap-8">
+        <ui-skeleton class="lg:hidden" shape="ring" [size]="232" />
+        <ui-skeleton class="max-lg:hidden" shape="ring" [size]="240" />
+        <ng-container *ngTemplateOutlet="legendSkeleton; context: { $implicit: accountSkeleton }" />
+      </div>
       <span asyncEmpty class="text-label text-(--muted-foreground)">{{
         'portfolio.allocation.empty' | transloco
       }}</span>
@@ -57,3 +67,16 @@
     </ui-async>
   </div>
 </div>
+
+<ng-template #legendSkeleton let-widths>
+  <div class="flex w-full flex-1 flex-col gap-4 py-2">
+    @for (width of widths; track $index) {
+      <div class="flex items-center gap-3">
+        <div class="rounded-pill w-3 flex-none overflow-hidden"><ui-skeleton [height]="12" /></div>
+        <div [style.width.px]="width"><ui-skeleton [height]="16" /></div>
+        <span class="flex-1"></span>
+        <div class="w-13"><ui-skeleton [height]="16" /></div>
+      </div>
+    }
+  </div>
+</ng-template>

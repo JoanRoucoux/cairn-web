@@ -72,6 +72,13 @@ describe('AllocationPage', () => {
     expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
   });
 
+  it('should show the cash balances as the cash sub-label instead of a line count', async () => {
+    await renderPage();
+
+    expect(await screen.findByText('portfolio.allocation.cashSubtitle')).toBeInTheDocument();
+    expect(screen.getByText('portfolio.allocation.lineCount')).toBeInTheDocument();
+  });
+
   it('should show the envelope and institution as the account sub-label', async () => {
     await renderPage();
 
@@ -106,11 +113,11 @@ describe('AllocationPage', () => {
     expect(screen.queryByText('portfolio.allocation.total')).not.toBeInTheDocument();
 
     httpTesting.expectNone('/api/portfolio');
-    await user.click(screen.getAllByRole('button', { name: 'portfolio.retry' })[0]!);
+    await user.click(screen.getAllByRole('button', { name: 'portfolio.error.retry' })[0]!);
     httpTesting.expectOne('/api/portfolio').flush(null, { status: 500, statusText: 'Server Error' });
     httpTesting.expectOne('/api/accounts').flush(accountsBody);
 
-    await user.click((await screen.findAllByRole('button', { name: 'portfolio.retry' }))[1]!);
+    await user.click((await screen.findAllByRole('button', { name: 'portfolio.error.retry' }))[1]!);
     httpTesting.expectOne('/api/portfolio').flush(portfolioBody);
     httpTesting.expectOne('/api/accounts').flush(accountsBody);
   });

@@ -12,10 +12,11 @@
     "total": "Total",
     "others": "Autres",
     "empty": "Aucune donnée à répartir.",
-    "byAssetClassErrorTitle": "La répartition par classe d'actif n'a pas pu être chargée",
+    "byAssetClassErrorTitle": "La répartition par classe n'a pas pu être chargée",
     "byAccountErrorTitle": "La répartition par compte n'a pas pu être chargée",
     "errorMessage": "Le serveur n'a pas répondu.",
-    "lineCount": "{{count}} lignes"
+    "lineCount": "{{count}} lignes",
+    "cashSubtitle": "Soldes et livrets"
   },
   "total": {
     "title": "Patrimoine",
