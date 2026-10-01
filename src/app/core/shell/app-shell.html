@@ -6,13 +6,18 @@
 </a>
 
 <div class="flex min-h-dvh">
-  <aside class="hidden w-60 shrink-0 flex-col gap-1 border-r border-(--border) bg-(--elevated) p-4 lg:flex">
-    <app-cairn-logo class="px-3 pb-6" />
+  <aside class="hidden w-60 shrink-0 flex-col gap-4 px-4 pb-5 shadow-[1px_0_0_var(--hairline)] lg:flex">
+    <app-cairn-logo class="h-(--header-height) px-3" />
 
     <nav class="flex flex-col gap-0.5" [attr.aria-label]="'shell.primary' | transloco">
       @for (destination of destinations; track destination.path) {
-        <a ui-nav-item [active]="isActive(destination.path)" [routerLink]="destination.path">
-          <app-shell-destination-icon navIcon [icon]="destination.icon" [size]="18" />
+        <a
+          class="leading-[normal] aria-[current=page]:text-(--foreground)"
+          ui-nav-item
+          [active]="isActive(destination.path)"
+          [routerLink]="destination.path"
+        >
+          <app-shell-destination-icon navIcon [icon]="destination.icon" [size]="20" />
           {{ destination.labelKey | transloco }}
         </a>
       }
@@ -20,15 +25,15 @@
   </aside>
 
   <div class="flex min-w-0 grow flex-col">
-    <header
-      class="flex h-(--header-height) items-center justify-between px-4 lg:border-b lg:border-(--hairline) lg:px-8"
-    >
-      @if (headerKey(); as key) {
-        <h1 class="text-heading font-semibold" [class.max-lg:hidden]="mobileHeaderHidden()">{{ key | transloco }}</h1>
-      } @else {
-        <span></span>
-      }
+    <header class="h-(--header-height) px-4 lg:px-(--gutter) lg:shadow-[inset_0_-1px_0_var(--hairline)]">
+      <div class="mx-auto flex h-full max-w-[1120px] items-center justify-between lg:gap-6">
+        @if (headerKey(); as key) {
+          <h1 class="text-heading font-semibold" [class.max-lg:hidden]="mobileHeaderHidden()">{{ key | transloco }}</h1>
+        } @else {
+          <span></span>
+        }
 
+<<<<<<< HEAD
       <a
         class="rounded-pill flex size-11 items-center justify-center focus-visible:outline-2 focus-visible:outline-(--ring)"
         data-testid="account-link"
@@ -40,13 +45,25 @@
           [label]="'shell.account' | transloco"
         />
       </a>
+=======
+        <a
+          class="rounded-pill flex size-11 items-center justify-center focus-visible:outline-2 focus-visible:outline-(--ring)"
+          data-testid="account-link"
+          routerLink="/profile"
+        >
+          <ui-avatar size="sm" [initials]="owner().initials" [label]="'shell.account' | transloco" />
+        </a>
+      </div>
+>>>>>>> 8baa135 (fix(shell): desktop sidebar and header match the V3 frames)
     </header>
 
     <app-offline-banner />
 
     <main class="grow pb-[calc(52px+env(safe-area-inset-bottom))] lg:pb-0" id="main-content">
-      <div class="mx-auto w-full max-w-[1120px] px-(--gutter) py-4 lg:py-6">
-        <router-outlet />
+      <div class="px-(--gutter) py-4 lg:pt-6 lg:pb-12">
+        <div class="mx-auto w-full max-w-[1120px]">
+          <router-outlet />
+        </div>
       </div>
     </main>
   </div>
