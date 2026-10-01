@@ -1,6 +1,6 @@
 {
   "pageTitle": {
-    "portfolio": "Patrimoine",
+    "portfolio": "Portefeuille",
     "allocation": "Répartition",
     "holdings": "Lignes",
     "holdingDetail": "Détail de la ligne",
@@ -27,8 +27,8 @@
   },
   "enums": {
     "assetClass": {
-      "EQUITY": "Action",
-      "ETF": "Tracker",
+      "EQUITY": "Actions",
+      "ETF": "ETF",
       "FUND": "Fonds",
       "CRYPTO": "Crypto",
       "CASH": "Liquidités"
@@ -42,7 +42,7 @@
     "accountType": {
       "PEA": "PEA",
       "PEA_PME": "PEA-PME",
-      "CTO": "Compte-titres",
+      "CTO": "CTO",
       "PER": "PER",
       "PEE": "PEE",
       "LIFE_INSURANCE": "Assurance-vie",
@@ -52,7 +52,7 @@
   },
   "shell": {
     "primary": "Principale",
-    "portfolio": "Patrimoine",
+    "portfolio": "Portefeuille",
     "holdings": "Lignes",
     "allocation": "Répartition",
     "accounts": "Comptes",
