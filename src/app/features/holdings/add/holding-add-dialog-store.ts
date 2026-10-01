@@ -11,6 +11,8 @@ import { InstrumentService } from '@core/api-client/instrument/instrument.servic
 import { normalizeSearch } from '@shared/format/normalize-search';
 import { parseDecimal } from '@shared/format/parse-decimal';
 
+import { isinOf } from './isin';
+
 const SEARCH_DEBOUNCE_MS = 300;
 const MIN_ONLINE_QUERY = 3;
 
@@ -241,11 +243,12 @@ export class HoldingAddDialogStore {
           picked.kind === 'online'
             ? {
                 name: picked.candidate.name,
-                isin: this.query().trim() || null,
+                isin: picked.candidate.isin ?? isinOf(this.query()),
                 currency: 'EUR',
                 assetClass: picked.candidate.assetClass,
                 priceSource: picked.candidate.source,
                 sourceRef: picked.candidate.sourceRef,
+                symbol: picked.candidate.symbol ?? null,
               }
             : {
                 name: picked.name,

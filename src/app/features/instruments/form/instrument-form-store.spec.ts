@@ -81,14 +81,17 @@ describe('InstrumentFormStore', () => {
         source: 'YAHOO',
         assetClass: 'ETF',
         probePrice: 33.3069,
+        symbol: 'ESE',
+        isin: 'FR0011550185',
       } as InstrumentCandidateResponse,
-      'FR0011550185',
+      '',
     );
 
     expect(store.form.name().value()).toBe('BNP Paribas Easy S&P 500');
     expect(store.form.sourceRef().value()).toBe('ESE.PA');
     expect(store.form.priceSource().value()).toBe('YAHOO');
     expect(store.form.isin().value()).toBe('FR0011550185');
+    expect(store.form.symbol().value()).toBe('ESE');
   });
 
   it('should post the instrument once the draft is valid', async () => {
@@ -151,6 +154,7 @@ describe('InstrumentFormStore in edit mode', () => {
     assetClass: 'ETF',
     priceSource: 'YAHOO',
     sourceRef: 'ESE.PA',
+    symbol: 'ESE',
     description: 'ETF tracking the S&P 500.',
     holdingCount: 2,
   };
@@ -191,6 +195,37 @@ describe('InstrumentFormStore in edit mode', () => {
     expect(store.form.isin().value()).toBe(instrument.isin);
     expect(store.form.sourceRef().value()).toBe(instrument.sourceRef);
     expect(store.form.description().value()).toBe(instrument.description);
+  });
+
+  it('keeps the symbol of an edited instrument', async () => {
+    (await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`))).flush(instrument);
+    await settle();
+
+    expect(store.form.symbol().value()).toBe('ESE');
+
+    const saved = store.save();
+
+    const request = await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`));
+    expect(request.request.body).toMatchObject({ symbol: 'ESE' });
+    request.flush(instrument);
+
+    await expect(saved).resolves.toBe(true);
+  });
+
+  it('clears the symbol only when the instrument has none', async () => {
+    (await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`))).flush({
+      ...instrument,
+      symbol: null,
+    });
+    await settle();
+
+    const saved = store.save();
+
+    const request = await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`));
+    expect(request.request.body).toMatchObject({ symbol: null });
+    request.flush(instrument);
+
+    await expect(saved).resolves.toBe(true);
   });
 
   it('should update the instrument once the draft is valid', async () => {

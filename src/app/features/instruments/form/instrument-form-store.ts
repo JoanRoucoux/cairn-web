@@ -70,10 +70,11 @@ export class InstrumentFormStore {
     this.#model.update((draft) => ({
       ...draft,
       name: candidate.name,
-      isin,
+      isin: candidate.isin ?? isin,
       assetClass: candidate.assetClass,
       priceSource: candidate.source,
       sourceRef: candidate.sourceRef,
+      symbol: candidate.symbol ?? '',
     }));
   }
 
@@ -93,6 +94,7 @@ export class InstrumentFormStore {
             assetClass: draft.assetClass,
             priceSource: draft.priceSource,
             sourceRef: draft.sourceRef,
+            symbol: draft.symbol || null,
             description: draft.description,
           };
           await firstValueFrom(this.#instrumentsApiClient.updateInstrument(instrumentId, request));
@@ -104,6 +106,7 @@ export class InstrumentFormStore {
             assetClass: draft.assetClass,
             priceSource: draft.priceSource,
             sourceRef: draft.sourceRef,
+            symbol: draft.symbol || null,
             description: draft.description,
           };
           await firstValueFrom(this.#instrumentsApiClient.createInstrument(request));

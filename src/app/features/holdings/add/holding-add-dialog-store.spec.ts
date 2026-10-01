@@ -198,6 +198,7 @@ describe('HoldingAddDialogStore', () => {
       assetClass: 'ETF',
       priceSource: 'YAHOO',
       sourceRef: 'IWDA.AS',
+      symbol: null,
     });
     createInstrument.flush({ id: 'i9' });
 

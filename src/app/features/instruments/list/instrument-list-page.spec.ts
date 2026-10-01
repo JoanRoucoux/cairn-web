@@ -201,6 +201,15 @@ describe('InstrumentListPage', () => {
     await flushOne([]);
   });
 
+  it('shows the symbol in the ISIN or symbol column for an instrument without ISIN', async () => {
+    await renderPage();
+    await flushOne([
+      { id: 'i2', name: 'Bitcoin', isin: null, symbol: 'BTC', assetClass: 'CRYPTO', priceSource: 'COINGECKO' },
+    ]);
+
+    expect((await screen.findByTestId('instrument-row')).querySelectorAll('td')[1]).toHaveTextContent('BTC');
+  });
+
   it('lists the instruments alphabetically', async () => {
     await renderPage();
     await flushOne([

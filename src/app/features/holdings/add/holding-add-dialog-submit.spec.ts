@@ -72,6 +72,27 @@ describe('HoldingAddDialog results and submit', () => {
     expect(names).toEqual(['Accor MSCI', 'Air MSCI', 'Bouygues MSCI', 'Danone MSCI']);
   });
 
+  it('draws the candidate meta as ISIN, place and symbol', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-add-query'), 'ishares world');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
+      {
+        name: 'iShares Core MSCI World',
+        source: 'YAHOO',
+        sourceRef: 'EUNL.DE',
+        symbol: 'EUNL',
+        isin: 'IE00B4L5Y983',
+        exchange: 'Xetra',
+        assetClass: 'ETF',
+        probePrice: 97.84,
+      },
+    ]);
+
+    expect(await screen.findByText('IE00B4L5Y983 · Xetra · EUNL')).toBeInTheDocument();
+  });
+
   it('submits the form once the line is valid', async () => {
     const user = userEvent.setup();
     await renderDialog();

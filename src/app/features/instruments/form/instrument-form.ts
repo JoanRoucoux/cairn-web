@@ -11,6 +11,7 @@ export type InstrumentDraft = {
   assetClass: AssetClass;
   priceSource: PriceSource;
   sourceRef: string;
+  symbol: string;
   description: string;
 };
 
@@ -22,6 +23,7 @@ export const initialInstrumentDraft = (instrument?: InstrumentDetailResponse): I
   assetClass: instrument?.assetClass ?? 'ETF',
   priceSource: instrument?.priceSource ?? 'MANUAL',
   sourceRef: instrument?.sourceRef ?? '',
+  symbol: instrument?.symbol ?? '',
   description: instrument?.description ?? '',
 });
 

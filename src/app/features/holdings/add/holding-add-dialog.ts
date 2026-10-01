@@ -114,7 +114,13 @@ export class HoldingAddDialog implements OnInit {
     }
 
     if (picked?.kind === 'online') {
-      return [isinOf(this.query()), picked.candidate.exchange, picked.candidate.sourceRef].filter(Boolean).join(' · ');
+      return [
+        picked.candidate.isin ?? isinOf(this.query()),
+        picked.candidate.exchange,
+        picked.candidate.symbol ?? picked.candidate.sourceRef,
+      ]
+        .filter(Boolean)
+        .join(' · ');
     }
 
     return '';

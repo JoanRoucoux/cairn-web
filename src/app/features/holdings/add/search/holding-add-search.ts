@@ -54,6 +54,8 @@ export class HoldingAddSearch {
   }
 
   protected candidateSub(candidate: InstrumentCandidateResponse): string {
-    return [this.typedIsin(), candidate.exchange, candidate.sourceRef].filter(Boolean).join(' · ');
+    return [candidate.isin ?? this.typedIsin(), candidate.exchange, candidate.symbol ?? candidate.sourceRef]
+      .filter(Boolean)
+      .join(' · ');
   }
 }

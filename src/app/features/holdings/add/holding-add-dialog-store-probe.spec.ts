@@ -62,6 +62,30 @@ describe('HoldingAddDialogStore search and probe', () => {
     expect(store.lineCountOf('i2')).toBe(0);
   });
 
+  it('creates the instrument from a candidate with its own ISIN and symbol', async () => {
+    await load();
+    store.accountId.set('a1');
+    store.query.set('msci world');
+    store.pickOnline({
+      name: 'iShares Core MSCI World',
+      source: 'YAHOO',
+      sourceRef: 'EUNL.DE',
+      assetClass: 'ETF',
+      isin: 'IE00B4L5Y983',
+      symbol: 'EUNL',
+    });
+    store.quantityText.set('1');
+
+    const saved = store.save();
+
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/instruments'));
+    expect(request.request.body).toMatchObject({ isin: 'IE00B4L5Y983', symbol: 'EUNL', sourceRef: 'EUNL.DE' });
+    request.flush({ id: 'i9' });
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+
+    await expect(saved).resolves.toBe(true);
+  });
+
   it('has no line count while the holdings are not loaded', async () => {
     TestBed.tick();
 

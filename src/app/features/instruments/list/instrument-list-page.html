@@ -82,7 +82,7 @@
             </td>
             <td uiTd>
               <span class="text-label text-(--muted-foreground) tabular-nums">{{
-                row.isin || row.sourceRef || '—'
+                row.isin || row.symbol || row.sourceRef || '—'
               }}</span>
             </td>
             <td uiTd>
@@ -154,7 +154,8 @@
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body truncate font-medium">{{ row.name }}</span>
             <span class="text-label truncate text-(--subtle-foreground)">
-              {{ row.isin || row.sourceRef || '—' }} &middot; {{ 'enums.assetClass.' + row.assetClass | transloco }}
+              {{ row.isin || row.symbol || row.sourceRef || '—' }} &middot;
+              {{ 'enums.assetClass.' + row.assetClass | transloco }}
             </span>
           </span>
           <span class="flex flex-none flex-col items-end whitespace-nowrap">
