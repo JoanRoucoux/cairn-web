@@ -35,12 +35,12 @@ export const routes: Routes = [
         path: '',
         children: PORTFOLIO_ROUTES,
       },
-      // Fallback route, keep it at the end.
-      {
-        path: '**',
-        component: NotFoundPage,
-        title: 'pageTitle.notFound',
-      },
     ],
+  },
+  // Fallback route outside the shell, keep it at the end.
+  {
+    path: '**',
+    component: NotFoundPage,
+    title: 'pageTitle.notFound',
   },
 ];

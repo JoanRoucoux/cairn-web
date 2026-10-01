@@ -25,6 +25,16 @@ for (const screen of screens) {
   });
 }
 
+test('has no accessibility violation on an unknown url', async ({ page, makeAxeBuilder }) => {
+  await mockApi(page);
+  await page.goto('/nowhere');
+  await page.waitForLoadState('networkidle');
+
+  const results = await makeAxeBuilder().analyze();
+
+  expect(results.violations).toEqual([]);
+});
+
 test('has no accessibility violation on /login, folded', async ({ page, makeAxeBuilder }) => {
   await mockApi(page);
   await page.route('**/api/session', (route) => route.fulfill({ status: 401, json: { message: 'unauthenticated' } }));
