@@ -37,6 +37,9 @@ test.describe('allocation', () => {
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
     expect(url.searchParams.get('classe')).toBe('etf');
+    await expect(
+      page.getByRole('group', { name: /classe|class/i }).getByRole('button', { pressed: true }),
+    ).toContainText(/^ETF/);
   });
 
   test('navigates to the account in the holdings when an account row is activated', async ({ page }) => {

@@ -44,14 +44,17 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('holding-add-account')).toHaveValue(accountId);
   });
 
-  test('links each account name to its lines', async ({ page }) => {
+  test('lands on the lines of the account with its group heading focused', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    await expect(accounts.rowFor('PEA Boursorama').getByTestId('account-link')).toHaveAttribute(
-      'href',
-      /\/holdings\?compte=.+/,
-    );
+    const link = accounts.rowFor('PEA Boursorama').getByTestId('account-link');
+    await expect(link).toHaveAttribute('href', /\/holdings\?compte=.+/);
+    await link.click();
+
+    await expect(page).toHaveURL(/\/holdings\?compte=/);
+    await expect(page.locator('h2[data-group-heading]:focus')).toBeVisible();
+    await expect(page.locator('h2[data-group-heading]:focus')).toContainText('PEA Boursorama');
   });
 
   test('summarises the accounts with their count and total above the table', async ({ page }) => {
