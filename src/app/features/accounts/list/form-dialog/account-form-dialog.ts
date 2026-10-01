@@ -6,6 +6,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AccountType } from '@core/api-client/cairnAPI.schemas';
 
+import { focusInitial } from '@shared/dialog/focus-initial';
+
 import { type AccountDraftSource } from './account-form';
 import { AccountFormDialogStore } from './account-form-dialog-store';
 
@@ -37,7 +39,7 @@ export class AccountFormDialog {
 
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLButtonElement>('[data-testid="account-form-cancel"]')?.focus();
+        focusInitial(this.#host.nativeElement, 'account-form-cancel', 'account-form-name');
       }
     });
   }

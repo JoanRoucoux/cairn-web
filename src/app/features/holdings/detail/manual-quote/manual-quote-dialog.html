@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="manual-quote-dialog"
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.manualQuote.title' | transloco: { name: instrumentName() }"
   [open]="open()"
   (dismissed)="dismiss()"

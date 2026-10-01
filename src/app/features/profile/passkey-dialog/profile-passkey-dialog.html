@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="profile-passkey-dialog"
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [description]="'profile.addPasskeyDescription' | transloco"
   [heading]="'profile.addPasskeyTitle' | transloco"
   [open]="open()"

@@ -1,5 +1,8 @@
 <ui-dialog
   data-testid="holding-add-dialog"
+  layout="list"
+  width="560px"
+  [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.add.title' | transloco"
   [open]="open()"
   (dismissed)="dismiss()"
@@ -54,10 +57,8 @@
   }
 
   <button
-    class="mt-4 w-full"
     data-testid="holding-add-submit"
     dialogActions
-    size="xl"
     type="button"
     ui-button
     [disabled]="!valid() || submitting()"

@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 
-import { UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -24,7 +24,7 @@ import { HoldingSellDialogStore } from './holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-sell-dialog',
-  imports: [TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  imports: [TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-sell-dialog.html',
   providers: [HoldingSellDialogStore],
 })

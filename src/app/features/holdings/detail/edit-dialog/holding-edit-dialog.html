@@ -1,6 +1,8 @@
 <ui-dialog
   data-testid="holding-edit-dialog"
+  truncateDescription
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [description]="holding().instrumentName + ' · ' + holding().accountName"
   [heading]="'holdings.edit.title' | transloco"
   [open]="open()"
@@ -21,6 +23,7 @@
   }
 
   <button
+    class="max-lg:hidden"
     data-testid="holding-edit-cancel"
     dialogActions
     type="button"

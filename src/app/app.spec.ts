@@ -47,7 +47,8 @@ const settleSession = async (): Promise<void> => {
   (await vi.waitFor(() => http.expectOne('/api/session'))).flush({
     displayName: 'Joan Roucoux',
     initials: 'JR',
-    passkeys: [],
+    username: 'joan',
+    signInMethod: 'PASSKEY',
   });
 };
 

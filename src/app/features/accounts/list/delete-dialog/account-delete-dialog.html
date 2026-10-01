@@ -1,11 +1,13 @@
 <ui-dialog
   data-testid="account-delete-dialog"
-  width="md"
-  [description]="'accounts.delete.description' | transloco"
+  layout="confirm"
+  width="488px"
   [heading]="'accounts.delete.title' | transloco"
   [open]="open()"
   (dismissed)="dismiss()"
 >
+  <p class="text-body text-(--muted-foreground)">{{ 'accounts.delete.description' | transloco }}</p>
+
   @if (refused()) {
     <p class="text-label text-(--negative)" data-testid="account-delete-refused" role="alert">
       {{ pluralKey('accounts.delete.refused', account().lineCount) | transloco: { count: account().lineCount } }}

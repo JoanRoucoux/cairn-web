@@ -1,11 +1,13 @@
 <ui-dialog
   data-testid="holding-delete-dialog"
-  width="md"
-  [description]="description()"
+  layout="confirm"
+  width="488px"
   [heading]="'holdings.delete.title' | transloco"
   [open]="open()"
   (dismissed)="dismiss()"
 >
+  <p class="text-body text-(--muted-foreground)">{{ description() }}</p>
+
   @if (error()) {
     <p class="text-label text-(--negative)" data-testid="holding-delete-error" role="alert">
       {{ 'holdings.delete.error' | transloco }}

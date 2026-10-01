@@ -94,6 +94,7 @@
   },
   "buy": {
     "open": "Acheter",
+    "cancel": "Annuler",
     "title": "Acheter",
     "quantity": "Quantité achetée",
     "price": "Prix unitaire",
@@ -113,6 +114,7 @@
   },
   "sell": {
     "open": "Vendre",
+    "cancel": "Annuler",
     "title": "Vendre",
     "quantity": "Quantité vendue",
     "unit": "parts",

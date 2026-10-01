@@ -1,6 +1,6 @@
 <div class="mx-auto flex max-w-[720px] flex-col gap-4">
   <div class="flex items-center gap-4 px-1">
-    <ui-avatar [initials]="owner().initials" [label]="'profile.avatarLabel' | transloco" />
+    <ui-avatar size="lg" [initials]="owner().initials" [label]="'profile.avatarLabel' | transloco" />
     <span class="flex flex-col">
       <span class="text-title font-semibold">{{ owner().displayName }}</span>
       <span class="text-label text-(--muted-foreground)">{{ 'profile.connectedByPasskey' | transloco }}</span>

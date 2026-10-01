@@ -5,10 +5,19 @@ type Handler = (route: Route) => Promise<void>;
 const session = {
   displayName: 'Joan Roucoux',
   initials: 'JR',
-  passkeys: [
-    { credentialId: 'aXBob25l', label: 'iPhone de Joan', createdAt: '2026-02-01T10:00:00Z', lastUsedAt: null },
-  ],
+  username: 'joan',
+  signInMethod: 'PASSKEY',
 };
+
+const passkeys = [
+  {
+    credentialId: 'aXBob25l',
+    label: 'iPhone de Joan',
+    createdAt: '2026-02-01T10:00:00Z',
+    lastUsedAt: null as string | null,
+    current: true,
+  },
+];
 
 // Browser-valid base64url: WebAuthn parses these into ArrayBuffers before the virtual
 // authenticator ever sees them.
@@ -52,16 +61,17 @@ const registerWebauthnOptions: Handler = async (route) => {
   await route.fulfill({ json: registrationOptions });
 };
 
-// Stateful on purpose: the account screen reloads the session after registering, and the new
+// Stateful on purpose: the account screen reloads the passkeys after registering, and the new
 // passkey has to show up in the list it re-reads.
 const registerWebauthn: Handler = async (route) => {
-  session.passkeys.push({
+  passkeys.push({
     credentialId: base64url('new-passkey'),
     label:
       ((route.request().postDataJSON() as { publicKey?: { label?: string } }).publicKey?.label as string) ??
       'New passkey',
     createdAt: new Date().toISOString(),
     lastUsedAt: null,
+    current: false,
   });
 
   await route.fulfill({ json: { success: true } });
@@ -89,6 +99,8 @@ const handleWebauthnRoute = async (route: Route): Promise<void> => {
 };
 
 export const getSession = (): typeof session => session;
+
+export const getPasskeys = (): typeof passkeys => passkeys;
 
 export const mockWebauthn = async (page: Page): Promise<void> => {
   await page.route('**/webauthn/**', handleWebauthnRoute);

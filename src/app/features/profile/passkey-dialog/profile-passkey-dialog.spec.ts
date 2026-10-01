@@ -48,6 +48,12 @@ describe('ProfilePasskeyDialog', () => {
     expect(dismissed).toHaveBeenCalled();
   });
 
+  it('puts the initial focus on the first field, not on the close cross', async () => {
+    await renderDialog();
+
+    expect(screen.getByTestId('passkey-label')).toHaveFocus();
+  });
+
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
 

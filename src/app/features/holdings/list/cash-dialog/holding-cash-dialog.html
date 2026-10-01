@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="holding-cash-dialog"
   width="md"
+  [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.cash.title' | transloco: { name: accountName() }"
   [open]="open()"
   (dismissed)="dismiss()"

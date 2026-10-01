@@ -94,6 +94,7 @@
   },
   "buy": {
     "open": "Buy",
+    "cancel": "Cancel",
     "title": "Buy",
     "quantity": "Quantity bought",
     "price": "Unit price",
@@ -113,6 +114,7 @@
   },
   "sell": {
     "open": "Sell",
+    "cancel": "Cancel",
     "title": "Sell",
     "quantity": "Quantity sold",
     "unit": "units",

@@ -118,6 +118,7 @@ test.describe('holdings list', () => {
     await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
 
+    await expect(page.getByTestId('holding-cash-amount')).toHaveValue('732.4');
     await page.getByTestId('holding-cash-amount').fill('0');
     await page.getByTestId('holding-cash-submit').click();
 
