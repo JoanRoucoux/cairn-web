@@ -57,7 +57,7 @@ describe('AccountListPage', () => {
   it('should render every account with its value and line count', async () => {
     await renderPage();
 
-    expect(await screen.findByText('PEA Boursorama')).toBeInTheDocument();
+    expect((await screen.findAllByText('PEA Boursorama')).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/accounts.lineCount_(one|other)/)).not.toHaveLength(0);
   });
 
@@ -92,6 +92,15 @@ describe('AccountListPage', () => {
 
     expect(row).not.toHaveTextContent('·');
     expect(row.querySelectorAll('td')[2]).toHaveTextContent('—');
+  });
+
+  it('should render a card row per account on iPhone, linking to the holdings without a filter', async () => {
+    await renderPage();
+
+    const rows = await screen.findAllByTestId('account-row-mobile');
+
+    expect(rows).toHaveLength(2);
+    expect(within(rows[0]!).getByTestId('account-link-mobile')).toHaveAttribute('href', '/holdings');
   });
 
   it('should summarise the count and the total above the table', async () => {

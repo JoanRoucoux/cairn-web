@@ -53,5 +53,6 @@
   "noLinesFull": "No holdings",
   "errorTitle": "The catalogue could not be loaded",
   "errorMessage": "The server did not answer.",
-  "retry": "Retry"
+  "retry": "Retry",
+  "manualCaption": "No automatic quote"
 }

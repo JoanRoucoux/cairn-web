@@ -37,7 +37,7 @@
       "YAHOO": "Yahoo Finance",
       "COINGECKO": "CoinGecko",
       "SG_SIRIUS": "SG Sirius",
-      "MANUAL": "Manual"
+      "MANUAL": "Manual entry"
     },
     "accountType": {
       "PEA": "PEA",

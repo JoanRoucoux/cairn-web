@@ -60,7 +60,7 @@ describe('InstrumentListPage', () => {
     await screen.findAllByTestId('instrument-row');
 
     expect(screen.getAllByText('enums.assetClass.ETF').length).toBeGreaterThan(0);
-    expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
+    expect(screen.getAllByText('enums.priceSource.YAHOO').length).toBeGreaterThan(0);
     expect(screen.getByText('ESE.PA')).toBeInTheDocument();
   });
 
@@ -68,7 +68,8 @@ describe('InstrumentListPage', () => {
     await renderPage();
     await flushOne([{ ...instrument, priceSource: 'MANUAL', sourceRef: null }]);
 
-    expect(await screen.findByText('enums.priceSource.MANUAL')).toHaveClass('text-(--muted-foreground)');
+    expect((await screen.findAllByText('enums.priceSource.MANUAL'))[0]).toHaveClass('text-(--muted-foreground)');
+    expect(screen.getByText('instruments.manualCaption')).toBeInTheDocument();
   });
 
   it('shows the holding count, or "Aucune" for an instrument no line uses', async () => {
@@ -122,10 +123,7 @@ describe('InstrumentListPage', () => {
     await renderPage();
     await flushOne();
 
-    expect(await screen.findByRole('link', { name: 'BNP Paribas Easy S&P 500' })).toHaveAttribute(
-      'href',
-      '/instruments/i1',
-    );
+    expect(await screen.findByTestId('instrument-row-mobile')).toHaveAttribute('href', '/instruments/i1');
   });
 
   it('navigates to the edit screen from the row menu', async () => {
@@ -213,7 +211,7 @@ describe('InstrumentListPage', () => {
 
     const rows = await screen.findAllByTestId('instrument-row');
 
-    expect(rows.map((row) => row.querySelector('a')?.textContent?.trim())).toEqual(['Accor', 'Édenred', 'Zalando']);
+    expect(rows.map((row) => row.querySelector('td')?.textContent?.trim())).toEqual(['Accor', 'Édenred', 'Zalando']);
   });
 
   it('uses the long search placeholder on a desktop viewport', async () => {
