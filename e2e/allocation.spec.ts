@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test';
 import { mockApi } from './fixtures/api';
 import { AllocationPageObject } from './pages/allocation-page';
 
+const PEA_BOURSORAMA_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
 test.describe('allocation', () => {
   test.beforeEach(async ({ page }) => {
     await mockApi(page);
@@ -37,7 +39,7 @@ test.describe('allocation', () => {
     expect(url.searchParams.get('classe')).toBe('etf');
   });
 
-  test('navigates to the filtered holdings when an account row is activated', async ({ page }) => {
+  test('navigates to the account in the holdings when an account row is activated', async ({ page }) => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
@@ -46,7 +48,7 @@ test.describe('allocation', () => {
 
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
-    expect(url.searchParams.get('compte')).not.toBeNull();
+    expect(url.searchParams.get('compte')).toBe(PEA_BOURSORAMA_ID);
   });
 
   test('shows an error on the failing ring only and retries just that call', async ({ page }) => {
@@ -60,7 +62,7 @@ test.describe('allocation', () => {
     });
 
     const allocation = new AllocationPageObject(page);
-    await allocation.goto();
+    await allocation.goto(1);
 
     await expect(page.getByRole('alert')).toHaveCount(1);
     await expect(allocation.donuts).toHaveCount(1);

@@ -71,7 +71,7 @@ const registerWebauthnOptions: Handler = async (route) => {
   await route.fulfill({ json: registrationOptions });
 };
 
-// Stateful on purpose: the account screen reloads the session after registering, and the new
+// Stateful on purpose: the account screen reloads the passkeys after registering, and the new
 // passkey has to show up in the list it re-reads.
 const registerWebauthn: Handler = async (route) => {
   passkeys.push({
