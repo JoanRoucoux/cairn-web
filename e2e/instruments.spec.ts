@@ -75,7 +75,7 @@ test.describe('instruments', () => {
     const row = page.getByTestId('instrument-row').first();
     await expect(row).toContainText('Amundi MSCI World');
     await expect(row).toContainText('FR0010756098');
-    await expect(row).toContainText('Tracker');
+    await expect(row).toContainText('ETF');
     await expect(row).toContainText('Yahoo Finance');
   });
 

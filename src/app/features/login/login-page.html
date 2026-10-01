@@ -1,97 +1,150 @@
-<div class="mx-auto flex min-h-dvh max-w-sm flex-col justify-center px-4">
-  <div class="flex flex-col items-center gap-3 text-center">
-    <app-cairn-mark [size]="56" />
-    <div class="flex flex-col gap-1">
-      <h1 class="text-[44px] leading-none font-bold tracking-tight">Cairn</h1>
-      <p class="text-body text-(--muted-foreground)">{{ 'login.tagline' | transloco }}</p>
+<main
+  class="flex min-h-dvh flex-col px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:items-center lg:justify-center lg:p-0"
+>
+  <div class="flex flex-1 flex-col lg:w-95 lg:flex-none lg:gap-8">
+    <div
+      class="flex flex-1 flex-col items-center justify-center gap-5 text-center lg:grid lg:flex-none lg:grid-cols-[auto_auto] lg:justify-center lg:gap-x-3.5 lg:gap-y-3"
+    >
+      <app-cairn-mark class="[&>svg]:size-16 lg:[&>svg]:size-12" [size]="64" />
+      <div class="flex flex-col gap-2 lg:contents">
+        <h1 class="text-[44px] leading-none font-bold tracking-[-0.015em]">Cairn</h1>
+        <p class="text-body whitespace-nowrap text-(--muted-foreground) lg:col-span-2">
+          {{ 'login.tagline' | transloco }}
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div class="mt-8 flex flex-col gap-4">
-    <button
-      data-testid="login-passkey"
-      size="xl"
-      type="button"
-      ui-button
-      [disabled]="passkeySubmitting()"
-      (click)="onPasskeySignIn()"
-    >
-      <svg lucideKeyRound [size]="20" [strokeWidth]="1.75" />
-      {{ (passkeySubmitting() ? 'login.passkeySubmitting' : 'login.passkey') | transloco }}
-    </button>
+    @if (passwordMode()) {
+      <form class="flex flex-col gap-3" id="login-password-form" novalidate (submit)="onSubmit($event)">
+        @if (refused()) {
+          <ui-alert data-testid="login-refused">{{ 'login.refused' | transloco }}</ui-alert>
+        }
+        @if (failed()) {
+          <ui-alert data-testid="login-failed">{{ 'login.failed' | transloco }}</ui-alert>
+        }
 
-    @if (passkeyRefused()) {
-      <p
-        class="text-label rounded-control bg-(--card) p-3 text-(--negative) shadow-[inset_0_0_0_1px_var(--border)]"
-        data-testid="login-passkey-refused"
-        role="alert"
-      >
-        {{ 'login.passkeyRefused' | transloco }}
-      </p>
-    }
-    @if (passkeyUnsupported()) {
-      <p
-        class="text-label rounded-control bg-(--card) p-3 text-(--negative) shadow-[inset_0_0_0_1px_var(--border)]"
-        data-testid="login-passkey-unsupported"
-        role="alert"
-      >
-        {{ 'login.passkeyUnsupported' | transloco }}
-      </p>
-    }
-    @if (passkeyFailed()) {
-      <p
-        class="text-label rounded-control bg-(--card) p-3 text-(--negative) shadow-[inset_0_0_0_1px_var(--border)]"
-        data-testid="login-passkey-failed"
-        role="alert"
-      >
-        {{ 'login.passkeyFailed' | transloco }}
-      </p>
-    }
-
-    <button
-      aria-controls="login-password-form"
-      class="self-center"
-      data-testid="login-password-toggle"
-      type="button"
-      ui-button
-      variant="ghost"
-      [attr.aria-expanded]="passwordExpanded()"
-      (click)="togglePassword()"
-    >
-      {{ 'login.passwordToggle' | transloco }}
-    </button>
-
-    @if (passwordExpanded()) {
-      <form class="flex flex-col gap-4" id="login-password-form" novalidate (submit)="onSubmit($event)">
         <ui-field [label]="'login.username' | transloco">
-          <input autocomplete="username" data-testid="login-username" type="text" uiInput [formField]="form.username" />
+          <input
+            autocapitalize="none"
+            autocomplete="username"
+            autocorrect="off"
+            class="h-12 lg:h-11"
+            data-testid="login-username"
+            enterkeyhint="next"
+            spellcheck="false"
+            surface="card"
+            type="text"
+            uiInput
+            [attr.aria-invalid]="refused() || null"
+            [formField]="form.username"
+          />
         </ui-field>
 
         <ui-field [label]="'login.password' | transloco">
           <input
             autocomplete="current-password"
+            class="h-12 pr-12 lg:h-11 lg:pr-11"
             data-testid="login-password"
-            type="password"
+            enterkeyhint="go"
+            surface="card"
             uiInput
+            [attr.aria-invalid]="refused() || null"
             [formField]="form.password"
+            [type]="passwordShown() ? 'text' : 'password'"
           />
+          <button
+            class="rounded-control absolute right-0 grid size-12 place-items-center text-(--muted-foreground) hover:text-(--foreground) focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-(--ring) lg:size-11"
+            data-testid="login-password-reveal"
+            type="button"
+            [attr.aria-label]="(passwordShown() ? 'login.hidePassword' : 'login.showPassword') | transloco"
+            [attr.aria-pressed]="passwordShown()"
+            (click)="toggleShown()"
+          >
+            @if (passwordShown()) {
+              <svg lucideEyeOff [size]="20" [strokeWidth]="1.75" />
+            } @else {
+              <svg lucideEye [size]="20" [strokeWidth]="1.75" />
+            }
+          </button>
         </ui-field>
 
-        @if (refused()) {
-          <p class="text-label text-(--negative)" data-testid="login-refused" role="alert">
-            {{ 'login.refused' | transloco }}
-          </p>
-        }
-        @if (failed()) {
-          <p class="text-label text-(--negative)" data-testid="login-failed" role="alert">
-            {{ 'login.failed' | transloco }}
-          </p>
-        }
-
-        <button data-testid="login-submit" size="xl" type="submit" ui-button [loading]="form().submitting()">
+        <button
+          class="mt-1 lg:h-11"
+          data-testid="login-submit"
+          size="xxl"
+          type="submit"
+          ui-button
+          [attr.aria-busy]="form().submitting() || null"
+          [attr.aria-disabled]="form().submitting() || null"
+          [class.opacity-70]="form().submitting()"
+          [class.pointer-events-none]="form().submitting()"
+        >
           {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
         </button>
+
+        <button
+          class="text-body! h-12 lg:h-10"
+          data-testid="login-passkey-toggle"
+          type="button"
+          ui-button
+          variant="ghost"
+          (click)="usePasskey()"
+        >
+          {{ 'login.passkeyToggle' | transloco }}
+        </button>
       </form>
+    } @else {
+      <div class="flex flex-col gap-3 lg:self-stretch">
+        @if (passkeyRefused()) {
+          <ui-alert data-testid="login-passkey-refused" [heading]="'login.passkeyRefusedTitle' | transloco">
+            {{ 'login.passkeyRefused' | transloco }}
+          </ui-alert>
+        }
+        @if (passkeyUnsupported()) {
+          <ui-alert data-testid="login-passkey-unsupported">{{ 'login.passkeyUnsupported' | transloco }}</ui-alert>
+        }
+        @if (passkeyFailed()) {
+          <ui-alert data-testid="login-passkey-failed">{{ 'login.passkeyFailed' | transloco }}</ui-alert>
+        }
+
+        <button
+          class="lg:h-11"
+          data-testid="login-passkey"
+          size="xxl"
+          type="button"
+          ui-button
+          [attr.aria-busy]="passkeySubmitting() || null"
+          [attr.aria-disabled]="passkeySubmitting() || null"
+          [class.opacity-70]="passkeySubmitting()"
+          [class.pointer-events-none]="passkeySubmitting()"
+          (click)="onPasskeySignIn()"
+        >
+          <svg lucideKeyRound [size]="20" [strokeWidth]="1.75" />
+          {{
+            (passkeySubmitting()
+              ? 'login.passkeySubmitting'
+              : passkeyRefused() || passkeyFailed()
+                ? 'login.passkeyRetry'
+                : 'login.passkey'
+            ) | transloco
+          }}
+        </button>
+
+        <span class="text-label text-center text-pretty text-(--subtle-foreground)" data-testid="login-passkey-hint">
+          {{ (passkeySubmitting() ? 'login.passkeyWaitingHint' : 'login.passkeyHint') | transloco }}
+        </span>
+
+        <button
+          class="text-body! h-12 lg:h-10"
+          data-testid="login-password-toggle"
+          type="button"
+          ui-button
+          variant="ghost"
+          (click)="usePassword()"
+        >
+          {{ 'login.passwordToggle' | transloco }}
+        </button>
+      </div>
     }
   </div>
-</div>
+</main>

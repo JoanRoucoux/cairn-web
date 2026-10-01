@@ -34,9 +34,7 @@ test.describe('accounts', () => {
     await accounts.goto();
 
     await accounts.addButton.click();
-    await expect(
-      page.getByTestId('account-form-type').getByRole('option', { name: 'Securities account' }),
-    ).toBeAttached();
+    await expect(page.getByTestId('account-form-type').getByRole('option', { name: 'Life insurance' })).toBeAttached();
   });
 
   test('says which fields are missing instead of refusing in silence', async ({ page }) => {

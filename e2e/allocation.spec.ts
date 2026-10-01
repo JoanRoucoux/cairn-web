@@ -29,7 +29,7 @@ test.describe('allocation', () => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await page.getByRole('button', { name: /Tracker/ }).click();
+    await page.getByRole('button', { name: /ETF/ }).click();
     await page.waitForURL('**/holdings?**');
 
     const url = new URL(page.url());

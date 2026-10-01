@@ -28,7 +28,7 @@
   "enums": {
     "assetClass": {
       "EQUITY": "Equity",
-      "ETF": "Tracker",
+      "ETF": "ETF",
       "FUND": "Fund",
       "CRYPTO": "Crypto",
       "CASH": "Cash"
@@ -42,7 +42,7 @@
     "accountType": {
       "PEA": "PEA",
       "PEA_PME": "PEA-PME",
-      "CTO": "Securities account",
+      "CTO": "CTO",
       "PER": "PER",
       "PEE": "PEE",
       "LIFE_INSURANCE": "Life insurance",
