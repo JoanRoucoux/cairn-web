@@ -2,7 +2,14 @@
   @for (account of accounts(); track account.id) {
     <div data-testid="account-row-mobile">
       <div uiRowItem>
-        <a data-testid="account-link-mobile" padding="sm" routerLink="/holdings" size="xl" ui-row>
+        <a
+          data-testid="account-link-mobile"
+          padding="sm"
+          routerLink="/holdings"
+          size="xl"
+          ui-row
+          [queryParams]="{ compte: account.id }"
+        >
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body truncate font-medium">{{ account.name }}</span>
             <span class="text-label truncate text-(--subtle-foreground)">

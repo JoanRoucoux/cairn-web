@@ -41,6 +41,16 @@ test.describe('accounts', () => {
     expect(href).toMatch(/^\/holdings\?add=/);
   });
 
+  test('links each account name to its lines', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await expect(accounts.rowFor('PEA Boursorama').getByTestId('account-link')).toHaveAttribute(
+      'href',
+      /\/holdings\?compte=.+/,
+    );
+  });
+
   test('summarises the accounts with their count and total above the table', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
@@ -66,7 +76,9 @@ test.describe('accounts', () => {
     await page.getByTestId('account-form-type').getByRole('radio').first().focus();
     await page.keyboard.press('Tab');
 
-    await expect(page.getByRole('alert')).toHaveCount(1);
+    await expect(
+      page.getByTestId('account-form-type').locator('xpath=ancestor::ui-field').getByRole('alert'),
+    ).toHaveCount(1);
   });
 
   test('creates an account and sees it in the list', async ({ page }) => {

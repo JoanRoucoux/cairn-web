@@ -94,13 +94,14 @@ describe('AccountListPage', () => {
     expect(row.querySelectorAll('td')[2]).toHaveTextContent('—');
   });
 
-  it('should render a card row per account on iPhone, linking to the holdings without a filter', async () => {
+  it('should render a card row per account on iPhone, linking to the holdings of that account', async () => {
     await renderPage();
 
     const rows = await screen.findAllByTestId('account-row-mobile');
 
     expect(rows).toHaveLength(2);
-    expect(within(rows[0]!).getByTestId('account-link-mobile')).toHaveAttribute('href', '/holdings');
+    expect(within(rows[0]!).getByTestId('account-link-mobile')).toHaveAttribute('href', '/holdings?compte=a1');
+    expect(screen.getAllByTestId('account-link')[0]).toHaveAttribute('href', '/holdings?compte=a1');
   });
 
   it('should summarise the count and the total above the table', async () => {

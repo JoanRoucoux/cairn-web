@@ -39,7 +39,14 @@
           @for (account of accounts(); track account.id) {
             <tr data-testid="account-row" uiTr>
               <td primary uiTd>
-                <a data-testid="account-link" routerLink="/holdings" uiRowLink [stretch]="false">{{ account.name }}</a>
+                <a
+                  data-testid="account-link"
+                  routerLink="/holdings"
+                  uiRowLink
+                  [queryParams]="{ compte: account.id }"
+                  [stretch]="false"
+                  >{{ account.name }}</a
+                >
               </td>
               <td uiTd>
                 <ui-badge>{{ 'enums.accountType.' + account.type | transloco }}</ui-badge>
