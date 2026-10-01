@@ -16,11 +16,14 @@
   "rowEmptyAction": "Add a holding",
   "form": {
     "createTitle": "New account",
-    "editTitle": "Edit this account",
+    "editTitle": "Edit account",
     "cancel": "Cancel",
     "submit": "Save",
     "error": "That account was refused.",
-    "nameConflict": "An account already has this name."
+    "nameConflict": "An account already has this name.",
+    "namePlaceholder": "For example Boursorama PEA",
+    "institutionPlaceholder": "For example Boursorama",
+    "create": "Create the account"
   },
   "delete": {
     "action": "Delete account",
@@ -47,5 +50,7 @@
   "bookletCount_one": "{{count}} booklet",
   "bookletCount_other": "{{count}} booklets",
   "rowEmptyCompact": "No holdings. Add a holding or import a CSV.",
-  "rowEmptyImport": "Import a CSV"
+  "rowEmptyImport": "Import a CSV",
+  "nameLabel": "Account name",
+  "institutionOptional": "Institution (optional)"
 }

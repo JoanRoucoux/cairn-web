@@ -20,7 +20,10 @@
     "cancel": "Annuler",
     "submit": "Enregistrer",
     "error": "Ce compte a été refusé.",
-    "nameConflict": "Un compte porte déjà ce nom."
+    "nameConflict": "Un compte porte déjà ce nom.",
+    "namePlaceholder": "Par exemple Boursorama PEA",
+    "institutionPlaceholder": "Par exemple Boursorama",
+    "create": "Créer le compte"
   },
   "delete": {
     "action": "Supprimer le compte",
@@ -47,5 +50,7 @@
   "bookletCount_one": "{{count}} livret",
   "bookletCount_other": "{{count}} livrets",
   "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
-  "rowEmptyImport": "Importer un CSV"
+  "rowEmptyImport": "Importer un CSV",
+  "nameLabel": "Nom du compte",
+  "institutionOptional": "Établissement (facultatif)"
 }

@@ -195,7 +195,7 @@ describe('AccountListPage', () => {
 
     await user.click(screen.getByTestId('account-add'));
     await user.type(screen.getByTestId('account-form-name'), 'CTO Bourso');
-    await user.selectOptions(screen.getByTestId('account-form-type'), 'CTO');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
 

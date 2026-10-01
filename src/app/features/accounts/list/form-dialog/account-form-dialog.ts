@@ -1,21 +1,42 @@
-import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiDialog, UiField, UiInput, UiSelect } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { UiButton, UiChoiceChips, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { AccountType } from '@core/api-client/cairnAPI.schemas';
+import { LanguageStore } from '@core/i18n/language-store';
 
 import { focusInitial } from '@shared/dialog/focus-initial';
 
 import { type AccountDraftSource } from './account-form';
 import { AccountFormDialogStore } from './account-form-dialog-store';
 
+const ENVELOPES = [
+  AccountType.PEA,
+  AccountType.PEE,
+  AccountType.PER,
+  AccountType.CTO,
+  AccountType.LIFE_INSURANCE,
+  AccountType.CRYPTO,
+  AccountType.SAVINGS,
+];
+
 export type AccountFormTarget = AccountDraftSource & { id: string };
 
 @Component({
   selector: 'app-account-form-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput, UiSelect],
+  imports: [FormField, TranslocoPipe, UiButton, UiChoiceChips, UiDialog, UiField, UiInput],
   templateUrl: './account-form-dialog.html',
   providers: [AccountFormDialogStore],
 })
@@ -30,7 +51,15 @@ export class AccountFormDialog {
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
   protected readonly nameConflict = this.#store.nameConflict;
-  protected readonly accountTypes = Object.values(AccountType);
+  readonly #transloco = inject(TranslocoService);
+  readonly #language = inject(LanguageStore);
+
+  protected readonly typeOptions = computed(() => {
+    this.#language.activeLang();
+    const types = [...ENVELOPES, ...(this.account()?.type === AccountType.PEA_PME ? [AccountType.PEA_PME] : [])];
+
+    return types.map((type) => ({ value: type, label: this.#transloco.translate(`enums.accountType.${type}`) }));
+  });
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 

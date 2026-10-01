@@ -54,17 +54,19 @@ test.describe('accounts', () => {
     await accounts.goto();
 
     await accounts.addButton.click();
-    await expect(page.getByTestId('account-form-type').getByRole('option', { name: 'Life insurance' })).toBeAttached();
+    await expect(page.getByTestId('account-form-type').getByRole('radio', { name: 'Life insurance' })).toBeVisible();
   });
 
-  test('says which fields are missing instead of refusing in silence', async ({ page }) => {
+  test('keeps the submit disabled and names the missing envelope once the chips are left', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
     await accounts.addButton.click();
-    await page.getByTestId('account-form-submit').click();
+    await expect(page.getByTestId('account-form-submit')).toBeDisabled();
+    await page.getByTestId('account-form-type').getByRole('radio').first().focus();
+    await page.keyboard.press('Tab');
 
-    await expect(page.getByRole('alert')).toHaveCount(3);
+    await expect(page.getByRole('alert')).toHaveCount(1);
   });
 
   test('creates an account and sees it in the list', async ({ page }) => {
@@ -73,7 +75,7 @@ test.describe('accounts', () => {
 
     await accounts.addButton.click();
     await page.getByTestId('account-form-name').fill('Wise EUR');
-    await page.getByTestId('account-form-type').selectOption('CTO');
+    await page.getByTestId('account-form-type').getByRole('radio', { name: 'CTO', exact: true }).click();
     await page.getByTestId('account-form-institution').fill('Boursorama');
     await page.getByTestId('account-form-submit').click();
 
@@ -114,7 +116,7 @@ test.describe('accounts', () => {
 
     await accounts.addButton.click();
     await page.getByTestId('account-form-name').fill('Wise EUR');
-    await page.getByTestId('account-form-type').selectOption('CTO');
+    await page.getByTestId('account-form-type').getByRole('radio', { name: 'CTO', exact: true }).click();
     await page.getByTestId('account-form-institution').fill('Boursorama');
     await page.getByTestId('account-form-submit').click();
     await expect(accounts.rowFor('Wise EUR')).toBeVisible();
