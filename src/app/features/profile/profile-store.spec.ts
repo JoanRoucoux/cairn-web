@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ApplicationRef, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationRef, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -8,56 +8,123 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { ProfileStore } from './profile-store';
 
 const session = {
-  displayName: 'Joan Roucoux',
-  initials: 'JR',
+  displayName: 'Joan',
+  initials: 'JO',
   username: 'joan',
   signInMethod: 'PASSKEY',
+  passkeys: [
+    {
+      credentialId: 'aXBob25l',
+      label: 'iPhone de Joan',
+      createdAt: '2025-03-12T10:00:00Z',
+      lastUsedAt: '2026-09-25T08:00:00Z',
+      current: true,
+      provider: 'ICLOUD_KEYCHAIN',
+    },
+    {
+      credentialId: 'bWFj',
+      label: 'MacBook',
+      createdAt: '2025-03-12T10:05:00Z',
+      lastUsedAt: '2026-09-24T20:00:00Z',
+      current: false,
+    },
+    {
+      credentialId: 'eXVi',
+      label: 'YubiKey',
+      createdAt: '2025-11-04T10:00:00Z',
+      lastUsedAt: '2026-09-02T09:00:00Z',
+      current: false,
+      provider: 'SECURITY_KEY',
+    },
+    { credentialId: 'bmV2ZXI', label: 'Neuf', createdAt: '2026-09-20T10:00:00Z', lastUsedAt: null, current: false },
+  ],
 };
-
-const passkeys = [
-  {
-    credentialId: 'aXBob25l',
-    label: 'iPhone de Joan',
-    createdAt: '2026-02-01T10:00:00Z',
-    lastUsedAt: null,
-    current: true,
-  },
-  { credentialId: 'bWFj', label: 'MacBook', createdAt: '2026-02-02T10:00:00Z', lastUsedAt: null, current: false },
-];
 
 describe('ProfileStore', () => {
   let store: ProfileStore;
   let httpTesting: HttpTestingController;
 
-  const settleSession = async (): Promise<void> => {
+  const settle = async (instruments: unknown[] = []): Promise<void> => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush(instruments);
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
   beforeEach(() => {
     localStorage.clear();
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-09-25T17:42:00+02:00') });
     TestBed.configureTestingModule({
       imports: [getTranslocoTestingModule()],
-      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), ProfileStore],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'fr-FR' },
+        ProfileStore,
+      ],
     });
     store = TestBed.inject(ProfileStore);
     httpTesting = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    vi.useRealTimers();
+  });
 
-  it('should expose the owner and the current theme', async () => {
-    await settleSession();
+  it('should expose the owner, how the session was opened and the current theme', async () => {
+    await settle();
 
-    expect(store.owner().initials).toBe('JR');
+    expect(store.state()).toBe('ready');
+    expect(store.owner().initials).toBe('JO');
+    expect(store.username()).toBe('joan');
+    expect(store.signInMethod()).toBe('PASSKEY');
     expect(store.theme()).toBe('system');
   });
 
-  it('should list the registered passkeys', async () => {
-    await settleSession();
+  it('should offer French before English', async () => {
+    await settle();
 
-    expect(store.passkeys()).toHaveLength(2);
+    expect(store.availableLanguages).toEqual(['fr', 'en']);
+  });
+
+  it('should count the instruments, and know nothing until they load', async () => {
+    expect(store.instrumentCount()).toBeNull();
+
+    await settle([{}, {}]);
+
+    expect(store.instrumentCount()).toBe(2);
+  });
+
+  it('should view each passkey with its badge, provider and creation date', async () => {
+    await settle();
+
+    const [phone, macbook] = store.passkeys();
+
+    expect(phone).toMatchObject({
+      label: 'iPhone de Joan',
+      current: true,
+      provider: 'ICLOUD_KEYCHAIN',
+      created: '12/03/2025',
+    });
+    expect(macbook).toMatchObject({ current: false, provider: null });
+  });
+
+  it('should phrase the last use against the Paris calendar day', async () => {
+    await settle();
+
+    expect(store.passkeys().map((passkey) => passkey.usage)).toEqual([
+      { kind: 'today', date: '' },
+      { kind: 'yesterday', date: '' },
+      { kind: 'on', date: '02/09/2026' },
+      { kind: 'never', date: '' },
+    ]);
+  });
+
+  it('should follow the device scheme', async () => {
+    await settle();
+
+    expect(store.systemScheme()).toBe('light');
   });
 
   it('should change the theme', async () => {
@@ -65,7 +132,7 @@ describe('ProfileStore', () => {
 
     expect(store.theme()).toBe('dark');
 
-    await settleSession();
+    await settle();
   });
 
   it('should reflect and change the hide-amounts preference', async () => {
@@ -76,63 +143,19 @@ describe('ProfileStore', () => {
     expect(store.hideAmounts()).toBe(true);
     expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
 
-    await settleSession();
+    await settle();
   });
 
-  it('should revoke a passkey and reload the passkeys', async () => {
-    await settleSession();
+  it('should reload the session on request', async () => {
+    await settle();
 
-    const revoked = store.revokePasskey('bWFj');
+    store.reloadSession();
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
-    await revoked;
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
-    expect(store.revocationRefused()).toBe(false);
-  });
-
-  it('should report a refused revocation instead of pretending it worked', async () => {
-    await settleSession();
-
-    const revoked = store.revokePasskey('aXBob25l');
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/aXBob25l'))).flush(null, {
-      status: 409,
-      statusText: 'Conflict',
-    });
-    await revoked;
-
-    expect(store.revocationRefused()).toBe(true);
-  });
-
-  it('should clear a previous refusal when a new revocation starts', async () => {
-    await settleSession();
-
-    const refused = store.revokePasskey('aXBob25l');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/aXBob25l'))).flush(null, {
-      status: 409,
-      statusText: 'Conflict',
-    });
-    await refused;
-
-    const accepted = store.revokePasskey('bWFj');
-    expect(store.revocationRefused()).toBe(false);
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
-    await accepted;
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
-  });
-
-  it('should reload the passkeys on request', async () => {
-    await settleSession();
-
-    store.reloadPasskeys();
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
   });
 
   it('should sign the user out', async () => {
-    await settleSession();
+    await settle();
 
     const signedOut = store.signOut();
 

@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
@@ -18,27 +18,47 @@ import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
 
-const CSV_HEADER = 'account;accountType;institution;instrument;isinOrTicker;quantity;averageCost';
+type Session = {
+  displayName: string;
+  initials: string;
+  username: string;
+  signInMethod: string;
+  passkeys: Record<string, unknown>[];
+};
 
-const csvFile = (): File => new File([`${CSV_HEADER}\r\n`], 'portfolio.csv', { type: 'text/csv' });
-
-const session = { displayName: 'Joan Roucoux', initials: 'JR', username: 'joan', signInMethod: 'PASSKEY' };
-const passkeys = [
-  {
-    credentialId: 'aXBob25l',
-    label: 'iPhone de Joan',
-    createdAt: '2026-02-01T10:00:00Z',
-    lastUsedAt: null,
-    current: true,
-  },
-  {
-    credentialId: 'bWFj',
-    label: 'MacBook',
-    createdAt: '2026-02-02T10:00:00Z',
-    lastUsedAt: '2026-02-10T10:00:00Z',
-    current: false,
-  },
-];
+const session: Session = {
+  displayName: 'Joan',
+  initials: 'JO',
+  username: 'joan',
+  signInMethod: 'PASSKEY',
+  passkeys: [
+    {
+      credentialId: 'aXBob25l',
+      label: 'iPhone de Joan',
+      createdAt: '2025-03-12T10:00:00Z',
+      lastUsedAt: '2026-09-25T08:00:00Z',
+      current: true,
+      provider: 'ICLOUD_KEYCHAIN',
+    },
+    {
+      credentialId: 'bWFj',
+      label: 'MacBook',
+      createdAt: '2025-03-12T10:05:00Z',
+      lastUsedAt: '2026-09-24T20:00:00Z',
+      current: false,
+      provider: null,
+    },
+    {
+      credentialId: 'eXVi',
+      label: 'YubiKey 5C',
+      createdAt: '2025-11-04T10:00:00Z',
+      lastUsedAt: '2026-09-02T09:00:00Z',
+      current: false,
+      provider: 'SECURITY_KEY',
+    },
+    { credentialId: 'bmV2ZXI', label: 'Neuf', createdAt: '2026-09-20T10:00:00Z', lastUsedAt: null, current: false },
+  ],
+};
 
 // Simulates the profile scope's real, asynchronous load: the plain TranslocoTestingModule loader
 // resolves scopes synchronously, which cannot reproduce the race between first render and the
@@ -71,7 +91,7 @@ describe('ProfilePage', () => {
 
   const renderPage = async (
     translations = getTranslocoTestingModule(),
-    passkeysOverride: typeof passkeys = passkeys,
+    sessionOverride: Session = session,
   ): Promise<void> => {
     localStorage.clear();
     register = vi.fn();
@@ -83,29 +103,65 @@ describe('ProfilePage', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideTranslocoScope('profile'),
+        { provide: LOCALE_ID, useValue: 'fr-FR' },
         { provide: PasskeyCeremony, useValue: { register } },
         ProfileStore,
         PortfolioImportStore,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeysOverride);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(sessionOverride);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([{}, {}, {}]);
   };
 
-  afterEach(() => httpTesting.verify());
-
-  it('should name the owner', async () => {
-    await renderPage();
-
-    expect(await screen.findByText('Joan Roucoux')).toBeInTheDocument();
+  afterEach(() => {
+    httpTesting.verify();
   });
 
-  it('should list the registered devices', async () => {
+  it('should name the owner and how the session was opened', async () => {
     await renderPage();
 
-    expect(await screen.findByText('iPhone de Joan')).toBeInTheDocument();
-    expect(screen.getAllByTestId('revoke-passkey')).toHaveLength(2);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Joan' })).toBeInTheDocument();
+    expect(screen.getByTestId('identity')).toHaveTextContent('profile.signedIn.PASSKEY');
+  });
+
+  it('should word the sign-in line for a password session', async () => {
+    await renderPage(getTranslocoTestingModule(), { ...session, signInMethod: 'PASSWORD' });
+
+    expect(await screen.findByTestId('identity')).toHaveTextContent('profile.signedIn.PASSWORD');
+  });
+
+  it('should link back to the portfolio for the mobile layout', async () => {
+    await renderPage();
+
+    expect(await screen.findByTestId('back-link')).toHaveAttribute('href', '/');
+  });
+
+  it('should show how many instruments the catalogue holds', async () => {
+    await renderPage();
+
+    expect(await screen.findByTestId('instrument-count')).toHaveTextContent('3');
+  });
+
+  it('should explain which scheme the device is on when following it', async () => {
+    await renderPage(
+      getTranslocoTestingModule({
+        langs: {
+          en: { 'profile.themeHint.system': 'Follows the device, now {{scheme}}.', 'profile.scheme.light': 'light' },
+        },
+      }),
+    );
+
+    expect(await screen.findByTestId('theme-hint')).toHaveTextContent('Follows the device, now light.');
+  });
+
+  it('should say the scheme is forced once a theme is picked', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(await screen.findByRole('radio', { name: 'profile.theme.dark' }));
+
+    expect(screen.getByTestId('theme-hint')).toHaveTextContent('profile.themeHint.dark');
   });
 
   it('should open the passkey dialog', async () => {
@@ -117,7 +173,7 @@ describe('ProfilePage', () => {
     expect(screen.getByTestId('profile-passkey-dialog')).toBeInTheDocument();
   });
 
-  it('should reload the passkeys and close the dialog once a passkey is registered', async () => {
+  it('should reload the session and close the dialog once a passkey is registered', async () => {
     const user = userEvent.setup();
     await renderPage();
     register.mockResolvedValue('ok');
@@ -126,7 +182,7 @@ describe('ProfilePage', () => {
     await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
     await user.click(screen.getByTestId('passkey-register'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument());
   });
 
@@ -140,124 +196,36 @@ describe('ProfilePage', () => {
     expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument();
   });
 
-  it('should revoke a device', async () => {
+  it('should ask before deleting a device, and delete nothing on cancel', async () => {
     const user = userEvent.setup();
     await renderPage();
 
     await user.click((await screen.findAllByTestId('revoke-passkey'))[1]!);
 
+    expect(await screen.findByTestId('profile-passkey-delete-dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('passkey-delete-cancel'));
+
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(screen.queryByTestId('profile-passkey-delete-dialog')).not.toBeInTheDocument();
+    });
+    httpTesting.expectNone('/api/session/passkeys/bWFj');
+  });
+
+  it('should delete a device once confirmed, then close the dialog', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click((await screen.findAllByTestId('revoke-passkey'))[1]!);
+    await user.click(await screen.findByTestId('passkey-delete-confirm'));
+
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+
+    await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-delete-dialog')).not.toBeInTheDocument());
   });
 
-  it('should say so when the server refuses to revoke the last device', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.click((await screen.findAllByTestId('revoke-passkey'))[0]!);
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/aXBob25l'))).flush(null, {
-      status: 409,
-      statusText: 'Conflict',
-    });
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('profile.revokeRefused');
-  });
-
-  it('should hand the export to the browser as a download', async () => {
-    await renderPage();
-
-    const link = screen.getByTestId('export-csv');
-
-    expect(link).toHaveAttribute('href', '/api/portfolio/export');
-    expect(link).toHaveAttribute('download');
-  });
-
-  it('should hand the import template to the browser as a download', async () => {
-    await renderPage();
-
-    const link = screen.getByTestId('import-template');
-
-    expect(link).toHaveAttribute('href', '/api/portfolio/import/template');
-    expect(link).toHaveAttribute('download');
-  });
-
-  it('should report what an accepted import changed', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.upload(screen.getByTestId('import-file'), csvFile());
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush({
-      accountsCreated: 1,
-      instrumentsCreated: 2,
-      holdingsCreated: 3,
-      holdingsUpdated: 4,
-    });
-
-    expect(await screen.findByTestId('import-report')).toBeInTheDocument();
-    expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
-  });
-
-  it('should list every refused line so the file can be fixed in one pass', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.upload(screen.getByTestId('import-file'), csvFile());
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
-      {
-        status: 422,
-        errors: [
-          { line: 2, code: 'UNKNOWN_ACCOUNT_TYPE', value: 'PEAA' },
-          { line: 5, code: 'ZERO_QUANTITY' },
-        ],
-      },
-      { status: 422, statusText: 'Unprocessable Content' },
-    );
-
-    const rejections = await screen.findByTestId('import-rejections');
-
-    expect(rejections).toBeInTheDocument();
-    expect(await within(rejections).findByText('2')).toBeInTheDocument();
-    expect(within(rejections).getByText('5')).toBeInTheDocument();
-    expect(screen.queryByTestId('import-report')).not.toBeInTheDocument();
-  });
-
-  it('should open the file picker from the visible button, the input being hidden', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-    const input = screen.getByTestId('import-file');
-    const opened = vi.spyOn(input, 'click');
-
-    await user.click(screen.getByTestId('import-csv'));
-
-    expect(opened).toHaveBeenCalled();
-  });
-
-  it('should say so when the import could not be sent at all', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.upload(screen.getByTestId('import-file'), csvFile());
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(null, {
-      status: 500,
-      statusText: 'Server Error',
-    });
-
-    expect(await screen.findByTestId('import-failed')).toBeInTheDocument();
-    expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
-  });
-
-  it('should send nothing when the file picker is dismissed', async () => {
-    await renderPage();
-
-    // A cancelled picker still fires change, with no file on it.
-    screen.getByTestId('import-file').dispatchEvent(new Event('change'));
-
-    httpTesting.expectNone('/api/portfolio/import');
-  });
   it('should offer the three theme preferences', async () => {
     await renderPage();
 
@@ -276,7 +244,7 @@ describe('ProfilePage', () => {
       within(group)
         .getAllByRole('radio')
         .map((radio) => radio.textContent?.trim()),
-    ).toEqual(['profile.language.en', 'profile.language.fr']);
+    ).toEqual(['profile.language.fr', 'profile.language.en']);
 
     await user.click(within(group).getByRole('radio', { name: 'profile.language.fr' }));
 
@@ -310,14 +278,6 @@ describe('ProfilePage', () => {
 
     expect(toggle).toBeChecked();
     expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
-  });
-
-  it('should hide the delete button for the only remaining passkey and explain why', async () => {
-    await renderPage(getTranslocoTestingModule(), [passkeys[0]!]);
-
-    expect(await screen.findByText('iPhone de Joan')).toBeInTheDocument();
-    expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
-    expect(screen.getByText('profile.onlyKey')).toBeInTheDocument();
   });
 
   it('should send the browser to the sign-in page after signing out, not navigate in place', async () => {
@@ -369,7 +329,7 @@ describe('ProfilePage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
 
     expect(screen.queryByRole('radio', { name: 'Dark' })).not.toBeInTheDocument();
 

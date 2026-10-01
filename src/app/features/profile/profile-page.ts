@@ -3,11 +3,10 @@ import { RouterLink } from '@angular/router';
 
 import {
   type SegmentedOption,
-  UiAvatar,
   UiButton,
-  UiCard,
   UiRow,
   UiSegmented,
+  UiSkeleton,
   UiSwitch,
   UiTable,
   UiTd,
@@ -16,44 +15,42 @@ import {
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import {
   LucideBook,
+  LucideChevronLeft,
   LucideChevronRight,
   LucideDownload,
   LucideFileText,
-  LucideKeyRound,
   LucideLogOut,
-  LucideTrash2,
   LucideUpload,
 } from '@lucide/angular';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
-import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
-
+import { ProfilePasskeyDeleteDialog } from './passkey-delete-dialog/profile-passkey-delete-dialog';
 import { ProfilePasskeyDialog } from './passkey-dialog/profile-passkey-dialog';
+import { ProfilePasskeyList } from './passkey-list/profile-passkey-list';
 import { PortfolioImportStore } from './portfolio-import-store';
-import { ProfileStore } from './profile-store';
+import { type PasskeyView, ProfileStore } from './profile-store';
 
 @Component({
   selector: 'app-profile-page',
   imports: [
     LucideBook,
+    LucideChevronLeft,
     LucideChevronRight,
     LucideDownload,
     LucideFileText,
-    LucideKeyRound,
     LucideLogOut,
-    LucideTrash2,
     LucideUpload,
+    ProfilePasskeyDeleteDialog,
     ProfilePasskeyDialog,
-    RelativeDatePipe,
+    ProfilePasskeyList,
     RouterLink,
     TranslocoPipe,
-    UiAvatar,
-    UiButton,
-    UiCard,
     UiRow,
+    UiButton,
     UiSegmented,
+    UiSkeleton,
     UiSwitch,
     UiTable,
     UiTd,
@@ -66,15 +63,19 @@ export class ProfilePage {
   #store = inject(ProfileStore);
   #signIn = inject(SignInRedirect);
 
+  protected readonly state = this.#store.state;
   protected readonly owner = this.#store.owner;
+  protected readonly username = this.#store.username;
+  protected readonly signInMethod = this.#store.signInMethod;
   protected readonly passkeys = this.#store.passkeys;
-  protected readonly onlyKey = computed(() => this.passkeys().length === 1);
-  protected readonly revocationRefused = this.#store.revocationRefused;
   protected readonly theme = this.#store.theme;
+  protected readonly systemScheme = this.#store.systemScheme;
   protected readonly language = this.#store.language;
   protected readonly hideAmounts = this.#store.hideAmounts;
+  protected readonly instrumentCount = this.#store.instrumentCount;
 
   protected readonly passkeyDialogOpen = signal(false);
+  protected readonly passkeyToDelete = signal<PasskeyView | undefined>(undefined);
 
   #importStore = inject(PortfolioImportStore);
   protected readonly importing = this.#importStore.importing;
@@ -119,13 +120,13 @@ export class ProfilePage {
     }
   }
 
-  protected async onRevoke(credentialId: string): Promise<void> {
-    await this.#store.revokePasskey(credentialId);
-  }
-
   protected onPasskeyRegistered(): void {
     this.passkeyDialogOpen.set(false);
     this.#store.reloadPasskeys();
+  }
+
+  protected retry(): void {
+    this.#store.reloadSession();
   }
 
   // Navigation stays in the page: the store returns, the page decides where to go.

@@ -1,0 +1,37 @@
+<ui-dialog
+  data-testid="profile-passkey-delete-dialog"
+  width="md"
+  [description]="'profile.delete.description' | transloco"
+  [heading]="'profile.delete.title' | transloco: { label: passkey().label }"
+  [open]="open()"
+  (dismissed)="dismissed.emit()"
+>
+  @if (refused()) {
+    <p class="text-label text-(--negative)" data-testid="passkey-delete-refused" role="alert">
+      {{ 'profile.delete.refused' | transloco }}
+    </p>
+  }
+
+  <button
+    data-testid="passkey-delete-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="deleting()"
+    (click)="cancel()"
+  >
+    {{ 'profile.delete.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="passkey-delete-confirm"
+    dialogActions
+    type="button"
+    ui-button
+    variant="destructive"
+    [disabled]="deleting()"
+    (click)="confirm()"
+  >
+    {{ 'profile.delete.submit' | transloco }}
+  </button>
+</ui-dialog>
