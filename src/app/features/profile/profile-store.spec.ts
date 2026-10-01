@@ -121,6 +121,17 @@ describe('ProfileStore', () => {
     ]);
   });
 
+  it('should count a use after midnight in Paris but before midnight UTC as today', async () => {
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush({
+      ...session,
+      passkeys: [{ ...session.passkeys[1]!, lastUsedAt: '2026-09-24T22:30:00Z' }],
+    });
+    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush([]);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.passkeys()[0]?.usage.kind).toBe('today');
+  });
+
   it('should follow the device scheme', async () => {
     await settle();
 

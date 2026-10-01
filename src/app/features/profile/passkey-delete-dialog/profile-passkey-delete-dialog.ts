@@ -24,7 +24,6 @@ export class ProfilePasskeyDeleteDialog {
   protected readonly deleting = this.#store.deleting;
   protected readonly refused = this.#store.refused;
 
-  // close() on the native dialog restores focus to the trigger, so the screen must not unmount this component before ui-dialog has run it.
   protected cancel(): void {
     this.open.set(false);
     afterNextRender(() => this.dismissed.emit(), { injector: this.#injector });
