@@ -56,6 +56,10 @@ export class AppShell {
     initialValue: this.#router.url,
   });
 
+  protected readonly headerBack = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderBack())), {
+    initialValue: this.#currentHeaderBack(),
+  });
+
   protected readonly headerKey = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderKey())), {
     initialValue: this.#currentHeaderKey(),
   });
@@ -69,24 +73,20 @@ export class AppShell {
     initialValue: this.#currentMobileHeaderless(),
   });
 
-  protected readonly headerBack = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderBack())), {
-    initialValue: this.#currentHeaderBack(),
-  });
+  #currentHeaderKey(): string | undefined {
+    return deepestData(this.#route.root)['headerKey'] as string | undefined;
+  }
 
   #currentMobileHeaderless(): boolean {
     return deepestData(this.#route.root)['mobileHeaderless'] === true;
   }
 
-  #currentHeaderBack(): HeaderBack | undefined {
-    return deepestData(this.#route.root)['headerBack'] as HeaderBack | undefined;
-  }
-
-  #currentHeaderKey(): string | undefined {
-    return deepestData(this.#route.root)['headerKey'] as string | undefined;
-  }
-
   #currentMobileHeaderHidden(): boolean {
     return deepestData(this.#route.root)['mobileHeaderHidden'] === true;
+  }
+
+  #currentHeaderBack(): HeaderBack | undefined {
+    return deepestData(this.#route.root)['headerBack'] as HeaderBack | undefined;
   }
 
   protected isActive(path: string): boolean {
