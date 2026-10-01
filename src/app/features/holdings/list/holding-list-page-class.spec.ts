@@ -2,10 +2,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
-import { TRANSLOCO_LOADER, provideTranslocoScope } from '@jsverse/transloco';
+import { TRANSLOCO_LOADER, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 import { map, timer } from 'rxjs';
@@ -154,9 +154,35 @@ describe('HoldingListPage class filter', () => {
 
     await user.click(chip(/^ETF/));
 
+    await vi.waitFor(() => expect(screen.queryByText('Esalia')).not.toBeInTheDocument());
+
     expect(chip(/^ETF/)).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
     expect(screen.getByTestId('class-summary')).toHaveTextContent('ETF · €4,000.00 · 66.7% of wealth, in 1 account');
+  });
+
+  it('should write the slug of the clicked class to the URL, and drop it with Toutes', async () => {
+    const user = userEvent.setup();
+    await open();
+    await screen.findAllByText('Esalia');
+    const router = TestBed.inject(Router);
+
+    await user.click(chip(/^Funds/));
+
+    await vi.waitFor(() => expect(router.url).toBe('/?classe=fonds'));
+
+    await user.click(chip(/^All/));
+
+    await vi.waitFor(() => expect(router.url).toBe('/'));
+  });
+
+  it('should not ask for the all label before the holdings scope has loaded', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await open('/', true, 300);
+
+    expect(await screen.findByRole('button', { name: /^All/ })).toBeInTheDocument();
+    expect(translate).not.toHaveBeenCalledWith('holdings.classFilter.all');
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it('should go back to every account with Toutes', async () => {
@@ -166,7 +192,8 @@ describe('HoldingListPage class filter', () => {
 
     await user.click(chip(/^All/));
 
-    expect(screen.queryByTestId('class-summary')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('class-summary')).not.toBeInTheDocument());
+
     expect((await screen.findAllByText('Esalia')).length).toBeGreaterThan(0);
   });
 

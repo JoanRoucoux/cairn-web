@@ -30,13 +30,17 @@ export type ClassSummary = { valueEur: number; share: number; accounts: number }
 
 export const CLASS_ORDER: readonly AssetClass[] = ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'CASH'];
 
-const CLASS_BY_SLUG = new Map<string, AssetClass>([
-  ['etf', 'ETF'],
-  ['fonds', 'FUND'],
-  ['actions', 'EQUITY'],
-  ['crypto', 'CRYPTO'],
-  ['liquidites', 'CASH'],
-]);
+export const SLUG_BY_CLASS: Record<AssetClass, string> = {
+  ETF: 'etf',
+  FUND: 'fonds',
+  EQUITY: 'actions',
+  CRYPTO: 'crypto',
+  CASH: 'liquidites',
+};
+
+const CLASS_BY_SLUG = new Map<string, AssetClass>(
+  Object.entries(SLUG_BY_CLASS).map(([assetClass, slug]) => [slug, assetClass as AssetClass]),
+);
 
 const matches = (holding: HoldingResponse, search: string): boolean =>
   holding.assetClass !== 'CASH' && normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''}`).includes(search);

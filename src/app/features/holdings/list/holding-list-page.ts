@@ -16,7 +16,7 @@ import {
   UiTable,
   UiTh,
 } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
@@ -30,7 +30,7 @@ import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
 import { HoldingListEmpty } from './empty/holding-list-empty';
-import { CLASS_ORDER, HoldingListStore } from './holding-list-store';
+import { CLASS_ORDER, HoldingListStore, SLUG_BY_CLASS } from './holding-list-store';
 import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
 import { HoldingClassSummary } from './summary/holding-class-summary';
 
@@ -73,6 +73,8 @@ export class HoldingListPage {
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
+  #allLabel = translateSignal('classFilter.all');
+
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
   protected readonly search = this.#store.search;
@@ -94,7 +96,7 @@ export class HoldingListPage {
     const counts = this.state() === 'ready' ? this.#store.classCounts() : null;
 
     return [
-      { value: ALL, label: this.#transloco.translate('holdings.classFilter.all'), count: counts?.total },
+      { value: ALL, label: this.#allLabel(), count: counts?.total },
       ...CLASS_ORDER.map((assetClass) => ({
         value: assetClass,
         label: this.#transloco.translate(`enums.assetClass.${assetClass}`),
@@ -183,7 +185,12 @@ export class HoldingListPage {
   }
 
   protected onClassChange(value: string): void {
-    this.assetClass.set(value === ALL ? null : (value as AssetClass));
+    void this.#router.navigate([], {
+      relativeTo: this.#route,
+      queryParams: { classe: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   protected onAddSaved(): void {
