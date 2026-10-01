@@ -1,8 +1,9 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -27,7 +28,7 @@ describe('HoldingSellDialog', () => {
   const sold = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (input: HoldingResponse = holding): Promise<void> => {
+  const renderDialog = async (input: HoldingResponse = holding, masked = false): Promise<void> => {
     await render(HoldingSellDialog, {
       inputs: { holding: input },
       on: { sold, dismissed },
@@ -38,6 +39,7 @@ describe('HoldingSellDialog', () => {
         provideHttpClientTesting(),
         { provide: LOCALE_ID, useValue: 'en-GB' },
         provideTranslocoScope('holdings'),
+        { provide: UI_AMOUNT_MASKED, useValue: signal(masked) },
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -91,6 +93,27 @@ describe('HoldingSellDialog', () => {
     await user.type(screen.getByTestId('holding-sell-quantity'), '100');
 
     expect(screen.getByText('+€451.68')).toBeInTheDocument();
+  });
+
+  it('shows a loss with a minus sign and the negative tone', async () => {
+    const user = userEvent.setup();
+    await renderDialog({ ...holding, price: 20 } as unknown as HoldingResponse);
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '100');
+
+    const gain = screen.getByText('−€412.00');
+    expect(gain.closest('ui-delta')).toHaveClass('text-(--negative)');
+  });
+
+  it('masks the price in the hint and the recap amounts when amounts are hidden', async () => {
+    const user = userEvent.setup();
+    await renderDialog(holding, true);
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '100');
+
+    expect(screen.getByTestId('holding-sell-hint')).not.toHaveTextContent('28.64');
+    expect(screen.queryByText('+€451.68')).not.toBeInTheDocument();
+    expect(screen.queryByText('€2,863.68')).not.toBeInTheDocument();
   });
 
   it('writes the average cost and its note in one run', async () => {

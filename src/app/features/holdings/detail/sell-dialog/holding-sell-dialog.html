@@ -80,13 +80,12 @@
       <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
         <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGain' | transloco }}</span>
         @if (preview()?.realizedGain !== null && preview()?.realizedGain !== undefined) {
-          <span
-            class="font-medium"
-            [class.text-(--negative)]="preview()!.realizedGain! < 0"
-            [class.text-(--positive)]="preview()!.realizedGain! > 0"
+          <ui-delta
+            [unknownLabel]="'holdings.sell.rows.realizedGainUnknown' | transloco"
+            [value]="preview()!.realizedGain"
           >
             <ui-amount currency="EUR" signed [value]="preview()!.realizedGain" />
-          </span>
+          </ui-delta>
         } @else if (holding().averageCost === null || holding().averageCost === undefined) {
           <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGainUnknown' | transloco }}</span>
         } @else {
@@ -112,9 +111,7 @@
     }
 
     @if (error()) {
-      <p class="text-label text-(--negative)" data-testid="holding-sell-error" role="alert">
-        {{ 'holdings.sell.error' | transloco }}
-      </p>
+      <ui-alert data-testid="holding-sell-error">{{ 'holdings.sell.error' | transloco }}</ui-alert>
     }
   </form>
 

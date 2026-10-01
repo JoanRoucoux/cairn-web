@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { UiAmount, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiAmount, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -26,7 +26,7 @@ import { HoldingBuyDialogStore } from './holding-buy-dialog-store';
 
 @Component({
   selector: 'app-holding-buy-dialog',
-  imports: [TranslocoPipe, UiAmount, UiButton, UiDialog, UiField, UiInput],
+  imports: [TranslocoPipe, UiAlert, UiAmount, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-buy-dialog.html',
   providers: [HoldingBuyDialogStore],
 })

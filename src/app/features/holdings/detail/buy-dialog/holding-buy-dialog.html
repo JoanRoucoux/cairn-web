@@ -89,9 +89,7 @@
     </div>
 
     @if (error()) {
-      <p class="text-label text-(--negative)" data-testid="holding-buy-error" role="alert">
-        {{ 'holdings.buy.error' | transloco }}
-      </p>
+      <ui-alert data-testid="holding-buy-error">{{ 'holdings.buy.error' | transloco }}</ui-alert>
     }
   </form>
 
