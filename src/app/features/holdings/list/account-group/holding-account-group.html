@@ -1,177 +1,55 @@
-<div class="rounded-container overflow-hidden border border-(--border) bg-(--card)" data-testid="account-group">
-  <div class="flex min-h-11 items-center gap-3 px-3.5 pt-3">
-    <span class="text-label min-w-0 grow truncate font-semibold" [id]="'account-name-' + group().accountId">{{
-      group().accountName
-    }}</span>
-  </div>
-
-  <details [open]="expanded()">
-    <summary
-      class="flex min-h-11 cursor-pointer list-none items-center gap-3 px-3.5 pb-3 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-      [attr.aria-labelledby]="
-        'account-name-' +
-        group().accountId +
-        ' account-summary-' +
-        group().accountId +
-        ' account-value-' +
-        group().accountId
-      "
-    >
-      <span
-        class="text-caption grow tracking-[0.05em] text-(--subtle-foreground)"
-        [id]="'account-summary-' + group().accountId"
-      >
-        {{ 'enums.accountType.' + group().accountType | transloco }} &middot; {{ group().institution }} &middot;
-        {{ pluralKey('holdings.lineCount', group().holdings.length) | transloco: { count: group().holdings.length } }}
-      </span>
-
-      @if (group().stale) {
-        <svg
-          class="shrink-0"
-          fill="none"
-          height="13"
-          role="img"
-          stroke="var(--stale)"
-          stroke-linecap="round"
-          stroke-width="2.2"
-          viewBox="0 0 24 24"
-          width="13"
-          [attr.aria-label]="'holdings.staleQuote' | transloco"
-        >
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 7v5l3 2" />
-        </svg>
-      }
-
-      <span
-        class="text-label shrink-0 text-right font-semibold tabular-nums"
-        [id]="'account-value-' + group().accountId"
-      >
-        <ui-amount currency="EUR" [value]="group().valueEur" />
-        @if (group().unvaluedCount > 0) {
-          <span class="text-caption block font-normal text-(--muted-foreground)">
-            {{
-              pluralKey('holdings.unvaluedCount', group().unvaluedCount) | transloco: { count: group().unvaluedCount }
-            }}
-          </span>
-        }
-      </span>
-    </summary>
-
-    <div class="flex flex-col gap-1 border-t border-(--hairline) p-1.5 lg:hidden">
-      @for (holding of group().holdings; track holding.id) {
-        <a
-          class="flex min-h-14 items-center gap-2"
-          data-testid="holding-row-mobile"
-          queryParamsHandling="preserve"
-          ui-row
-          [routerLink]="['/holdings', holding.id]"
-          [selected]="holding.id === selectedHoldingId()"
-        >
-          <div class="flex min-w-0 flex-1 flex-col">
-            <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
-            @if (holding.stale) {
-              <span class="text-label font-medium text-(--stale)">{{
-                'holdings.staleShort' | transloco: { date: holding.priceAsOf | shortDate }
-              }}</span>
-            } @else if (holding.price === null || holding.price === undefined) {
-              <span class="text-label text-(--muted-foreground)">{{ 'holdings.manualQuote.open' | transloco }}</span>
-            } @else {
-              <span class="text-label text-(--muted-foreground) tabular-nums">
-                <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
-                &times;
-                <ui-amount currency="EUR" [value]="holding.price" />
-              </span>
-            }
-          </div>
-          <div class="flex flex-col items-end whitespace-nowrap tabular-nums">
-            <span class="text-body font-medium">
-              <ui-amount currency="EUR" [value]="holding.marketValueEur" />
-            </span>
-            @if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
-              <ui-delta
-                class="text-label"
-                [unknownLabel]="'holdings.unknown' | transloco"
-                [value]="holding.unrealizedGainRatio"
-              >
-                {{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
-              </ui-delta>
-            }
-          </div>
-        </a>
-      }
-
+<tr group uiTr>
+  <td
+    size="lg"
+    ui-group-cell
+    [attr.colspan]="compact() ? 3 : 7"
+    [meta]="
+      ('enums.accountType.' + group().accountType | transloco) +
+      ' · ' +
+      (group().institution ? group().institution + ' · ' : '') +
+      (groupCount(group()).key | transloco: { count: groupCount(group()).count })
+    "
+    [name]="group().accountName"
+  >
+    <ui-amount currency="EUR" [value]="group().valueEur" />
+  </td>
+</tr>
+@for (holding of group().holdings; track holding.id) {
+  <tr
+    app-holding-account-group-row
+    interactive
+    uiTr
+    [compact]="compact()"
+    [holding]="holding"
+    [open]="holding.id === selectedHoldingId()"
+    [selected]="holding.id === selectedHoldingId()"
+  ></tr>
+}
+@if (group().showCash) {
+  <tr data-testid="cash-row" interactive uiTr>
+    <td primary uiTd>
       <button
-        class="rounded-control flex min-h-11 items-center justify-between gap-2 px-2 py-1.5 text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-        data-testid="edit-cash-mobile"
+        data-testid="edit-cash"
         type="button"
+        uiRowLink
         [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
         (click)="editCash.emit(group().accountId)"
       >
-        <span class="text-body">{{ 'holdings.cash.line' | transloco }}</span>
-        <ui-amount
-          class="text-body font-medium tabular-nums"
-          currency="EUR"
-          [class.text-(--muted-foreground)]="group().cashEur === 0"
-          [value]="group().cashEur"
-        />
+        {{ 'holdings.cash.line' | transloco }}
       </button>
-    </div>
-
-    <div class="hidden overflow-x-auto border-t border-(--hairline) lg:block">
-      <table uiTable>
-        <thead>
-          <tr uiTr>
-            <th uiTh>{{ 'holdings.columns.line' | transloco }}</th>
-            @if (!compact()) {
-              <th numeric uiTh>{{ 'holdings.columns.quantity' | transloco }}</th>
-              <th numeric uiTh>{{ 'holdings.columns.averageCost' | transloco }}</th>
-              <th numeric uiTh>{{ 'holdings.columns.price' | transloco }}</th>
-            }
-            <th numeric uiTh>{{ 'holdings.columns.value' | transloco }}</th>
-            @if (!compact()) {
-              <th numeric uiTh>{{ 'holdings.columns.unrealized' | transloco }}</th>
-            }
-            <th numeric uiTh>{{ 'holdings.columns.day' | transloco }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (holding of group().holdings; track holding.id) {
-            <app-holding-account-group-row
-              [compact]="compact()"
-              [holding]="holding"
-              [selected]="holding.id === selectedHoldingId()"
-            />
-          }
-          <tr data-testid="cash-row" uiTr>
-            <td uiTd>{{ 'holdings.cash.line' | transloco }}</td>
-            @if (!compact()) {
-              <td numeric uiTd></td>
-              <td numeric uiTd></td>
-              <td numeric uiTd></td>
-            }
-            <td numeric uiTd>
-              <button
-                class="focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-                data-testid="edit-cash"
-                type="button"
-                [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
-                (click)="editCash.emit(group().accountId)"
-              >
-                <ui-amount
-                  currency="EUR"
-                  [class.text-(--muted-foreground)]="group().cashEur === 0"
-                  [value]="group().cashEur"
-                />
-              </button>
-            </td>
-            @if (!compact()) {
-              <td numeric uiTd></td>
-            }
-            <td numeric uiTd></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </details>
-</div>
+      <span uiCellSub>{{ 'holdings.cash.entered' | transloco }}</span>
+    </td>
+    @if (!compact()) {
+      <td numeric secondary uiTd></td>
+      <td numeric secondary uiTd></td>
+      <td numeric secondary uiTd></td>
+    }
+    <td class="font-medium" numeric uiTd>
+      <ui-amount currency="EUR" [value]="group().cashEur" />
+    </td>
+    @if (!compact()) {
+      <td numeric uiTd></td>
+    }
+    <td numeric uiTd></td>
+  </tr>
+}

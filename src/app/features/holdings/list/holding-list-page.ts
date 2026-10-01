@@ -1,17 +1,14 @@
-import { Component, ElementRef, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
-import { UiAmount, UiButton, UiField, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { UiButton, UiField, UiFieldLeading, UiInput, UiSkeleton, UiTable, UiTh } from '@joanroucoux/cairn-ui';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { LucidePlus, LucideX } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
-import { LanguageStore } from '@core/i18n/language-store';
-
-import { pluralKey } from '@shared/format/plural-key';
-
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
 import { HoldingListStore } from './holding-list-store';
@@ -19,6 +16,7 @@ import { HoldingListStore } from './holding-list-store';
 @Component({
   selector: 'app-holding-list-page',
   imports: [
+    HoldingAccountCard,
     HoldingAccountGroup,
     HoldingAddDialog,
     HoldingCashDialog,
@@ -27,11 +25,13 @@ import { HoldingListStore } from './holding-list-store';
     RouterLink,
     RouterOutlet,
     TranslocoPipe,
-    UiAmount,
     UiButton,
     UiField,
+    UiFieldLeading,
     UiInput,
     UiSkeleton,
+    UiTable,
+    UiTh,
   ],
   templateUrl: './holding-list-page.html',
   providers: [HoldingListStore],
@@ -41,35 +41,16 @@ export class HoldingListPage {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
-  #transloco = inject(TranslocoService);
-  #language = inject(LanguageStore);
+  #destroyRef = inject(DestroyRef);
 
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
-  protected readonly totals = this.#store.totals;
-
-  protected readonly summaryText = computed(() => {
-    this.#language.activeLang();
-    const totals = this.totals();
-    const lines = this.#transloco.translate(pluralKey('holdings.summaryLines', totals.lines), { count: totals.lines });
-    const accounts = this.#transloco.translate(pluralKey('holdings.summaryAccounts', totals.accounts), {
-      count: totals.accounts,
-    });
-
-    return this.#transloco.translate('holdings.summary', { lines, accounts });
-  });
-
-  protected readonly unvaluedCountText = computed(() => {
-    this.#language.activeLang();
-    const count = this.totals().unvaluedCount;
-
-    return this.#transloco.translate(pluralKey('holdings.unvaluedCount', count), { count });
-  });
   protected readonly search = this.#store.search;
   protected readonly staleFilter = this.#store.staleFilter;
   protected readonly accountFilter = this.#store.accountFilter;
   protected readonly assetClassFilter = this.#store.assetClassFilter;
 
+  protected readonly desktop = signal(true);
   protected readonly addOpen = signal(false);
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
@@ -87,16 +68,29 @@ export class HoldingListPage {
   protected readonly compact = computed(() => this.selectedHoldingId() !== undefined);
 
   #wasCompact = false;
+  #lastSelected: string | undefined;
 
   constructor() {
+    const query = globalThis.matchMedia?.('(min-width: 1024px)');
+
+    if (query) {
+      const update = (): void => this.desktop.set(query.matches);
+
+      update();
+      query.addEventListener('change', update);
+      this.#destroyRef.onDestroy(() => query.removeEventListener('change', update));
+    }
+
     effect(() => {
       const compact = this.compact();
+      const selected = this.selectedHoldingId();
 
       if (this.#wasCompact && !compact) {
-        this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="holdings-summary"]')?.focus();
+        this.#host.nativeElement.querySelector<HTMLElement>(`[data-holding-id="${this.#lastSelected}"]`)?.focus();
       }
 
       this.#wasCompact = compact;
+      this.#lastSelected = selected ?? this.#lastSelected;
     });
   }
 

@@ -1,0 +1,73 @@
+<header class="flex items-end justify-between gap-3 px-1 pt-3">
+  <div class="flex min-w-0 flex-col">
+    <h2 class="text-title m-0 font-semibold">{{ group().accountName }}</h2>
+    <span class="text-label text-(--muted-foreground)">
+      {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
+      @if (group().institution) {
+        {{ group().institution }} &middot;
+      }
+      {{ groupCount(group()).key | transloco: { count: groupCount(group()).count } }}
+    </span>
+  </div>
+  <span class="text-title font-semibold whitespace-nowrap tabular-nums">
+    <ui-amount currency="EUR" [value]="group().valueEur" />
+  </span>
+</header>
+<ui-card padding="none">
+  <div class="flex flex-col px-2 py-1.5">
+    @for (holding of group().holdings; track holding.id) {
+      <a
+        class="rounded-control flex min-h-17 w-full items-center gap-2 px-2 py-1.5 text-left select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
+        data-testid="holding-row-mobile"
+        queryParamsHandling="preserve"
+        [routerLink]="['/holdings', holding.id]"
+      >
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
+          <span class="text-label truncate text-(--subtle-foreground) tabular-nums">
+            @if (isBooklet(holding)) {
+              {{ 'holdings.booklet' | transloco }}
+            } @else {
+              <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
+              &times;
+              <ui-amount currency="EUR" [value]="holding.price" />
+            }
+          </span>
+        </div>
+        <div class="flex flex-col items-end whitespace-nowrap tabular-nums">
+          <span class="text-body font-medium">
+            <ui-amount currency="EUR" [value]="holding.marketValueEur" />
+          </span>
+          @if (!isBooklet(holding)) {
+            @if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
+              <span class="text-label" [class]="deltaTone(holding.unrealizedGainRatio)">{{
+                holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 }
+              }}</span>
+            } @else {
+              <span class="text-label text-(--muted-foreground)">{{
+                'holdings.averageCostUnknownShort' | transloco
+              }}</span>
+            }
+          }
+        </div>
+      </a>
+    }
+    @if (group().showCash) {
+      <button
+        class="rounded-control flex min-h-17 w-full items-center gap-2 px-2 py-1.5 text-left select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
+        data-testid="edit-cash-mobile"
+        type="button"
+        [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        (click)="editCash.emit(group().accountId)"
+      >
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="text-body truncate font-medium">{{ 'holdings.cash.line' | transloco }}</span>
+          <span class="text-label truncate text-(--subtle-foreground)">{{ 'holdings.cash.entered' | transloco }}</span>
+        </div>
+        <span class="text-body font-medium whitespace-nowrap tabular-nums">
+          <ui-amount currency="EUR" [value]="group().cashEur" />
+        </span>
+      </button>
+    }
+  </div>
+</ui-card>

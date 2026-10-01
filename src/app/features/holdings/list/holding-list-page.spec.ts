@@ -78,40 +78,18 @@ describe('HoldingListPage', () => {
   it('should group the holdings by account', async () => {
     await renderPage();
 
-    expect(await screen.findByText('Esalia')).toBeInTheDocument();
-    expect(screen.getByText('Saxo Investor')).toBeInTheDocument();
-  });
-
-  it('should not signal unvalued lines in the header total when every line has a value', async () => {
-    await renderPage();
-    await screen.findByText('Esalia');
-
-    expect(screen.queryByText(/unvaluedCount/)).not.toBeInTheDocument();
-  });
-
-  it('should signal unvalued lines folded out of the header total', async () => {
-    await renderPage('/', [...holdings, { ...holdings[0], id: 'h9', marketValueEur: null }]);
-
-    expect(await screen.findByText('holdings.unvaluedCount_one')).toBeInTheDocument();
-  });
-
-  it('should expand the largest account and leave the others collapsed', async () => {
-    const { container } = await renderPage();
-
-    await screen.findByText('Esalia');
-    const groups = container.querySelectorAll('details');
-    expect(groups[0]).toHaveAttribute('open');
-    expect(groups[1]).not.toHaveAttribute('open');
+    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(screen.getAllByText('Saxo Investor')).not.toHaveLength(0);
   });
 
   it('should filter as the user types', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.type(screen.getByTestId('holdings-search'), 'bnp paribas');
 
-    expect(await screen.findByText('Saxo Investor')).toBeInTheDocument();
+    expect(await screen.findAllByText('Saxo Investor')).not.toHaveLength(0);
     expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
   });
 
@@ -127,7 +105,7 @@ describe('HoldingListPage', () => {
   it('tells the user what was searched when nothing matches', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.type(screen.getByTestId('holdings-search'), 'zzz');
 
@@ -137,7 +115,7 @@ describe('HoldingListPage', () => {
   it('opens the add dialog', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.click(screen.getByTestId('add-holding-desktop'));
 
@@ -150,7 +128,7 @@ describe('HoldingListPage', () => {
   it('closes the add dialog when it is dismissed', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
@@ -163,7 +141,7 @@ describe('HoldingListPage', () => {
   it('reloads the list once a line is added', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
@@ -182,13 +160,13 @@ describe('HoldingListPage', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
     await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
 
-    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
   });
 
   it('reloads the list after the cash balance is set', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.type(screen.getByTestId('holding-cash-amount'), '500');
@@ -201,13 +179,13 @@ describe('HoldingListPage', () => {
     );
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush(holdings));
 
-    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
   });
 
   it('closes the cash dialog when it is dismissed', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.click(await screen.findByTestId('holding-cash-cancel'));
@@ -237,7 +215,7 @@ describe('HoldingListPage', () => {
 
   it('should link each line to its detail screen', async () => {
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     const links = await screen.findAllByRole('link', { name: /FCPE Actions/ });
 
@@ -248,7 +226,7 @@ describe('HoldingListPage', () => {
 
   it('shows the icon add button on the iPhone and the filled one on desktop only', async () => {
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     expect(screen.getByTestId('add-holding').parentElement).toHaveClass('lg:hidden');
     expect(screen.getByTestId('add-holding-desktop').parentElement).toHaveClass('hidden', 'lg:block');
@@ -257,7 +235,7 @@ describe('HoldingListPage', () => {
   it('opens the add dialog from the mobile icon button too', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     await user.click(screen.getByTestId('add-holding'));
 
@@ -296,7 +274,7 @@ describe('HoldingListPage', () => {
   it('shows a removable chip for the stale filter and removes it', async () => {
     const user = userEvent.setup();
     await renderPage('/?filter=stale');
-    await screen.findByText('Esalia');
+    await screen.findAllByText('Esalia');
 
     const chip = screen.getByTestId('filter-chip-stale');
     expect(chip).toHaveTextContent('holdings.filters.stale');
@@ -304,23 +282,23 @@ describe('HoldingListPage', () => {
 
     await user.click(chip);
 
-    expect(await screen.findByText('Saxo Investor')).toBeInTheDocument();
+    expect(await screen.findAllByText('Saxo Investor')).not.toHaveLength(0);
   });
 
   it('shows a removable chip for the account filter and removes it', async () => {
     const user = userEvent.setup();
     await renderPage('/?account=Saxo Investor');
-    await screen.findByText('Saxo Investor');
+    await screen.findAllByText('Saxo Investor');
 
     const chip = screen.getByTestId('filter-chip-account');
     expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
 
     await user.click(chip);
 
-    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
   });
 
-  it('returns focus to the summary once the detail closes', async () => {
+  it('returns focus to the row of the closed line once the detail closes', async () => {
     const { fixture } = await render(TestHost, {
       imports: [getTranslocoTestingModule()],
       routes: [{ path: '', component: HoldingListPage, children: [{ path: ':holdingId', component: StubDetail }] }],
@@ -342,7 +320,58 @@ describe('HoldingListPage', () => {
     fixture.detectChanges();
     TestBed.tick();
 
-    expect(await screen.findByText(/holdings\.summary/)).toHaveFocus();
+    expect(fixture.nativeElement.querySelector('[data-holding-id="h1"]')).toHaveFocus();
+  });
+
+  it('opens the cash dialog from the mobile cash line', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await screen.findAllByText('Esalia');
+
+    await user.click(screen.getAllByTestId('edit-cash-mobile')[0]!);
+
+    expect(await screen.findByTestId('holding-cash-cancel')).toBeInTheDocument();
+  });
+
+  it('switches to the short placeholder below the desktop breakpoint', async () => {
+    let listener: () => void = () => undefined;
+    const query = {
+      matches: false,
+      addEventListener: (_: string, callback: () => void) => (listener = callback),
+      removeEventListener: vi.fn(),
+    };
+    vi.stubGlobal('matchMedia', () => query);
+    await renderPage();
+    await screen.findAllByText('Esalia');
+
+    expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholderShort');
+
+    query.matches = true;
+    listener();
+
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholder'),
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('has no summary line', async () => {
+    await renderPage();
+    await screen.findAllByText('Esalia');
+
+    expect(screen.queryByTestId('holdings-summary')).not.toBeInTheDocument();
+  });
+
+  it('lists every account in the order of the accounts list', async () => {
+    await renderPage();
+    await screen.findAllByText('Esalia');
+
+    expect(screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([
+      'Saxo Investor',
+      'Esalia',
+      'Saxo Investor',
+      'Esalia',
+    ]);
   });
 
   it('shows a removable chip for the asset class filter and removes it', async () => {
@@ -351,13 +380,13 @@ describe('HoldingListPage', () => {
       { ...holdings[0], assetClass: 'ETF' },
       { ...holdings[1], assetClass: 'FUND' },
     ]);
-    await screen.findByText('Saxo Investor');
+    await screen.findAllByText('Saxo Investor');
 
     const chip = screen.getByTestId('filter-chip-asset-class');
     expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
 
     await user.click(chip);
 
-    expect(await screen.findByText('Esalia')).toBeInTheDocument();
+    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
   });
 });
