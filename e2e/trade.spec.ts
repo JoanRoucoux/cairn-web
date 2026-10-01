@@ -99,6 +99,7 @@ test.describe('buy and sell', () => {
   test('fills the exact held quantity with Sell all and closes the line, going back to the list', async ({ page }) => {
     await page.getByTestId('holding-sell').click();
 
+    await expect(page.getByTestId('holding-sell-dialog').locator('dialog')).toBeVisible();
     await page.getByTestId('holding-sell-all').click();
     await expect(page.getByTestId('holding-sell-quantity')).toHaveValue('203');
     await expect(page.getByTestId('holding-sell-submit')).toHaveText('Sell all and remove the holding');
