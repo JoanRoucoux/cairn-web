@@ -5,9 +5,7 @@ import {
   type SegmentedOption,
   UI_AMOUNT_MASKED,
   UiAmount,
-  UiBadge,
   UiButton,
-  UiCard,
   UiDelta,
   UiLineChart,
   UiMenu,
@@ -24,30 +22,30 @@ import { LanguageStore } from '@core/i18n/language-store';
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { RatioPipe } from '@shared/format/ratio-pipe';
-import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+import { HoldingDetailBar } from './bar/holding-detail-bar';
 import { HoldingDetailDescription } from './description/holding-detail-description';
 import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
 import { HoldingDetailFacts } from './facts/holding-detail-facts';
+import { HoldingDetailFigures } from './figures/holding-detail-figures';
 import { HoldingDetailStore } from './holding-detail-store';
 
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
+    HoldingDetailBar,
     HoldingDetailDescription,
     HoldingDetailDialogs,
     HoldingDetailFacts,
+    HoldingDetailFigures,
     LucideChevronLeft,
     LucideEllipsis,
     LucideX,
     RatioPipe,
     RouterLink,
-    ShortDatePipe,
     TranslocoPipe,
     UiAmount,
-    UiBadge,
     UiButton,
-    UiCard,
     UiDelta,
     UiLineChart,
     UiMenu,
@@ -74,6 +72,10 @@ export class HoldingDetailPage {
   protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
+  protected readonly rangeChange = this.#store.rangeChange;
+  protected readonly instrumentDetail = computed(() =>
+    this.instrument.hasValue() ? this.instrument.value() : undefined,
+  );
 
   protected readonly isCash = computed(() => this.holding()?.assetClass === 'CASH');
 

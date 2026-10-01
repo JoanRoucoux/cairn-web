@@ -52,9 +52,25 @@ export class HoldingDetailStore {
     defaultValue: [],
   });
 
-  readonly points = computed<ChartPoint[]>(() =>
-    this.quotes.value().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price })),
-  );
+  readonly points = computed<ChartPoint[]>(() => {
+    const quantity = this.holding()?.quantity ?? 0;
+
+    return this.quotes.value().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
+  });
+
+  readonly rangeChange = computed(() => {
+    const points = this.points();
+    const first = points[0];
+    const last = points.at(-1);
+
+    if (!first || !last || points.length < 2) {
+      return undefined;
+    }
+
+    const amount = last.v - first.v;
+
+    return { amount, ratio: first.v === 0 ? null : amount / first.v };
+  });
 
   reload(): void {
     this.holdings.reload();

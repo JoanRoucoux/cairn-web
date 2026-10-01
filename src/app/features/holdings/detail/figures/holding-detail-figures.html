@@ -1,0 +1,30 @@
+<div class="flex flex-col gap-1">
+  <span class="text-label font-medium text-(--muted-foreground) lg:hidden">{{
+    'holdings.detail.value' | transloco
+  }}</span>
+  <ui-amount class="text-display font-semibold" currency="EUR" [value]="holding().marketValueEur" />
+  <div class="text-label mt-1 flex flex-col gap-0.5 tabular-nums lg:flex-row lg:flex-wrap lg:gap-x-4">
+    <span class="flex gap-1.5">
+      <span class="text-(--muted-foreground)">{{ 'holdings.detail.unrealized' | transloco }}</span>
+      @if (holding().unrealizedGainEur === null || holding().unrealizedGainEur === undefined) {
+        <span class="text-(--muted-foreground)">{{ 'holdings.averageCostUnknownShort' | transloco }}</span>
+      } @else {
+        <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().unrealizedGainEur">
+          <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding().unrealizedGainEur" />
+          @if (holding().unrealizedGainRatio !== null && holding().unrealizedGainRatio !== undefined) {
+            &middot; {{ holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
+          }
+        </ui-delta>
+      }
+    </span>
+    <span class="flex gap-1.5">
+      <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().dayChangeEur">
+        <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding().dayChangeEur" />
+        @if (holding().dayChangeRatio !== null && holding().dayChangeRatio !== undefined) {
+          &middot; {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+        }
+      </ui-delta>
+      <span class="text-(--muted-foreground)">{{ 'holdings.detail.today' | transloco }}</span>
+    </span>
+  </div>
+</div>

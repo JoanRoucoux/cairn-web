@@ -2,7 +2,6 @@
   "title": "Lignes",
   "averageCost": "PRU",
   "unknown": "Non disponible",
-  "unknownAverageCost": "Inconnu, fixé au premier achat",
   "staleQuote": "Cours obsolète",
   "staleShort": "Cours du {{date}}",
   "noQuote": "Aucun cours",
@@ -27,9 +26,7 @@
   "retry": "Réessayer",
   "notFound": "Cette ligne n'existe plus.",
   "chartLabel": "Cours sur la plage sélectionnée",
-  "externalLink": "Fiche complète sur {{source}}",
-  "priceSource": "Source du cours",
-  "lastQuote": "Dernière cotation",
+  "externalLink": "Fiche sur {{domain}}",
   "columns": {
     "line": "Ligne",
     "quantity": "Quantité",
@@ -81,9 +78,21 @@
     "menu": "Autres actions",
     "unrealized": "Plus-value latente",
     "today": "aujourd'hui",
-    "isin": "ISIN ou symbole",
-    "class": "Classe",
-    "description": "Description"
+    "value": "Valeur",
+    "isin": "ISIN",
+    "symbol": "Symbole",
+    "unknownCost": "Inconnu",
+    "firstBuyFixes": "Fixé au premier achat",
+    "quoteAt": "Cours du {{date}} à {{time}}",
+    "quoteOn": "Cours du {{date}}",
+    "rangeChange": {
+      "1d": "aujourd'hui",
+      "7d": "sur 7 jours",
+      "1m": "sur 1 mois",
+      "1y": "sur 1 an",
+      "5y": "sur 5 ans",
+      "max": "depuis l'achat"
+    }
   },
   "unvaluedCount_one": "{{count}} non valorisée",
   "unvaluedCount_other": "{{count}} non valorisées",

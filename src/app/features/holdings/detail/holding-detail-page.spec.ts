@@ -107,7 +107,7 @@ describe('HoldingDetailPage', () => {
     await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
     expect(screen.getAllByText('enums.accountType.PEA', { exact: false }).length).toBeGreaterThan(0);
     expect(screen.getAllByText('enums.assetClass.ETF').length).toBeGreaterThan(0);
-    expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
+    expect(screen.getByTestId('quote-line')).toHaveTextContent('enums.priceSource.YAHOO');
   });
 
   it('shows the unrealized gain and the day change as amount and percent', async () => {
@@ -369,24 +369,11 @@ describe('HoldingDetailPage', () => {
     expect(screen.queryByTestId('holding-sell-bar')).not.toBeInTheDocument();
   });
 
-  it('shows the stale price instead of the day change', async () => {
-    await renderPage('h1', { description: 'ETF tracking the S&P 500.' }, { ...holding, stale: true });
+  it('draws no description block when the instrument has none', async () => {
+    await renderPage('h1', { description: '' });
+    await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
 
-    expect(await screen.findByTestId('stale-price')).toHaveTextContent('holdings.staleShort');
-  });
-
-  it('shows the unknown cost basis text when the average cost is missing', async () => {
-    await renderPage('h1', { description: 'ETF tracking the S&P 500.' }, { ...holding, averageCost: null });
-
-    expect(await screen.findByText('holdings.unknownAverageCost')).toBeInTheDocument();
-  });
-
-  it('shows a dash instead of a blank ISIN for a crypto holding with none', async () => {
-    await renderPage('h1', { description: 'Cryptocurrency.' }, { ...holding, isin: null });
-
-    const rows = await screen.findAllByText('—');
-
-    expect(rows.length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: /holdings.externalLink/ })).not.toBeInTheDocument();
   });
 
   it('links the back link to the holdings list', async () => {

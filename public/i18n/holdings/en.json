@@ -2,7 +2,6 @@
   "title": "Holdings",
   "averageCost": "Average cost",
   "unknown": "Not available",
-  "unknownAverageCost": "Unknown, set on the first purchase",
   "staleQuote": "Stale quote",
   "staleShort": "Price as of {{date}}",
   "noQuote": "No quote",
@@ -27,9 +26,7 @@
   "retry": "Retry",
   "notFound": "This holding no longer exists.",
   "chartLabel": "Price over the selected range",
-  "externalLink": "Full factsheet on {{source}}",
-  "priceSource": "Price source",
-  "lastQuote": "Last quote",
+  "externalLink": "Page on {{domain}}",
   "columns": {
     "line": "Holding",
     "quantity": "Quantity",
@@ -81,9 +78,21 @@
     "menu": "More actions",
     "unrealized": "Unrealized gain",
     "today": "today",
-    "isin": "ISIN or symbol",
-    "class": "Class",
-    "description": "Description"
+    "value": "Value",
+    "isin": "ISIN",
+    "symbol": "Symbol",
+    "unknownCost": "Unknown",
+    "firstBuyFixes": "Set at the first purchase",
+    "quoteAt": "Price of {{date}} at {{time}}",
+    "quoteOn": "Price of {{date}}",
+    "rangeChange": {
+      "1d": "today",
+      "7d": "over 7 days",
+      "1m": "over 1 month",
+      "1y": "over 1 year",
+      "5y": "over 5 years",
+      "max": "since purchase"
+    }
   },
   "unvaluedCount_one": "{{count}} unvalued",
   "unvaluedCount_other": "{{count}} unvalued",

@@ -1,0 +1,14 @@
+<button
+  class="h-12!"
+  data-testid="holding-sell-bar"
+  size="xl"
+  type="button"
+  ui-button
+  variant="outline"
+  (click)="sell.emit()"
+>
+  {{ 'holdings.sell.open' | transloco }}
+</button>
+<button class="h-12!" data-testid="holding-buy-bar" size="xl" type="button" ui-button (click)="buy.emit()">
+  {{ 'holdings.buy.open' | transloco }}
+</button>

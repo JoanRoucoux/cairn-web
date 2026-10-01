@@ -85,7 +85,7 @@ describe('HoldingListPage states', () => {
     const metas = await screen.findAllByText(/enums.accountType.PEA/);
 
     for (const meta of metas) {
-      expect(meta.textContent).not.toMatch(/·s*·/);
+      expect(meta.textContent).not.toMatch(/·\s*·/);
       expect(meta.textContent?.trim()).not.toMatch(/·$/);
     }
   });
