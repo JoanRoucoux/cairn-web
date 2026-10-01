@@ -132,11 +132,18 @@ describe('HoldingBuyDialog', () => {
     expect(bought).not.toHaveBeenCalled();
   });
 
+  it('shows the current price in the hint', async () => {
+    await renderDialog();
+
+    expect(screen.getByTestId('holding-buy-hint')).toHaveTextContent('holdings.buy.currentPrice');
+  });
+
   it('takes the unit price as the cost basis when none was known yet', async () => {
     const user = userEvent.setup();
     await renderDialog({ ...holding, averageCost: undefined } as unknown as HoldingResponse);
 
     expect(screen.getByTestId('holding-buy-hint')).toHaveTextContent('holdings.buy.noCostHint');
+    expect(screen.getByText('holdings.buy.rows.averageCostUnknown')).toBeInTheDocument();
 
     await user.type(screen.getByTestId('holding-buy-quantity'), '20');
     await user.type(screen.getByTestId('holding-buy-price'), '51.2');

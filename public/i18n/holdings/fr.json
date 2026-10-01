@@ -100,17 +100,18 @@
     "price": "Prix unitaire",
     "unit": "parts",
     "currencyUnit": "€",
-    "currentPriceHint": "Cours actuel {{price}}",
     "noCostHint": "Sans PRU aujourd'hui : ce premier achat le fixe.",
     "rows": {
       "quantity": "Quantité",
       "averageCost": "PRU",
-      "amount": "Montant de l'achat"
+      "amount": "Montant de l'achat",
+      "averageCostUnknown": "Inconnu"
     },
     "submitDefault": "Acheter",
     "submit_one": "Acheter {{count}} part",
     "submit_other": "Acheter {{count}} parts",
-    "error": "Cet achat a été refusé."
+    "error": "Cet achat a été refusé.",
+    "currentPrice": "Cours actuel"
   },
   "sell": {
     "open": "Vendre",
@@ -119,25 +120,26 @@
     "quantity": "Quantité vendue",
     "unit": "parts",
     "sellAll": "Tout vendre",
-    "held_one": "Vous détenez {{count}} part, cours {{price}}",
-    "held_other": "Vous détenez {{count}} parts, cours {{price}}",
     "over_one": "Vous détenez {{count}} part.",
     "over_other": "Vous détenez {{count}} parts.",
     "closesWarning": "Vous vendez toute la quantité : la ligne sera supprimée de {{account}}. Cette action est définitive.",
     "rows": {
       "quantity": "Quantité",
-      "averageCostNote": "(inchangé)",
       "averageCostUnknown": "Inconnu",
       "realizedGain": "Plus-value réalisée estimée",
       "realizedGainUnknown": "PRU inconnu",
-      "amount": "Montant estimé au cours actuel"
+      "amount": "Montant estimé au cours actuel",
+      "averageCostUnchanged": ", inchangé"
     },
     "closes": "Ligne supprimée",
     "submitDefault": "Vendre",
     "submit_one": "Vendre {{count}} part",
     "submit_other": "Vendre {{count}} parts",
     "submitCloses": "Tout vendre et supprimer la ligne",
-    "error": "Cette vente a été refusée."
+    "error": "Cette vente a été refusée.",
+    "held_one": "Vous détenez {{count}} part",
+    "held_other": "Vous détenez {{count}} parts",
+    "price": "cours"
   },
   "add": {
     "open": "Ajouter une ligne",

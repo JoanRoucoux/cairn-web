@@ -100,17 +100,18 @@
     "price": "Unit price",
     "unit": "units",
     "currencyUnit": "EUR",
-    "currentPriceHint": "Current price {{price}}",
     "noCostHint": "No cost basis yet: this first purchase sets it.",
     "rows": {
       "quantity": "Quantity",
       "averageCost": "Average cost",
-      "amount": "Purchase amount"
+      "amount": "Purchase amount",
+      "averageCostUnknown": "Unknown"
     },
     "submitDefault": "Buy",
     "submit_one": "Buy {{count}} unit",
     "submit_other": "Buy {{count}} units",
-    "error": "That purchase was refused."
+    "error": "That purchase was refused.",
+    "currentPrice": "Current price"
   },
   "sell": {
     "open": "Sell",
@@ -119,25 +120,26 @@
     "quantity": "Quantity sold",
     "unit": "units",
     "sellAll": "Sell all",
-    "held_one": "You hold {{count}} unit, price {{price}}",
-    "held_other": "You hold {{count}} units, price {{price}}",
     "over_one": "You hold {{count}} unit.",
     "over_other": "You hold {{count}} units.",
     "closesWarning": "You are selling the whole quantity: the holding will be removed from {{account}}. This cannot be undone.",
     "rows": {
       "quantity": "Quantity",
-      "averageCostNote": "(unchanged)",
       "averageCostUnknown": "Unknown",
       "realizedGain": "Estimated realized gain",
       "realizedGainUnknown": "Unknown cost basis",
-      "amount": "Estimated amount at the current price"
+      "amount": "Estimated amount at the current price",
+      "averageCostUnchanged": ", unchanged"
     },
     "closes": "Holding removed",
     "submitDefault": "Sell",
     "submit_one": "Sell {{count}} unit",
     "submit_other": "Sell {{count}} units",
     "submitCloses": "Sell all and remove the holding",
-    "error": "That sale was refused."
+    "error": "That sale was refused.",
+    "held_one": "You hold {{count}} unit",
+    "held_other": "You hold {{count}} units",
+    "price": "price"
   },
   "add": {
     "open": "Add a holding",

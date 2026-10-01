@@ -10,11 +10,12 @@ import {
   signal,
 } from '@angular/core';
 
-import { UiAlert, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiAmount, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { focusInitial } from '@shared/dialog/focus-initial';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 import { pluralKey } from '@shared/format/plural-key';
@@ -24,7 +25,7 @@ import { HoldingSellDialogStore } from './holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-sell-dialog',
-  imports: [TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
+  imports: [TranslocoPipe, UiAlert, UiAmount, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-sell-dialog.html',
   providers: [HoldingSellDialogStore],
 })
@@ -41,9 +42,6 @@ export class HoldingSellDialog {
   protected readonly quantityText = this.#store.quantityText;
   protected readonly submitting = this.#store.submitting;
   protected readonly error = this.#store.error;
-
-  protected readonly fmt = (value: number | null | undefined): string =>
-    formatAmount(value, { locale: this.#locale, currency: 'EUR' });
 
   protected readonly fmtQty = (value: number): string =>
     formatAmount(value, { locale: this.#locale, fractionDigits: decimalPlaces(this.holding().quantity) });
@@ -67,14 +65,17 @@ export class HoldingSellDialog {
 
   protected readonly closes = computed(() => this.preview()?.closesHolding === true);
 
-  protected readonly hint = computed(() => {
-    const holding = this.holding();
-    const key = this.over()
-      ? pluralKey('holdings.sell.over', holding.quantity)
-      : pluralKey('holdings.sell.held', holding.quantity);
+  protected readonly held = computed(() =>
+    this.#transloco.translate(pluralKey('holdings.sell.held', this.holding().quantity), {
+      count: this.holding().quantity,
+    }),
+  );
 
-    return this.#transloco.translate(key, { count: holding.quantity, price: this.fmt(holding.price) });
-  });
+  protected readonly overHint = computed(() =>
+    this.#transloco.translate(pluralKey('holdings.sell.over', this.holding().quantity), {
+      count: this.holding().quantity,
+    }),
+  );
 
   protected readonly cta = computed(() => {
     const quantity = this.#store.quantity();
@@ -93,7 +94,7 @@ export class HoldingSellDialog {
   constructor() {
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLInputElement>('[data-testid="holding-sell-quantity"]')?.focus();
+        focusInitial(this.#host.nativeElement, 'holding-sell-quantity');
       }
     });
   }

@@ -81,7 +81,27 @@ describe('HoldingSellDialog', () => {
 
     await user.type(screen.getByTestId('holding-sell-quantity'), '100');
 
-    expect(screen.getByText('€451.68')).toBeInTheDocument();
+    expect(screen.getByText('+€451.68')).toBeInTheDocument();
+  });
+
+  it('writes the average cost and its note in one run', async () => {
+    await renderDialog();
+
+    expect(screen.getByText('holdings.sell.rows.averageCostUnchanged', { exact: false })).toHaveTextContent(
+      '€24.12holdings.sell.rows.averageCostUnchanged',
+    );
+  });
+
+  it('shows the held quantity and the price in the hint', async () => {
+    await renderDialog();
+
+    expect(screen.getByTestId('holding-sell-hint')).toHaveTextContent(/holdings.sell.held_other · holdings.sell.price/);
+  });
+
+  it('reads Unknown for an unknown cost basis', async () => {
+    await renderDialog({ ...holding, averageCost: undefined } as unknown as HoldingResponse);
+
+    expect(screen.getByText('holdings.sell.rows.averageCostUnknown')).toBeInTheDocument();
   });
 
   it('turns the button destructive, enabled, and warns when selling everything', async () => {

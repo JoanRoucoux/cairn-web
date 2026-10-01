@@ -68,6 +68,7 @@ test.describe('buy and sell', () => {
   test('shows a refusal instead of reaching the server when selling more than held', async ({ page }) => {
     await page.getByTestId('holding-sell').click();
 
+    await expect(page.getByTestId('holding-sell-dialog').locator('dialog')).toBeVisible();
     await page.getByTestId('holding-sell-quantity').fill('99999');
 
     await expect(page.getByText('You hold 203 units.')).toBeVisible();
