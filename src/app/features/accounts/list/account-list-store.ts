@@ -59,7 +59,7 @@ export class AccountListStore {
         id: account.id,
         name: account.name,
         type: account.type,
-        institution: account.institution,
+        institution: account.institution.trim(),
         valueEur,
         share: valueEur !== null && valueEur > 0 && totalEur > 0 ? valueEur / totalEur : null,
         lineCount,

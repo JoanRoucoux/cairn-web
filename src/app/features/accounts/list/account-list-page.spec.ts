@@ -85,6 +85,15 @@ describe('AccountListPage', () => {
     expect(screen.getByTestId('accounts-summary')).toHaveTextContent('');
   });
 
+  it('should show a blank institution as nothing on the meta line and a dash in the column', async () => {
+    await renderPage([{ ...boursorama, institution: '  ' }], []);
+
+    const row = await screen.findByTestId('account-row');
+
+    expect(row).not.toHaveTextContent('·');
+    expect(row.querySelectorAll('td')[2]).toHaveTextContent('—');
+  });
+
   it('should summarise the count and the total above the table', async () => {
     await renderPage();
 

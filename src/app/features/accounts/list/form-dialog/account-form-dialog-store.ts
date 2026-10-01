@@ -36,7 +36,7 @@ export class AccountFormDialogStore {
     await submit(this.form, async () => {
       try {
         const model = this.#model();
-        const payload = { name: model.name, type: model.type as AccountType, institution: model.institution };
+        const payload = { name: model.name, type: model.type as AccountType, institution: model.institution.trim() };
         await firstValueFrom(
           accountId
             ? this.#accountsApiClient.updateAccount(accountId, payload)

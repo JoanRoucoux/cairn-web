@@ -52,14 +52,17 @@
                 {{ account.name }}
               </a>
               <span class="text-label block truncate text-(--subtle-foreground) lg:hidden">
-                {{ 'enums.accountType.' + account.type | transloco }} &middot; {{ account.institution }}
+                {{ 'enums.accountType.' + account.type | transloco }}
+                @if (account.institution) {
+                  &middot; {{ account.institution }}
+                }
               </span>
             </td>
             <td secondary uiTd>
               <ui-badge>{{ 'enums.accountType.' + account.type | transloco }}</ui-badge>
             </td>
             <td secondary uiTd>
-              <span class="text-label text-(--muted-foreground)">{{ account.institution }}</span>
+              <span class="text-label text-(--muted-foreground)">{{ account.institution || '—' }}</span>
             </td>
             <td numeric secondary uiTd>
               <span class="text-label text-(--muted-foreground)">

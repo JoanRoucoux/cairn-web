@@ -128,6 +128,7 @@ describe('AccountFormDialog', () => {
     expect(screen.getByTestId('account-form-submit')).toHaveTextContent('accounts.form.create');
     await user.type(screen.getByTestId('account-form-name'), 'Trade Republic');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
+    await user.type(screen.getByTestId('account-form-institution'), '   ');
     await user.click(screen.getByTestId('account-form-submit'));
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts'));
