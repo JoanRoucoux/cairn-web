@@ -7,9 +7,7 @@
       <span class="block w-32 pt-1" data-testid="accounts-summary-skeleton"><ui-skeleton [height]="14" /></span>
     } @else if (state() === 'ready' || state() === 'empty') {
       {{ pluralKey('accounts.summary', accounts().length) | transloco: { count: accounts().length } }}
-      @if (totalEur() !== null) {
-        &middot; <ui-amount currency="EUR" [value]="totalEur()" />
-      }
+      &middot; <ui-amount currency="EUR" [value]="totalEur()" />
     }
   </p>
   <button data-testid="account-add" type="button" ui-button (click)="onAdd()">

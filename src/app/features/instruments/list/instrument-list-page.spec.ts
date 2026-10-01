@@ -246,4 +246,48 @@ describe('InstrumentListPage', () => {
 
     expect(await screen.findByText('instruments.errorTitle')).toBeInTheDocument();
   });
+
+  it('reloads both calls from the error block retry', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await vi.waitFor(() =>
+      httpTesting.expectOne('/api/instruments').flush(null, { status: 500, statusText: 'Server Error' }),
+    );
+    httpTesting.expectOne('/api/holdings').flush([]);
+
+    await user.click(await screen.findByRole('button', { name: 'instruments.retry' }));
+
+    await flushOne();
+    expect(await screen.findAllByTestId('instrument-row')).toHaveLength(1);
+  });
+
+  it('follows the viewport width for the search placeholder', async () => {
+    const query = Object.assign(new EventTarget(), { matches: false });
+    vi.stubGlobal('matchMedia', () => query);
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
+
+    query.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('instruments-search')).toHaveAttribute(
+        'placeholder',
+        'instruments.searchPlaceholderDesktop',
+      ),
+    );
+
+    vi.unstubAllGlobals();
+    await flushOne([]);
+  });
+
+  it('falls back to the short placeholder where the browser has no media queries', async () => {
+    vi.stubGlobal('matchMedia', undefined);
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
+
+    vi.unstubAllGlobals();
+    await flushOne([]);
+  });
 });

@@ -128,7 +128,7 @@ export class HoldingAddDialog implements OnInit {
 
   constructor() {
     effect(() => {
-      const first = this.accounts.hasValue() ? this.accounts.value()[0] : undefined;
+      const first = this.accounts.value()[0];
 
       if (first && this.accountId() === '') {
         this.accountId.set(first.id);

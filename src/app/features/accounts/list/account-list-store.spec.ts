@@ -124,6 +124,23 @@ describe('AccountListStore', () => {
     expect(store.accounts().map((view) => view.name)).toEqual(['PEA Boursorama', 'Petit', 'Vide', 'Inconnu']);
   });
 
+  it('should hold no account while a call is pending, and order several unknown values together', async () => {
+    TestBed.tick();
+
+    expect(store.accounts()).toEqual([]);
+
+    httpTesting.expectOne('/api/accounts').flush([account, { ...account, id: 'a2', name: 'Second' }]);
+    httpTesting.expectOne('/api/portfolio').flush({
+      totalEur: 10,
+      byAssetClass: [],
+      byAccount: [],
+      holdings: [holding({ marketValueEur: null }), holding({ id: 'h2', accountId: 'a2', marketValueEur: null })],
+    });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.accounts().map((view) => view.valueEur)).toEqual([null, null]);
+  });
+
   it('should expose the portfolio total once loaded and nothing before', async () => {
     TestBed.tick();
 

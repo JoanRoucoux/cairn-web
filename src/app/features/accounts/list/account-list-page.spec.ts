@@ -104,6 +104,23 @@ describe('AccountListPage', () => {
     expect(screen.getAllByTestId('account-link')[0]).toHaveAttribute('href', '/holdings?compte=a1');
   });
 
+  it('should open the edit and delete dialogs from the iPhone row menu', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    const row = (await screen.findAllByTestId('account-row-mobile'))[0]!;
+    await user.click(within(row).getByTestId('account-menu-trigger-mobile'));
+    await user.click(within(row).getByTestId('account-edit-mobile'));
+
+    expect(await screen.findByTestId('account-form-dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('account-form-cancel'));
+    await user.click(within(row).getByTestId('account-menu-trigger-mobile'));
+    await user.click(within(row).getByTestId('account-delete-mobile'));
+
+    expect(await screen.findByTestId('account-delete-dialog')).toBeInTheDocument();
+  });
+
   it('should summarise the count and the total above the table', async () => {
     await renderPage();
 

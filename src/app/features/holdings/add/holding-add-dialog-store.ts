@@ -65,7 +65,7 @@ export class HoldingAddDialogStore {
   readonly #lineCounts = computed(() => {
     const counts = new Map<string, number>();
 
-    for (const holding of this.holdings.hasValue() ? this.holdings.value() : []) {
+    for (const holding of this.holdings.value()) {
       counts.set(holding.instrumentId, (counts.get(holding.instrumentId) ?? 0) + 1);
     }
 
