@@ -83,7 +83,7 @@ describe('AppShell', () => {
     await renderShell();
     await settleSession();
 
-    expect(screen.getByRole('link', { name: 'shell.account' })).toHaveAttribute('href', '/profile');
+    expect(screen.getByRole('link', { name: 'pageTitle.profile' })).toHaveAttribute('href', '/profile');
   });
 
   it('should show the signed-in owner initials on the avatar once the session answers', async () => {
@@ -96,7 +96,7 @@ describe('AppShell', () => {
   it('should stay usable while the session is still loading', async () => {
     await renderShell();
 
-    expect(screen.getByRole('link', { name: 'shell.account' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'pageTitle.profile' })).toBeInTheDocument();
 
     await settleSession();
   });
@@ -120,7 +120,7 @@ describe('AppShell', () => {
       {
         path: '',
         component: StubPage,
-        data: { headerKey: 'shell.portfolio', headerBack: { labelKey: 'shell.account', path: '/profile' } },
+        data: { headerKey: 'shell.portfolio', headerBack: { labelKey: 'pageTitle.profile', path: '/profile' } },
       },
     ]);
     await settleSession();
