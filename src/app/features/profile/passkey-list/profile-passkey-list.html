@@ -25,7 +25,7 @@
         <ul class="flex flex-col">
           @for (passkey of passkeys(); track passkey.credentialId) {
             <li uiListRow>
-              <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
+              <span uiRowTile>
                 <svg lucideKeyRound [size]="18" [strokeWidth]="1.75" />
               </span>
               <span class="flex min-w-0 grow flex-col">

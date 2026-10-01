@@ -1,6 +1,15 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { type AsyncState, UiAsync, UiBadge, UiButton, UiCard, UiListRow, UiSkeleton } from '@joanroucoux/cairn-ui';
+import {
+  type AsyncState,
+  UiAsync,
+  UiBadge,
+  UiButton,
+  UiCard,
+  UiListRow,
+  UiRowTile,
+  UiSkeleton,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideKeyRound, LucidePlus, LucideTrash2 } from '@lucide/angular';
 
@@ -18,6 +27,7 @@ import type { PasskeyView } from '../profile-store';
     UiButton,
     UiCard,
     UiListRow,
+    UiRowTile,
     UiSkeleton,
   ],
   templateUrl: './profile-passkey-list.html',
