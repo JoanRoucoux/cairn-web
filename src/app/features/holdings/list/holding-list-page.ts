@@ -72,7 +72,7 @@ export class HoldingListPage {
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
   protected readonly presetAccountId = signal<string | null>(null);
-  protected readonly accountToEditCashFor = signal<string | null>(null);
+  protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
   );
