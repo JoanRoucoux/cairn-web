@@ -25,10 +25,19 @@ const portfolio = {
   generatedAt: '2026-08-21T20:00:00Z',
   byAssetClass: [],
   byAccount: [],
-  holdings: [
-    { id: 'h1', instrumentName: 'Amundi MSCI World', accountName: 'PEA', marketValueEur: 100, dayChangeEur: 12.5 },
-  ],
+  holdings: [{ id: 'h1' }],
 } as unknown as PortfolioResponse;
+
+const holdings = [
+  {
+    id: 'h1',
+    instrumentName: 'Amundi MSCI World',
+    accountName: 'PEA',
+    marketValueEur: 100,
+    dayChangeEur: 12.5,
+    dayChangeRatio: 0.0125,
+  },
+];
 
 const performance = {
   range: '1m',
@@ -60,6 +69,8 @@ describe('PortfolioPage', () => {
       request.flush(performance),
     respondToHistory: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
       request.flush(history),
+    respondToHoldings: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
+      request.flush(holdings),
   ): Promise<void> => {
     await render(PortfolioPage, {
       imports: [getTranslocoTestingModule()],
@@ -75,6 +86,7 @@ describe('PortfolioPage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
     respondToPortfolio(httpTesting.expectOne((request) => request.url === '/api/portfolio'));
+    respondToHoldings(httpTesting.expectOne((request) => request.url === '/api/holdings'));
     await vi.waitFor(() => respondToHistory(httpTesting.expectOne((request) => request.url === '/api/history')));
     await vi.waitFor(() =>
       respondToPerformance(httpTesting.expectOne((request) => request.url === '/api/portfolio/performance')),
@@ -114,20 +126,29 @@ describe('PortfolioPage', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('should show the total and movers blocks in error when the portfolio call fails, keeping the curve and the envelopes', async () => {
+  it('should show only the total block in error when the portfolio call fails, keeping the others', async () => {
     await renderPage((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
 
-    const alerts = await screen.findAllByRole('alert');
-    expect(alerts.map((alert) => alert.textContent)).toEqual([
-      expect.stringContaining('portfolio.total.error'),
-      expect.stringContaining('portfolio.movers.error'),
-    ]);
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('portfolio.total.error');
     expect(await screen.findByRole('img')).toBeInTheDocument();
     expect(await screen.findByText('enums.accountType.PEA')).toBeInTheDocument();
+    expect((await screen.findAllByText('Amundi MSCI World')).length).toBeGreaterThan(0);
+  });
+
+  it('should show only the movers block in error when the holdings call fails, keeping the total', async () => {
+    await renderPage(undefined, undefined, undefined, (request) =>
+      request.flush(null, { status: 500, statusText: 'Server Error' }),
+    );
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('portfolio.movers.error');
+    expect(await screen.findByTestId('total-value')).toBeInTheDocument();
   });
 
   it('should show the page-level error only when every call fails', async () => {
     await renderPage(
+      (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
       (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
       (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
       (request) => request.flush(null, { status: 500, statusText: 'Server Error' }),
@@ -140,9 +161,7 @@ describe('PortfolioPage', () => {
     const user = userEvent.setup();
     await renderPage((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
 
-    await screen.findAllByRole('alert');
-    const [retry] = await screen.findAllByRole('button', { name: 'portfolio.error.retry' });
-    await user.click(retry as HTMLElement);
+    await user.click(await screen.findByRole('button', { name: 'portfolio.error.retry' }));
 
     httpTesting.expectOne((request) => request.url === '/api/portfolio').flush(portfolio);
     await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
@@ -201,12 +220,13 @@ describe('PortfolioPage', () => {
 
   it('should recover once the movers block retry is pressed', async () => {
     const user = userEvent.setup();
-    await renderPage((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
+    await renderPage(undefined, undefined, undefined, (request) =>
+      request.flush(null, { status: 500, statusText: 'Server Error' }),
+    );
 
-    const [, moversRetry] = await screen.findAllByRole('button', { name: 'portfolio.error.retry' });
-    await user.click(moversRetry as HTMLElement);
+    await user.click(await screen.findByRole('button', { name: 'portfolio.error.retry' }));
 
-    httpTesting.expectOne((request) => request.url === '/api/portfolio').flush(portfolio);
+    httpTesting.expectOne((request) => request.url === '/api/holdings').flush(holdings);
     await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 

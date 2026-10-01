@@ -9,12 +9,25 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
-import { UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
+import {
+  UiAlert,
+  UiAmount,
+  UiButton,
+  UiCard,
+  UiDialog,
+  UiFact,
+  UiFacts,
+  UiField,
+  UiInput,
+  formatAmount,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { focusInitial } from '@shared/dialog/focus-initial';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 import { pluralKey } from '@shared/format/plural-key';
@@ -24,13 +37,14 @@ import { HoldingBuyDialogStore } from './holding-buy-dialog-store';
 
 @Component({
   selector: 'app-holding-buy-dialog',
-  imports: [TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  imports: [TranslocoPipe, UiAlert, UiAmount, UiButton, UiCard, UiDialog, UiFact, UiFacts, UiField, UiInput],
   templateUrl: './holding-buy-dialog.html',
   providers: [HoldingBuyDialogStore],
 })
 export class HoldingBuyDialog {
   #store = inject(HoldingBuyDialogStore);
   #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
@@ -43,9 +57,6 @@ export class HoldingBuyDialog {
   protected readonly submitting = this.#store.submitting;
   protected readonly error = this.#store.error;
   protected readonly valid = this.#store.valid;
-
-  protected readonly fmt = (value: number | null | undefined): string =>
-    formatAmount(value, { locale: this.#locale, currency: 'EUR' });
 
   protected readonly fmtQty = (value: number): string =>
     formatAmount(value, { locale: this.#locale, fractionDigits: decimalPlaces(this.holding().quantity) });
@@ -60,15 +71,8 @@ export class HoldingBuyDialog {
       : null;
   });
 
-  protected readonly hint = computed(() => {
-    const holding = this.holding();
-
-    return holding.averageCost === null || holding.averageCost === undefined
-      ? this.#transloco.translate('holdings.buy.noCostHint')
-      : this.#transloco.translate('holdings.buy.currentPriceHint', { price: this.fmt(holding.price) });
-  });
-
   protected readonly cta = computed(() => {
+    this.#translocoEvents();
     const quantity = this.#store.quantity();
 
     return quantity !== null && quantity > 0 && this.valid()
@@ -81,7 +85,7 @@ export class HoldingBuyDialog {
   constructor() {
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLInputElement>('[data-testid="holding-buy-quantity"]')?.focus();
+        focusInitial(this.#host.nativeElement, 'holding-buy-quantity');
       }
     });
   }
@@ -97,6 +101,11 @@ export class HoldingBuyDialog {
   protected dismiss(): void {
     this.open.set(false);
     this.dismissed.emit();
+  }
+
+  protected onSubmit(event: Event): void {
+    event.preventDefault();
+    void this.confirm();
   }
 
   protected async confirm(): Promise<void> {

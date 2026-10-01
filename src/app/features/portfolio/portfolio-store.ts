@@ -1,4 +1,4 @@
-import { Injectable, type Signal, computed, inject, signal } from '@angular/core';
+import { Injectable, type Signal, computed, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { type AsyncState, type ChartPoint } from '@joanroucoux/cairn-ui';
@@ -12,6 +12,7 @@ import type {
   PortfolioResponse,
 } from '@core/api-client/cairnAPI.schemas';
 import { HistoryService } from '@core/api-client/history/history.service';
+import { HoldingService } from '@core/api-client/holding/holding.service';
 import { PerformanceService } from '@core/api-client/performance/performance.service';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
@@ -51,6 +52,7 @@ const settledValue = <T>(resource: ResourceLike<T>, fallback: T): T =>
 @Injectable()
 export class PortfolioStore {
   #portfolioApiClient = inject(PortfolioService);
+  #holdingApiClient = inject(HoldingService);
   #historyApiClient = inject(HistoryService);
   #performanceApiClient = inject(PerformanceService);
 
@@ -58,6 +60,10 @@ export class PortfolioStore {
 
   readonly portfolio = rxResource({
     stream: () => this.#portfolioApiClient.getPortfolio(),
+  });
+
+  readonly holdings = rxResource({
+    stream: () => this.#holdingApiClient.listHoldings(),
   });
 
   readonly performance = rxResource({
@@ -88,6 +94,25 @@ export class PortfolioStore {
       : value.points.map((point) => ({ t: Date.parse(point.at), v: point.totalEur }));
   });
 
+  readonly rangeChange = computed(() => {
+    const dayTotal = this.range() === '1d' ? this.performanceValue()?.total : undefined;
+
+    if (dayTotal) {
+      return { eur: dayTotal.changeEur, ratio: dayTotal.changeRatio ?? null };
+    }
+
+    const points = this.points();
+
+    if (points.length < 2) {
+      return undefined;
+    }
+
+    const first = (points[0] as ChartPoint).v;
+    const change = (points.at(-1) as ChartPoint).v - first;
+
+    return { eur: change, ratio: first === 0 ? null : change / first };
+  });
+
   readonly reconstructed = computed(() => {
     const value = this.#historyValue();
 
@@ -106,31 +131,51 @@ export class PortfolioStore {
 
   readonly curveState = computed<AsyncState>(() => toAsyncState(this.history, (value) => value.points.length === 0));
 
+  readonly #curveShown = linkedSignal<ResourceStatus, boolean>({
+    source: () => this.history.status(),
+    computation: (status, previous) =>
+      isSettled(status) ? true : status === 'error' ? false : (previous?.value ?? false),
+  });
+
+  readonly curveBlocking = computed(() => {
+    const shown = this.#curveShown();
+    const state = this.curveState();
+
+    return (state === 'loading' || state === 'error') && !shown;
+  });
+
   readonly envelopesState = computed<AsyncState>(() =>
     toAsyncState(this.performance, (value) => value.byEnvelope.length === 0),
   );
 
   readonly moversState = computed<AsyncState>(() =>
-    toAsyncState(this.portfolio, (value) => !value.holdings.some((holding) => Boolean(holding.dayChangeEur))),
+    toAsyncState(this.holdings, (value) => !value.some((holding) => Boolean(holding.dayChangeRatio))),
   );
 
   readonly allFailed = computed(
     () =>
-      this.portfolio.status() === 'error' && this.history.status() === 'error' && this.performance.status() === 'error',
+      this.portfolio.status() === 'error' &&
+      this.history.status() === 'error' &&
+      this.performance.status() === 'error' &&
+      this.holdings.status() === 'error',
   );
 
   readonly movers = computed<HoldingResponse[]>(() =>
-    (this.portfolioValue()?.holdings ?? [])
+    settledValue(this.holdings, [])
       .filter(
-        (candidate): candidate is HoldingResponse & { dayChangeEur: number } =>
-          candidate.dayChangeEur !== null && candidate.dayChangeEur !== undefined,
+        (candidate): candidate is HoldingResponse & { dayChangeRatio: number } =>
+          candidate.dayChangeRatio !== null && candidate.dayChangeRatio !== undefined,
       )
-      .sort((left, right) => Math.abs(right.dayChangeEur) - Math.abs(left.dayChangeEur))
+      .sort((left, right) => Math.abs(right.dayChangeRatio) - Math.abs(left.dayChangeRatio))
       .slice(0, MOVER_COUNT),
   );
 
   retryTotal(): void {
     this.portfolio.reload();
+  }
+
+  retryMovers(): void {
+    this.holdings.reload();
   }
 
   retryCurve(): void {

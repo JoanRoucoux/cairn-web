@@ -38,7 +38,7 @@ test.describe('passkeys', () => {
     await mockApi(page);
 
     await page.goto('/profile');
-    await expect(page.getByRole('heading', { name: 'My account' })).toBeVisible();
+    await expect(page.getByTestId('identity')).toContainText('Joan Roucoux');
 
     await page.getByTestId('manage-passkeys').click();
     await expect(page.getByTestId('profile-passkey-dialog').locator('dialog')).toBeVisible();

@@ -1,25 +1,25 @@
 import { Injectable, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { AccountService } from '@core/api-client/account/account.service';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
 @Injectable()
 export class AllocationStore {
   #portfolioApiClient = inject(PortfolioService);
-  #accountsApiClient = inject(AccountService);
 
-  readonly portfolio = rxResource({
-    stream: () => this.#portfolioApiClient.getPortfolio(),
+  readonly classes = rxResource({
+    stream: () => this.#portfolioApiClient.getAssetClassAllocation(),
   });
 
   readonly accounts = rxResource({
-    stream: () => this.#accountsApiClient.listAccounts(),
-    defaultValue: [],
+    stream: () => this.#portfolioApiClient.getAccountAllocation(),
   });
 
-  retry(): void {
-    this.portfolio.reload();
+  retryClasses(): void {
+    this.classes.reload();
+  }
+
+  retryAccounts(): void {
     this.accounts.reload();
   }
 }

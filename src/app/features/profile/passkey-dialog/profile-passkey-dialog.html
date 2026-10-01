@@ -14,14 +14,12 @@
     </ui-field>
 
     @if (unsupported()) {
-      <p class="text-label mt-3 text-(--negative)" data-testid="passkey-unsupported" role="alert">
-        {{ 'profile.addPasskeyUnsupported' | transloco }}
-      </p>
+      <ui-alert class="mt-3" data-testid="passkey-unsupported">{{
+        'profile.addPasskeyUnsupported' | transloco
+      }}</ui-alert>
     }
     @if (failed()) {
-      <p class="text-label mt-3 text-(--negative)" data-testid="passkey-failed" role="alert">
-        {{ 'profile.addPasskeyFailed' | transloco }}
-      </p>
+      <ui-alert class="mt-3" data-testid="passkey-failed">{{ 'profile.addPasskeyFailed' | transloco }}</ui-alert>
     }
   </form>
 

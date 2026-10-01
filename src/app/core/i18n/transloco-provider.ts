@@ -12,7 +12,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { TranslocoHttpLoader } from '@core/i18n/transloco-loader';
 
-export const AVAILABLE_LANGS = ['en', 'fr'] as const;
+export const AVAILABLE_LANGS = ['fr', 'en'] as const;
 
 export const provideTranslocoGlobal = (): EnvironmentProviders => {
   return makeEnvironmentProviders([

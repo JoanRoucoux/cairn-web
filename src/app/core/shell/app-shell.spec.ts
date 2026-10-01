@@ -152,6 +152,26 @@ describe('AppShell', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' })).toHaveClass('max-lg:hidden');
   });
 
+  it('should hide the whole header on mobile for a route flagged mobileHeaderless', async () => {
+    const { container } = await renderShell([
+      { path: '', component: StubPage, data: { headerKey: 'shell.portfolio', mobileHeaderless: true } },
+    ]);
+    await settleSession();
+
+    await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' });
+    expect(container.querySelector('header')).toHaveClass('max-lg:hidden');
+  });
+
+  it('should keep the header on mobile without the flag', async () => {
+    const { container } = await renderShell([
+      { path: '', component: StubPage, data: { headerKey: 'shell.portfolio' } },
+    ]);
+    await settleSession();
+
+    await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' });
+    expect(container.querySelector('header')).not.toHaveClass('max-lg:hidden');
+  });
+
   it('should keep the header title visible on mobile without the flag', async () => {
     await renderShell([{ path: '', component: StubPage, data: { headerKey: 'shell.portfolio' } }]);
     await settleSession();

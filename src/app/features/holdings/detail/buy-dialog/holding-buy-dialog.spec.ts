@@ -4,7 +4,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
-import { render, screen } from '@testing-library/angular';
+import { fireEvent, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -75,6 +75,20 @@ describe('HoldingBuyDialog', () => {
     request.flush({});
   });
 
+  it('submits the form', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-buy-quantity'), '5');
+    await user.type(screen.getByTestId('holding-buy-price'), '10');
+    await vi.waitFor(() => expect(screen.getByTestId('holding-buy-submit')).toBeEnabled());
+    fireEvent.submit(screen.getByTestId('holding-buy-quantity').closest('form')!);
+
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'));
+    expect(request.request.body).toEqual({ quantity: 5, unitPrice: 10 });
+    request.flush({});
+  });
+
   it('previews the weighted average cost before submitting', async () => {
     const user = userEvent.setup();
     await renderDialog();
@@ -132,11 +146,18 @@ describe('HoldingBuyDialog', () => {
     expect(bought).not.toHaveBeenCalled();
   });
 
+  it('shows the current price in the hint', async () => {
+    await renderDialog();
+
+    expect(screen.getByTestId('holding-buy-hint')).toHaveTextContent('holdings.buy.currentPrice');
+  });
+
   it('takes the unit price as the cost basis when none was known yet', async () => {
     const user = userEvent.setup();
     await renderDialog({ ...holding, averageCost: undefined } as unknown as HoldingResponse);
 
     expect(screen.getByTestId('holding-buy-hint')).toHaveTextContent('holdings.buy.noCostHint');
+    expect(screen.getByText('holdings.buy.rows.averageCostUnknown')).toBeInTheDocument();
 
     await user.type(screen.getByTestId('holding-buy-quantity'), '20');
     await user.type(screen.getByTestId('holding-buy-price'), '51.2');

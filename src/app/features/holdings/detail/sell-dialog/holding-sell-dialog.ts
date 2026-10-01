@@ -9,12 +9,26 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
-import { UiAlert, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
+import {
+  UiAlert,
+  UiAmount,
+  UiButton,
+  UiCard,
+  UiDelta,
+  UiDialog,
+  UiFact,
+  UiFacts,
+  UiField,
+  UiInput,
+  formatAmount,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { focusInitial } from '@shared/dialog/focus-initial';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 import { pluralKey } from '@shared/format/plural-key';
@@ -24,13 +38,14 @@ import { HoldingSellDialogStore } from './holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-sell-dialog',
-  imports: [TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
+  imports: [TranslocoPipe, UiAlert, UiAmount, UiButton, UiCard, UiDelta, UiDialog, UiFact, UiFacts, UiField, UiInput],
   templateUrl: './holding-sell-dialog.html',
   providers: [HoldingSellDialogStore],
 })
 export class HoldingSellDialog {
   #store = inject(HoldingSellDialogStore);
   #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
@@ -41,9 +56,6 @@ export class HoldingSellDialog {
   protected readonly quantityText = this.#store.quantityText;
   protected readonly submitting = this.#store.submitting;
   protected readonly error = this.#store.error;
-
-  protected readonly fmt = (value: number | null | undefined): string =>
-    formatAmount(value, { locale: this.#locale, currency: 'EUR' });
 
   protected readonly fmtQty = (value: number): string =>
     formatAmount(value, { locale: this.#locale, fractionDigits: decimalPlaces(this.holding().quantity) });
@@ -67,16 +79,24 @@ export class HoldingSellDialog {
 
   protected readonly closes = computed(() => this.preview()?.closesHolding === true);
 
-  protected readonly hint = computed(() => {
-    const holding = this.holding();
-    const key = this.over()
-      ? pluralKey('holdings.sell.over', holding.quantity)
-      : pluralKey('holdings.sell.held', holding.quantity);
+  protected readonly held = computed(() => {
+    this.#translocoEvents();
 
-    return this.#transloco.translate(key, { count: holding.quantity, price: this.fmt(holding.price) });
+    return this.#transloco.translate(pluralKey('holdings.sell.held', this.holding().quantity), {
+      count: this.holding().quantity,
+    });
+  });
+
+  protected readonly overHint = computed(() => {
+    this.#translocoEvents();
+
+    return this.#transloco.translate(pluralKey('holdings.sell.over', this.holding().quantity), {
+      count: this.holding().quantity,
+    });
   });
 
   protected readonly cta = computed(() => {
+    this.#translocoEvents();
     const quantity = this.#store.quantity();
 
     if (!this.valid() || quantity === null) {
@@ -93,7 +113,7 @@ export class HoldingSellDialog {
   constructor() {
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLInputElement>('[data-testid="holding-sell-quantity"]')?.focus();
+        focusInitial(this.#host.nativeElement, 'holding-sell-quantity');
       }
     });
   }
@@ -108,11 +128,17 @@ export class HoldingSellDialog {
     this.quantityText.set(
       new Intl.NumberFormat(this.#locale, { maximumFractionDigits: 6, useGrouping: false }).format(quantity),
     );
+    focusInitial(this.#host.nativeElement, 'holding-sell-quantity');
   }
 
   protected dismiss(): void {
     this.open.set(false);
     this.dismissed.emit();
+  }
+
+  protected onSubmit(event: Event): void {
+    event.preventDefault();
+    void this.confirm();
   }
 
   protected async confirm(): Promise<void> {

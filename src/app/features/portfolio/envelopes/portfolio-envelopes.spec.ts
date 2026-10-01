@@ -45,7 +45,7 @@ describe('PortfolioEnvelopes', () => {
   it('should size the bar to the envelope share', async () => {
     await renderComponent();
 
-    const [bar] = await screen.findAllByTestId('envelope-bar');
+    const [bar] = await screen.findAllByTestId('meter-fill');
     expect((bar as HTMLElement).style.width).toBe('37.3%');
   });
 

@@ -1,52 +1,63 @@
-<div class="flex h-full flex-col gap-3">
-  <div class="flex items-baseline justify-between gap-3">
+<div class="flex h-full flex-col gap-1 lg:gap-2">
+  <div class="flex items-baseline justify-between gap-3 lg:px-2">
     <h2 class="text-title font-semibold text-(--foreground)">{{ 'portfolio.envelopes.title' | transloco }}</h2>
     <span class="text-label text-(--muted-foreground)">{{ periodKey() | transloco }}</span>
   </div>
 
   <ui-async
     class="flex-1"
+    [class.mt-2]="state() === 'error'"
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.envelopes.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
     [state]="state()"
     (retry)="retry.emit()"
   >
-    <div asyncLoading class="flex flex-col gap-4" data-testid="envelopes-loading">
-      @for (row of [1, 2, 3, 4]; track row) {
-        <ui-skeleton shape="row" />
+    <div asyncLoading class="flex flex-col" data-testid="envelopes-loading">
+      @for (width of skeletonWidths; track $index) {
+        <div class="flex flex-col gap-2 py-2.5 max-lg:nth-[n+5]:hidden">
+          <div class="flex justify-between">
+            <div [style.width.px]="width"><ui-skeleton [height]="16" /></div>
+            <div class="w-26"><ui-skeleton [height]="16" /></div>
+          </div>
+          <div aria-hidden="true"><ui-meter label="" size="sm" valueText="" [value]="0" /></div>
+        </div>
       }
     </div>
 
     <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.envelopes.empty' | transloco }}</p>
 
-    <div class="flex flex-col divide-y divide-(--hairline)" role="list">
+    <div class="-mx-2 flex flex-col lg:mx-0" role="list">
       @for (envelope of envelopes(); track envelope.accountType) {
-        <div class="flex flex-col gap-1.5 py-2.5 first:pt-0 last:pb-0" role="listitem">
+        <div class="flex flex-col gap-1.5 px-2 py-2.5" role="listitem">
           <div class="text-body flex items-baseline justify-between gap-3 tabular-nums">
             <span class="font-medium">{{ 'enums.accountType.' + envelope.accountType | transloco }}</span>
-            <ui-amount class="font-medium" currency="EUR" [value]="envelope.valueEur" />
+            <span class="font-medium"><ui-amount currency="EUR" [value]="envelope.valueEur" /></span>
           </div>
 
-          <div class="rounded-pill h-1 overflow-hidden bg-(--muted)">
-            <div
-              class="rounded-pill h-full bg-(--ramp-2)"
-              data-testid="envelope-bar"
-              [style.width.%]="envelope.share * 100"
-            ></div>
-          </div>
+          <ui-meter
+            size="sm"
+            [label]="'enums.accountType.' + envelope.accountType | transloco"
+            [tone]="2"
+            [value]="envelope.share"
+            [valueText]="(envelope.share | ratio) + ' ' + ('portfolio.envelopes.share' | transloco)"
+          />
 
           <div class="text-label flex items-baseline justify-between gap-3 tabular-nums">
             <span class="text-(--subtle-foreground)"
               >{{ envelope.share | ratio }} {{ 'portfolio.envelopes.share' | transloco }}</span
             >
             <span class="lg:hidden" data-testid="envelope-change-percent">
-              <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeRatio">
+              <ui-delta
+                weight="regular"
+                [unknownLabel]="'portfolio.unknown' | transloco"
+                [value]="envelope.changeRatio"
+              >
                 {{ envelope.changeRatio | ratio: { signed: true, decimals: 2 } }}
               </ui-delta>
             </span>
             <span class="hidden lg:inline" data-testid="envelope-change-full">
-              <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
+              <ui-delta weight="regular" [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
                 <ui-amount currency="EUR" signed [value]="envelope.changeEur" />
                 <span aria-hidden="true"> &middot; </span>
                 {{ envelope.changeRatio | ratio: { signed: true, decimals: 2 } }}

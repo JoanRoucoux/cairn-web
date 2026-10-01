@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test';
 import { mockApi } from './fixtures/api';
 import { AllocationPageObject } from './pages/allocation-page';
 
+const PEA_BOURSORAMA_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+
 test.describe('allocation', () => {
   test.beforeEach(async ({ page }) => {
     await mockApi(page);
@@ -29,31 +31,29 @@ test.describe('allocation', () => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await page.getByRole('button', { name: /ETF/ }).click();
+    await page.getByRole('link', { name: /ETF/ }).click();
     await page.waitForURL('**/holdings?**');
 
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
-    expect(url.searchParams.get('assetClass')).toBe('ETF');
+    expect(url.searchParams.get('classe')).toBe('etf');
   });
 
-  test('navigates to the filtered holdings when an account row is activated', async ({ page }) => {
+  test('navigates to the account in the holdings when an account row is activated', async ({ page }) => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await page.getByRole('button', { name: /PEA Boursorama/ }).click();
+    await page.getByRole('link', { name: /PEA Boursorama/ }).click();
     await page.waitForURL('**/holdings?**');
 
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
-    expect(url.searchParams.get('account')).toBe('PEA Boursorama');
+    expect(url.searchParams.get('compte')).toBe(PEA_BOURSORAMA_ID);
   });
 
-  test('shows an error with a retry when the portfolio fails to load, without hiding the other donut', async ({
-    page,
-  }) => {
+  test('shows an error on the failing ring only and retries just that call', async ({ page }) => {
     let failed = true;
-    await page.route('**/api/portfolio', async (route) => {
+    await page.route('**/api/portfolio/allocation/classes', async (route) => {
       if (failed) {
         failed = false;
         return route.fulfill({ status: 500, json: { message: 'boom' } });
@@ -62,11 +62,12 @@ test.describe('allocation', () => {
     });
 
     const allocation = new AllocationPageObject(page);
-    await allocation.goto();
+    await allocation.goto(1);
 
-    await expect(page.getByRole('alert')).toHaveCount(2);
+    await expect(page.getByRole('alert')).toHaveCount(1);
+    await expect(allocation.donuts).toHaveCount(1);
 
-    await page.getByRole('button', { name: 'Retry' }).first().click();
+    await page.getByRole('button', { name: 'Retry' }).click();
 
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(allocation.donuts).toHaveCount(2);
