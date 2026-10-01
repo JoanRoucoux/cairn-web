@@ -36,7 +36,10 @@
       </ui-field>
     </div>
 
-    <p class="text-label -mt-2 min-h-5 text-(--muted-foreground) lg:-mt-3.5 lg:min-h-7" data-testid="holding-buy-hint">
+    <p
+      class="text-label -mt-2 flex min-h-5 items-center text-(--muted-foreground) lg:-mt-3.5 lg:min-h-7"
+      data-testid="holding-buy-hint"
+    >
       @if (holding().averageCost === null || holding().averageCost === undefined) {
         {{ 'holdings.buy.noCostHint' | transloco }}
       } @else {

@@ -154,6 +154,7 @@ describe('HoldingSellDialog', () => {
 
     expect(screen.getByTestId('holding-sell-hint')).toHaveTextContent('holdings.sell.over_other');
     expect(screen.getByTestId('holding-sell-hint')).toHaveClass('text-(--negative)');
+    expect(screen.getByTestId('holding-sell-hint')).toHaveAttribute('aria-live', 'polite');
     expect(screen.getByTestId('holding-sell-quantity')).toBeInvalid();
   });
 
