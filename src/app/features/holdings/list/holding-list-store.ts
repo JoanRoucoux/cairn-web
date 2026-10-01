@@ -35,7 +35,6 @@ export class HoldingListStore {
   readonly #queryParamMap = toSignal(this.#route.queryParamMap);
 
   readonly staleFilter = computed(() => this.#queryParamMap()?.get('filter') === 'stale');
-  readonly addAccountId = computed(() => this.#queryParamMap()?.get('add') ?? null);
   readonly accountFilter = computed(() => this.#queryParamMap()?.get('account') ?? null);
   readonly assetClassFilter = computed(() => (this.#queryParamMap()?.get('assetClass') as AssetClass | null) ?? null);
 

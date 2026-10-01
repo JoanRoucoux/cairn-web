@@ -70,7 +70,6 @@ export class HoldingListPage {
   protected readonly accountFilter = this.#store.accountFilter;
   protected readonly assetClassFilter = this.#store.assetClassFilter;
 
-  protected readonly addAccountId = this.#store.addAccountId;
   protected readonly addOpen = signal(false);
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
@@ -91,12 +90,6 @@ export class HoldingListPage {
 
   constructor() {
     effect(() => {
-      if (this.addAccountId() !== null) {
-        this.addOpen.set(true);
-      }
-    });
-
-    effect(() => {
       const compact = this.compact();
 
       if (this.#wasCompact && !compact) {
@@ -112,19 +105,12 @@ export class HoldingListPage {
   }
 
   protected onAddSaved(): void {
-    this.#closeAdd();
+    this.addOpen.set(false);
     this.holdings.reload();
   }
 
   protected onAddDismissed(): void {
-    this.#closeAdd();
-  }
-
-  #closeAdd(): void {
     this.addOpen.set(false);
-    if (this.addAccountId() !== null) {
-      void this.#router.navigate([], { queryParams: { add: null }, queryParamsHandling: 'merge', replaceUrl: true });
-    }
   }
 
   protected onCashSaved(): void {

@@ -29,15 +29,16 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('account-empty-hint').filter({ hasText: 'no holdings yet' })).toBeVisible();
   });
 
-  test('opens the add-a-line dialog on the empty account from its row', async ({ page }) => {
+  test('sends the empty account to the add-a-line flow with itself preselected', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    await page.getByTestId('account-empty-add').click();
+    const link = page.getByTestId('account-empty-add');
+    const href = await link.getAttribute('href');
+    await link.click();
 
     await expect(page).toHaveURL(/\/holdings\?add=/);
-    await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
-    await expect(page.getByTestId('holding-add-account')).toHaveValue(/.+/);
+    expect(href).toMatch(/^\/holdings\?add=/);
   });
 
   test('summarises the accounts with their count and total above the table', async ({ page }) => {

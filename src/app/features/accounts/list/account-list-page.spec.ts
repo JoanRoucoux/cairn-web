@@ -61,6 +61,30 @@ describe('AccountListPage', () => {
     expect(screen.getAllByText(/accounts.lineCount_(one|other)/)).not.toHaveLength(0);
   });
 
+  it('should show a summary-shaped skeleton while loading and no summary on error', async () => {
+    await render(AccountListPage, {
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslocoScope('accounts'),
+        AccountListStore,
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+
+    expect(screen.getByTestId('accounts-summary-skeleton')).toBeInTheDocument();
+
+    httpTesting.expectOne('/api/accounts').flush(null, { status: 500, statusText: 'Server Error' });
+    httpTesting.expectOne('/api/portfolio').flush({ totalEur: 0, byAssetClass: [], byAccount: [], holdings: [] });
+
+    await screen.findByRole('alert');
+    expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument();
+    expect(screen.getByTestId('accounts-summary')).toHaveTextContent('');
+  });
+
   it('should summarise the count and the total above the table', async () => {
     await renderPage();
 
