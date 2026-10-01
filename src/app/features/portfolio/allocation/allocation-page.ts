@@ -14,7 +14,7 @@ import {
   UiSkeleton,
   formatAmount,
 } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 
 import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -67,6 +67,7 @@ export class AllocationPage {
   #ratio = inject(RatioPipe);
 
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #scopeLoaded = translateSignal('allocation.cashSubtitle');
 
   protected readonly totalEur = computed<number | undefined>(() => {
     if (this.#store.classes.hasValue()) {
@@ -95,7 +96,7 @@ export class AllocationPage {
   protected readonly assetClassSlices = computed<DonutSlice[]>(() => {
     this.#translocoEvents();
 
-    if (!this.#store.classes.hasValue()) {
+    if (!this.#scopeLoaded() || !this.#store.classes.hasValue()) {
       return [];
     }
 

@@ -1,15 +1,15 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { fireEvent, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingBuyDialog } from './holding-buy-dialog';
 
@@ -27,7 +27,7 @@ describe('HoldingBuyDialog', () => {
   const bought = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (input: HoldingResponse = holding): Promise<void> => {
+  const renderDialog = async (input: HoldingResponse = holding, extraProviders: Provider[] = []): Promise<void> => {
     await render(HoldingBuyDialog, {
       inputs: { holding: input },
       on: { bought, dismissed },
@@ -38,6 +38,7 @@ describe('HoldingBuyDialog', () => {
         provideHttpClientTesting(),
         { provide: LOCALE_ID, useValue: 'en-GB' },
         provideTranslocoScope('holdings'),
+        ...extraProviders,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -47,6 +48,15 @@ describe('HoldingBuyDialog', () => {
     httpTesting.verify();
     bought.mockClear();
     dismissed.mockClear();
+  });
+
+  it('does not translate its holdings scope keys before the scope has loaded', async () => {
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await renderDialog(holding, [delayedScopeLoader()]);
+
+    expect(translate.mock.calls.filter(([key]) => String(key).startsWith('holdings.buy.submit'))).toEqual([]);
+
+    translate.mockRestore();
   });
 
   it('keeps the submit button disabled until both fields are positive', async () => {

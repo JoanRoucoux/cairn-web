@@ -1,14 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { AllocationPage } from './allocation-page';
 import { AllocationStore } from './allocation-store';
@@ -57,6 +57,7 @@ describe('AllocationPage', () => {
   const renderPage = async (
     classes: object | typeof FAIL = classesBody,
     accounts: object | typeof FAIL = accountsBody,
+    extraProviders: Provider[] = [],
   ): Promise<void> => {
     await render(AllocationPage, {
       imports: [getTranslocoTestingModule()],
@@ -68,6 +69,7 @@ describe('AllocationPage', () => {
         { provide: LOCALE_ID, useValue: 'fr-FR' },
         provideTranslocoScope('portfolio'),
         AllocationStore,
+        ...extraProviders,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -77,6 +79,21 @@ describe('AllocationPage', () => {
   };
 
   afterEach(() => httpTesting.verify());
+
+  it('does not translate its portfolio scope keys before the scope has loaded', async () => {
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await renderPage(classesBody, accountsBody, [delayedScopeLoader()]);
+
+    expect(
+      translate.mock.calls.filter(
+        ([key]) =>
+          String(key).startsWith('portfolio.allocation.cashSubtitle') ||
+          String(key).startsWith('portfolio.allocation.lineCount'),
+      ),
+    ).toEqual([]);
+
+    translate.mockRestore();
+  });
 
   it('should show the total under the header', async () => {
     await renderPage();

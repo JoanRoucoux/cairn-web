@@ -1,5 +1,4 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 
 import {
@@ -21,7 +20,7 @@ import {
   UiTh,
   UiTr,
 } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash2 } from '@lucide/angular';
 
 import { pluralKey } from '@shared/format/plural-key';
@@ -66,8 +65,6 @@ import { InstrumentListStore, type InstrumentRow } from './instrument-list-store
 export class InstrumentListPage {
   #store = inject(InstrumentListStore);
   #router = inject(Router);
-  #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$);
 
   protected readonly instruments = this.#store.instruments;
   protected readonly filteredRows = this.#store.filteredRows;
@@ -80,12 +77,10 @@ export class InstrumentListPage {
     () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
   );
 
-  protected readonly countLabel = computed(() => {
-    this.#translocoEvents();
-    const count = this.#store.rows().length;
-
-    return this.#transloco.translate(pluralKey('instruments.count', count), { count });
-  });
+  protected readonly countLabel = translateSignal(
+    computed(() => pluralKey('count', this.#store.rows().length)),
+    computed(() => ({ count: this.#store.rows().length })),
+  );
 
   protected readonly toDelete = signal<DeletableInstrument | undefined>(undefined);
 

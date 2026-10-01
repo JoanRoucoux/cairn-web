@@ -1,14 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { InstrumentListPage } from './instrument-list-page';
 import { InstrumentListStore } from './instrument-list-store';
@@ -25,7 +25,7 @@ const instrument = {
 describe('InstrumentListPage', () => {
   let httpTesting: HttpTestingController;
 
-  const renderPage = async (): Promise<void> => {
+  const renderPage = async (extraProviders: Provider[] = []): Promise<void> => {
     await render(InstrumentListPage, {
       imports: [getTranslocoTestingModule()],
       providers: [
@@ -35,6 +35,7 @@ describe('InstrumentListPage', () => {
         provideRouter([]),
         provideTranslocoScope('instruments'),
         InstrumentListStore,
+        ...extraProviders,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -46,6 +47,16 @@ describe('InstrumentListPage', () => {
   };
 
   afterEach(() => httpTesting.verify());
+
+  it('does not translate its instruments scope keys before the scope has loaded', async () => {
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await renderPage([delayedScopeLoader()]);
+    await flushOne();
+
+    expect(translate.mock.calls.filter(([key]) => String(key).startsWith('instruments.count'))).toEqual([]);
+
+    translate.mockRestore();
+  });
 
   it('should list the instruments the server returns', async () => {
     await renderPage();

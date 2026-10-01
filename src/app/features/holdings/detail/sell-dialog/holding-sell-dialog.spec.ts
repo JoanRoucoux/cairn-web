@@ -1,16 +1,16 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
+import { LOCALE_ID, type Provider, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingSellDialog } from './holding-sell-dialog';
 
@@ -28,7 +28,11 @@ describe('HoldingSellDialog', () => {
   const sold = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (input: HoldingResponse = holding, masked = false): Promise<void> => {
+  const renderDialog = async (
+    input: HoldingResponse = holding,
+    masked = false,
+    extraProviders: Provider[] = [],
+  ): Promise<void> => {
     await render(HoldingSellDialog, {
       inputs: { holding: input },
       on: { sold, dismissed },
@@ -40,6 +44,7 @@ describe('HoldingSellDialog', () => {
         { provide: LOCALE_ID, useValue: 'en-GB' },
         provideTranslocoScope('holdings'),
         { provide: UI_AMOUNT_MASKED, useValue: signal(masked) },
+        ...extraProviders,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -49,6 +54,15 @@ describe('HoldingSellDialog', () => {
     httpTesting.verify();
     sold.mockClear();
     dismissed.mockClear();
+  });
+
+  it('does not translate its holdings scope keys before the scope has loaded', async () => {
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await renderDialog(holding, false, [delayedScopeLoader()]);
+
+    expect(translate.mock.calls.filter(([key]) => /^holdings.sell.(submit|held|over)/.test(String(key)))).toEqual([]);
+
+    translate.mockRestore();
   });
 
   it('keeps an empty or zero quantity from enabling the button', async () => {

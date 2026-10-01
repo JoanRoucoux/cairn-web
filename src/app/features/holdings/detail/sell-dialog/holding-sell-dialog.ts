@@ -9,7 +9,6 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 import {
   UiAlert,
@@ -24,7 +23,7 @@ import {
   UiInput,
   formatAmount,
 } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -44,8 +43,6 @@ import { HoldingSellDialogStore } from './holding-sell-dialog-store';
 })
 export class HoldingSellDialog {
   #store = inject(HoldingSellDialogStore);
-  #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
@@ -79,34 +76,32 @@ export class HoldingSellDialog {
 
   protected readonly closes = computed(() => this.preview()?.closesHolding === true);
 
-  protected readonly held = computed(() => {
-    this.#translocoEvents();
+  readonly #heldParams = computed(() => ({ count: this.holding().quantity }));
 
-    return this.#transloco.translate(pluralKey('holdings.sell.held', this.holding().quantity), {
-      count: this.holding().quantity,
-    });
-  });
+  protected readonly held = translateSignal(
+    computed(() => pluralKey('sell.held', this.holding().quantity)),
+    this.#heldParams,
+  );
 
-  protected readonly overHint = computed(() => {
-    this.#translocoEvents();
+  protected readonly overHint = translateSignal(
+    computed(() => pluralKey('sell.over', this.holding().quantity)),
+    this.#heldParams,
+  );
 
-    return this.#transloco.translate(pluralKey('holdings.sell.over', this.holding().quantity), {
-      count: this.holding().quantity,
-    });
-  });
+  readonly #ctaQuantity = computed(() => (this.valid() ? this.#store.quantity() : null));
 
-  protected readonly cta = computed(() => {
-    this.#translocoEvents();
-    const quantity = this.#store.quantity();
+  protected readonly cta = translateSignal(
+    computed(() => {
+      const quantity = this.#ctaQuantity();
 
-    if (!this.valid() || quantity === null) {
-      return this.#transloco.translate('holdings.sell.submitDefault');
-    }
+      if (quantity === null) {
+        return 'sell.submitDefault';
+      }
 
-    return this.closes()
-      ? this.#transloco.translate('holdings.sell.submitCloses')
-      : this.#transloco.translate(pluralKey('holdings.sell.submit', quantity), { count: quantity });
-  });
+      return this.closes() ? 'sell.submitCloses' : pluralKey('sell.submit', quantity);
+    }),
+    computed(() => ({ count: this.#ctaQuantity() ?? 0 })),
+  );
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
