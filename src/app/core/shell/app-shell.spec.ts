@@ -115,7 +115,7 @@ describe('AppShell', () => {
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 
-  it('should show a back link before the title for a route with a headerBack, and drop the header on mobile', async () => {
+  it('should show a desktop-only back link before the title for a route with a headerBack', async () => {
     await renderShell([
       {
         path: '',
@@ -128,7 +128,19 @@ describe('AppShell', () => {
     const back = await screen.findByTestId('header-back');
 
     expect(back).toHaveAttribute('href', '/profile');
-    expect(back.closest('header')).toHaveClass('max-lg:hidden');
+    expect(back).toHaveClass('max-lg:hidden');
+  });
+
+  it('should drop the header and the top padding on mobile for a route flagged mobileHeaderless', async () => {
+    await renderShell([
+      { path: '', component: StubPage, data: { headerKey: 'shell.portfolio', mobileHeaderless: true } },
+    ]);
+    await settleSession();
+
+    await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' });
+
+    expect(screen.getByRole('banner')).toHaveClass('max-lg:hidden');
+    expect(screen.getByRole('main').firstElementChild).toHaveClass('max-lg:pt-0');
   });
 
   it('should hide the header title on mobile for a route flagged mobileHeaderHidden', async () => {

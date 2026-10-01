@@ -66,9 +66,17 @@ export class AppShell {
     { initialValue: this.#currentMobileHeaderHidden() },
   );
 
+  protected readonly mobileHeaderless = toSignal(this.#navigationEnd.pipe(map(() => this.#currentMobileHeaderless())), {
+    initialValue: this.#currentMobileHeaderless(),
+  });
+
   protected readonly headerBack = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderBack())), {
     initialValue: this.#currentHeaderBack(),
   });
+
+  #currentMobileHeaderless(): boolean {
+    return deepestData(this.#route.root)['mobileHeaderless'] === true;
+  }
 
   #currentHeaderBack(): HeaderBack | undefined {
     return deepestData(this.#route.root)['headerBack'] as HeaderBack | undefined;

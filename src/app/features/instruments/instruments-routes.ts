@@ -16,7 +16,8 @@ export const INSTRUMENTS_ROUTES: Routes = [
         title: 'pageTitle.instruments',
         data: {
           headerKey: 'pageTitle.instruments',
-          headerBack: { labelKey: 'shell.profile', path: '/profile' },
+          mobileHeaderless: true,
+          headerBack: { labelKey: 'pageTitle.profile', path: '/profile' },
         },
       },
       {
