@@ -13,9 +13,9 @@
       <ui-field [label]="'holdings.buy.quantity' | transloco" [unit]="'holdings.buy.unit' | transloco">
         <input
           autocomplete="off"
-          class="h-12 lg:h-10"
           data-testid="holding-buy-quantity"
           inputmode="decimal"
+          size="lg"
           type="text"
           uiInput
           [value]="quantityText()"
@@ -25,9 +25,9 @@
       <ui-field [label]="'holdings.buy.price' | transloco" [unit]="'holdings.buy.currencyUnit' | transloco">
         <input
           autocomplete="off"
-          class="h-12 lg:h-10"
           data-testid="holding-buy-price"
           inputmode="decimal"
+          size="lg"
           type="text"
           uiInput
           [value]="priceText()"
@@ -37,7 +37,7 @@
     </div>
 
     <p
-      class="text-label -mt-2 flex min-h-5 items-center text-(--muted-foreground) lg:-mt-3.5 lg:min-h-7"
+      class="text-label -mt-2 flex min-h-5 items-center gap-1 text-(--muted-foreground) lg:-mt-3.5 lg:min-h-7"
       data-testid="holding-buy-hint"
     >
       @if (holding().averageCost === null || holding().averageCost === undefined) {

@@ -9,15 +9,18 @@
   (dismissed)="dismiss()"
 >
   <form class="flex flex-col gap-4 lg:gap-5" id="holding-sell-form" novalidate (submit)="onSubmit($event)">
-    <ui-field [label]="'holdings.sell.quantity' | transloco" [unit]="'holdings.sell.unit' | transloco">
+    <ui-field
+      [invalid]="over()"
+      [label]="'holdings.sell.quantity' | transloco"
+      [unit]="'holdings.sell.unit' | transloco"
+    >
       <input
         autocomplete="off"
-        class="h-12 lg:h-10"
         data-testid="holding-sell-quantity"
         inputmode="decimal"
+        size="lg"
         type="text"
         uiInput
-        [attr.aria-invalid]="over() ? true : null"
         [value]="quantityText()"
         (input)="onQuantityInput($event)"
       />
@@ -39,9 +42,12 @@
         }
       </p>
       <button
-        class="rounded-control text-label relative -mr-1 h-8 flex-none bg-(--muted) px-2.5 font-medium transition-transform duration-(--duration-press) ease-out before:absolute before:-inset-x-1 before:-inset-y-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) active:scale-(--press-scale) lg:-mr-2 lg:h-7 lg:bg-transparent lg:px-2 lg:hover:bg-(--glow)"
+        class="-mr-1 lg:-mr-2"
         data-testid="holding-sell-all"
+        size="compact"
         type="button"
+        ui-button
+        variant="tonal"
         (click)="fillAll()"
       >
         {{ 'holdings.sell.sellAll' | transloco }}
