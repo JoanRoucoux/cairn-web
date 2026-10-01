@@ -166,7 +166,7 @@
 </div>
 
 @if (addOpen()) {
-  <app-holding-add-dialog (dismissed)="onAddDismissed()" (saved)="onAddSaved()" />
+  <app-holding-add-dialog [presetAccountId]="presetAccountId()" (dismissed)="onAddDismissed()" (saved)="onAddSaved()" />
 }
 
 @if (groupToEditCashFor(); as group) {

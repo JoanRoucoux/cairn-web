@@ -335,11 +335,19 @@ describe('HoldingListStore', () => {
     expect(saxo?.institution).toBe('Saxo');
   });
 
+  it('should expose the add query param', async () => {
+    configure({ add: 'a1' });
+    await load();
+
+    expect(store.addParam()).toBe('a1');
+  });
+
   it('should leave the filters unset without matching query params', async () => {
     await load();
 
     expect(store.staleFilter()).toBe(false);
     expect(store.accountFilter()).toBeNull();
     expect(store.assetClassFilter()).toBeNull();
+    expect(store.addParam()).toBeNull();
   });
 });

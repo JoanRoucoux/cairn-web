@@ -52,6 +52,7 @@ export class HoldingListPage {
 
   protected readonly desktop = signal(true);
   protected readonly addOpen = signal(false);
+  protected readonly presetAccountId = signal<string | undefined>(undefined);
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
@@ -82,6 +83,21 @@ export class HoldingListPage {
     }
 
     effect(() => {
+      const account = this.#store.addParam();
+
+      if (account) {
+        this.presetAccountId.set(account);
+        this.addOpen.set(true);
+        void this.#router.navigate([], {
+          relativeTo: this.#route,
+          queryParams: { add: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
+
+    effect(() => {
       const compact = this.compact();
       const selected = this.selectedHoldingId();
 
@@ -100,11 +116,13 @@ export class HoldingListPage {
 
   protected onAddSaved(): void {
     this.addOpen.set(false);
+    this.presetAccountId.set(undefined);
     this.holdings.reload();
   }
 
   protected onAddDismissed(): void {
     this.addOpen.set(false);
+    this.presetAccountId.set(undefined);
   }
 
   protected onCashSaved(): void {

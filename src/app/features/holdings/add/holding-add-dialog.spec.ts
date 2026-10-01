@@ -28,8 +28,9 @@ describe('HoldingAddDialog', () => {
   const saved = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (): Promise<void> => {
+  const renderDialog = async (presetAccountId?: string): Promise<void> => {
     await render(HoldingAddDialog, {
+      inputs: { presetAccountId },
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
@@ -49,6 +50,12 @@ describe('HoldingAddDialog', () => {
     httpTesting.verify();
     saved.mockClear();
     dismissed.mockClear();
+  });
+
+  it('preselects the preset account', async () => {
+    await renderDialog('a1');
+
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
   });
 
   it('shows the catalogue hit for a local match', async () => {

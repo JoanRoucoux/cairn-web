@@ -355,23 +355,29 @@ describe('HoldingListPage', () => {
     vi.unstubAllGlobals();
   });
 
-  it('has no summary line', async () => {
-    await renderPage();
-    await screen.findAllByText('Esalia');
+  it('opens the add dialog with the account of the add query param, then clears it', async () => {
+    await render(TestHost, {
+      imports: [getTranslocoTestingModule()],
+      routes: [{ path: '', component: HoldingListPage }],
+      initialRoute: '/?add=a1',
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    for (const request of httpTesting.match('/api/accounts')) {
+      request.flush(accounts);
+    }
 
-    expect(screen.queryByTestId('holdings-summary')).not.toBeInTheDocument();
-  });
-
-  it('lists every account in the order of the accounts list', async () => {
-    await renderPage();
-    await screen.findAllByText('Esalia');
-
-    expect(screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual([
-      'Saxo Investor',
-      'Esalia',
-      'Saxo Investor',
-      'Esalia',
-    ]);
+    expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
+    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
+    httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
   });
 
   it('shows a removable chip for the asset class filter and removes it', async () => {
