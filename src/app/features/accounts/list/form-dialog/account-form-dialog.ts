@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiChoiceChips, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiChoiceChips, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { AccountType } from '@core/api-client/cairnAPI.schemas';
@@ -36,7 +36,7 @@ export type AccountFormTarget = AccountDraftSource & { id: string };
 
 @Component({
   selector: 'app-account-form-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiChoiceChips, UiDialog, UiField, UiInput],
+  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiChoiceChips, UiDialog, UiField, UiInput],
   templateUrl: './account-form-dialog.html',
   providers: [AccountFormDialogStore],
 })

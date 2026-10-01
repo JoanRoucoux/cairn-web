@@ -43,9 +43,9 @@
   </ui-field>
 
   @if (error()) {
-    <p class="text-label text-(--negative)" data-testid="account-form-error" role="alert">
+    <ui-alert data-testid="account-form-error">
       {{ 'accounts.form.error' | transloco }}
-    </p>
+    </ui-alert>
   }
 
   <button

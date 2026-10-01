@@ -61,9 +61,9 @@
   </form>
 
   @if (error()) {
-    <p class="text-label mt-3 text-(--negative)" data-testid="holding-add-error" role="alert">
+    <ui-alert data-testid="holding-add-error">
       {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
-    </p>
+    </ui-alert>
   }
 
   <button

@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { UiButton, UiDialog, UiField, UiSelect } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog, UiField, UiSelect } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import {
@@ -33,7 +33,7 @@ const CATALOG_RESULT_LIMIT = 4;
 
 @Component({
   selector: 'app-holding-add-dialog',
-  imports: [HoldingAddPicked, HoldingAddSearch, TranslocoPipe, UiButton, UiDialog, UiField, UiSelect],
+  imports: [HoldingAddPicked, HoldingAddSearch, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiSelect],
   templateUrl: './holding-add-dialog.html',
   providers: [HoldingAddDialogStore],
 })

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import {
   type SegmentedOption,
+  UiAlert,
   UiAvatar,
   UiBackLink,
   UiButton,
@@ -38,6 +39,7 @@ import { type PasskeyView, ProfileStore } from './profile-store';
 @Component({
   selector: 'app-profile-page',
   imports: [
+    UiAlert,
     UiAvatar,
     UiBackLink,
     UiCard,

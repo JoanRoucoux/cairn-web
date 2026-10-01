@@ -1,6 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 
-import { UiButton, UiDialog } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { pluralKey } from '@shared/format/plural-key';
@@ -10,7 +10,7 @@ import { AccountDeleteStore } from './account-delete-store';
 
 @Component({
   selector: 'app-account-delete-dialog',
-  imports: [TranslocoPipe, UiButton, UiDialog],
+  imports: [TranslocoPipe, UiAlert, UiButton, UiDialog],
   templateUrl: './account-delete-dialog.html',
   providers: [AccountDeleteStore],
 })

@@ -9,13 +9,13 @@
   <p class="text-body text-(--muted-foreground)">{{ 'accounts.delete.description' | transloco }}</p>
 
   @if (refused()) {
-    <p class="text-label text-(--negative)" data-testid="account-delete-refused" role="alert">
+    <ui-alert data-testid="account-delete-refused">
       {{ pluralKey('accounts.delete.refused', account().lineCount) | transloco: { count: account().lineCount } }}
-    </p>
+    </ui-alert>
   } @else if (error()) {
-    <p class="text-label text-(--negative)" data-testid="account-delete-error" role="alert">
+    <ui-alert data-testid="account-delete-error">
       {{ 'accounts.delete.error' | transloco }}
-    </p>
+    </ui-alert>
   }
 
   <button

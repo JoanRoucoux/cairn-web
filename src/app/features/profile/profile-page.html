@@ -160,16 +160,16 @@
         }
 
         @if (failed()) {
-          <p class="text-label mt-2 text-(--negative)" data-testid="import-failed" role="alert">
+          <ui-alert class="mt-2" data-testid="import-failed">
             {{ 'profile.importFailed' | transloco }}
-          </p>
+          </ui-alert>
         }
 
         @if (rejections().length > 0) {
-          <div class="mt-2" data-testid="import-rejections" role="alert">
-            <p class="text-label mb-2 text-(--negative)">
+          <div class="mt-2" data-testid="import-rejections">
+            <ui-alert class="mb-2">
               {{ 'profile.importRejected' | transloco: { count: rejections().length } }}
-            </p>
+            </ui-alert>
             <div class="overflow-x-auto">
               <table uiTable>
                 <thead>
