@@ -30,7 +30,7 @@
         @if (rangeChangeEur() !== undefined) {
           <ui-delta size="inherit" [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
             <ui-amount currency="EUR" signed whenMasked="hide" [value]="rangeChangeEur()" />
-            <span aria-hidden="true"> &middot; </span>
+            <app-amount-separator />
             {{ rangeChangeRatio() | ratio: { signed: true, decimals: 2 } }}
           </ui-delta>
         } @else {

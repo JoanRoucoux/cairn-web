@@ -6,12 +6,13 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { AmountSeparator } from '@shared/format/amount-separator';
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 @Component({
   selector: 'app-portfolio-total',
-  imports: [RatioPipe, RouterLink, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiSkeleton],
+  imports: [AmountSeparator, RatioPipe, RouterLink, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiSkeleton],
   templateUrl: './portfolio-total.html',
 })
 export class PortfolioTotal {

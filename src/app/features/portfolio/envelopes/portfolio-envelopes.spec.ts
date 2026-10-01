@@ -1,6 +1,6 @@
-import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 
-import type { AsyncState } from '@joanroucoux/cairn-ui';
+import { type AsyncState, UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -15,11 +15,15 @@ const envelopes: EnvelopePerformanceResponse[] = [
   { accountType: 'PEE', valueEur: 107700, share: 0.455, changeEur: 190, changeRatio: 0.0018 },
 ];
 
-const renderComponent = (state: AsyncState = 'ready', data = envelopes): ReturnType<typeof render> =>
+const renderComponent = (state: AsyncState = 'ready', data = envelopes, masked = false): ReturnType<typeof render> =>
   render(PortfolioEnvelopes, {
     imports: [getTranslocoTestingModule()],
     inputs: { state, envelopes: data, range: '1m' },
-    providers: [provideZonelessChangeDetection(), { provide: LOCALE_ID, useValue: 'fr-FR' }],
+    providers: [
+      provideZonelessChangeDetection(),
+      { provide: LOCALE_ID, useValue: 'fr-FR' },
+      { provide: UI_AMOUNT_MASKED, useValue: signal(masked) },
+    ],
   });
 
 describe('PortfolioEnvelopes', () => {
@@ -40,6 +44,15 @@ describe('PortfolioEnvelopes', () => {
     expect(percentOnly).not.toHaveTextContent('€');
     expect(full).toHaveTextContent('+210,00 €');
     expect(full).toHaveTextContent('+0,24 %');
+  });
+
+  it('should hide the amount and drop the separator when amounts are masked', async () => {
+    await renderComponent('ready', envelopes, true);
+
+    const [full] = await screen.findAllByTestId('envelope-change-full');
+
+    expect(full?.querySelector('ui-amount')).toHaveAttribute('hidden');
+    expect(full).not.toHaveTextContent('·');
   });
 
   it('should size the bar to the envelope share', async () => {

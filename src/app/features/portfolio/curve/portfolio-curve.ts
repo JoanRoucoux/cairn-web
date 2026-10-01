@@ -17,11 +17,22 @@ import { LanguageStore } from '@core/i18n/language-store';
 
 import type { ChartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
+import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 @Component({
   selector: 'app-portfolio-curve',
-  imports: [RatioPipe, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiLineChart, UiSegmented, UiSkeleton],
+  imports: [
+    AmountSeparator,
+    RatioPipe,
+    TranslocoPipe,
+    UiAmount,
+    UiAsync,
+    UiDelta,
+    UiLineChart,
+    UiSegmented,
+    UiSkeleton,
+  ],
   templateUrl: './portfolio-curve.html',
 })
 export class PortfolioCurve {

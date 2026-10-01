@@ -21,8 +21,8 @@
   }
 } @else {
   <span class="max-lg:hidden" uiCellSub>
-    @if (holding().isin) {
-      {{ holding().isin }} &middot;
+    @if (holding().isin || holding().symbol; as reference) {
+      {{ reference }} &middot;
     }
     {{ 'enums.assetClass.' + holding().assetClass | transloco }}
   </span>

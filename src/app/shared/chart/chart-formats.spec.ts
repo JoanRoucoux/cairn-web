@@ -27,21 +27,16 @@ describe('chartFormats', () => {
     expect(delta(-240.72)).not.toMatch(/\d/);
   });
 
-  it('should show an hour for the one-day range', () => {
-    const { axis } = chartFormats('en-GB', false, '1d');
+  const at = Date.UTC(2026, 8, 25, 7, 0);
 
-    expect(axis(Date.UTC(2026, 7, 25, 9, 0))).toMatch(/^\d{1,2}/);
-  });
-
-  it('should show a bare hour in French, which already carries its own unit', () => {
-    const { axis } = chartFormats('fr-FR', false, '1d');
-
-    expect(axis(Date.UTC(2026, 7, 25, 9, 0))).toMatch(/^\d{1,2}\s?h$/);
-  });
-
-  it('should show a day and a month for a range beyond one day', () => {
-    const { axis } = chartFormats('en-GB', false, '1m');
-
-    expect(axis(Date.UTC(2026, 7, 25, 9, 0))).toMatch(/[A-Za-z]/);
+  it.each([
+    ['1d', '09:00'],
+    ['7d', 'ven. 25'],
+    ['1m', '25 sept.'],
+    ['1y', 'sept.'],
+    ['5y', '2026'],
+    ['max', '2026'],
+  ] as const)('should label the %s axis like the mockup', (range, expected) => {
+    expect(chartFormats('fr-FR', false, range).axis(at)).toBe(expected);
   });
 });

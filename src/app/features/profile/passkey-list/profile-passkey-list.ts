@@ -11,7 +11,7 @@ import {
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideKeyRound, LucidePlus, LucideTrash2 } from '@lucide/angular';
+import { LucideKeyRound, LucidePlus, LucideTrash } from '@lucide/angular';
 
 import type { PasskeyView } from '../profile-store';
 
@@ -20,7 +20,7 @@ import type { PasskeyView } from '../profile-store';
   imports: [
     LucideKeyRound,
     LucidePlus,
-    LucideTrash2,
+    LucideTrash,
     TranslocoPipe,
     UiAsync,
     UiBadge,

@@ -58,8 +58,8 @@
             </span>
             <span class="hidden lg:inline" data-testid="envelope-change-full">
               <ui-delta weight="regular" [unknownLabel]="'portfolio.unknown' | transloco" [value]="envelope.changeEur">
-                <ui-amount currency="EUR" signed [value]="envelope.changeEur" />
-                <span aria-hidden="true"> &middot; </span>
+                <ui-amount currency="EUR" signed whenMasked="hide" [value]="envelope.changeEur" />
+                <app-amount-separator />
                 {{ envelope.changeRatio | ratio: { signed: true, decimals: 2 } }}
               </ui-delta>
             </span>

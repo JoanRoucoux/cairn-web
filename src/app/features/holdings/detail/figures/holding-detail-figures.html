@@ -12,7 +12,7 @@
         <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().unrealizedGainEur">
           <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding().unrealizedGainEur" />
           @if (holding().unrealizedGainRatio !== null && holding().unrealizedGainRatio !== undefined) {
-            &middot; {{ holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
+            <app-amount-separator /> {{ holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
           }
         </ui-delta>
       }
@@ -21,7 +21,7 @@
       <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().dayChangeEur">
         <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding().dayChangeEur" />
         @if (holding().dayChangeRatio !== null && holding().dayChangeRatio !== undefined) {
-          &middot; {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+          <app-amount-separator /> {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
         }
       </ui-delta>
       <span class="text-(--muted-foreground)">{{ 'holdings.detail.today' | transloco }}</span>

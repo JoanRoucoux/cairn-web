@@ -47,6 +47,7 @@ const holdings = [
     accountName: 'Saxo Investor',
     accountType: 'PEA',
     instrumentName: 'Newly listed fund',
+    symbol: 'NLF',
     marketValueEur: null,
     unrealizedGainEur: 0,
     stale: false,
@@ -138,6 +139,14 @@ describe('HoldingListStore', () => {
     store.search.set('AMUNDI');
     expect(store.groups()).toHaveLength(1);
     expect(store.groups()[0]!.holdings).toHaveLength(1);
+  });
+
+  it('should filter on the symbol', async () => {
+    await load();
+
+    store.search.set('nlf');
+
+    expect(store.groups().flatMap((group) => group.holdings.map((holding) => holding.id))).toEqual(['h4']);
   });
 
   it('should not match on the account name of an ordinary holding', async () => {

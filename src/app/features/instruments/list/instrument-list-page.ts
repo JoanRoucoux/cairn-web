@@ -21,7 +21,7 @@ import {
   UiTr,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash2 } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash } from '@lucide/angular';
 
 import { pluralKey } from '@shared/format/plural-key';
 import { injectDesktop } from '@shared/layout/desktop-media';
@@ -38,7 +38,7 @@ import { InstrumentListStore, type InstrumentRow } from './instrument-list-store
     LucidePencil,
     LucidePlus,
     LucideSearch,
-    LucideTrash2,
+    LucideTrash,
     RouterLink,
     TranslocoPipe,
     UiAsync,
