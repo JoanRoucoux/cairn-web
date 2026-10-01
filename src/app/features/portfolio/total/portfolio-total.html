@@ -9,16 +9,10 @@
     [state]="state()"
     (retry)="retry.emit()"
   >
-<<<<<<< HEAD
-    <div asyncLoading class="flex flex-col gap-3" data-testid="total-loading">
-      <ui-skeleton shape="figure" />
-      <ui-skeleton [height]="16" [lines]="2" />
-=======
     <div asyncLoading class="mt-1 flex flex-col gap-3" data-testid="total-loading">
-      <div class="w-65"><ui-skeleton [height]="40" /></div>
+      <ui-skeleton shape="figure" />
       <div class="w-50"><ui-skeleton [height]="14" /></div>
       <div class="w-60"><ui-skeleton [height]="14" /></div>
->>>>>>> e73bc1b (fix(portfolio): align the dashboard blocks on the V3 mockup)
     </div>
 
     <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.empty.title' | transloco }}</p>

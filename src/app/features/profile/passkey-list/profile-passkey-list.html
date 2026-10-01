@@ -31,11 +31,9 @@
               <span class="flex items-center gap-2">
                 <span class="text-body truncate font-medium">{{ passkey.label }}</span>
                 @if (passkey.current) {
-                  <span
-                    class="rounded-pill text-caption inline-flex h-[22px] flex-none items-center bg-(--muted) px-2 font-medium"
-                    data-testid="current-passkey"
-                    >{{ 'profile.currentDevice' | transloco }}</span
-                  >
+                  <ui-badge class="flex-none" data-testid="current-passkey" size="sm">{{
+                    'profile.currentDevice' | transloco
+                  }}</ui-badge>
                 }
               </span>
               <span class="text-caption text-(--subtle-foreground)" data-testid="passkey-meta">
@@ -71,7 +69,7 @@
   </div>
 
   <button
-    class="mt-1 flex items-center gap-2 self-start pr-4 pl-3 max-lg:h-11!"
+    class="mt-1 flex items-center gap-2 self-start pr-4 pl-3"
     data-testid="manage-passkeys"
     type="button"
     ui-button

@@ -1,11 +1,13 @@
 <ui-dialog
   data-testid="profile-passkey-delete-dialog"
-  width="md"
-  [description]="'profile.delete.description' | transloco"
+  layout="confirm"
+  width="488px"
   [heading]="'profile.delete.title' | transloco: { label: passkey().label }"
   [open]="open()"
   (dismissed)="dismissed.emit()"
 >
+  <p class="text-body text-(--muted-foreground)">{{ 'profile.delete.description' | transloco }}</p>
+
   @if (refused()) {
     <p class="text-label text-(--negative)" data-testid="passkey-delete-refused" role="alert">
       {{ 'profile.delete.refused' | transloco }}

@@ -53,7 +53,7 @@
         'profile.themeLabel' | transloco
       }}</span>
       <ui-segmented
-        class="block [&_[role=radio]]:min-h-10 lg:[&_[role=radio]]:min-h-8"
+        class="block"
         [label]="'profile.themeLabel' | transloco"
         [options]="themeOptions()"
         [value]="theme()"
@@ -69,7 +69,7 @@
         'profile.languageLabel' | transloco
       }}</span>
       <ui-segmented
-        class="block [&_[role=radio]]:min-h-10 lg:[&_[role=radio]]:min-h-8"
+        class="block"
         [label]="'profile.languageLabel' | transloco"
         [options]="languageOptions()"
         [value]="language()"
@@ -83,7 +83,6 @@
         <span class="text-label text-(--muted-foreground)">{{ 'profile.hideAmountsHint' | transloco }}</span>
       </span>
       <input
-        class="lg:h-6! lg:w-10! lg:after:size-5! lg:checked:after:translate-x-4!"
         data-testid="hide-amounts"
         type="checkbox"
         uiSwitch
@@ -101,10 +100,12 @@
 
     <div class="-mt-1 flex flex-col">
       <a
-        class="-mx-2 min-h-18! w-auto! gap-3! px-2! lg:min-h-17!"
+        class="-mx-2 w-auto"
         data-testid="export-csv"
         download
         href="/api/portfolio/export"
+        padding="sm"
+        size="xl"
         ui-row
       >
         <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
@@ -118,8 +119,10 @@
       </a>
 
       <button
-        class="-mx-2 min-h-18! w-auto! gap-3! px-2! lg:min-h-17!"
+        class="-mx-2 w-auto"
         data-testid="import-csv"
+        padding="sm"
+        size="xl"
         type="button"
         ui-row
         [disabled]="importing()"
@@ -138,10 +141,12 @@
       </button>
 
       <a
-        class="-mx-2 min-h-18! w-auto! gap-3! px-2! lg:min-h-17!"
+        class="-mx-2 w-auto"
         data-testid="import-template"
         download
         href="/api/portfolio/import/template"
+        padding="sm"
+        size="xl"
         ui-row
       >
         <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
@@ -154,12 +159,7 @@
         <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
       </a>
 
-      <a
-        class="-mx-2 min-h-18! w-auto! gap-3! px-2! lg:min-h-17!"
-        data-testid="manage-instruments"
-        routerLink="/instruments"
-        ui-row
-      >
+      <a class="-mx-2 w-auto" data-testid="manage-instruments" padding="sm" routerLink="/instruments" size="xl" ui-row>
         <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
           <svg lucideBook [size]="18" [strokeWidth]="1.75" />
         </span>

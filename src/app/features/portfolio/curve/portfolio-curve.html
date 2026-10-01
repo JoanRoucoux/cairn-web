@@ -13,7 +13,7 @@
         <div class="w-55"><ui-skeleton [height]="20" /></div>
         <div class="w-75"><ui-skeleton [height]="36" /></div>
       </div>
-      <ui-skeleton class="lg:flex-1 lg:[&>span]:h-auto! lg:[&>span]:min-h-75 lg:[&>span]:flex-1" [height]="200" />
+      <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-75" />
       <div class="lg:hidden"><ui-skeleton [height]="44" /></div>
     </div>
   </ui-async>
@@ -39,7 +39,7 @@
     </div>
 
     <ui-segmented
-      class="[grid-area:segmented] max-lg:[&_label]:h-10 lg:[&_label]:h-8"
+      class="[grid-area:segmented]"
       [label]="'chart.rangeLabel' | transloco"
       [options]="rangeOptions()"
       [value]="range()"
@@ -56,14 +56,16 @@
         (retry)="retry.emit()"
       >
         <div asyncLoading class="flex flex-1 flex-col" data-testid="curve-loading">
-          <ui-skeleton class="flex-1 [&>span]:min-h-50 lg:[&>span]:min-h-75" [height]="200" />
+          <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-101" />
         </div>
 
         <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>
 
-        <div class="flex min-h-51 flex-1 flex-col lg:min-h-77">
+        <div class="flex min-h-[205px] flex-1 flex-col lg:min-h-101">
           <ui-line-chart
+            axisGap="auto"
             class="block flex-1"
+            tooltip="auto"
             [axisFormat]="formats().axis"
             [deltaFormat]="formats().delta"
             [label]="chartLabelKey() | transloco: chartLabelParams()"
