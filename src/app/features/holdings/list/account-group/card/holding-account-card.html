@@ -17,9 +17,12 @@
   <div class="flex flex-col px-2 py-1.5">
     @for (holding of group().holdings; track holding.id) {
       <a
-        class="rounded-control flex min-h-17 w-full items-center gap-2 px-2 py-1.5 text-left select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
+        class="min-h-17! gap-2!"
         data-testid="holding-row-mobile"
+        padding="sm"
         queryParamsHandling="preserve"
+        ui-row
+        [attr.data-holding-id]="holding.id"
         [routerLink]="['/holdings', holding.id]"
       >
         <div class="flex min-w-0 flex-1 flex-col">
@@ -54,9 +57,11 @@
     }
     @if (group().showCash) {
       <button
-        class="rounded-control flex min-h-17 w-full items-center gap-2 px-2 py-1.5 text-left select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
+        class="min-h-17! gap-2!"
         data-testid="edit-cash-mobile"
+        padding="sm"
         type="button"
+        ui-row
         [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
         (click)="editCash.emit(group().accountId)"
       >

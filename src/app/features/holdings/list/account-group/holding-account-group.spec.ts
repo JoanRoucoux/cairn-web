@@ -90,7 +90,8 @@ describe('HoldingAccountGroup', () => {
   it('should show the account total in the band', async () => {
     await renderGroup();
 
-    expect((await screen.findAllByText('€119,258.00')).length).toBeGreaterThan(1);
+    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(document.querySelector('td[ui-group-cell]')).toHaveTextContent('€119,258.00');
   });
 
   it('should show the ISIN and the class as the subtitle', async () => {

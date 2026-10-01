@@ -102,7 +102,11 @@ export class HoldingListPage {
       const selected = this.selectedHoldingId();
 
       if (this.#wasCompact && !compact) {
-        this.#host.nativeElement.querySelector<HTMLElement>(`[data-holding-id="${this.#lastSelected}"]`)?.focus();
+        const rows = [
+          ...this.#host.nativeElement.querySelectorAll<HTMLElement>(`[data-holding-id="${this.#lastSelected}"]`),
+        ];
+
+        rows.find((row) => row.offsetParent !== null)?.focus();
       }
 
       this.#wasCompact = compact;

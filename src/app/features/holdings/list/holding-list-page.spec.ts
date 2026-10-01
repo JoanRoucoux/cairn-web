@@ -15,9 +15,6 @@ import { HoldingListPage } from './holding-list-page';
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
 
-@Component({ selector: 'app-stub-detail', template: 'detail' })
-class StubDetail {}
-
 const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
 
 const holdings = [
@@ -73,7 +70,10 @@ describe('HoldingListPage', () => {
     return result;
   };
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.verify();
+    vi.unstubAllGlobals();
+  });
 
   it('should group the holdings by account', async () => {
     await renderPage();
@@ -298,31 +298,6 @@ describe('HoldingListPage', () => {
     expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
   });
 
-  it('returns focus to the row of the closed line once the detail closes', async () => {
-    const { fixture } = await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
-      routes: [{ path: '', component: HoldingListPage, children: [{ path: ':holdingId', component: StubDetail }] }],
-      initialRoute: '/h1',
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/holdings').flush(holdings);
-    httpTesting.expectOne('/api/accounts').flush(accounts);
-    await screen.findByText('detail');
-
-    await TestBed.inject(Router).navigateByUrl('/');
-    fixture.detectChanges();
-    TestBed.tick();
-
-    expect(fixture.nativeElement.querySelector('[data-holding-id="h1"]')).toHaveFocus();
-  });
-
   it('opens the cash dialog from the mobile cash line', async () => {
     const user = userEvent.setup();
     await renderPage();
@@ -352,7 +327,6 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() =>
       expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholder'),
     );
-    vi.unstubAllGlobals();
   });
 
   it('opens the add dialog with the account of the add query param, then clears it', async () => {

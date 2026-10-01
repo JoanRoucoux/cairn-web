@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiAmount, UiCard } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiCard, UiRow } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { decimalPlaces } from '@shared/format/decimal-places';
@@ -13,7 +13,7 @@ import { groupCount } from '../group-count';
 
 @Component({
   selector: 'app-holding-account-card',
-  imports: [RatioPipe, RouterLink, TranslocoPipe, UiAmount, UiCard],
+  imports: [RatioPipe, RouterLink, TranslocoPipe, UiAmount, UiCard, UiRow],
   templateUrl: './holding-account-card.html',
   host: { class: 'flex flex-col gap-2', 'data-testid': 'account-card' },
 })
