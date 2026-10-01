@@ -4,10 +4,18 @@
     ui-group-cell
     [attr.colspan]="compact() ? 3 : 7"
     [meta]="
-      ('enums.accountType.' + group().accountType | transloco) +
-      ' · ' +
-      (group().institution ? group().institution + ' · ' : '') +
-      (groupCount(group()).key | transloco: { count: groupCount(group()).count })
+      group().filtered
+        ? ('holdings.filteredMeta'
+          | transloco
+            : {
+                total: accountTotal(),
+                lines:
+                  filteredCount(group().filtered!.rowCount).key | transloco: filteredCount(group().filtered!.rowCount),
+              })
+        : ('enums.accountType.' + group().accountType | transloco) +
+          ' · ' +
+          (group().institution ? group().institution + ' · ' : '') +
+          (groupCount(group()).key | transloco: { count: groupCount(group()).count })
     "
     [name]="group().accountName"
   >

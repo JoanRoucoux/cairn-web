@@ -71,6 +71,21 @@ describe('HoldingDetailFacts', () => {
     expect(row).toHaveTextContent('—');
   });
 
+  it('shows the symbol of a crypto when the API gives one', async () => {
+    await renderFacts({ isin: null, symbol: 'ETH', assetClass: 'CRYPTO' });
+    const row = (await screen.findByText('holdings.detail.symbol')).parentElement!;
+
+    expect(row).toHaveTextContent('ETH');
+  });
+
+  it('shows the ISIN, not a symbol, for a security that has both', async () => {
+    await renderFacts({ symbol: 'CW8' });
+    const row = (await screen.findByText('holdings.detail.isin')).parentElement!;
+
+    expect(row).toHaveTextContent('LU1681043599');
+    expect(row).not.toHaveTextContent('CW8');
+  });
+
   it('keeps the ISIN label for a security without ISIN', async () => {
     await renderFacts({ isin: null });
     const row = (await screen.findByText('holdings.detail.isin')).parentElement!;

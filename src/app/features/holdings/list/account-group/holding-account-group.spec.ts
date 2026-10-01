@@ -118,13 +118,6 @@ describe('HoldingAccountGroup', () => {
     expect(cells[3]).toHaveTextContent('US$289.11');
   });
 
-  it('should name the currency of a quote that is not in euros', async () => {
-    await renderGroup({ holdings: [{ ...holding, priceCurrency: 'USD', stale: false } as never] });
-    const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
-
-    expect(cells[3]).toHaveTextContent('US$289.11');
-  });
-
   it('should show the stale date under the quote', async () => {
     await renderGroup();
 
@@ -260,5 +253,22 @@ describe('HoldingAccountGroup', () => {
     await user.click(await screen.findByTestId('edit-cash'));
 
     expect(emitted).toHaveBeenCalledWith('a1');
+  });
+});
+
+describe('HoldingAccountGroup under a class filter', () => {
+  const filtered = { accountValueEur: 130000.5, rowCount: 1 };
+
+  it('should read the account total and the number of rows in the meta instead of the envelope', async () => {
+    await renderGroup({ filtered, valueEur: 119258 });
+
+    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(document.querySelector('td[ui-group-cell] span.truncate')).toHaveTextContent('holdings.filteredMeta');
+  });
+
+  it('should carry the account id so a deep link can find the group', async () => {
+    await renderGroup();
+
+    expect(document.querySelector('tbody')).toHaveAttribute('data-account-id', 'a1');
   });
 });

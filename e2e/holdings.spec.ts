@@ -27,6 +27,22 @@ test.describe('holdings list', () => {
     await expect(page.getByTestId('add-holding-desktop')).toBeFocused();
   });
 
+  test('filters by class from a chip and from ?classe=', async ({ page }) => {
+    const chips = page.getByRole('group', { name: /classe|class/i });
+    await expect(chips.getByRole('button', { pressed: true })).toContainText(/Toutes|All/);
+
+    await chips.getByRole('button', { name: /^ETF/ }).click();
+
+    await expect(chips.getByRole('button', { name: /^ETF/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('class-summary')).toBeVisible();
+
+    await page.goto('/holdings?classe=crypto');
+
+    await expect(
+      page.getByRole('group', { name: /classe|class/i }).getByRole('button', { pressed: true }),
+    ).toContainText(/Crypto/);
+  });
+
   test('keeps the mobile add button at 44px', async ({ browser }) => {
     const context = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } });
     const page = await context.newPage();

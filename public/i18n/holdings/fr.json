@@ -20,6 +20,18 @@
   "empty": "Aucune ligne ne correspond à votre recherche.",
   "noSearchResults": "Aucune ligne ne correspond à « {{query}} »",
   "noSearchResultsHint": "La recherche porte sur le nom et l'ISIN.",
+  "noResultsInClass": "Aucune ligne ne correspond à « {{query}} » en {{class}}",
+  "noClassResults": "Aucune ligne en {{class}}",
+  "noClassHint": "Retirez le filtre {{class}} pour chercher dans toutes les lignes.",
+  "classFilter": {
+    "label": "Filtrer par classe d'actif",
+    "all": "Toutes"
+  },
+  "classSummary": {
+    "share_one": "· {{share}} du patrimoine, dans {{count}} compte",
+    "share_other": "· {{share}} du patrimoine, dans {{count}} comptes"
+  },
+  "filteredMeta": "sur {{total}} · {{lines}}",
   "error": "Vos lignes n'ont pas pu être chargées.",
   "errorTitle": "Les lignes n'ont pas pu être chargées",
   "errorMessage": "Le serveur n'a pas répondu. Vérifiez la connexion, puis réessayez.",

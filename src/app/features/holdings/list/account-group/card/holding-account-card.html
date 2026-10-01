@@ -2,11 +2,22 @@
   <div class="flex min-w-0 flex-col">
     <h2 class="text-title m-0 font-semibold">{{ group().accountName }}</h2>
     <span class="text-label text-(--muted-foreground)">
-      {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
-      @if (group().institution) {
-        {{ group().institution }} &middot;
+      @if (group().filtered; as filtered) {
+        {{
+          'holdings.filteredMeta'
+            | transloco
+              : {
+                  total: accountTotal(),
+                  lines: filteredCount(filtered.rowCount).key | transloco: filteredCount(filtered.rowCount),
+                }
+        }}
+      } @else {
+        {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
+        @if (group().institution) {
+          {{ group().institution }} &middot;
+        }
+        {{ groupCount(group()).key | transloco: { count: groupCount(group()).count } }}
       }
-      {{ groupCount(group()).key | transloco: { count: groupCount(group()).count } }}
     </span>
   </div>
   <span class="text-title font-semibold whitespace-nowrap tabular-nums">

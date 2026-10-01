@@ -1,0 +1,16 @@
+@if (assetClass(); as selected) {
+  @let className = 'enums.assetClass.' + selected | transloco;
+  <span class="text-body font-medium">{{
+    search().trim()
+      ? ('holdings.noResultsInClass' | transloco: { query: search(), class: className })
+      : ('holdings.noClassResults' | transloco: { class: className })
+  }}</span>
+  <span class="text-label text-(--muted-foreground)">{{
+    'holdings.noClassHint' | transloco: { class: className }
+  }}</span>
+} @else if (search().trim()) {
+  <span class="text-body font-medium">{{ 'holdings.noSearchResults' | transloco: { query: search() } }}</span>
+  <span class="text-label text-(--muted-foreground)">{{ 'holdings.noSearchResultsHint' | transloco }}</span>
+} @else {
+  <span class="text-(--muted-foreground)">{{ 'holdings.empty' | transloco }}</span>
+}

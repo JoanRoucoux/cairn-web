@@ -1,30 +1,37 @@
-import { Component, DestroyRef, ElementRef, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 
 import {
   type AsyncState,
+  type FilterChipOption,
   UiAsync,
   UiButton,
   UiField,
   UiFieldLeading,
+  UiFilterChips,
   UiInput,
+  UiSkeleton,
   UiTable,
   UiTh,
 } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
-import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
-import { HoldingListStore } from './holding-list-store';
+import { HoldingListEmpty } from './empty/holding-list-empty';
+import { CLASS_ORDER, HoldingListStore } from './holding-list-store';
 import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
+import { HoldingClassSummary } from './summary/holding-class-summary';
+
+const ALL = 'ALL';
 
 @Component({
   selector: 'app-holding-list-page',
@@ -32,7 +39,9 @@ import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
     HoldingAccountCard,
     HoldingAccountGroup,
     HoldingAddDialog,
+    HoldingClassSummary,
     HoldingCashDialog,
+    HoldingListEmpty,
     HoldingListSkeleton,
     LucidePlus,
     ManualQuoteDialog,
@@ -42,7 +51,9 @@ import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
     UiButton,
     UiField,
     UiFieldLeading,
+    UiFilterChips,
     UiInput,
+    UiSkeleton,
     UiTable,
     UiTh,
   ],
@@ -55,10 +66,15 @@ export class HoldingListPage {
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
   #destroyRef = inject(DestroyRef);
+  #transloco = inject(TranslocoService);
+
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
   protected readonly search = this.#store.search;
+  protected readonly assetClass = this.#store.assetClass;
+  protected readonly classSummary = this.#store.classSummary;
 
   protected readonly desktop = signal(true);
   protected readonly state = computed<AsyncState>(() => {
@@ -68,6 +84,23 @@ export class HoldingListPage {
 
     return this.holdings.isLoading() ? 'loading' : 'ready';
   });
+
+  protected readonly chips = computed<FilterChipOption[]>(() => {
+    this.#translocoEvents();
+
+    const counts = this.state() === 'ready' ? this.#store.classCounts() : null;
+
+    return [
+      { value: ALL, label: this.#transloco.translate('holdings.classFilter.all'), count: counts?.total },
+      ...CLASS_ORDER.map((assetClass) => ({
+        value: assetClass,
+        label: this.#transloco.translate(`enums.assetClass.${assetClass}`),
+        count: counts?.byClass[assetClass],
+      })),
+    ];
+  });
+
+  protected readonly chipValue = computed(() => this.assetClass() ?? ALL);
 
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
@@ -89,6 +122,7 @@ export class HoldingListPage {
 
   #wasCompact = false;
   #lastSelected: string | undefined;
+  #landedOn: string | undefined;
 
   constructor() {
     const query = globalThis.matchMedia?.('(min-width: 1024px)');
@@ -100,6 +134,25 @@ export class HoldingListPage {
       query.addEventListener('change', update);
       this.#destroyRef.onDestroy(() => query.removeEventListener('change', update));
     }
+
+    afterRenderEffect(() => {
+      const accountId = this.#store.accountParam();
+
+      if (!accountId || this.state() !== 'ready' || accountId === this.#landedOn) {
+        return;
+      }
+
+      const heading = [...this.#host.nativeElement.querySelectorAll<HTMLElement>('[data-account-id]')]
+        .filter((group) => group.dataset['accountId'] === accountId)
+        .map((group) => group.querySelector<HTMLElement>('h2'))
+        .find((candidate) => candidate?.offsetParent);
+
+      if (heading) {
+        this.#landedOn = accountId;
+        heading.tabIndex = -1;
+        heading.focus();
+      }
+    });
 
     effect(() => {
       const account = this.#store.addParam();
@@ -135,6 +188,10 @@ export class HoldingListPage {
 
   protected onSearchInput(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
+  }
+
+  protected onClassChange(value: string): void {
+    this.assetClass.set(value === ALL ? null : (value as AssetClass));
   }
 
   protected onAddSaved(): void {

@@ -47,6 +47,22 @@
   </div>
 </div>
 
+<div class="mt-4 flex flex-col gap-2 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between lg:gap-4">
+  <ui-filter-chips
+    [ariaLabel]="'holdings.classFilter.label' | transloco"
+    [options]="chips()"
+    [value]="chipValue()"
+    (valueChange)="onClassChange($event)"
+  />
+  @if (assetClass(); as selected) {
+    @if (state() === 'loading') {
+      <ui-skeleton [height]="16" [style.width.px]="260" />
+    } @else if (state() === 'ready' && classSummary(); as summary) {
+      <app-holding-class-summary data-testid="class-summary" [assetClass]="selected" [summary]="summary" />
+    }
+  }
+</div>
+
 <div class="mt-4 grid grid-cols-1 items-start gap-4" [class]="compact() ? 'lg:grid-cols-[1fr_400px]' : ''">
   <div class="min-w-0" [class.max-lg:hidden]="compact()">
     <div
@@ -104,16 +120,7 @@
         </table>
 
         @if (groups().length === 0) {
-          <div class="flex flex-col gap-1.5 px-2 py-8 text-center md:py-12" role="status">
-            @if (search().trim()) {
-              <span class="text-body font-medium">{{
-                'holdings.noSearchResults' | transloco: { query: search() }
-              }}</span>
-              <span class="text-label text-(--muted-foreground)">{{ 'holdings.noSearchResultsHint' | transloco }}</span>
-            } @else {
-              <span class="text-(--muted-foreground)">{{ 'holdings.empty' | transloco }}</span>
-            }
-          </div>
+          <app-holding-list-empty [assetClass]="assetClass()" [search]="search()" />
         }
       </ui-async>
     </div>

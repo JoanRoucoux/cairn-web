@@ -28,6 +28,9 @@ export class HoldingDetailFacts {
   protected readonly decimalPlaces = decimalPlaces;
 
   protected readonly crypto = computed(() => this.holding().assetClass === 'CRYPTO');
+  protected readonly identifier = computed(() =>
+    this.crypto() ? this.holding().symbol || this.holding().isin : this.holding().isin,
+  );
 
   protected readonly quoteTime = computed(() => {
     const { assetClass, priceAsOf, priceFetchedAt, stale } = this.holding();

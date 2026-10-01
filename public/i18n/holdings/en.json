@@ -20,6 +20,18 @@
   "empty": "No holding matches your search.",
   "noSearchResults": "No holding matches \"{{query}}\"",
   "noSearchResultsHint": "The search looks at the name and the ISIN.",
+  "noResultsInClass": "No holding matches \"{{query}}\" in {{class}}",
+  "noClassResults": "No holding in {{class}}",
+  "noClassHint": "Remove the {{class}} filter to search all holdings.",
+  "classFilter": {
+    "label": "Filter by asset class",
+    "all": "All"
+  },
+  "classSummary": {
+    "share_one": "· {{share}} of your wealth, in {{count}} account",
+    "share_other": "· {{share}} of your wealth, in {{count}} accounts"
+  },
+  "filteredMeta": "of {{total}} · {{lines}}",
   "error": "Your holdings could not be loaded.",
   "errorTitle": "Your holdings could not be loaded",
   "errorMessage": "The server did not answer. Check your connection, then try again.",
