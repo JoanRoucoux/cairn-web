@@ -140,7 +140,7 @@ test.describe('portfolio', () => {
     await expect(portfolio.tooltip).toBeVisible();
     expect(await portfolio.tooltip.innerText()).not.toMatch(noAmountDigits);
 
-    const table = portfolio.chart.locator('xpath=following-sibling::table');
+    const table = portfolio.chart.locator('xpath=following-sibling::div/table');
     expect(await table.innerText()).not.toMatch(noAmountDigits);
 
     const bodyText = await page.locator('body').innerText();
