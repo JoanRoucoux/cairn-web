@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
 
+import { CairnMark } from '@shared/branding/cairn-mark';
+
 @Component({
   selector: 'app-cairn-logo',
+  imports: [CairnMark],
   template: `
-    <svg aria-hidden="true" class="size-[22px] text-(--primary)" fill="currentColor" viewBox="0 0 16 16">
-      <rect height="3" rx="1.5" width="12" x="2" y="11" />
-      <rect height="3" rx="1.5" width="8" x="4" y="7" />
-      <rect height="3" rx="1.5" width="4" x="6" y="3" />
-    </svg>
+    <app-cairn-mark [size]="22" />
     <span class="text-[20px] leading-none font-bold tracking-[-0.01em]">Cairn</span>
   `,
   host: { class: 'inline-flex items-center gap-2' },

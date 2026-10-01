@@ -37,7 +37,7 @@ export const routes: Routes = [
       },
     ],
   },
-  // Fallback route outside the shell, keep it at the end.
+  // Fallback route, keep it at the end.
   {
     path: '**',
     component: NotFoundPage,

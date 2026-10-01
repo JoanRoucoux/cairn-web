@@ -65,6 +65,11 @@ export class LoginStore {
     return signedIn;
   }
 
+  clearPasswordOutcome(): void {
+    this.refused.set(false);
+    this.failed.set(false);
+  }
+
   async signInWithPasskey(): Promise<boolean> {
     this.#clearOutcomes();
     this.passkeySubmitting.set(true);

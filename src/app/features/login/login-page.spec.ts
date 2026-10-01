@@ -295,6 +295,24 @@ describe('LoginPage', () => {
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 
+  it('should forget a refused password when the mode is switched', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await fillIn(user, 'wrong');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+    expect(await screen.findByTestId('login-refused')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('login-passkey-toggle'));
+    await user.click(screen.getByTestId('login-password-toggle'));
+
+    expect(screen.queryByTestId('login-refused')).not.toBeInTheDocument();
+    expect(screen.getByTestId('login-username')).not.toHaveAttribute('aria-invalid');
+  });
+
   it('should let the password form work once shown', async () => {
     const user = userEvent.setup();
     await renderPage();

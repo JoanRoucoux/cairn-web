@@ -93,10 +93,12 @@ export class LoginPage {
   }
 
   protected usePassword(): void {
+    this.#store.clearPasswordOutcome();
     this.passwordMode.set(true);
   }
 
   protected usePasskey(): void {
+    this.#store.clearPasswordOutcome();
     this.passwordMode.set(false);
     afterNextRender(() => this.#focus('login-passkey'), { injector: this.#injector });
   }
