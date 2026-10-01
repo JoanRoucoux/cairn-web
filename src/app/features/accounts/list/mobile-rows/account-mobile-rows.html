@@ -65,9 +65,11 @@
         </ui-menu>
       </div>
       @if (account.lineCount === 0) {
-        <div
-          class="rounded-control mx-2 mb-2.5 flex items-center justify-between gap-3 bg-(--background) px-3 py-2.5"
+        <ui-card
+          class="mx-2 mb-2.5 flex items-center justify-between gap-3"
           data-testid="account-empty-hint-mobile"
+          padding="panel"
+          variant="inset"
         >
           <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmptyCompact' | transloco }}</span>
           <a
@@ -80,7 +82,7 @@
           >
             {{ 'accounts.rowEmptyAction' | transloco }}
           </a>
-        </div>
+        </ui-card>
       }
     </div>
   }

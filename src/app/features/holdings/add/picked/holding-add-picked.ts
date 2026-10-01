@@ -1,13 +1,13 @@
 import { Component, input, output } from '@angular/core';
 
-import { UiAmount, UiBadge, UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiBadge, UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { AssetClass } from '@core/api-client/cairnAPI.schemas';
 
 @Component({
   selector: 'app-holding-add-picked',
-  imports: [TranslocoPipe, UiAmount, UiBadge, UiButton, UiField, UiInput],
+  imports: [TranslocoPipe, UiAmount, UiBadge, UiButton, UiCard, UiField, UiInput],
   templateUrl: './holding-add-picked.html',
   host: { class: 'flex flex-col gap-4' },
 })
