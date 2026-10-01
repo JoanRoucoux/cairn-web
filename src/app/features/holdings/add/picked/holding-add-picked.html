@@ -1,23 +1,39 @@
-<div class="rounded-control flex items-start justify-between gap-3 border border-(--border) bg-(--background) p-3">
-  <div class="flex min-w-0 flex-col gap-0.5">
-    <span class="flex flex-wrap items-center gap-2">
-      <span class="text-body font-medium">{{ name() }}</span>
-      @if (isNew()) {
-        <ui-badge>{{ 'holdings.add.newBadge' | transloco }}</ui-badge>
+<div class="flex flex-col gap-1.5">
+  <span class="text-label font-medium text-(--muted-foreground)">{{ 'holdings.add.title2' | transloco }}</span>
+  <div class="rounded-control flex items-start gap-3 bg-(--background) p-3 shadow-[inset_0_0_0_1px_var(--border)]">
+    <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div class="flex flex-wrap items-start gap-x-2 gap-y-1">
+        <span class="text-body font-medium text-pretty">{{ name() }}</span>
+        @if (isNew()) {
+          <ui-badge class="flex-none" size="sm">{{ 'holdings.add.newBadge' | transloco }}</ui-badge>
+        }
+      </div>
+      <span class="text-caption text-(--subtle-foreground)">{{ sub() }}</span>
+      @if (isNew() && trialPrice() !== null) {
+        <span class="text-label mt-1 text-(--muted-foreground) tabular-nums">
+          {{ 'holdings.add.trialPrice' | transloco }}
+          <ui-amount currency="EUR" [value]="trialPrice()" />
+          &middot; {{ sourceLabel() }}. {{ 'holdings.add.newNote' | transloco }}
+        </span>
+      } @else if (isNew()) {
+        <span class="text-label mt-1 text-(--muted-foreground)">{{ 'holdings.add.newNote' | transloco }}</span>
       }
-    </span>
-    <span class="text-caption text-(--subtle-foreground)">{{ sub() }}</span>
-    @if (isNew()) {
-      <span class="text-label text-(--muted-foreground)">{{ 'holdings.add.newNote' | transloco }}</span>
-    }
+    </div>
+    <button
+      class="-mt-2 -mr-1 flex-none"
+      data-testid="holding-add-change"
+      type="button"
+      ui-button
+      variant="ghost"
+      (click)="changed.emit()"
+    >
+      {{ 'holdings.add.change' | transloco }}
+    </button>
   </div>
-  <button data-testid="holding-add-change" type="button" ui-button variant="ghost" (click)="changed.emit()">
-    {{ 'holdings.add.change' | transloco }}
-  </button>
 </div>
 
 @if (manual()) {
-  <ui-field class="mt-2" [label]="'holdings.add.assetClass' | transloco">
+  <ui-field [label]="'holdings.add.assetClass' | transloco">
     <select
       data-testid="holding-add-asset-class"
       uiSelect
@@ -32,11 +48,12 @@
   </ui-field>
 }
 
-<div class="mt-2 grid grid-cols-2 gap-2">
-  <ui-field [label]="'holdings.add.quantity' | transloco">
+<div class="grid grid-cols-2 gap-3">
+  <ui-field class="min-w-0" unit="parts" [label]="'holdings.add.quantity' | transloco">
     <input
       autocomplete="off"
       data-testid="holding-add-quantity"
+      enterkeyhint="done"
       inputmode="decimal"
       type="text"
       uiInput
@@ -44,10 +61,15 @@
       (input)="quantityInput.emit($event)"
     />
   </ui-field>
-  <ui-field [label]="('holdings.add.averageCost' | transloco) + ' ' + ('holdings.add.averageCostOptional' | transloco)">
+  <ui-field
+    class="min-w-0"
+    unit="€"
+    [label]="('holdings.add.averageCost' | transloco) + ' ' + ('holdings.add.averageCostOptional' | transloco)"
+  >
     <input
       autocomplete="off"
       data-testid="holding-add-average-cost"
+      enterkeyhint="done"
       inputmode="decimal"
       type="text"
       uiInput
@@ -58,8 +80,12 @@
 </div>
 
 @if (valueAtProbe() !== null) {
-  <p class="text-label text-(--muted-foreground)" data-testid="holding-add-value-at-probe">
-    {{ 'holdings.add.valueAtProbe' | transloco: { value: '' } }}
+  <p class="text-label -mt-1.5 text-(--muted-foreground) tabular-nums" data-testid="holding-add-value-at-probe">
+    {{ 'holdings.add.valueAtProbe' | transloco }}
     <ui-amount currency="EUR" [value]="valueAtProbe()" />
+    @if (gainAtProbe() !== null) {
+      &middot; {{ 'holdings.add.gainAtProbe' | transloco }}
+      <ui-amount currency="EUR" [signed]="true" [value]="gainAtProbe()" />
+    }
   </p>
 }

@@ -144,7 +144,6 @@
     "title": "Add a holding",
     "close": "Close",
     "account": "Account",
-    "chooseAccount": "Choose an account",
     "title2": "Title",
     "titlePlaceholder": "Name or ISIN",
     "catalogHeading": "In the catalogue",
@@ -161,10 +160,19 @@
     "quantity": "Quantity",
     "averageCost": "Average cost",
     "averageCostOptional": "(optional)",
-    "valueAtProbe": "Value at the probe price {{value}}",
+    "valueAtProbe": "Value at the trial price",
     "submit": "Add the holding",
     "submitNew": "Create the instrument and add the holding",
     "error": "This holding could not be added.",
-    "instrumentError": "This instrument could not be created."
+    "instrumentError": "This instrument could not be created.",
+    "noLine": "No holdings",
+    "lineCount_one": "{{count}} holding",
+    "lineCount_other": "{{count}} holdings",
+    "trialPriceCaption": "trial price",
+    "trialPrice": "Trial price",
+    "noOtherOnline": "No other title found online.",
+    "onlineSearching": "Searching online",
+    "gainAtProbe": "unrealised gain",
+    "cancel": "Cancel"
   }
 }

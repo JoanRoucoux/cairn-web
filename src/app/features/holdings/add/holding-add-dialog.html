@@ -9,18 +9,17 @@
 >
   <ui-field [label]="'holdings.add.account' | transloco">
     <select data-testid="holding-add-account" uiSelect [value]="accountId()" (change)="onAccountChange($event)">
-      <option value="">{{ 'holdings.add.chooseAccount' | transloco }}</option>
-      @for (account of accounts.value(); track account.id) {
-        <option [selected]="account.id === accountId()" [value]="account.id">{{ account.name }}</option>
+      @for (account of accountOptions(); track account.id) {
+        <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
       }
     </select>
   </ui-field>
 
-  <div class="mt-4 flex flex-col gap-2">
+  <div class="flex flex-col gap-4">
     @if (!picked()) {
       <app-holding-add-search
         [candidates]="candidates()"
-        [filteredCatalog]="filteredCatalog()"
+        [catalogResults]="catalogResults()"
         [onlineError]="onlineError()"
         [onlineSearched]="onlineSearched()"
         [query]="query()"
@@ -36,11 +35,14 @@
         [assetClass]="assetClass()"
         [assetClasses]="assetClasses"
         [averageCostText]="averageCostText()"
+        [gainAtProbe]="gainAtProbe()"
         [isNew]="isNew()"
         [manual]="picked()?.kind === 'manual'"
         [name]="pickedName()"
         [quantityText]="quantityText()"
+        [sourceLabel]="pickedSourceLabel()"
         [sub]="pickedSub()"
+        [trialPrice]="trialPrice()"
         [valueAtProbe]="valueAtProbe()"
         (assetClassInput)="onAssetClassChange($event)"
         (averageCostInput)="onAverageCostInput($event)"
@@ -56,6 +58,18 @@
     </p>
   }
 
+  <button
+    class="max-lg:hidden"
+    data-testid="holding-add-cancel"
+    dialogActions
+    type="button"
+    ui-button
+    variant="outline"
+    [disabled]="submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.add.cancel' | transloco }}
+  </button>
   <button
     data-testid="holding-add-submit"
     dialogActions

@@ -145,6 +145,9 @@ describe('HoldingListPage', () => {
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() =>
+      httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
+    );
   });
 
   it('closes the add dialog when it is dismissed', async () => {
@@ -155,6 +158,9 @@ describe('HoldingListPage', () => {
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() =>
+      httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
+    );
     screen.getByRole('dialog').dispatchEvent(new Event('close'));
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
@@ -168,7 +174,10 @@ describe('HoldingListPage', () => {
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await vi.waitFor(() =>
+      httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
+    );
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');
@@ -265,6 +274,9 @@ describe('HoldingListPage', () => {
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() =>
+      httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
+    );
   });
 
   it('should show a skeleton while loading', async () => {

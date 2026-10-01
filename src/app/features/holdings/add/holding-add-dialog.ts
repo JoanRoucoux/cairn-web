@@ -1,7 +1,19 @@
-import { Component, ElementRef, type OnInit, afterRenderEffect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  type OnInit,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { UiButton, UiDialog, UiField, UiSelect } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import {
   AssetClass,
@@ -13,7 +25,10 @@ import { filterDecimalInput } from '@shared/format/parse-decimal';
 
 import { HoldingAddDialogStore, type PickedInstrument } from './holding-add-dialog-store';
 import { HoldingAddPicked } from './picked/holding-add-picked';
-import { HoldingAddSearch } from './search/holding-add-search';
+import { type CatalogResult, HoldingAddSearch } from './search/holding-add-search';
+
+const CATALOG_RESULT_LIMIT = 4;
+const ISIN = /^[A-Z]{2}[A-Z0-9]{9}d$/i;
 
 @Component({
   selector: 'app-holding-add-dialog',
@@ -51,8 +66,69 @@ export class HoldingAddDialog implements OnInit {
   protected readonly instrumentError = this.#store.instrumentError;
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$);
+
+  protected readonly catalogResults = computed<CatalogResult[]>(() =>
+    this.filteredCatalog()
+      .slice(0, CATALOG_RESULT_LIMIT)
+      .map((instrument) => ({ instrument, lineCount: this.#store.lineCountOf(instrument.id) })),
+  );
+
+  protected readonly accountOptions = computed(() => {
+    this.#translocoEvents();
+
+    return this.accounts.value().map((account) => ({
+      id: account.id,
+      label: `${account.name} · ${this.#transloco.translate(`enums.accountType.${account.type}`)}`,
+    }));
+  });
+
+  protected readonly trialPrice = this.#store.probePrice;
+  protected readonly gainAtProbe = this.#store.gainAtProbe;
+
+  protected readonly pickedSourceLabel = computed(() => {
+    this.#translocoEvents();
+    const picked = this.picked();
+
+    return picked?.kind === 'online' ? this.#transloco.translate(`enums.priceSource.${picked.candidate.source}`) : '';
+  });
+
+  protected readonly pickedSub = computed(() => {
+    this.#translocoEvents();
+    const picked = this.picked();
+
+    if (picked?.kind === 'catalog') {
+      const { assetClass, isin, priceSource } = picked.instrument;
+
+      return [
+        isin,
+        this.#transloco.translate(`enums.assetClass.${assetClass}`),
+        this.#transloco.translate(`enums.priceSource.${priceSource}`),
+      ]
+        .filter(Boolean)
+        .join(' · ');
+    }
+
+    if (picked?.kind === 'online') {
+      const typed = this.query().trim();
+      const isin = ISIN.test(typed) ? typed.toUpperCase() : null;
+
+      return [isin, picked.candidate.exchange, picked.candidate.sourceRef].filter(Boolean).join(' · ');
+    }
+
+    return '';
+  });
 
   constructor() {
+    effect(() => {
+      const first = this.accounts.hasValue() ? this.accounts.value()[0] : undefined;
+
+      if (first && this.accountId() === '') {
+        this.accountId.set(first.id);
+      }
+    });
+
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();
@@ -111,20 +187,6 @@ export class HoldingAddDialog implements OnInit {
       : picked.kind === 'online'
         ? picked.candidate.name
         : picked.name;
-  }
-
-  protected pickedSub(): string {
-    const picked = this.picked() as PickedInstrument;
-
-    if (picked.kind === 'catalog') {
-      return picked.instrument.isin ?? '';
-    }
-
-    if (picked.kind === 'online') {
-      return `${picked.candidate.exchange ?? ''} · ${picked.candidate.sourceRef}`;
-    }
-
-    return '';
   }
 
   protected isNew(): boolean {

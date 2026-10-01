@@ -144,7 +144,6 @@
     "title": "Ajouter une ligne",
     "close": "Fermer",
     "account": "Compte",
-    "chooseAccount": "Choisir un compte",
     "title2": "Titre",
     "titlePlaceholder": "Nom ou ISIN",
     "catalogHeading": "Dans le catalogue",
@@ -161,10 +160,19 @@
     "quantity": "Quantité",
     "averageCost": "PRU",
     "averageCostOptional": "(facultatif)",
-    "valueAtProbe": "Valeur au cours d'essai {{value}}",
+    "valueAtProbe": "Valeur au cours d'essai",
     "submit": "Ajouter la ligne",
     "submitNew": "Créer le titre et ajouter la ligne",
     "error": "Cette ligne n'a pas pu être ajoutée.",
-    "instrumentError": "Ce titre n'a pas pu être créé."
+    "instrumentError": "Ce titre n'a pas pu être créé.",
+    "noLine": "Aucune ligne",
+    "lineCount_one": "{{count}} ligne",
+    "lineCount_other": "{{count}} lignes",
+    "trialPriceCaption": "cours d'essai",
+    "trialPrice": "Cours d'essai",
+    "noOtherOnline": "Aucun autre titre trouvé en ligne.",
+    "onlineSearching": "Recherche en ligne",
+    "gainAtProbe": "plus-value latente",
+    "cancel": "Annuler"
   }
 }

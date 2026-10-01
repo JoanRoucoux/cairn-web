@@ -44,6 +44,7 @@ describe('HoldingAddDialog', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/accounts').flush(accounts);
     httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/holdings').flush([]);
   };
 
   afterEach(() => {
@@ -55,7 +56,7 @@ describe('HoldingAddDialog', () => {
   it('preselects the account it is opened for', async () => {
     await renderDialog('a1');
 
-    expect(await screen.findByRole('option', { name: 'Saxo Investor' })).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: /Saxo Investor/ })).toBeInTheDocument();
     await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
   });
 
@@ -154,7 +155,7 @@ describe('HoldingAddDialog', () => {
     await renderDialog();
 
     expect(screen.getByTestId('holding-add-submit')).toBeDisabled();
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -170,7 +171,7 @@ describe('HoldingAddDialog', () => {
   it('emits saved once the holding has been created', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -195,7 +196,7 @@ describe('HoldingAddDialog', () => {
   it('reads an optional average cost', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -226,12 +227,69 @@ describe('HoldingAddDialog', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/accounts').flush(accounts);
     httpTesting.expectOne('/api/instruments').flush([{ ...instruments[0], isin: null }]);
+    httpTesting.expectOne('/api/holdings').flush([]);
 
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
     await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
 
     expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
+  });
+
+  it('dismisses from the Cancel button', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('holding-add-cancel'));
+
+    expect(dismissed).toHaveBeenCalled();
+  });
+
+  it('preselects the first account when none is given', async () => {
+    await renderDialog();
+
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
+  });
+
+  it('shows the line count of a catalogue result, and the picked title with its class and source', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-add-query'), 'msci');
+    const result = await screen.findByTestId('holding-add-catalog-candidate');
+
+    expect(result).toHaveTextContent('holdings.add.noLine');
+
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+    await user.click(result);
+
+    expect(screen.getByText('LU1681043599 · enums.assetClass.ETF · enums.priceSource.YAHOO')).toBeInTheDocument();
+  });
+
+  it('says no other title was found online when only the catalogue answered', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-add-query'), 'msci');
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+
+    expect(await screen.findByText('holdings.add.noOtherOnline')).toBeInTheDocument();
+  });
+
+  it('shows the trial price note, and the latent gain once a cost is typed', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-add-query'), 'ishares world');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
+      { name: 'iShares Core MSCI World', source: 'YAHOO', sourceRef: 'EUNL.DE', assetClass: 'ETF', probePrice: 100 },
+    ]);
+    await user.click(await screen.findByTestId('holding-add-online-candidate'));
+    await user.type(screen.getByTestId('holding-add-quantity'), '10');
+    await user.type(screen.getByTestId('holding-add-average-cost'), '80');
+
+    expect(screen.getByText(/holdings.add.trialPrice/)).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-value-at-probe')).toHaveTextContent('holdings.add.gainAtProbe');
   });
 
   it('falls back to a blank exchange for an online candidate with none', async () => {
@@ -250,7 +308,7 @@ describe('HoldingAddDialog', () => {
   it('shows a generic error when creating the holding itself fails', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -270,7 +328,7 @@ describe('HoldingAddDialog', () => {
   it('shows the instrument-specific error when creating the instrument fails', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');
@@ -291,7 +349,7 @@ describe('HoldingAddDialog', () => {
   it('requires an asset class for a manual creation, with no default, and sends it to the API', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: 'Saxo Investor' });
+    await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');

@@ -11,7 +11,7 @@ test.describe('add a line', () => {
   });
 
   test('adds a catalogue hit to an account', async ({ page }) => {
-    await page.getByTestId('holding-add-account').selectOption({ label: 'CTO Boursorama' });
+    await page.getByTestId('holding-add-account').selectOption({ label: 'CTO Boursorama · CTO' });
     await page.getByTestId('holding-add-query').fill('Amundi MSCI World');
 
     await expect(page.getByTestId('holding-add-catalog-candidate')).toBeVisible();
@@ -27,7 +27,7 @@ test.describe('add a line', () => {
   });
 
   test('creates the instrument then the line for an online hit', async ({ page }) => {
-    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama' });
+    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama · PEA' });
     await page.getByTestId('holding-add-query').fill('IE00B4L5Y983');
 
     await expect(page.getByTestId('holding-add-online-candidate')).toBeVisible();
@@ -43,7 +43,7 @@ test.describe('add a line', () => {
   });
 
   test('offers a manual price when nothing is found, with a required asset class', async ({ page }) => {
-    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama' });
+    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama · PEA' });
     await page.getByTestId('holding-add-query').fill('nonexistent');
 
     await expect(page.getByTestId('holding-add-create-manual')).toBeVisible();

@@ -12,6 +12,7 @@ import { normalizeSearch } from '@shared/format/normalize-search';
 import { parseDecimal } from '@shared/format/parse-decimal';
 
 const SEARCH_DEBOUNCE_MS = 300;
+const MIN_ONLINE_QUERY = 3;
 
 export type PickedInstrument =
   | { kind: 'catalog'; instrument: InstrumentResponse }
@@ -34,6 +35,11 @@ export class HoldingAddDialogStore {
     defaultValue: [],
   });
 
+  readonly holdings = rxResource({
+    stream: () => this.#holdingsApiClient.listHoldings(),
+    defaultValue: [],
+  });
+
   readonly query = signal('');
   readonly accountId = signal('');
   readonly quantityText = signal('');
@@ -53,6 +59,20 @@ export class HoldingAddDialogStore {
 
   #createdInstrumentId: string | undefined;
   #debounceHandle: ReturnType<typeof setTimeout> | undefined;
+
+  readonly #lineCounts = computed(() => {
+    const counts = new Map<string, number>();
+
+    for (const holding of this.holdings.hasValue() ? this.holdings.value() : []) {
+      counts.set(holding.instrumentId, (counts.get(holding.instrumentId) ?? 0) + 1);
+    }
+
+    return counts;
+  });
+
+  lineCountOf(instrumentId: string): number {
+    return this.#lineCounts().get(instrumentId) ?? 0;
+  }
 
   readonly filteredCatalog = computed(() => {
     const query = normalizeSearch(this.query().trim());
@@ -82,6 +102,16 @@ export class HoldingAddDialogStore {
     return quantity !== null && quantity > 0 && price !== null ? quantity * price : null;
   });
 
+  readonly gainAtProbe = computed(() => {
+    const quantity = this.quantity();
+    const price = this.probePrice();
+    const cost = this.averageCost();
+
+    return quantity !== null && quantity > 0 && price !== null && cost !== null && cost > 0
+      ? quantity * (price - cost)
+      : null;
+  });
+
   readonly valid = computed(() => {
     const quantity = this.quantity();
     const picked = this.picked();
@@ -108,7 +138,7 @@ export class HoldingAddDialogStore {
 
     const trimmed = value.trim();
 
-    if (!trimmed) {
+    if (trimmed.length < MIN_ONLINE_QUERY) {
       return;
     }
 
