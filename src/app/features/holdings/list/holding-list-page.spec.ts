@@ -271,33 +271,6 @@ describe('HoldingListPage', () => {
     expect(await screen.findByText('holdings.empty')).toBeInTheDocument();
   });
 
-  it('shows a removable chip for the stale filter and removes it', async () => {
-    const user = userEvent.setup();
-    await renderPage('/?filter=stale');
-    await screen.findAllByText('Esalia');
-
-    const chip = screen.getByTestId('filter-chip-stale');
-    expect(chip).toHaveTextContent('holdings.filters.stale');
-    expect(screen.queryByText('Saxo Investor')).not.toBeInTheDocument();
-
-    await user.click(chip);
-
-    expect(await screen.findAllByText('Saxo Investor')).not.toHaveLength(0);
-  });
-
-  it('shows a removable chip for the account filter and removes it', async () => {
-    const user = userEvent.setup();
-    await renderPage('/?account=Saxo Investor');
-    await screen.findAllByText('Saxo Investor');
-
-    const chip = screen.getByTestId('filter-chip-account');
-    expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
-
-    await user.click(chip);
-
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
-  });
-
   it('opens the cash dialog from the mobile cash line', async () => {
     const user = userEvent.setup();
     await renderPage();
@@ -354,19 +327,10 @@ describe('HoldingListPage', () => {
     httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
   });
 
-  it('shows a removable chip for the asset class filter and removes it', async () => {
-    const user = userEvent.setup();
-    await renderPage('/?assetClass=ETF', [
-      { ...holdings[0], assetClass: 'ETF' },
-      { ...holdings[1], assetClass: 'FUND' },
-    ]);
-    await screen.findAllByText('Saxo Investor');
+  it('ignores the old filter params', async () => {
+    await renderPage('/?filter=stale&account=Esalia&assetClass=ETF');
 
-    const chip = screen.getByTestId('filter-chip-asset-class');
-    expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
-
-    await user.click(chip);
-
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect((await screen.findAllByText('Saxo Investor')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Esalia').length).toBeGreaterThan(0);
   });
 });

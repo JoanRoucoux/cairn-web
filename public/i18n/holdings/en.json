@@ -39,12 +39,6 @@
   },
   "addLine": "Add a holding",
   "addLineShort": "Add a holding",
-  "filters": {
-    "stale": "Stale quotes",
-    "account": "Account: {{name}}",
-    "assetClass": "Class: {{name}}",
-    "remove": "Remove the {{label}} filter"
-  },
   "manualQuote": {
     "open": "Enter a price",
     "title": "Price for {{name}}",

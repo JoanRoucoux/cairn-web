@@ -285,48 +285,6 @@ describe('HoldingListStore', () => {
     ).toBe(true);
   });
 
-  it('should filter to holdings with a stale quote from a query param', async () => {
-    configure({ filter: 'stale' });
-    expect(store.staleFilter()).toBe(true);
-    await load();
-
-    expect(store.groups()).toHaveLength(1);
-    expect(store.groups()[0]!.accountName).toBe('Esalia');
-  });
-
-  it('should not seed a cash-only account while the stale filter is active', async () => {
-    configure({ filter: 'stale' });
-    await load();
-
-    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(false);
-  });
-
-  it('should filter to one account from a query param', async () => {
-    configure({ account: 'Saxo Investor' });
-    expect(store.accountFilter()).toBe('Saxo Investor');
-    await load();
-
-    expect(store.groups()).toHaveLength(1);
-    expect(store.groups()[0]!.accountName).toBe('Saxo Investor');
-  });
-
-  it('should filter positions to one asset class from a query param', async () => {
-    const classed = holdings.map((holding) => ({ ...holding, assetClass: holding.assetClass ?? 'ETF' }));
-    configure({ assetClass: 'ETF' });
-    TestBed.tick();
-    httpTesting.expectOne('/api/holdings').flush(classed);
-    httpTesting.expectOne('/api/accounts').flush(accounts);
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.assetClassFilter()).toBe('ETF');
-    expect(
-      store
-        .groups()
-        .flatMap((group) => group.holdings)
-        .every((holding) => holding.assetClass === 'ETF'),
-    ).toBe(true);
-  });
-
   it('should carry the account institution onto each group', async () => {
     await load();
 
@@ -342,12 +300,36 @@ describe('HoldingListStore', () => {
     expect(store.addParam()).toBe('a1');
   });
 
-  it('should leave the filters unset without matching query params', async () => {
+  it('should ignore filter params it no longer knows', async () => {
+    configure({ filter: 'stale', account: 'Esalia', assetClass: 'ETF' });
     await load();
 
-    expect(store.staleFilter()).toBe(false);
-    expect(store.accountFilter()).toBeNull();
-    expect(store.assetClassFilter()).toBeNull();
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
+  });
+
+  it('should not find a savings booklet by its name', async () => {
+    const booklet = {
+      ...holdings[0]!,
+      id: 'h8',
+      accountId: 'a3',
+      accountName: 'Livret A',
+      accountType: 'SAVINGS',
+      assetClass: 'CASH',
+      instrumentName: 'Livret A',
+    };
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush([booklet]);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    store.search.set('livret');
+
+    expect(store.groups()).toEqual([]);
+  });
+
+  it('should read the add param and nothing else from the query', async () => {
+    await load();
+
     expect(store.addParam()).toBeNull();
   });
 });

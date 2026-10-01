@@ -82,18 +82,6 @@ test.describe('holdings list', () => {
     await expect(page.getByText('No holding matches "zzz-nope"')).toBeVisible();
   });
 
-  test('filters to a stale line from a query param, with a removable chip', async ({ page }) => {
-    await page.goto('/holdings?filter=stale');
-
-    await expect(page.getByTestId('filter-chip-stale')).toBeVisible();
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await expect(boursorama.getByRole('link', { name: 'Bitcoin' })).toBeVisible();
-    await expect(boursorama.getByRole('link', { name: 'Amundi MSCI World' })).toHaveCount(0);
-
-    await page.getByTestId('filter-chip-stale').click();
-    await expect(page).toHaveURL(/\/holdings$/);
-  });
-
   test('shows the prefilled balance and updates it through the cash dialog', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
     await boursorama.getByTestId('edit-cash').click();

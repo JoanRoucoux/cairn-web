@@ -39,12 +39,6 @@
   },
   "addLine": "Ajouter une ligne",
   "addLineShort": "Ajouter une ligne",
-  "filters": {
-    "stale": "Cours en retard",
-    "account": "Compte : {{name}}",
-    "assetClass": "Classe : {{name}}",
-    "remove": "Retirer le filtre {{label}}"
-  },
   "manualQuote": {
     "open": "Saisir un cours",
     "title": "Cours de {{name}}",

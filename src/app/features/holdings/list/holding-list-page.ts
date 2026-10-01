@@ -23,7 +23,6 @@ import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
-import { HoldingListFilters } from './filters/holding-list-filters';
 import { HoldingListStore } from './holding-list-store';
 import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
 
@@ -34,7 +33,6 @@ import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
     HoldingAccountGroup,
     HoldingAddDialog,
     HoldingCashDialog,
-    HoldingListFilters,
     HoldingListSkeleton,
     LucidePlus,
     ManualQuoteDialog,
@@ -61,9 +59,6 @@ export class HoldingListPage {
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
   protected readonly search = this.#store.search;
-  protected readonly staleFilter = this.#store.staleFilter;
-  protected readonly accountFilter = this.#store.accountFilter;
-  protected readonly assetClassFilter = this.#store.assetClassFilter;
 
   protected readonly desktop = signal(true);
   protected readonly state = computed<AsyncState>(() => {

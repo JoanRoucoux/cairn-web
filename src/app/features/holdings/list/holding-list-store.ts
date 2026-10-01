@@ -3,7 +3,7 @@ import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
 import { AccountService } from '@core/api-client/account/account.service';
-import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 
 import { normalizeSearch } from '@shared/format/normalize-search';
@@ -24,7 +24,7 @@ export type AccountGroup = {
 };
 
 const matches = (holding: HoldingResponse, search: string): boolean =>
-  normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''}`).includes(search);
+  holding.assetClass !== 'CASH' && normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''}`).includes(search);
 
 export const isBooklet = (holding: HoldingResponse): boolean => holding.assetClass === 'CASH';
 
@@ -38,10 +38,7 @@ export class HoldingListStore {
 
   readonly #queryParamMap = toSignal(this.#route.queryParamMap);
 
-  readonly staleFilter = computed(() => this.#queryParamMap()?.get('filter') === 'stale');
   readonly addParam = computed(() => this.#queryParamMap()?.get('add') ?? null);
-  readonly accountFilter = computed(() => this.#queryParamMap()?.get('account') ?? null);
-  readonly assetClassFilter = computed(() => (this.#queryParamMap()?.get('assetClass') as AssetClass | null) ?? null);
 
   readonly holdings = rxResource({
     stream: () => this.#holdingsApiClient.listHoldings(),
@@ -77,17 +74,7 @@ export class HoldingListStore {
     return cash;
   });
 
-  readonly #filtered = computed(() => {
-    let positions = this.#allHoldings().filter((holding) => !holding.accountCash);
-
-    if (this.staleFilter()) {
-      positions = positions.filter((holding) => holding.stale);
-    }
-
-    const assetClass = this.assetClassFilter();
-
-    return assetClass ? positions.filter((holding) => holding.assetClass === assetClass) : positions;
-  });
+  readonly #positions = computed(() => this.#allHoldings().filter((holding) => !holding.accountCash));
 
   readonly groups = computed<AccountGroup[]>(() => {
     const byAccount = new Map<string, AccountGroup>();
@@ -109,7 +96,7 @@ export class HoldingListStore {
       holdings: [],
     });
 
-    for (const holding of this.#filtered()) {
+    for (const holding of this.#positions()) {
       const group =
         byAccount.get(holding.accountId) ?? newGroup(holding.accountId, holding.accountName, holding.accountType);
 
@@ -134,7 +121,7 @@ export class HoldingListStore {
       byAccount.set(holding.accountId, group);
     }
 
-    if (!searching && !this.staleFilter() && !this.assetClassFilter()) {
+    if (!searching) {
       for (const [accountId, info] of cashByAccount) {
         if (!byAccount.has(accountId)) {
           byAccount.set(accountId, newGroup(accountId, info.accountName, info.accountType));
@@ -144,12 +131,11 @@ export class HoldingListStore {
 
     const order = new Map(this.#accountList().map((account, index) => [account.id, index]));
     const rank = (group: AccountGroup): number => order.get(group.accountId) ?? Number.MAX_SAFE_INTEGER;
-    const account = this.accountFilter();
     const groups = [...byAccount.values()]
       .filter((group) => !searching || group.holdings.length > 0)
       .map((group) => ({ ...group, valueEur: Number(group.valueEur.toFixed(2)) }))
       .sort((left, right) => rank(left) - rank(right));
 
-    return account ? groups.filter((group) => group.accountName === account) : groups;
+    return groups;
   });
 }
