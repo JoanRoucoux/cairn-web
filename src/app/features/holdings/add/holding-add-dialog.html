@@ -7,50 +7,52 @@
   [open]="open()"
   (dismissed)="dismiss()"
 >
-  <ui-field [label]="'holdings.add.account' | transloco">
-    <select data-testid="holding-add-account" uiSelect [value]="accountId()" (change)="onAccountChange($event)">
-      @for (account of accountOptions(); track account.id) {
-        <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
-      }
-    </select>
-  </ui-field>
+  <form class="flex flex-col gap-4" id="holding-add-form" novalidate (submit)="onSubmit($event)">
+    <ui-field [label]="'holdings.add.account' | transloco">
+      <select data-testid="holding-add-account" uiSelect [value]="accountId()" (change)="onAccountChange($event)">
+        @for (account of accountOptions(); track account.id) {
+          <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
+        }
+      </select>
+    </ui-field>
 
-  <div class="flex flex-col gap-4">
-    @if (!picked()) {
-      <app-holding-add-search
-        [candidates]="candidates()"
-        [catalogResults]="catalogResults()"
-        [onlineError]="onlineError()"
-        [onlineSearched]="onlineSearched()"
-        [query]="query()"
-        [searchingOnline]="searchingOnline()"
-        (pickedCatalog)="pickCatalog($event)"
-        (pickedManual)="pickManual()"
-        (pickedOnline)="pickOnline($event)"
-        (queryInput)="onQueryInput($event)"
-        (retried)="retryOnline()"
-      />
-    } @else {
-      <app-holding-add-picked
-        [assetClass]="assetClass()"
-        [assetClasses]="assetClasses"
-        [averageCostText]="averageCostText()"
-        [gainAtProbe]="gainAtProbe()"
-        [isNew]="isNew()"
-        [manual]="picked()?.kind === 'manual'"
-        [name]="pickedName()"
-        [quantityText]="quantityText()"
-        [sourceLabel]="pickedSourceLabel()"
-        [sub]="pickedSub()"
-        [trialPrice]="trialPrice()"
-        [valueAtProbe]="valueAtProbe()"
-        (assetClassInput)="onAssetClassChange($event)"
-        (averageCostInput)="onAverageCostInput($event)"
-        (changed)="unpick()"
-        (quantityInput)="onQuantityInput($event)"
-      />
-    }
-  </div>
+    <div class="flex flex-col gap-4">
+      @if (!picked()) {
+        <app-holding-add-search
+          [candidates]="candidates()"
+          [catalogResults]="catalogResults()"
+          [onlineError]="onlineError()"
+          [onlineSearched]="onlineSearched()"
+          [query]="query()"
+          [searchingOnline]="searchingOnline()"
+          (pickedCatalog)="pickCatalog($event)"
+          (pickedManual)="pickManual()"
+          (pickedOnline)="pickOnline($event)"
+          (queryInput)="onQueryInput($event)"
+          (retried)="retryOnline()"
+        />
+      } @else {
+        <app-holding-add-picked
+          [assetClass]="assetClass()"
+          [assetClasses]="assetClasses"
+          [averageCostText]="averageCostText()"
+          [gainAtProbe]="gainAtProbe()"
+          [isNew]="isNew()"
+          [manual]="picked()?.kind === 'manual'"
+          [name]="pickedName()"
+          [quantityText]="quantityText()"
+          [sourceLabel]="pickedSourceLabel()"
+          [sub]="pickedSub()"
+          [trialPrice]="trialPrice()"
+          [valueAtProbe]="valueAtProbe()"
+          (assetClassInput)="onAssetClassChange($event)"
+          (averageCostInput)="onAverageCostInput($event)"
+          (changed)="unpick()"
+          (quantityInput)="onQuantityInput($event)"
+        />
+      }
+    </div>
+  </form>
 
   @if (error()) {
     <p class="text-label mt-3 text-(--negative)" data-testid="holding-add-error" role="alert">
@@ -73,11 +75,11 @@
   <button
     data-testid="holding-add-submit"
     dialogActions
-    type="button"
+    form="holding-add-form"
+    type="submit"
     ui-button
     [disabled]="!valid() || submitting()"
     [loading]="submitting()"
-    (click)="confirm()"
   >
     {{ (isNew() ? 'holdings.add.submitNew' : 'holdings.add.submit') | transloco }}
   </button>

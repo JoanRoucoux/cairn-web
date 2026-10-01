@@ -62,6 +62,19 @@ describe('HoldingAddDialogStore search and probe', () => {
     expect(store.lineCountOf('i2')).toBe(0);
   });
 
+  it('has no line count while the holdings are not loaded', async () => {
+    TestBed.tick();
+
+    expect(store.lineCountOf('i1')).toBeNull();
+
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/holdings').flush(null, { status: 500, statusText: 'x' });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.lineCountOf('i1')).toBeNull();
+  });
+
   it('does not search online below three characters', async () => {
     await load();
     vi.useFakeTimers();

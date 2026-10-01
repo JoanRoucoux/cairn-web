@@ -28,7 +28,10 @@ describe('HoldingAddDialog', () => {
   const saved = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (presetAccountId: string | null = null): Promise<void> => {
+  const renderDialog = async (
+    presetAccountId: string | null = null,
+    catalog: unknown[] = instruments,
+  ): Promise<void> => {
     await render(HoldingAddDialog, {
       inputs: { presetAccountId },
       on: { saved, dismissed },
@@ -43,7 +46,7 @@ describe('HoldingAddDialog', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/accounts').flush(accounts);
-    httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/instruments').flush(catalog);
     httpTesting.expectOne('/api/holdings').flush([]);
   };
 

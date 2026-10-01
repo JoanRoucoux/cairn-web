@@ -13,7 +13,7 @@
   </ui-field>
 
   @if (showResults()) {
-    <div class="rounded-control flex flex-col bg-(--background) p-1 shadow-[inset_0_0_0_1px_var(--hairline)]">
+    <div class="rounded-control mt-1 flex flex-col bg-(--background) p-1 shadow-[inset_0_0_0_1px_var(--hairline)]">
       @if (catalogResults().length > 0) {
         <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
           {{ 'holdings.add.catalogHeading' | transloco }}
@@ -32,9 +32,11 @@
                 {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
               </span>
             </span>
-            <span class="text-caption flex-none text-(--muted-foreground)">
-              {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
-            </span>
+            @if (result.lineCount !== null) {
+              <span class="text-caption flex-none text-(--muted-foreground)">
+                {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
+              </span>
+            }
           </button>
         }
       }

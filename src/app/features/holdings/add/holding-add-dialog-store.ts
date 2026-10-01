@@ -70,8 +70,12 @@ export class HoldingAddDialogStore {
     return counts;
   });
 
-  lineCountOf(instrumentId: string): number {
-    return this.#lineCounts().get(instrumentId) ?? 0;
+  lineCountOf(instrumentId: string): number | null {
+    const status = this.holdings.status();
+
+    return status === 'resolved' || status === 'reloading' || status === 'local'
+      ? (this.#lineCounts().get(instrumentId) ?? 0)
+      : null;
   }
 
   readonly filteredCatalog = computed(() => {

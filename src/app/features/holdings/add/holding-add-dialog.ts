@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  LOCALE_ID,
   type OnInit,
   afterRenderEffect,
   computed,
@@ -24,11 +25,11 @@ import {
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 
 import { HoldingAddDialogStore, type PickedInstrument } from './holding-add-dialog-store';
+import { isinOf } from './isin';
 import { HoldingAddPicked } from './picked/holding-add-picked';
 import { type CatalogResult, HoldingAddSearch } from './search/holding-add-search';
 
 const CATALOG_RESULT_LIMIT = 4;
-const ISIN = /^[A-Z]{2}[A-Z0-9]{9}d$/i;
 
 @Component({
   selector: 'app-holding-add-dialog',
@@ -65,12 +66,14 @@ export class HoldingAddDialog implements OnInit {
   protected readonly error = this.#store.error;
   protected readonly instrumentError = this.#store.instrumentError;
 
+  readonly #collator = new Intl.Collator(inject(LOCALE_ID), { sensitivity: 'base', numeric: true });
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$);
 
   protected readonly catalogResults = computed<CatalogResult[]>(() =>
-    this.filteredCatalog()
+    [...this.filteredCatalog()]
+      .sort((a, b) => this.#collator.compare(a.name, b.name))
       .slice(0, CATALOG_RESULT_LIMIT)
       .map((instrument) => ({ instrument, lineCount: this.#store.lineCountOf(instrument.id) })),
   );
@@ -111,10 +114,7 @@ export class HoldingAddDialog implements OnInit {
     }
 
     if (picked?.kind === 'online') {
-      const typed = this.query().trim();
-      const isin = ISIN.test(typed) ? typed.toUpperCase() : null;
-
-      return [isin, picked.candidate.exchange, picked.candidate.sourceRef].filter(Boolean).join(' · ');
+      return [isinOf(this.query()), picked.candidate.exchange, picked.candidate.sourceRef].filter(Boolean).join(' · ');
     }
 
     return '';
@@ -200,6 +200,14 @@ export class HoldingAddDialog implements OnInit {
   protected dismiss(): void {
     this.open.set(false);
     this.dismissed.emit();
+  }
+
+  protected onSubmit(event: Event): void {
+    event.preventDefault();
+
+    if (this.valid() && !this.submitting()) {
+      void this.confirm();
+    }
   }
 
   protected async confirm(): Promise<void> {

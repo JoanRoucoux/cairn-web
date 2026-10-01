@@ -8,9 +8,9 @@ import type { InstrumentCandidateResponse, InstrumentResponse } from '@core/api-
 
 import { pluralKey } from '@shared/format/plural-key';
 
-export type CatalogResult = { instrument: InstrumentResponse; lineCount: number };
+import { isinOf } from '../isin';
 
-const ISIN = /^[A-Z]{2}[A-Z0-9]{9}\d$/i;
+export type CatalogResult = { instrument: InstrumentResponse; lineCount: number | null };
 
 @Component({
   selector: 'app-holding-add-search',
@@ -47,9 +47,7 @@ export class HoldingAddSearch {
   protected readonly onlineLoading = computed(
     () => this.searchingOnline() || (!this.onlineSearched() && !this.onlineError()),
   );
-  protected readonly typedIsin = computed(() =>
-    ISIN.test(this.query().trim()) ? this.query().trim().toUpperCase() : null,
-  );
+  protected readonly typedIsin = computed(() => isinOf(this.query()));
 
   protected lineCountKey(count: number): string {
     return count === 0 ? 'holdings.add.noLine' : pluralKey('holdings.add.lineCount', count);

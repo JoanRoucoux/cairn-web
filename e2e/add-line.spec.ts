@@ -60,6 +60,16 @@ test.describe('add a line', () => {
     await expect(page.getByTestId('holding-add-dialog')).toHaveCount(0);
   });
 
+  test('submits with Enter from the quantity field', async ({ page }) => {
+    await page.getByTestId('holding-add-account').selectOption({ label: 'CTO Boursorama · CTO' });
+    await page.getByTestId('holding-add-query').fill('Amundi MSCI World');
+    await page.getByTestId('holding-add-catalog-candidate').click();
+    await page.getByTestId('holding-add-quantity').fill('3');
+    await page.getByTestId('holding-add-quantity').press('Enter');
+
+    await expect(page.getByTestId('holding-add-dialog')).toHaveCount(0);
+  });
+
   test('shows the online search error with its own retry, keeping the catalogue results', async ({ page }) => {
     await page.route('**/api/instruments/resolve', (route) =>
       route.fulfill({ status: 500, json: { message: 'boom' } }),
