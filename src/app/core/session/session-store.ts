@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
+import { type AsyncState } from '@joanroucoux/cairn-ui';
 import { catchError, firstValueFrom, of } from 'rxjs';
 
 import { SessionService } from '@core/api-client/session/session.service';
@@ -17,7 +18,19 @@ export class SessionStore {
     stream: () => this.#sessionApiClient.getSession(),
   });
 
-  readonly owner = computed(() => this.#session.value() ?? NO_OWNER);
+  readonly #loaded = computed(() => (this.#session.hasValue() ? this.#session.value() : undefined));
+
+  readonly state = computed<AsyncState>(() => {
+    if (this.#session.error()) {
+      return 'error';
+    }
+
+    return this.#session.hasValue() ? 'ready' : 'loading';
+  });
+
+  readonly owner = computed(() => this.#loaded() ?? NO_OWNER);
+  readonly username = computed(() => this.#loaded()?.username ?? '');
+  readonly signInMethod = computed(() => this.#loaded()?.signInMethod);
 
   async signOut(): Promise<void> {
     // A failed logout must not strand the user on a screen they can no longer use: the caller

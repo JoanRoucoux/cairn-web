@@ -67,13 +67,79 @@ describe('AccountFormDialog', () => {
     expect(dismissed).toHaveBeenCalled();
   });
 
-  it('says which fields are missing instead of refusing in silence', async () => {
+  it('keeps the submit disabled until a name and an envelope are set, and names a missing field once it is left', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
+    expect(screen.getByTestId('account-form-submit')).toBeDisabled();
+
+    await user.click(screen.getByTestId('account-form-name'));
+    await user.tab();
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+
+    await user.type(screen.getByTestId('account-form-name'), 'PEA');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
+
+    expect(screen.getByTestId('account-form-submit')).toBeEnabled();
+  });
+
+  it('offers the seven envelopes as radio chips, and the dormant PEA-PME one only when editing it', async () => {
+    await renderDialog();
+
+    expect(screen.getAllByRole('radio').map((chip) => chip.textContent?.trim())).toEqual([
+      'enums.accountType.PEA',
+      'enums.accountType.PEE',
+      'enums.accountType.PER',
+      'enums.accountType.CTO',
+      'enums.accountType.LIFE_INSURANCE',
+      'enums.accountType.CRYPTO',
+      'enums.accountType.SAVINGS',
+    ]);
+  });
+
+  it('keeps the PEA-PME chip for an account of that envelope', async () => {
+    await renderDialog({ id: 'a1', name: 'Vieux', type: 'PEA_PME', institution: 'X' });
+
+    expect(screen.getByRole('radio', { name: 'enums.accountType.PEA_PME' })).toBeChecked();
+  });
+
+  it('shows the envelope error once the chips lose focus unanswered, and clears it on a pick', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    screen.getAllByRole('radio')[0]!.focus();
+    await user.tab();
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    expect(screen.getAllByRole('alert')).toHaveLength(1);
+
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
+
+    expect(screen.getByRole('radio', { name: 'enums.accountType.CTO' })).toBeChecked();
+    await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+  });
+
+  it('creates without an institution, and labels the actions for each mode', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    expect(screen.getByTestId('account-form-submit')).toHaveTextContent('accounts.form.create');
+    await user.type(screen.getByTestId('account-form-name'), 'Trade Republic');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
+    await user.type(screen.getByTestId('account-form-institution'), '   ');
     await user.click(screen.getByTestId('account-form-submit'));
 
-    expect(screen.getAllByRole('alert')).toHaveLength(3);
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts'));
+    expect(request.request.body).toEqual({ name: 'Trade Republic', type: 'CTO', institution: '' });
+    request.flush({});
+  });
+
+  it('labels the primary action Save when editing', async () => {
+    await renderDialog({ id: 'a1', name: 'PEA', type: 'PEA', institution: 'Saxo' });
+
+    expect(screen.getByTestId('account-form-submit')).toHaveTextContent('accounts.form.submit');
   });
 
   it('should emit savedForm once the account is accepted', async () => {
@@ -81,7 +147,7 @@ describe('AccountFormDialog', () => {
     await renderDialog();
 
     await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
-    await user.selectOptions(screen.getByTestId('account-form-type'), 'PEA');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
 
@@ -94,7 +160,7 @@ describe('AccountFormDialog', () => {
     await renderDialog();
 
     await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
-    await user.selectOptions(screen.getByTestId('account-form-type'), 'PEA');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
 
@@ -110,7 +176,7 @@ describe('AccountFormDialog', () => {
     await renderDialog();
 
     await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
-    await user.selectOptions(screen.getByTestId('account-form-type'), 'PEA');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(null, { status: 409, statusText: 'Conflict' }));
@@ -126,7 +192,7 @@ describe('AccountFormDialog', () => {
     await renderDialog();
 
     await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
-    await user.selectOptions(screen.getByTestId('account-form-type'), 'PEA');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
 

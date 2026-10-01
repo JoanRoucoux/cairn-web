@@ -18,6 +18,7 @@ const account: AccountView = {
   type: 'PEA',
   institution: 'Boursorama',
   valueEur: 1000,
+  share: null,
   lineCount: 3,
 };
 

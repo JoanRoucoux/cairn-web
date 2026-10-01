@@ -45,6 +45,31 @@ describe('SessionStore', () => {
     await settleSession();
   });
 
+  it('should expose the username and how the session was opened', async () => {
+    await settleSession();
+
+    expect(store.username()).toBe('joan');
+    expect(store.signInMethod()).toBe('PASSKEY');
+  });
+
+  it('should be loading until the session resolves, then ready', async () => {
+    expect(store.state()).toBe('loading');
+    expect(store.username()).toBe('');
+    expect(store.signInMethod()).toBeUndefined();
+
+    await settleSession();
+
+    expect(store.state()).toBe('ready');
+  });
+
+  it('should report an error instead of throwing when the session fails', async () => {
+    (await vi.waitFor(() => http.expectOne('/api/session'))).flush(null, { status: 500, statusText: 'Server Error' });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.state()).toBe('error');
+    expect(store.owner().initials).toBe('');
+  });
+
   it('should post to the Spring Security logout endpoint', async () => {
     await settleSession();
 

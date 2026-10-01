@@ -26,6 +26,7 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 })
 export class PortfolioCurve {
   readonly state = input.required<AsyncState>();
+  readonly blocking = input(false);
   readonly points = input.required<ChartPoint[]>();
   readonly range = input.required<ChartRange>();
   readonly rangeChangeEur = input<number | undefined>();

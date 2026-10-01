@@ -1,11 +1,16 @@
 {
-  "avatarLabel": "Mon compte",
-  "connectedByPasskey": "Connecté par clé d'accès sur cet appareil",
   "appearance": "Apparence",
   "themeLabel": "Thème",
-  "theme": { "system": "Système", "light": "Clair", "dark": "Sombre" },
+  "theme": {
+    "system": "Système",
+    "light": "Clair",
+    "dark": "Sombre"
+  },
   "languageLabel": "Langue",
-  "language": { "en": "English", "fr": "Français" },
+  "language": {
+    "en": "English",
+    "fr": "Français"
+  },
   "hideAmounts": "Masquer les montants",
   "hideAmountsHint": "Pour montrer l'application à quelqu'un. Les montants deviennent •••• € sur tous les écrans ; les pourcentages restent visibles.",
   "manageData": {
@@ -43,11 +48,50 @@
   "addPasskeySubmitting": "Ajout en cours...",
   "addPasskeyUnsupported": "Ce navigateur ne peut pas créer de passkey.",
   "addPasskeyFailed": "La passkey n'a pas pu être ajoutée. Réessayez.",
-  "created": "Créée {{when}}",
-  "lastUsed": "Dernière utilisation {{when}}",
-  "neverUsed": "Jamais utilisée",
   "onlyKey": "C'est votre seule clé : elle ne peut pas être supprimée. Ajoutez une clé sur un autre appareil pour garder un accès de secours.",
   "revokeNamed": "Supprimer la clé {{label}}",
-  "revokeRefused": "C'est votre seule clé d'accès. Ajoutez un autre appareil avant de la supprimer.",
-  "signOut": "Se déconnecter"
+  "signOut": "Se déconnecter",
+  "title": "Profil",
+  "back": "Portefeuille",
+  "avatarLabel": "Avatar du profil",
+  "signedIn": {
+    "PASSKEY": "{{username}} · connecté par clé d'accès",
+    "PASSWORD": "{{username}} · connecté par mot de passe"
+  },
+  "themeHint": {
+    "system": "Suit le réglage de l'appareil, actuellement {{scheme}}.",
+    "light": "Forcé en clair, quel que soit l'appareil.",
+    "dark": "Forcé en sombre, quel que soit l'appareil."
+  },
+  "scheme": {
+    "light": "clair",
+    "dark": "sombre"
+  },
+  "passkeysErrorTitle": "Les clés n'ont pas pu être chargées",
+  "passkeysErrorMessage": "Le serveur n'a pas répondu.",
+  "retry": "Réessayer",
+  "currentDevice": "Cet appareil",
+  "provider": {
+    "ICLOUD_KEYCHAIN": "iCloud",
+    "GOOGLE_PASSWORD_MANAGER": "Gestionnaire de mots de passe Google",
+    "WINDOWS_HELLO": "Windows Hello",
+    "ONE_PASSWORD": "1Password",
+    "BITWARDEN": "Bitwarden",
+    "SECURITY_KEY": "Clé de sécurité"
+  },
+  "created": "Créée le {{date}}",
+  "lastUsed": {
+    "today": "Utilisée aujourd'hui",
+    "yesterday": "Utilisée hier",
+    "on": "Utilisée le {{date}}",
+    "never": "Jamais utilisée"
+  },
+  "delete": {
+    "title": "Supprimer la clé « {{label}} » ?",
+    "description": "Cet appareil ne pourra plus se connecter à Cairn avec cette clé. Les autres clés restent valables.",
+    "cancel": "Annuler",
+    "submit": "Supprimer la clé",
+    "refused": "C'est votre seule clé d'accès. Ajoutez un autre appareil avant de la supprimer.",
+    "error": "La clé n'a pas pu être supprimée."
+  }
 }

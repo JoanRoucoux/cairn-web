@@ -1,6 +1,6 @@
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiAlert, UiCard } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { chartFormats } from '@shared/chart/chart-formats';
@@ -15,7 +15,16 @@ import { PortfolioTotal } from './total/portfolio-total';
 
 @Component({
   selector: 'app-portfolio-page',
-  imports: [PortfolioCurve, PortfolioEmpty, PortfolioEnvelopes, PortfolioMovers, PortfolioTotal, TranslocoPipe],
+  imports: [
+    UiAlert,
+    UiCard,
+    PortfolioCurve,
+    PortfolioEmpty,
+    PortfolioEnvelopes,
+    PortfolioMovers,
+    PortfolioTotal,
+    TranslocoPipe,
+  ],
   templateUrl: './portfolio-page.html',
   providers: [PortfolioStore],
 })
@@ -28,11 +37,13 @@ export class PortfolioPage {
   protected readonly curveState = this.#store.curveState;
   protected readonly envelopesState = this.#store.envelopesState;
   protected readonly moversState = this.#store.moversState;
+  protected readonly curveBlocking = this.#store.curveBlocking;
   protected readonly allFailed = this.#store.allFailed;
 
   protected readonly portfolio = this.#store.portfolioValue;
   protected readonly performance = this.#store.performanceValue;
   protected readonly points = this.#store.points;
+  protected readonly rangeChange = this.#store.rangeChange;
   protected readonly reconstructed = this.#store.reconstructed;
   protected readonly range = this.#store.range;
   protected readonly movers = this.#store.movers;
@@ -47,6 +58,10 @@ export class PortfolioPage {
 
   protected retryTotal(): void {
     this.#store.retryTotal();
+  }
+
+  protected retryMovers(): void {
+    this.#store.retryMovers();
   }
 
   protected retryCurve(): void {

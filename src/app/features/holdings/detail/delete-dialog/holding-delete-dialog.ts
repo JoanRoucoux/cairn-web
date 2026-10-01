@@ -1,6 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 
-import { UiButton, UiDialog } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -9,7 +9,7 @@ import { HoldingDeleteStore } from './holding-delete-store';
 
 @Component({
   selector: 'app-holding-delete-dialog',
-  imports: [TranslocoPipe, UiButton, UiDialog],
+  imports: [TranslocoPipe, UiAlert, UiButton, UiDialog],
   templateUrl: './holding-delete-dialog.html',
   providers: [HoldingDeleteStore],
 })

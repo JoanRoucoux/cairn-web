@@ -1,6 +1,7 @@
-import type { ModuleWithProviders } from '@angular/core';
+import type { ModuleWithProviders, Provider } from '@angular/core';
 
-import { TranslocoTestingModule, type TranslocoTestingOptions } from '@jsverse/transloco';
+import { TRANSLOCO_LOADER, TranslocoTestingModule, type TranslocoTestingOptions } from '@jsverse/transloco';
+import { map, timer } from 'rxjs';
 
 /**
  * Provides Transloco in unit tests. Translation pipes and directives resolve
@@ -34,3 +35,10 @@ export const getTranslocoTestingModule = (
     ...options,
   });
 };
+
+export const delayedScopeLoader = (delayMs = 300): Provider => ({
+  provide: TRANSLOCO_LOADER,
+  useValue: {
+    getTranslation: (lang: string) => timer(lang.includes('/') ? delayMs : 0).pipe(map(() => ({}))),
+  },
+});

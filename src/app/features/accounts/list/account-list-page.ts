@@ -1,42 +1,63 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
   UiAmount,
   UiAsync,
+  UiBadge,
   UiButton,
+  UiCard,
   UiMenu,
   UiMenuItem,
   UiMenuTrigger,
-  UiRow,
+  UiRowAction,
+  UiRowLink,
   UiSkeleton,
+  UiTable,
+  UiTd,
+  UiTh,
+  UiTr,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePlus } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash2 } from '@lucide/angular';
 
 import { pluralKey } from '@shared/format/plural-key';
+import { RatioPipe } from '@shared/format/ratio-pipe';
 
 import { AccountListStore, type AccountView } from './account-list-store';
 import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
 import { AccountFormDialog, type AccountFormTarget } from './form-dialog/account-form-dialog';
+import { linesLabel } from './lines-label';
+import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
 
 @Component({
   selector: 'app-account-list-page',
   imports: [
     AccountDeleteDialog,
+    AccountMobileRows,
     AccountFormDialog,
     LucideEllipsis,
+    LucidePencil,
     LucidePlus,
+    LucideTrash2,
+    RatioPipe,
     RouterLink,
     TranslocoPipe,
     UiAmount,
     UiAsync,
+    UiBadge,
+    UiCard,
     UiButton,
     UiMenu,
     UiMenuItem,
     UiMenuTrigger,
-    UiRow,
+    UiRowAction,
+    UiRowLink,
     UiSkeleton,
+    UiTable,
+    UiTd,
+    UiTh,
+    UiTr,
   ],
   templateUrl: './account-list-page.html',
   providers: [AccountListStore],
@@ -45,8 +66,14 @@ export class AccountListPage {
   #store = inject(AccountListStore);
 
   protected readonly accounts = this.#store.accounts;
+  protected readonly totalEur = this.#store.totalEur;
+  protected readonly linesLabel = linesLabel;
   protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
+  protected readonly cardPadding = computed(
+    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
+  );
+  protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
 
   protected readonly formOpen = signal(false);
   protected readonly accountToEdit = signal<AccountFormTarget | undefined>(undefined);

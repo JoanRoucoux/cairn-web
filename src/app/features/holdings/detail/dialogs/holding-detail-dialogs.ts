@@ -2,10 +2,10 @@ import { Component, booleanAttribute, input, output } from '@angular/core';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { ManualQuoteDialog } from '../../manual-quote/manual-quote-dialog';
 import { HoldingBuyDialog } from '../buy-dialog/holding-buy-dialog';
 import { HoldingDeleteDialog } from '../delete-dialog/holding-delete-dialog';
 import { HoldingEditDialog } from '../edit-dialog/holding-edit-dialog';
-import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingSellDialog } from '../sell-dialog/holding-sell-dialog';
 
 @Component({

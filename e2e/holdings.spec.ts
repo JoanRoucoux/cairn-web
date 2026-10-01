@@ -1,14 +1,6 @@
-import { type Locator, expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
-
-const openGroup = async (group: Locator): Promise<void> => {
-  const details = group.locator('details');
-  if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) {
-    await group.locator('summary').click();
-  }
-  await expect(details).toHaveAttribute('open', '');
-};
 
 test.describe('holdings list', () => {
   test.beforeEach(async ({ page }) => {
@@ -35,6 +27,22 @@ test.describe('holdings list', () => {
     await expect(page.getByTestId('add-holding-desktop')).toBeFocused();
   });
 
+  test('filters by class from a chip and from ?classe=', async ({ page }) => {
+    const chips = page.getByRole('group', { name: /classe|class/i });
+    await expect(chips.getByRole('button', { pressed: true })).toContainText(/Toutes|All/);
+
+    await chips.getByRole('button', { name: /^ETF/ }).click();
+
+    await expect(chips.getByRole('button', { name: /^ETF/ })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByTestId('class-summary')).toBeVisible();
+
+    await page.goto('/holdings?classe=crypto');
+
+    await expect(
+      page.getByRole('group', { name: /classe|class/i }).getByRole('button', { pressed: true }),
+    ).toContainText(/Crypto/);
+  });
+
   test('keeps the mobile add button at 44px', async ({ browser }) => {
     const context = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } });
     const page = await context.newPage();
@@ -55,18 +63,25 @@ test.describe('holdings list', () => {
     await expect(page.getByRole('alert')).toHaveCount(0);
   });
 
-  test('shows a dash and the asset-class badge for a holding with no price yet', async ({ page }) => {
+  test('shows a dash and the asset class in the subtitle for a holding with no price yet', async ({ page }) => {
     const row = page.getByTestId('holding-row').filter({ hasText: 'Newly listed fund' });
 
     await expect(row).toContainText('—');
-    await expect(row.locator('ui-badge')).toHaveText('Fund');
+    await expect(row).toContainText('Fund');
+  });
+
+  test('opens the manual quote dialog from the Cours column of an unvalued line', async ({ page }) => {
+    const row = page.getByTestId('holding-row').filter({ hasText: 'Newly listed fund' });
+
+    await row.getByTestId('enter-quote').click();
+
+    await expect(page.getByTestId('manual-quote-dialog').locator('dialog')).toBeVisible();
   });
 
   test('finds an instrument by name ignoring accents and case', async ({ page }) => {
     await page.getByTestId('holdings-search').fill('amundi');
 
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await expect(boursorama.getByRole('link', { name: 'Amundi MSCI World' })).toBeVisible();
   });
 
@@ -74,7 +89,6 @@ test.describe('holdings list', () => {
     await page.getByTestId('holdings-search').fill('fr0010756098');
 
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await expect(boursorama.getByRole('link', { name: 'Amundi MSCI World' })).toBeVisible();
   });
 
@@ -84,22 +98,8 @@ test.describe('holdings list', () => {
     await expect(page.getByText('No holding matches "zzz-nope"')).toBeVisible();
   });
 
-  test('filters to a stale line from a query param, with a removable chip', async ({ page }) => {
-    await page.goto('/holdings?filter=stale');
-
-    await expect(page.getByTestId('filter-chip-stale')).toBeVisible();
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
-    await expect(boursorama.getByRole('link', { name: 'Bitcoin' })).toBeVisible();
-    await expect(boursorama.getByRole('link', { name: 'Amundi MSCI World' })).toHaveCount(0);
-
-    await page.getByTestId('filter-chip-stale').click();
-    await expect(page).toHaveURL(/\/holdings$/);
-  });
-
   test('shows the prefilled balance and updates it through the cash dialog', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
@@ -115,7 +115,6 @@ test.describe('holdings list', () => {
 
   test('removes the cash line when the balance is set to zero', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
 
     await expect(page.getByTestId('holding-cash-amount')).toHaveValue('732.4');
@@ -128,7 +127,6 @@ test.describe('holdings list', () => {
 
   test('refuses a negative amount in the cash dialog', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await boursorama.getByTestId('edit-cash').click();
     await page.getByTestId('holding-cash-amount').fill('-10');
     await page.getByTestId('holding-cash-submit').click();
@@ -144,9 +142,8 @@ test.describe('holdings list', () => {
 
   test('renders a cash-only account with no ordinary line', async ({ page }) => {
     const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
-    await openGroup(livretA);
 
-    await expect(livretA.getByText('Savings · Boursorama · 0 holdings')).toBeVisible();
+    await expect(livretA.getByText('Savings · Boursorama · 0 savings books')).toBeVisible();
     await expect(livretA.getByTestId('cash-row')).toHaveText(/20.?000/);
     await expect(livretA.getByTestId('holding-row')).toHaveCount(0);
     await expect(livretA.getByTestId('edit-cash')).toHaveAccessibleName(/Livret A/);
@@ -161,17 +158,15 @@ test.describe('holding detail', () => {
 
   test('opens next to the list on desktop and reduces the table to three columns', async ({ page }) => {
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await boursorama.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
-    await expect(boursorama.getByRole('columnheader')).toHaveCount(3);
+    await expect(page.getByRole('columnheader')).toHaveCount(3);
   });
 
   test('keeps the search text when closing the detail', async ({ page }) => {
     await page.getByTestId('holdings-search').fill('amundi');
     const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await openGroup(boursorama);
     await boursorama.getByRole('link', { name: 'Amundi MSCI World' }).click();
     await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
 
@@ -183,7 +178,7 @@ test.describe('holding detail', () => {
   test('shows the stale price instead of a day change', async ({ page }) => {
     await page.goto('/holdings/22222222-2222-2222-2222-222222222222');
 
-    await expect(page.getByTestId('stale-price')).toBeVisible();
+    await expect(page.locator('aside').getByText(/price as of .*, late|cours du .*, en retard/i)).toBeVisible();
   });
 
   test('shows Saisir un cours for a line with no quote yet', async ({ page }) => {

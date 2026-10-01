@@ -9,28 +9,43 @@
 >
   <ui-field
     [error]="nameConflict() ? ('accounts.form.nameConflict' | transloco) : undefined"
-    [label]="'accounts.name' | transloco"
+    [label]="'accounts.nameLabel' | transloco"
   >
-    <input data-testid="account-form-name" type="text" uiInput [formField]="form.name" (input)="onNameInput()" />
+    <input
+      data-testid="account-form-name"
+      size="lg"
+      type="text"
+      uiInput
+      [formField]="form.name"
+      [placeholder]="'accounts.form.namePlaceholder' | transloco"
+      (input)="onNameInput()"
+    />
   </ui-field>
 
-  <ui-field [label]="'accounts.type' | transloco">
-    <select data-testid="account-form-type" uiSelect [formField]="form.type">
-      <option value="">{{ 'accounts.choose' | transloco }}</option>
-      @for (type of accountTypes; track type) {
-        <option [value]="type">{{ 'enums.accountType.' + type | transloco }}</option>
-      }
-    </select>
+  <ui-field labelHidden [label]="'accounts.type' | transloco">
+    <ui-choice-chips
+      data-testid="account-form-type"
+      [formField]="form.type"
+      [label]="'accounts.type' | transloco"
+      [options]="typeOptions()"
+    />
   </ui-field>
 
-  <ui-field [label]="'accounts.institution' | transloco">
-    <input data-testid="account-form-institution" type="text" uiInput [formField]="form.institution" />
+  <ui-field [label]="'accounts.institution' | transloco" [optional]="'accounts.optional' | transloco">
+    <input
+      data-testid="account-form-institution"
+      size="lg"
+      type="text"
+      uiInput
+      [formField]="form.institution"
+      [placeholder]="'accounts.form.institutionPlaceholder' | transloco"
+    />
   </ui-field>
 
   @if (error()) {
-    <p class="text-label text-(--negative)" data-testid="account-form-error" role="alert">
+    <ui-alert data-testid="account-form-error">
       {{ 'accounts.form.error' | transloco }}
-    </p>
+    </ui-alert>
   }
 
   <button
@@ -50,9 +65,9 @@
     dialogActions
     type="button"
     ui-button
-    [disabled]="form().submitting()"
+    [disabled]="form().submitting() || form().invalid()"
     (click)="confirm()"
   >
-    {{ 'accounts.form.submit' | transloco }}
+    {{ (account() ? 'accounts.form.submit' : 'accounts.form.create') | transloco }}
   </button>
 </ui-dialog>

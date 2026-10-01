@@ -22,5 +22,4 @@ export const accountDraftSchema = (messages: FormMessages): Schema<AccountDraft>
   schema((account) => {
     required(account.name, { message: () => messages.required() });
     required(account.type, { message: () => messages.required() });
-    required(account.institution, { message: () => messages.required() });
   });

@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
@@ -8,17 +9,38 @@ import {
   UI_AMOUNT_MASKED,
   UiAmount,
   UiAsync,
+  UiCard,
   UiDonut,
   UiSkeleton,
   formatAmount,
 } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 
-import type { AccountResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
+import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 import { AllocationStore } from './allocation-store';
+
+const CLASS_SLUGS: Record<string, string> = {
+  ETF: 'etf',
+  FUND: 'fonds',
+  EQUITY: 'actions',
+  CRYPTO: 'crypto',
+  CASH: 'liquidites',
+};
+
+const GRID_BASE =
+  'grid grid-cols-[minmax(0,1fr)] gap-4 @min-[960px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @min-[960px]:gap-6';
+const GRID_CONTENT =
+  '@min-[1113px]:mr-[calc(-1*var(--gutter))] @min-[1113px]:grid-cols-[minmax(0,max-content)_minmax(0,max-content)]';
+
+const OTHERS_ID = 'others';
+
+const GRID_CLASSES_READY = '@min-[1113px]:grid-cols-[minmax(max-content,1fr)_minmax(0,1fr)]';
+const GRID_ACCOUNTS_READY = '@min-[1113px]:grid-cols-[minmax(0,1fr)_minmax(max-content,1fr)]';
+const GRID_NONE_READY = '@min-[1113px]:grid-cols-[1fr_1fr]';
 
 const asyncStateFor = (loading: boolean, failed: boolean, empty: boolean): AsyncState => {
   if (failed) {
@@ -32,7 +54,7 @@ const asyncStateFor = (loading: boolean, failed: boolean, empty: boolean): Async
 
 @Component({
   selector: 'app-allocation-page',
-  imports: [TranslocoPipe, UiAmount, UiAsync, UiDonut, UiSkeleton],
+  imports: [NgTemplateOutlet, TranslocoPipe, UiAmount, UiAsync, UiCard, UiDonut, UiSkeleton],
   templateUrl: './allocation-page.html',
   providers: [AllocationStore, RatioPipe],
 })
@@ -45,47 +67,50 @@ export class AllocationPage {
   #ratio = inject(RatioPipe);
 
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #scopeLoaded = translateSignal('allocation.cashSubtitle');
 
-  protected readonly portfolio = this.#store.portfolio;
+  protected readonly totalEur = computed<number | undefined>(() => {
+    if (this.#store.classes.hasValue()) {
+      return this.#store.classes.value().totalEur;
+    }
 
-  protected readonly totalEur = computed(() => this.portfolio.value()!.totalEur);
+    return this.#store.accounts.hasValue() ? this.#store.accounts.value().totalEur : undefined;
+  });
 
   protected readonly assetClassState = computed<AsyncState>(() =>
     asyncStateFor(
-      this.portfolio.isLoading(),
-      !!this.portfolio.error(),
-      this.portfolio.hasValue() && this.portfolio.value().byAssetClass.length === 0,
+      this.#store.classes.isLoading(),
+      !!this.#store.classes.error(),
+      this.#store.classes.hasValue() && this.#store.classes.value().items.length === 0,
     ),
   );
 
   protected readonly accountState = computed<AsyncState>(() =>
     asyncStateFor(
-      this.portfolio.isLoading(),
-      !!this.portfolio.error(),
-      this.portfolio.hasValue() && this.portfolio.value().byAccount.length === 0,
+      this.#store.accounts.isLoading(),
+      !!this.#store.accounts.error(),
+      this.#store.accounts.hasValue() && this.#store.accounts.value().items.length === 0,
     ),
   );
 
   protected readonly assetClassSlices = computed<DonutSlice[]>(() => {
     this.#translocoEvents();
 
-    if (!this.portfolio.hasValue()) {
+    if (!this.#scopeLoaded() || !this.#store.classes.hasValue()) {
       return [];
     }
 
-    return assetClassSlicesOf(this.portfolio.value(), (key, params) => this.#transloco.translate(key, params));
+    return assetClassSlicesOf(this.#store.classes.value(), (key, params) => this.#transloco.translate(key, params));
   });
 
   protected readonly accountSlices = computed<DonutSlice[]>(() => {
     this.#translocoEvents();
 
-    if (!this.portfolio.hasValue()) {
+    if (!this.#store.accounts.hasValue()) {
       return [];
     }
 
-    return accountSlicesOf(this.portfolio.value(), this.#store.accounts.value(), (key) =>
-      this.#transloco.translate(key),
-    );
+    return accountSlicesOf(this.#store.accounts.value(), (key) => this.#transloco.translate(key));
   });
 
   protected readonly formatEur = (value: number): string =>
@@ -93,44 +118,83 @@ export class AllocationPage {
 
   protected readonly formatShare = (share: number): string => this.#ratio.transform(share);
 
-  protected retry(): void {
-    this.#store.retry();
+  protected readonly classSkeleton = [70, 60, 80, 96, 64];
+  protected readonly accountSkeleton = [110, 70, 90, 80, 76, 100, 110];
+
+  protected readonly wrapperClass = (state: AsyncState): string =>
+    state === 'ready' ? 'block px-2 pt-2 lg:pb-1' : 'block p-2';
+
+  protected readonly gridClass = computed(() => {
+    const classes = this.assetClassState() === 'ready';
+    const accounts = this.accountState() === 'ready';
+
+    if (classes && accounts) {
+      return `${GRID_BASE} ${GRID_CONTENT}`;
+    }
+
+    if (classes) {
+      return `${GRID_BASE} ${GRID_CLASSES_READY}`;
+    }
+
+    return `${GRID_BASE} ${accounts ? GRID_ACCOUNTS_READY : GRID_NONE_READY}`;
+  });
+
+  protected readonly classHref = (id: string): string | null =>
+    id === OTHERS_ID ? null : `/holdings?classe=${CLASS_SLUGS[id]}`;
+
+  protected readonly accountHref = (id: string): string | null =>
+    id === OTHERS_ID ? null : `/holdings?compte=${encodeURIComponent(id)}`;
+
+  protected retryClasses(): void {
+    this.#store.retryClasses();
+  }
+
+  protected retryAccounts(): void {
+    this.#store.retryAccounts();
   }
 
   protected onAssetClassSelect(id: string): void {
-    this.#router.navigate(['/holdings'], { queryParams: { assetClass: id } });
+    if (id === OTHERS_ID) {
+      return;
+    }
+
+    this.#router.navigate(['/holdings'], { queryParams: { classe: CLASS_SLUGS[id] } });
   }
 
   protected onAccountSelect(id: string): void {
-    this.#router.navigate(['/holdings'], { queryParams: { account: id } });
+    if (id === OTHERS_ID) {
+      return;
+    }
+
+    this.#router.navigate(['/holdings'], { queryParams: { compte: id } });
   }
 }
 
 function assetClassSlicesOf(
-  portfolio: PortfolioResponse,
+  allocation: AssetClassAllocationResponse,
   translate: (key: string, params?: Record<string, unknown>) => string,
 ): DonutSlice[] {
-  return portfolio.byAssetClass.map((row) => ({
-    id: row.label,
-    label: translate(`enums.assetClass.${row.label}`),
+  return allocation.items.map((row) => ({
+    id: row.assetClass,
+    label: translate(`enums.assetClass.${row.assetClass}`),
     value: row.valueEur,
-    sublabel: translate('portfolio.allocation.lineCount', {
-      count: portfolio.holdings.filter((holding) => holding.assetClass === row.label).length,
-    }),
+    sublabel:
+      row.assetClass === 'CASH'
+        ? translate('portfolio.allocation.cashSubtitle')
+        : translate(pluralKey('portfolio.allocation.lineCount', row.lineCount), { count: row.lineCount }),
   }));
 }
 
-function accountSlicesOf(
-  portfolio: PortfolioResponse,
-  accounts: AccountResponse[],
-  translate: (key: string) => string,
-): DonutSlice[] {
-  const byName = new Map(accounts.map((account) => [account.name, account]));
+function accountSlicesOf(allocation: AccountAllocationResponse, translate: (key: string) => string): DonutSlice[] {
+  return allocation.items.map(({ account, valueEur }) => {
+    const type = translate(`enums.accountType.${account.type}`);
+    const institution = account.institution.trim();
 
-  return portfolio.byAccount.map((row) => {
-    const account = byName.get(row.label);
-    const sublabel = account ? `${translate(`enums.accountType.${account.type}`)} · ${account.institution}` : '';
-
-    return { id: row.label, label: row.label, value: row.valueEur, sublabel };
+    return {
+      id: account.id,
+      label: account.name,
+      value: valueEur,
+      sublabel: institution ? `${type} · ${institution}` : type,
+    };
   });
 }

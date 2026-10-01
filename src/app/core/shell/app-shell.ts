@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
-import { UiAvatar, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
+import { UiAvatar, UiAvatarLink, UiBackLink, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 
@@ -12,6 +12,8 @@ import { CairnLogo } from './cairn-logo';
 import { OfflineBanner } from './offline-banner';
 import { ShellDestinationIcon } from './shell-destination-icon';
 import { SHELL_DESTINATIONS } from './shell-nav';
+
+export type HeaderBack = { labelKey: string; path: string };
 
 export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
   let current: ActivatedRoute | null = route;
@@ -33,6 +35,8 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
     ShellDestinationIcon,
     TranslocoPipe,
     UiAvatar,
+    UiAvatarLink,
+    UiBackLink,
     UiNavItem,
     UiTab,
     UiTabBar,
@@ -53,6 +57,10 @@ export class AppShell {
     initialValue: this.#router.url,
   });
 
+  protected readonly headerBack = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderBack())), {
+    initialValue: this.#currentHeaderBack(),
+  });
+
   protected readonly headerKey = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderKey())), {
     initialValue: this.#currentHeaderKey(),
   });
@@ -62,12 +70,24 @@ export class AppShell {
     { initialValue: this.#currentMobileHeaderHidden() },
   );
 
+  protected readonly mobileHeaderless = toSignal(this.#navigationEnd.pipe(map(() => this.#currentMobileHeaderless())), {
+    initialValue: this.#currentMobileHeaderless(),
+  });
+
   #currentHeaderKey(): string | undefined {
     return deepestData(this.#route.root)['headerKey'] as string | undefined;
   }
 
+  #currentMobileHeaderless(): boolean {
+    return deepestData(this.#route.root)['mobileHeaderless'] === true;
+  }
+
   #currentMobileHeaderHidden(): boolean {
     return deepestData(this.#route.root)['mobileHeaderHidden'] === true;
+  }
+
+  #currentHeaderBack(): HeaderBack | undefined {
+    return deepestData(this.#route.root)['headerBack'] as HeaderBack | undefined;
   }
 
   protected isActive(path: string): boolean {

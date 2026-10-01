@@ -1,10 +1,7 @@
 {
-  "name": "Name",
   "type": "Envelope",
   "institution": "Institution",
-  "choose": "Choose an envelope",
   "add": "New account",
-  "summary": "{{count}} accounts",
   "empty": "No account yet.",
   "errorTitle": "Accounts could not be loaded",
   "errorMessage": "The server did not answer.",
@@ -12,19 +9,22 @@
   "lineCount_one": "{{count}} holding",
   "lineCount_other": "{{count}} holdings",
   "actions": "Actions for {{name}}",
-  "edit": "Edit",
-  "rowEmpty": "This account has no line yet.",
-  "rowEmptyAction": "Add a line",
+  "edit": "Edit account",
+  "rowEmpty": "This account has no holdings yet. Add a holding, or import them from a CSV file.",
+  "rowEmptyAction": "Add a holding",
   "form": {
     "createTitle": "New account",
-    "editTitle": "Edit this account",
+    "editTitle": "Edit account",
     "cancel": "Cancel",
     "submit": "Save",
     "error": "That account was refused.",
-    "nameConflict": "An account already has this name."
+    "nameConflict": "An account already has this name.",
+    "namePlaceholder": "For example Boursorama PEA",
+    "institutionPlaceholder": "For example Boursorama",
+    "create": "Create the account"
   },
   "delete": {
-    "action": "Delete",
+    "action": "Delete account",
     "title": "Delete this account?",
     "description": "This cannot be undone.",
     "cancel": "Cancel",
@@ -32,5 +32,23 @@
     "refused_one": "This account still holds {{count}} holding. Sell or delete it first.",
     "refused_other": "This account still holds {{count}} holdings. Sell or delete them first.",
     "error": "This account could not be deleted."
-  }
+  },
+  "summary_one": "{{count}} account",
+  "summary_other": "{{count}} accounts",
+  "columns": {
+    "account": "Account",
+    "type": "Envelope",
+    "institution": "Institution",
+    "lines": "Holdings",
+    "value": "Value",
+    "share": "Share",
+    "actions": "Actions"
+  },
+  "noLine": "No holdings",
+  "bookletCount_one": "{{count}} booklet",
+  "bookletCount_other": "{{count}} booklets",
+  "rowEmptyCompact": "No holdings. Add a holding or import a CSV.",
+  "rowEmptyImport": "Import a CSV",
+  "nameLabel": "Account name",
+  "optional": "(optional)"
 }

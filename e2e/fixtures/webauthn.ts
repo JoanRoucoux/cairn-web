@@ -2,6 +2,15 @@ import type { Page, Route } from '@playwright/test';
 
 type Handler = (route: Route) => Promise<void>;
 
+type Passkey = {
+  credentialId: string;
+  label: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  current: boolean;
+  provider: string | null;
+};
+
 const session = {
   displayName: 'Joan Roucoux',
   initials: 'JR',
@@ -9,13 +18,14 @@ const session = {
   signInMethod: 'PASSKEY',
 };
 
-const passkeys = [
+const passkeys: Passkey[] = [
   {
     credentialId: 'aXBob25l',
     label: 'iPhone de Joan',
     createdAt: '2026-02-01T10:00:00Z',
-    lastUsedAt: null as string | null,
+    lastUsedAt: null,
     current: true,
+    provider: 'ICLOUD_KEYCHAIN',
   },
 ];
 
@@ -72,6 +82,7 @@ const registerWebauthn: Handler = async (route) => {
     createdAt: new Date().toISOString(),
     lastUsedAt: null,
     current: false,
+    provider: null,
   });
 
   await route.fulfill({ json: { success: true } });
@@ -100,7 +111,7 @@ const handleWebauthnRoute = async (route: Route): Promise<void> => {
 
 export const getSession = (): typeof session => session;
 
-export const getPasskeys = (): typeof passkeys => passkeys;
+export const getPasskeys = (): Passkey[] => passkeys;
 
 export const mockWebauthn = async (page: Page): Promise<void> => {
   await page.route('**/webauthn/**', handleWebauthnRoute);

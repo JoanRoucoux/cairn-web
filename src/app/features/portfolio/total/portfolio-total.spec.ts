@@ -65,11 +65,11 @@ describe('PortfolioTotal', () => {
     expect(screen.getByText('+15,34 %', { exact: false })).toBeInTheDocument();
   });
 
-  it('should link to the stale holdings only when staleCount is positive', async () => {
+  it('should link to the holdings only when staleCount is positive', async () => {
     await renderComponent({ portfolio: { ...portfolio, staleCount: 1 } });
 
     const link = await screen.findByTestId('stale-link');
-    expect(link).toHaveAttribute('href', '/holdings?filter=stale');
+    expect(link).toHaveAttribute('href', '/holdings');
   });
 
   it('should not link to stale holdings when staleCount is zero', async () => {

@@ -41,10 +41,10 @@ describe('AccountListStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  const flush = async (holdings: unknown[]): Promise<void> => {
+  const flush = async (holdings: unknown[], accounts: unknown[] = [account], totalEur = 350): Promise<void> => {
     TestBed.tick();
-    httpTesting.expectOne('/api/accounts').flush([account]);
-    httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings });
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    httpTesting.expectOne('/api/portfolio').flush({ totalEur, byAssetClass: [], byAccount: [], holdings });
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
@@ -60,7 +60,15 @@ describe('AccountListStore', () => {
     await flush([holding(), holding({ id: 'h2', marketValueEur: 200 }), cashHolding()]);
 
     expect(store.accounts()).toEqual([
-      { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama', valueEur: 350, lineCount: 2 },
+      {
+        id: 'a1',
+        name: 'PEA Boursorama',
+        type: 'PEA',
+        institution: 'Boursorama',
+        valueEur: 350,
+        share: 1,
+        lineCount: 2,
+      },
     ]);
   });
 
@@ -68,7 +76,15 @@ describe('AccountListStore', () => {
     await flush([cashHolding()]);
 
     expect(store.accounts()).toEqual([
-      { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama', valueEur: 50, lineCount: 0 },
+      {
+        id: 'a1',
+        name: 'PEA Boursorama',
+        type: 'PEA',
+        institution: 'Boursorama',
+        valueEur: 50,
+        share: 50 / 350,
+        lineCount: 0,
+      },
     ]);
   });
 
@@ -82,6 +98,60 @@ describe('AccountListStore', () => {
     await flush([holding(), holding({ id: 'h2', marketValueEur: null })]);
 
     expect(store.accounts()[0]!.valueEur).toBeNull();
+  });
+
+  it('should give no share to an account whose value is unknown or zero', async () => {
+    const empty = { ...account, id: 'a2', name: 'Vide' };
+    await flush([holding(), holding({ id: 'h2', marketValueEur: null })], [account, empty]);
+
+    expect(store.accounts().map((view) => view.share)).toEqual([null, null]);
+  });
+
+  it('should order accounts by value, largest first, the empty one then the unknown one last', async () => {
+    const small = { ...account, id: 'a2', name: 'Petit' };
+    const empty = { ...account, id: 'a3', name: 'Vide' };
+    const unknown = { ...account, id: 'a4', name: 'Inconnu' };
+    await flush(
+      [
+        holding({ accountId: 'a2', marketValueEur: 10 }),
+        holding({ id: 'h3', accountId: 'a1', marketValueEur: 90 }),
+        holding({ id: 'h4', accountId: 'a4', marketValueEur: null }),
+      ],
+      [unknown, empty, small, account],
+      100,
+    );
+
+    expect(store.accounts().map((view) => view.name)).toEqual(['PEA Boursorama', 'Petit', 'Vide', 'Inconnu']);
+  });
+
+  it('should hold no account while a call is pending, and order several unknown values together', async () => {
+    TestBed.tick();
+
+    expect(store.accounts()).toEqual([]);
+
+    httpTesting.expectOne('/api/accounts').flush([account, { ...account, id: 'a2', name: 'Second' }]);
+    httpTesting.expectOne('/api/portfolio').flush({
+      totalEur: 10,
+      byAssetClass: [],
+      byAccount: [],
+      holdings: [holding({ marketValueEur: null }), holding({ id: 'h2', accountId: 'a2', marketValueEur: null })],
+    });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.accounts().map((view) => view.valueEur)).toEqual([null, null]);
+  });
+
+  it('should expose the portfolio total once loaded and nothing before', async () => {
+    TestBed.tick();
+
+    expect(store.totalEur()).toBeNull();
+    httpTesting.expectOne('/api/accounts').flush([]);
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 164294.28, byAssetClass: [], byAccount: [], holdings: [] });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.totalEur()).toBe(164294.28);
   });
 
   it('should report the empty state once loaded with no account', async () => {

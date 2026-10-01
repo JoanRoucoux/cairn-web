@@ -149,16 +149,17 @@ application and has to navigate, so three things were added on purpose. They are
 - **`core/shell/`** - a sidebar on desktop, a tab bar on mobile, both in the DOM at once with CSS
   choosing which one shows. It is the only place in the app that knows the **primary** navigation
   route tree. A contextual in-app link from one screen to another (`profile-page.html` linking out
-  to `/accounts` and `/instruments`) is fine and expected — it does not need to be routed through
+  to `/instruments`) is fine and expected — it does not need to be routed through
   the shell.
 - **`core/theme/`** - a `system | light | dark` preference persisted in `localStorage` and stamped
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
   through `light-dark()`, which follows the OS only while nothing is stamped.
 - **`core/session/`** - one root-level store that reads `GET /session` once and hands the owner
-  and their passkeys to both the shell and the account screen. The application owns sign-in
-  (`features/login/`, passkey first, password folded) and passkey registration (a dialog on the
-  account screen); `core/webauthn/` plays the ceremony against Spring Security's endpoints. A 401
-  sends the browser to the application's `/login`, except for the sign-in ceremony's own calls.
+  to both the shell and the account screen (the passkeys have their own call, owned by the
+  account screen). The application owns sign-in (`features/login/`, passkey first, password
+  folded) and passkey registration (a dialog on the account screen); `core/webauthn/` plays the
+  ceremony against Spring Security's endpoints. A 401 sends the browser to the application's
+  `/login`, except for the sign-in ceremony's own calls.
 
 Two conventions worth knowing before touching a screen:
 

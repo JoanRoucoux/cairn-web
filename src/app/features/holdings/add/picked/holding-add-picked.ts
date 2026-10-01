@@ -1,14 +1,15 @@
 import { Component, input, output } from '@angular/core';
 
-import { UiAmount, UiBadge, UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiBadge, UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { AssetClass } from '@core/api-client/cairnAPI.schemas';
 
 @Component({
   selector: 'app-holding-add-picked',
-  imports: [TranslocoPipe, UiAmount, UiBadge, UiButton, UiField, UiInput],
+  imports: [TranslocoPipe, UiAmount, UiBadge, UiButton, UiCard, UiField, UiInput],
   templateUrl: './holding-add-picked.html',
+  host: { class: 'flex flex-col gap-4' },
 })
 export class HoldingAddPicked {
   readonly name = input.required<string>();
@@ -20,6 +21,9 @@ export class HoldingAddPicked {
   readonly quantityText = input.required<string>();
   readonly averageCostText = input.required<string>();
   readonly valueAtProbe = input.required<number | null>();
+  readonly gainAtProbe = input.required<number | null>();
+  readonly trialPrice = input.required<number | null>();
+  readonly sourceLabel = input.required<string>();
 
   readonly changed = output<void>();
   readonly assetClassInput = output<Event>();

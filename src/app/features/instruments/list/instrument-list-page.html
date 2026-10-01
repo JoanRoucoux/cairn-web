@@ -1,110 +1,201 @@
-<div class="flex flex-wrap items-center justify-between gap-3">
-  <div class="min-w-[12rem] flex-1">
-    <ui-field labelHidden [label]="'instruments.searchLabel' | transloco">
-      <input
-        data-testid="instruments-search"
-        type="search"
-        uiInput
-        [placeholder]="'instruments.searchPlaceholder' | transloco"
-        [value]="search()"
-        (input)="onSearchInput($event)"
-      />
-    </ui-field>
+<div class="lg:hidden">
+  <div class="-mx-2 flex h-12 items-center">
+    <a data-testid="instruments-back" routerLink="/profile" ui-back-link>{{ 'pageTitle.profile' | transloco }}</a>
   </div>
-  <a data-testid="add-instrument" routerLink="/instruments/new" ui-button>
-    <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
-    {{ 'instruments.add' | transloco }}
-  </a>
+  <div class="flex items-baseline justify-between gap-3 pb-2">
+    <h1 class="text-heading font-semibold">{{ 'pageTitle.instruments' | transloco }}</h1>
+    @if (state() === 'loading') {
+      <span class="block w-24" data-testid="instruments-count-skeleton"><ui-skeleton [height]="14" /></span>
+    } @else if (state() === 'ready' || state() === 'empty') {
+      <span class="text-label whitespace-nowrap text-(--muted-foreground)">{{ countLabel() }}</span>
+    }
+  </div>
 </div>
 
-@if (instruments.error()) {
-  <p class="mt-4 text-(--negative)" role="alert">{{ 'instruments.error' | transloco }}</p>
-} @else if (filteredRows().length === 0) {
-  <p class="mt-4 text-(--muted-foreground)" role="status">{{ 'instruments.empty' | transloco }}</p>
-} @else {
-  <div class="rounded-container mt-4 overflow-x-auto border border-(--border) bg-(--card)">
-    <table uiTable>
+<div class="flex items-center justify-between gap-2 max-lg:pt-2 lg:gap-4">
+  <ui-field class="min-w-0 flex-1 lg:w-80 lg:flex-none" labelHidden [label]="'instruments.searchLabel' | transloco">
+    <span uiFieldLeading><svg lucideSearch [size]="18" [strokeWidth]="1.75" /></span>
+    <input
+      data-testid="instruments-search"
+      surface="card"
+      type="search"
+      uiInput
+      [placeholder]="(desktop() ? 'instruments.searchPlaceholderDesktop' : 'instruments.searchPlaceholder') | transloco"
+      [value]="search()"
+      (input)="onSearchInput($event)"
+    />
+  </ui-field>
+
+  <div class="flex flex-none items-center gap-4">
+    @if (state() === 'loading') {
+      <span class="block w-24 max-lg:hidden"><ui-skeleton [height]="14" /></span>
+    } @else if (state() === 'ready' || state() === 'empty') {
+      <span class="text-label whitespace-nowrap text-(--muted-foreground) max-lg:hidden">{{ countLabel() }}</span>
+    }
+    <a
+      aria-label="{{ 'instruments.add' | transloco }}"
+      class="lg:hidden"
+      data-testid="add-instrument-mobile"
+      routerLink="/instruments/new"
+      size="icon"
+      ui-button
+    >
+      <svg lucidePlus [size]="20" [strokeWidth]="1.75" />
+    </a>
+    <a class="max-lg:hidden" data-testid="add-instrument" routerLink="/instruments/new" ui-button>
+      <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
+      {{ 'instruments.add' | transloco }}
+    </a>
+  </div>
+</div>
+
+<ui-card class="mt-4 block" padding="none">
+  <div class="lg:px-4 lg:pt-2 lg:pb-3" [class]="cardPadding()">
+    <table class="hidden lg:table" row="48" spaced uiTable>
       <thead>
-        <tr uiTr>
-          <th uiTh>{{ 'instruments.name' | transloco }}</th>
-          <th uiTh>{{ 'instruments.isin' | transloco }}</th>
-          <th uiTh>{{ 'instruments.assetClass' | transloco }}</th>
-          <th uiTh>{{ 'instruments.priceSource' | transloco }}</th>
-          <th numeric uiTh>{{ 'instruments.lines' | transloco }}</th>
-          <th uiTh>
+        <tr>
+          <th primary tall uiTh>{{ 'instruments.columns.instrument' | transloco }}</th>
+          <th tall uiTh width="166px">{{ 'instruments.columns.symbol' | transloco }}</th>
+          <th tall uiTh width="126px">{{ 'instruments.columns.assetClass' | transloco }}</th>
+          <th tall uiTh width="236px">{{ 'instruments.columns.priceSource' | transloco }}</th>
+          <th numeric tall uiTh width="106px">{{ 'instruments.columns.lines' | transloco }}</th>
+          <th tall uiTh width="56px">
             <span class="sr-only">{{ 'instruments.actions' | transloco }}</span>
           </th>
         </tr>
       </thead>
       <tbody>
-        @for (row of filteredRows(); track row.id) {
-          <tr data-testid="instrument-row" uiTr>
-            <td class="max-w-64 truncate" uiTd>
-              <a
-                class="block truncate focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-                [routerLink]="['/instruments', row.id]"
-              >
-                {{ row.name }}
-              </a>
-            </td>
-            <td class="tabular-nums" uiTd>
-              @if (row.isin) {
-                {{ row.isin }}
-              } @else {
-                &mdash;
-              }
-            </td>
-            <td uiTd>{{ 'enums.assetClass.' + row.assetClass | transloco }}</td>
-            <td uiTd>
-              <div class="flex flex-col">
-                <span [class.text-(--muted-foreground)]="row.priceSource === 'MANUAL'">
+        @if (state() === 'ready') {
+          @for (row of filteredRows(); track row.id) {
+            <tr data-testid="instrument-row" uiTr>
+              <td primary uiTd>
+                <span class="block truncate font-medium">{{ row.name }}</span>
+              </td>
+              <td uiTd>
+                <span class="text-label text-(--muted-foreground) tabular-nums">{{
+                  row.isin || row.symbol || row.sourceRef || '—'
+                }}</span>
+              </td>
+              <td uiTd>
+                <ui-badge>{{ 'enums.assetClass.' + row.assetClass | transloco }}</ui-badge>
+              </td>
+              <td uiTd>
+                <span
+                  class="text-label block"
+                  [class.font-medium]="row.priceSource !== 'MANUAL'"
+                  [class.text-(--muted-foreground)]="row.priceSource === 'MANUAL'"
+                >
                   {{ 'enums.priceSource.' + row.priceSource | transloco }}
                 </span>
                 @if (row.sourceRef) {
-                  <span class="text-caption text-(--subtle-foreground)">{{ row.sourceRef }}</span>
+                  <span class="text-caption block truncate text-(--subtle-foreground)">{{ row.sourceRef }}</span>
+                } @else if (row.priceSource === 'MANUAL') {
+                  <span class="text-caption block truncate text-(--subtle-foreground)">{{
+                    'instruments.manualCaption' | transloco
+                  }}</span>
                 }
-              </div>
-            </td>
-            <td class="tabular-nums" numeric uiTd>
-              @if (row.holdingCount > 0) {
-                {{ row.holdingCount }}
-              } @else {
-                <span class="text-(--muted-foreground)">{{ 'instruments.noLines' | transloco }}</span>
-              }
-            </td>
-            <td uiTd>
-              <button
-                aria-label="{{ 'instruments.actionsFor' | transloco: { name: row.name } }}"
-                data-testid="instrument-menu-trigger"
-                size="icon"
-                type="button"
-                ui-button
-                variant="ghost"
-                [uiMenuTrigger]="rowMenu"
-              >
-                <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
-              </button>
-              <ui-menu #rowMenu [label]="'instruments.actionsFor' | transloco: { name: row.name }">
-                <button data-testid="instrument-menu-edit" type="button" uiMenuItem (click)="editInstrument(row.id)">
-                  {{ 'instruments.edit.title' | transloco }}
-                </button>
-                <button
-                  data-testid="instrument-menu-delete"
-                  destructive
-                  type="button"
-                  uiMenuItem
-                  (click)="toDelete.set(row)"
-                >
-                  {{ 'instruments.edit.delete' | transloco }}
-                </button>
-              </ui-menu>
-            </td>
-          </tr>
+              </td>
+              <td numeric uiTd>
+                <span class="text-label text-(--muted-foreground)">
+                  {{ linesLabel(row, false) | transloco: { count: row.holdingCount } }}
+                </span>
+              </td>
+              <td uiTd>
+                <div class="flex justify-end">
+                  <button
+                    aria-label="{{ 'instruments.actionsFor' | transloco: { name: row.name } }}"
+                    data-testid="instrument-menu-trigger"
+                    size="icon-sm"
+                    type="button"
+                    ui-button
+                    variant="quiet"
+                    [uiMenuTrigger]="rowMenu"
+                  >
+                    <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
+                  </button>
+                  <ui-menu #rowMenu [label]="'instruments.actionsFor' | transloco: { name: row.name }" [width]="218">
+                    <button
+                      data-testid="instrument-menu-edit"
+                      type="button"
+                      uiMenuItem
+                      (click)="editInstrument(row.id)"
+                    >
+                      <svg lucidePencil [strokeWidth]="1.75" />
+                      {{ 'instruments.edit.title' | transloco }}
+                    </button>
+                    <button
+                      data-testid="instrument-menu-delete"
+                      destructive
+                      type="button"
+                      uiMenuItem
+                      (click)="toDelete.set(row)"
+                    >
+                      <svg lucideTrash2 [strokeWidth]="1.75" />
+                      {{ 'instruments.edit.delete' | transloco }}
+                    </button>
+                  </ui-menu>
+                </div>
+              </td>
+            </tr>
+          }
         }
       </tbody>
     </table>
+
+    @if (state() === 'ready') {
+      <div class="flex flex-col lg:hidden">
+        @for (row of filteredRows(); track row.id) {
+          <a data-testid="instrument-row-mobile" padding="sm" size="xl" ui-row [routerLink]="['/instruments', row.id]">
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="text-body truncate font-medium">{{ row.name }}</span>
+              <span class="text-label truncate text-(--subtle-foreground)">
+                {{ row.isin || row.symbol || row.sourceRef || '—' }} &middot;
+                {{ 'enums.assetClass.' + row.assetClass | transloco }}
+              </span>
+            </span>
+            <span class="flex flex-none flex-col items-end whitespace-nowrap">
+              <span
+                class="text-label"
+                [class.font-medium]="row.priceSource !== 'MANUAL'"
+                [class.text-(--muted-foreground)]="row.priceSource === 'MANUAL'"
+              >
+                {{ 'enums.priceSource.' + row.priceSource | transloco }}
+              </span>
+              <span class="text-caption text-(--subtle-foreground)">
+                {{ linesLabel(row, true) | transloco: { count: row.holdingCount } }}
+              </span>
+            </span>
+          </a>
+        }
+      </div>
+    }
+
+    <ui-async
+      align="auto"
+      variant="plain"
+      [errorMessage]="'instruments.errorMessage' | transloco"
+      [errorTitle]="'instruments.errorTitle' | transloco"
+      [retryLabel]="'instruments.retry' | transloco"
+      [state]="state()"
+      (retry)="retry()"
+    >
+      <span asyncLoading class="flex flex-col lg:px-2 lg:py-1">
+        @for (width of skeletonWidths; track $index) {
+          <span class="flex h-15 items-center justify-between lg:h-12">
+            <span class="flex flex-col gap-1.5">
+              <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
+              <span class="block w-32.5 lg:hidden"><ui-skeleton [height]="12" /></span>
+            </span>
+            <span class="block w-20 lg:w-130"><ui-skeleton [height]="14" /></span>
+          </span>
+        }
+      </span>
+      <span asyncEmpty class="block p-4 text-(--muted-foreground)" role="status">{{
+        'instruments.empty' | transloco
+      }}</span>
+    </ui-async>
   </div>
-}
+</ui-card>
 
 @if (toDelete(); as instrument) {
   <app-instrument-delete-dialog

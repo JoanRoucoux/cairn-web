@@ -1,6 +1,14 @@
 <div class="flex flex-wrap items-center justify-between gap-3">
-  <p class="text-body text-(--muted-foreground)" data-testid="accounts-summary">
-    {{ 'accounts.summary' | transloco: { count: accounts().length } }}
+  <p
+    class="text-label lg:text-body min-h-6 pl-1 text-(--muted-foreground) tabular-nums lg:pl-0"
+    data-testid="accounts-summary"
+  >
+    @if (state() === 'loading') {
+      <span class="block w-32 pt-1" data-testid="accounts-summary-skeleton"><ui-skeleton [height]="14" /></span>
+    } @else if (state() === 'ready' || state() === 'empty') {
+      {{ pluralKey('accounts.summary', accounts().length) | transloco: { count: accounts().length } }}
+      &middot; <ui-amount currency="EUR" [value]="totalEur()" />
+    }
   </p>
   <button data-testid="account-add" type="button" ui-button (click)="onAdd()">
     <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
@@ -8,87 +16,153 @@
   </button>
 </div>
 
-<ui-async
-  class="mt-4 block"
-  [errorMessage]="'accounts.errorMessage' | transloco"
-  [errorTitle]="'accounts.errorTitle' | transloco"
-  [retryLabel]="'accounts.retry' | transloco"
-  [state]="state()"
-  (retry)="retry()"
->
-  <span asyncLoading><ui-skeleton shape="row" [lines]="5" /></span>
-  <span asyncEmpty class="text-(--muted-foreground)">{{ 'accounts.empty' | transloco }}</span>
-
-  <ul
-    class="rounded-container flex flex-col gap-0.5 bg-(--card) p-1 shadow-[inset_0_0_0_1px_var(--border)]"
-    role="list"
-  >
-    @for (account of accounts(); track account.id) {
-      <li>
-        <div class="flex items-center gap-1" data-testid="account-row">
-          <a
-            class="flex-1"
-            data-testid="account-link"
-            routerLink="/holdings"
-            ui-row
-            [queryParams]="{ account: account.name }"
-          >
-            <span class="flex min-w-0 flex-1 flex-col">
-              <span class="text-body truncate font-medium">{{ account.name }}</span>
-              <span class="text-label truncate text-(--subtle-foreground)">
-                {{ 'enums.accountType.' + account.type | transloco }} &middot; {{ account.institution }}
-              </span>
-            </span>
-            <span class="flex flex-none flex-col items-end whitespace-nowrap">
-              <ui-amount class="text-body font-medium" currency="EUR" [value]="account.valueEur" />
-              <span class="text-label text-(--muted-foreground)">
-                {{ pluralKey('accounts.lineCount', account.lineCount) | transloco: { count: account.lineCount } }}
-              </span>
-            </span>
-          </a>
-
-          <button
-            data-testid="account-menu-trigger"
-            size="icon"
-            type="button"
-            ui-button
-            variant="ghost"
-            [attr.aria-label]="'accounts.actions' | transloco: { name: account.name }"
-            [uiMenuTrigger]="menu"
-          >
-            <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
-          </button>
-          <ui-menu #menu class="w-52.5" [label]="'accounts.actions' | transloco: { name: account.name }">
-            <button data-testid="account-edit" type="button" uiMenuItem (click)="onEdit(account)">
-              {{ 'accounts.edit' | transloco }}
-            </button>
-            <button
-              data-testid="account-delete"
-              destructive
-              type="button"
-              uiMenuItem
-              (click)="accountToDelete.set(account)"
-            >
-              {{ 'accounts.delete.action' | transloco }}
-            </button>
-          </ui-menu>
-        </div>
-
-        @if (account.lineCount === 0) {
-          <div
-            class="rounded-control mx-1 mb-1 flex items-center justify-between gap-3 bg-(--background) px-3 py-2"
-            data-testid="account-empty-hint"
-          >
-            <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmpty' | transloco }}</span>
-            <a data-testid="account-empty-cta" routerLink="/holdings" ui-button variant="outline">
-              {{ 'accounts.rowEmptyAction' | transloco }}
-            </a>
-          </div>
+<ui-card class="mt-4 block" padding="none">
+  <div class="lg:px-4 lg:pt-2 lg:pb-3" [class]="cardPadding()">
+    <table class="hidden lg:table" row="52" spaced uiTable>
+      <thead>
+        <tr>
+          <th primary tall uiTh>{{ 'accounts.columns.account' | transloco }}</th>
+          <th tall uiTh width="166px">{{ 'accounts.columns.type' | transloco }}</th>
+          <th tall uiTh width="186px">{{ 'accounts.columns.institution' | transloco }}</th>
+          <th numeric tall uiTh width="126px">{{ 'accounts.columns.lines' | transloco }}</th>
+          <th numeric tall uiTh width="166px">{{ 'accounts.columns.value' | transloco }}</th>
+          <th numeric tall uiTh width="88px">{{ 'accounts.columns.share' | transloco }}</th>
+          <th tall uiTh width="56px">
+            <span class="sr-only">{{ 'accounts.columns.actions' | transloco }}</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (state() === 'ready') {
+          @for (account of accounts(); track account.id) {
+            <tr data-testid="account-row" uiTr>
+              <td primary uiTd>
+                <a
+                  data-testid="account-link"
+                  routerLink="/holdings"
+                  uiRowLink
+                  [queryParams]="{ compte: account.id }"
+                  [stretch]="false"
+                  >{{ account.name }}</a
+                >
+              </td>
+              <td uiTd>
+                <ui-badge>{{ 'enums.accountType.' + account.type | transloco }}</ui-badge>
+              </td>
+              <td uiTd>
+                <span class="text-label text-(--muted-foreground)">{{ account.institution || '—' }}</span>
+              </td>
+              <td numeric uiTd>
+                <span class="text-label text-(--muted-foreground)">
+                  {{ linesLabel(account) | transloco: { count: account.lineCount } }}
+                </span>
+              </td>
+              <td numeric uiTd>
+                <ui-amount
+                  class="font-medium"
+                  currency="EUR"
+                  [class.text-(--subtle-foreground)]="account.valueEur === 0"
+                  [value]="account.valueEur"
+                />
+              </td>
+              <td class="text-(--muted-foreground)" numeric uiTd>
+                {{ account.share === null ? '—' : (account.share | ratio) }}
+              </td>
+              <td uiTd>
+                <div class="flex justify-end">
+                  <button
+                    data-testid="account-menu-trigger"
+                    size="icon-sm"
+                    type="button"
+                    ui-button
+                    uiRowAction
+                    variant="quiet"
+                    [attr.aria-label]="'accounts.actions' | transloco: { name: account.name }"
+                    [uiMenuTrigger]="menu"
+                  >
+                    <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
+                  </button>
+                  <ui-menu #menu [label]="'accounts.actions' | transloco: { name: account.name }" [width]="218">
+                    <button data-testid="account-edit" type="button" uiMenuItem (click)="onEdit(account)">
+                      <svg lucidePencil [strokeWidth]="1.75" />
+                      {{ 'accounts.edit' | transloco }}
+                    </button>
+                    <button
+                      data-testid="account-delete"
+                      destructive
+                      type="button"
+                      uiMenuItem
+                      (click)="accountToDelete.set(account)"
+                    >
+                      <svg lucideTrash2 [strokeWidth]="1.75" />
+                      {{ 'accounts.delete.action' | transloco }}
+                    </button>
+                  </ui-menu>
+                </div>
+              </td>
+            </tr>
+            @if (account.lineCount === 0) {
+              <tr data-testid="account-empty-hint">
+                <td class="px-2 pt-0 pb-2" colspan="7">
+                  <ui-card class="flex items-center justify-between gap-4" padding="panel" variant="inset">
+                    <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmpty' | transloco }}</span>
+                    <div class="flex flex-none gap-2">
+                      <a
+                        data-testid="account-empty-add"
+                        routerLink="/holdings"
+                        size="sm"
+                        ui-button
+                        variant="outline"
+                        [queryParams]="{ add: account.id }"
+                      >
+                        {{ 'accounts.rowEmptyAction' | transloco }}
+                      </a>
+                      <a data-testid="account-empty-import" routerLink="/profile" size="sm" ui-button variant="ghost">
+                        {{ 'accounts.rowEmptyImport' | transloco }}
+                      </a>
+                    </div>
+                  </ui-card>
+                </td>
+              </tr>
+            }
+          }
         }
-      </li>
+      </tbody>
+    </table>
+
+    @if (state() === 'ready') {
+      <app-account-mobile-rows
+        class="lg:hidden"
+        [accounts]="accounts()"
+        (edit)="onEdit($event)"
+        (remove)="accountToDelete.set($event)"
+      />
     }
-  </ul>
-</ui-async>
+
+    <ui-async
+      align="auto"
+      variant="plain"
+      [errorMessage]="'accounts.errorMessage' | transloco"
+      [errorTitle]="'accounts.errorTitle' | transloco"
+      [retryLabel]="'accounts.retry' | transloco"
+      [state]="state()"
+      (retry)="retry()"
+    >
+      <span asyncLoading class="flex flex-col lg:px-2 lg:py-1">
+        @for (width of skeletonWidths; track $index) {
+          <span class="flex h-15 items-center justify-between lg:h-13">
+            <span class="flex flex-col gap-1.5">
+              <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
+              <span class="block w-27.5 lg:hidden"><ui-skeleton [height]="12" /></span>
+            </span>
+            <span class="block w-24 lg:w-130"><ui-skeleton [height]="16" /></span>
+          </span>
+        }
+      </span>
+      <span asyncEmpty class="block p-4 text-(--muted-foreground)">{{ 'accounts.empty' | transloco }}</span>
+    </ui-async>
+  </div>
+</ui-card>
 
 @if (formOpen()) {
   <app-account-form-dialog [account]="accountToEdit()" (dismissed)="onFormDismissed()" (savedForm)="onFormSaved()" />

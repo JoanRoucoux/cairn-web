@@ -1,0 +1,89 @@
+<div class="flex flex-col">
+  @for (account of accounts(); track account.id) {
+    <div data-testid="account-row-mobile">
+      <div uiRowItem>
+        <a
+          data-testid="account-link-mobile"
+          padding="sm"
+          routerLink="/holdings"
+          size="xl"
+          ui-row
+          [queryParams]="{ compte: account.id }"
+        >
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="text-body truncate font-medium">{{ account.name }}</span>
+            <span class="text-label truncate text-(--subtle-foreground)">
+              {{ 'enums.accountType.' + account.type | transloco }}
+              @if (account.institution) {
+                &middot; {{ account.institution }}
+              }
+            </span>
+          </span>
+          <span class="flex flex-none flex-col items-end whitespace-nowrap tabular-nums">
+            <ui-amount
+              class="text-body font-medium"
+              currency="EUR"
+              [class.text-(--subtle-foreground)]="account.valueEur === 0"
+              [value]="account.valueEur"
+            />
+            <span class="text-label text-(--muted-foreground)">
+              {{ linesLabel(account) | transloco: { count: account.lineCount } }}
+            </span>
+          </span>
+        </a>
+        <button
+          data-testid="account-menu-trigger-mobile"
+          size="icon-sm"
+          type="button"
+          ui-button
+          variant="quiet"
+          [attr.aria-label]="'accounts.actions' | transloco: { name: account.name }"
+          [uiMenuTrigger]="mobileMenu"
+        >
+          <svg lucideEllipsis [size]="20" [strokeWidth]="1.75" />
+        </button>
+        <ui-menu
+          #mobileMenu
+          sheet
+          [heading]="account.name"
+          [label]="'accounts.actions' | transloco: { name: account.name }"
+        >
+          <button data-testid="account-edit-mobile" type="button" uiMenuItem (click)="edit.emit(account)">
+            <svg lucidePencil [strokeWidth]="1.75" />
+            {{ 'accounts.edit' | transloco }}
+          </button>
+          <button
+            data-testid="account-delete-mobile"
+            destructive
+            type="button"
+            uiMenuItem
+            (click)="remove.emit(account)"
+          >
+            <svg lucideTrash2 [strokeWidth]="1.75" />
+            {{ 'accounts.delete.action' | transloco }}
+          </button>
+        </ui-menu>
+      </div>
+      @if (account.lineCount === 0) {
+        <ui-card
+          class="mx-2 mb-2.5 flex items-center justify-between gap-3"
+          data-testid="account-empty-hint-mobile"
+          padding="panel"
+          variant="inset"
+        >
+          <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmptyCompact' | transloco }}</span>
+          <a
+            data-testid="account-empty-add-mobile"
+            routerLink="/holdings"
+            size="sm"
+            ui-button
+            variant="outline"
+            [queryParams]="{ add: account.id }"
+          >
+            {{ 'accounts.rowEmptyAction' | transloco }}
+          </a>
+        </ui-card>
+      }
+    </div>
+  }
+</div>

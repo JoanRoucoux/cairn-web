@@ -11,7 +11,7 @@ test.describe('add a line', () => {
   });
 
   test('adds a catalogue hit to an account', async ({ page }) => {
-    await page.getByTestId('holding-add-account').selectOption({ label: 'CTO Boursorama' });
+    await page.getByTestId('holding-add-account').selectOption({ label: 'CTO Boursorama · CTO' });
     await page.getByTestId('holding-add-query').fill('Amundi MSCI World');
 
     await expect(page.getByTestId('holding-add-catalog-candidate')).toBeVisible();
@@ -27,7 +27,7 @@ test.describe('add a line', () => {
   });
 
   test('creates the instrument then the line for an online hit', async ({ page }) => {
-    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama' });
+    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama · PEA' });
     await page.getByTestId('holding-add-query').fill('IE00B4L5Y983');
 
     await expect(page.getByTestId('holding-add-online-candidate')).toBeVisible();
@@ -43,7 +43,7 @@ test.describe('add a line', () => {
   });
 
   test('offers a manual price when nothing is found, with a required asset class', async ({ page }) => {
-    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama' });
+    await page.getByTestId('holding-add-account').selectOption({ label: 'PEA Boursorama · PEA' });
     await page.getByTestId('holding-add-query').fill('nonexistent');
 
     await expect(page.getByTestId('holding-add-create-manual')).toBeVisible();
@@ -60,6 +60,16 @@ test.describe('add a line', () => {
     await expect(page.getByTestId('holding-add-dialog')).toHaveCount(0);
   });
 
+  test('submits with Enter from the quantity field', async ({ page }) => {
+    await page.getByTestId('holding-add-account').selectOption({ label: 'CTO Boursorama · CTO' });
+    await page.getByTestId('holding-add-query').fill('Amundi MSCI World');
+    await page.getByTestId('holding-add-catalog-candidate').click();
+    await page.getByTestId('holding-add-quantity').fill('3');
+    await page.getByTestId('holding-add-quantity').press('Enter');
+
+    await expect(page.getByTestId('holding-add-dialog')).toHaveCount(0);
+  });
+
   test('shows the online search error with its own retry, keeping the catalogue results', async ({ page }) => {
     await page.route('**/api/instruments/resolve', (route) =>
       route.fulfill({ status: 500, json: { message: 'boom' } }),
@@ -69,6 +79,6 @@ test.describe('add a line', () => {
 
     await expect(page.getByText('The online search did not answer.')).toBeVisible();
     await expect(page.getByTestId('holding-add-catalog-candidate')).toBeVisible();
-    await expect(page.getByTestId('holding-add-online-retry')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 });

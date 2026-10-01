@@ -1,0 +1,84 @@
+<ui-card>
+  <div class="flex flex-col gap-3">
+    <h2 class="text-title font-semibold">{{ 'profile.passkeys' | transloco }}</h2>
+
+    <div class="-mt-1 flex flex-col">
+      <ui-async
+        [errorMessage]="'profile.passkeysErrorMessage' | transloco"
+        [errorTitle]="'profile.passkeysErrorTitle' | transloco"
+        [retryLabel]="'profile.retry' | transloco"
+        [state]="state()"
+        (retry)="retry.emit()"
+      >
+        <div aria-busy="true" asyncLoading class="flex flex-col">
+          @for (row of [0, 1, 2]; track row) {
+            <div class="flex h-15 items-center gap-3">
+              <ui-skeleton class="w-9 flex-none" [height]="36" />
+              <div class="flex flex-col gap-1.5">
+                <ui-skeleton class="w-35" [height]="16" />
+                <ui-skeleton class="w-50" [height]="12" />
+              </div>
+            </div>
+          }
+        </div>
+
+        <ul class="flex flex-col">
+          @for (passkey of passkeys(); track passkey.credentialId) {
+            <li uiListRow>
+              <span uiRowTile>
+                <svg lucideKeyRound [size]="18" [strokeWidth]="1.75" />
+              </span>
+              <span class="flex min-w-0 grow flex-col">
+                <span class="flex items-center gap-2">
+                  <span class="text-body truncate font-medium">{{ passkey.label }}</span>
+                  @if (passkey.current) {
+                    <ui-badge class="flex-none" data-testid="current-passkey" size="sm">{{
+                      'profile.currentDevice' | transloco
+                    }}</ui-badge>
+                  }
+                </span>
+                <span class="text-caption text-(--subtle-foreground)" data-testid="passkey-meta">
+                  @if (passkey.provider) {
+                    {{ 'profile.provider.' + passkey.provider | transloco }} ·
+                  }
+                  {{ 'profile.created' | transloco: { date: passkey.created } }} ·
+                  {{ 'profile.lastUsed.' + passkey.usage.kind | transloco: { date: passkey.usage.date } }}
+                </span>
+              </span>
+              @if (!onlyKey()) {
+                <button
+                  class="-mr-2 flex-none"
+                  data-testid="revoke-passkey"
+                  size="icon-sm"
+                  type="button"
+                  ui-button
+                  variant="quiet-destructive"
+                  [attr.aria-label]="'profile.revokeNamed' | transloco: { label: passkey.label }"
+                  (click)="remove.emit(passkey)"
+                >
+                  <svg lucideTrash2 [size]="18" [strokeWidth]="1.75" />
+                </button>
+              }
+            </li>
+          }
+        </ul>
+
+        @if (onlyKey()) {
+          <p class="text-label mt-3 text-(--muted-foreground)">{{ 'profile.onlyKey' | transloco }}</p>
+        }
+      </ui-async>
+    </div>
+
+    <button
+      class="mt-1 self-start"
+      data-testid="manage-passkeys"
+      type="button"
+      ui-button
+      variant="outline"
+      (click)="add.emit()"
+    >
+      <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
+      {{ 'profile.addPasskey' | transloco }}
+    </button>
+  </div>
+</ui-card>

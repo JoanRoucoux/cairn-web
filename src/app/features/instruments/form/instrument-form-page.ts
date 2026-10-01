@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 
-import { UiButton, UiCard, UiField, UiInput, UiSelect, UiTextarea } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiCard, UiField, UiInput, UiSelect, UiTextarea } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AssetClass, type InstrumentCandidateResponse, PriceSource } from '@core/api-client/cairnAPI.schemas';
@@ -18,6 +18,7 @@ import { IsinLookup } from './isin-lookup/isin-lookup';
     InstrumentDeleteDialog,
     IsinLookup,
     TranslocoPipe,
+    UiAlert,
     UiButton,
     UiCard,
     UiField,

@@ -1,59 +1,88 @@
-@if (portfolio.hasValue()) {
-  <p class="text-body mb-4 text-(--muted-foreground)">
-    {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()" />
+@if (totalEur() !== undefined) {
+  <p class="text-label lg:text-body mb-4 px-1 text-(--muted-foreground) lg:px-0 lg:leading-[normal]">
+    {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()!" />
   </p>
 }
 
-<div class="grid gap-4 lg:grid-cols-2">
-  <div
-    class="rounded-container flex flex-col gap-2 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
-  >
-    <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAssetClass' | transloco }}</h2>
-    <ui-async
-      [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
-      [errorTitle]="'portfolio.allocation.byAssetClassErrorTitle' | transloco"
-      [retryLabel]="'portfolio.retry' | transloco"
-      [state]="assetClassState()"
-      (retry)="retry()"
-    >
-      <span asyncLoading><ui-skeleton shape="ring" /></span>
-      <span asyncEmpty class="text-label text-(--muted-foreground)">{{
-        'portfolio.allocation.empty' | transloco
-      }}</span>
-      <ui-donut
-        [label]="'portfolio.allocation.byAssetClass' | transloco"
-        [othersLabel]="'portfolio.allocation.others' | transloco"
-        [shareFormat]="formatShare"
-        [slices]="assetClassSlices()"
-        [valueFormat]="formatEur"
-        (sliceSelect)="onAssetClassSelect($event)"
-      />
-    </ui-async>
-  </div>
+<div class="@container">
+  <div [class]="gridClass()">
+    <ui-card padding="none">
+      <div class="flex flex-col gap-1 px-2 pt-(--inset-card) pb-2 lg:gap-2 lg:px-4 lg:pb-3">
+        <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAssetClass' | transloco }}</h2>
+        <ui-async
+          align="auto"
+          [class]="wrapperClass(assetClassState())"
+          [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
+          [errorTitle]="'portfolio.allocation.byAssetClassErrorTitle' | transloco"
+          [retryLabel]="'portfolio.error.retry' | transloco"
+          [state]="assetClassState()"
+          (retry)="retryClasses()"
+        >
+          <div asyncLoading class="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
+            <ui-skeleton class="sm:hidden" shape="ring" [size]="232" />
+            <ui-skeleton class="max-sm:hidden" shape="ring" [size]="240" />
+            <ng-container *ngTemplateOutlet="legendSkeleton; context: { $implicit: classSkeleton }" />
+          </div>
+          <span asyncEmpty class="text-label text-(--muted-foreground)">{{
+            'portfolio.allocation.empty' | transloco
+          }}</span>
+          <ui-donut
+            [label]="'portfolio.allocation.byAssetClass' | transloco"
+            [legendHref]="classHref"
+            [othersLabel]="'portfolio.allocation.others' | transloco"
+            [shareFormat]="formatShare"
+            [slices]="assetClassSlices()"
+            [valueFormat]="formatEur"
+            (sliceSelect)="onAssetClassSelect($event)"
+          />
+        </ui-async>
+      </div>
+    </ui-card>
 
-  <div
-    class="rounded-container flex flex-col gap-2 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
-  >
-    <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAccount' | transloco }}</h2>
-    <ui-async
-      [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
-      [errorTitle]="'portfolio.allocation.byAccountErrorTitle' | transloco"
-      [retryLabel]="'portfolio.retry' | transloco"
-      [state]="accountState()"
-      (retry)="retry()"
-    >
-      <span asyncLoading><ui-skeleton shape="ring" /></span>
-      <span asyncEmpty class="text-label text-(--muted-foreground)">{{
-        'portfolio.allocation.empty' | transloco
-      }}</span>
-      <ui-donut
-        [label]="'portfolio.allocation.byAccount' | transloco"
-        [othersLabel]="'portfolio.allocation.others' | transloco"
-        [shareFormat]="formatShare"
-        [slices]="accountSlices()"
-        [valueFormat]="formatEur"
-        (sliceSelect)="onAccountSelect($event)"
-      />
-    </ui-async>
+    <ui-card padding="none">
+      <div class="flex flex-col gap-1 px-2 pt-(--inset-card) pb-2 lg:gap-2 lg:px-4 lg:pb-3">
+        <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAccount' | transloco }}</h2>
+        <ui-async
+          align="auto"
+          [class]="wrapperClass(accountState())"
+          [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
+          [errorTitle]="'portfolio.allocation.byAccountErrorTitle' | transloco"
+          [retryLabel]="'portfolio.error.retry' | transloco"
+          [state]="accountState()"
+          (retry)="retryAccounts()"
+        >
+          <div asyncLoading class="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
+            <ui-skeleton class="sm:hidden" shape="ring" [size]="232" />
+            <ui-skeleton class="max-sm:hidden" shape="ring" [size]="240" />
+            <ng-container *ngTemplateOutlet="legendSkeleton; context: { $implicit: accountSkeleton }" />
+          </div>
+          <span asyncEmpty class="text-label text-(--muted-foreground)">{{
+            'portfolio.allocation.empty' | transloco
+          }}</span>
+          <ui-donut
+            [label]="'portfolio.allocation.byAccount' | transloco"
+            [legendHref]="accountHref"
+            [othersLabel]="'portfolio.allocation.others' | transloco"
+            [shareFormat]="formatShare"
+            [slices]="accountSlices()"
+            [valueFormat]="formatEur"
+            (sliceSelect)="onAccountSelect($event)"
+          />
+        </ui-async>
+      </div>
+    </ui-card>
   </div>
 </div>
+
+<ng-template #legendSkeleton let-widths>
+  <div class="flex w-full flex-1 flex-col gap-4 py-2">
+    @for (width of widths; track $index) {
+      <div class="flex items-center gap-3">
+        <ui-skeleton shape="dot" />
+        <div [style.width.px]="width"><ui-skeleton [height]="16" /></div>
+        <span class="flex-1"></span>
+        <div class="w-13"><ui-skeleton [height]="16" /></div>
+      </div>
+    }
+  </div>
+</ng-template>

@@ -1,6 +1,5 @@
 {
   "unknown": "Not available",
-  "loading": "Loading your portfolio",
   "pageError": "Your portfolio could not be loaded.",
   "error": {
     "message": "The server did not answer.",
@@ -12,10 +11,12 @@
     "total": "Total",
     "others": "Others",
     "empty": "Nothing to break down yet.",
-    "byAssetClassErrorTitle": "The breakdown by asset class could not be loaded",
+    "byAssetClassErrorTitle": "The breakdown by class could not be loaded",
     "byAccountErrorTitle": "The breakdown by account could not be loaded",
     "errorMessage": "The server did not answer.",
-    "lineCount": "{{count}} holdings"
+    "lineCount_one": "{{count}} holding",
+    "lineCount_other": "{{count}} holdings",
+    "cashSubtitle": "Balances and savings"
   },
   "total": {
     "title": "Net worth",

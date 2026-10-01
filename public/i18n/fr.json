@@ -8,7 +8,7 @@
     "instrumentCreate": "Ajouter un instrument",
     "instrumentEdit": "Modifier un instrument",
     "accounts": "Comptes",
-    "profile": "Mon compte",
+    "profile": "Profil",
     "notFound": "Page introuvable",
     "login": "Connexion"
   },
@@ -37,7 +37,7 @@
       "YAHOO": "Yahoo Finance",
       "COINGECKO": "CoinGecko",
       "SG_SIRIUS": "SG Sirius",
-      "MANUAL": "Manuel"
+      "MANUAL": "Saisie manuelle"
     },
     "accountType": {
       "PEA": "PEA",
@@ -56,7 +56,6 @@
     "holdings": "Lignes",
     "allocation": "Répartition",
     "accounts": "Comptes",
-    "account": "Mon compte",
     "skipToContent": "Aller au contenu",
     "offline": "Vous êtes hors ligne. Les valeurs peuvent être périmées."
   },

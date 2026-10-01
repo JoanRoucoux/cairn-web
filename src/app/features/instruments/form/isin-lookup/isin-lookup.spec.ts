@@ -102,6 +102,8 @@ describe('IsinLookup', () => {
 
     expect(searched).not.toHaveBeenCalled();
     expect(screen.getByRole('alert')).toHaveTextContent('instruments.lookup.blank');
+    expect(screen.getByTestId('isin-input')).toBeInvalid();
+    expect(screen.getByTestId('isin-input')).toHaveAccessibleDescription('instruments.lookup.blank');
   });
 
   it('clears the complaint as soon as the reader types', async () => {

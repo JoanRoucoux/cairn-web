@@ -1,43 +1,45 @@
-import { Component, booleanAttribute, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, LOCALE_ID, booleanAttribute, computed, inject, input, output } from '@angular/core';
 
-import { UiAmount, UiDelta, UiRow, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui';
+import {
+  UI_AMOUNT_MASKED,
+  UiAmount,
+  UiCellSub,
+  UiGroup,
+  UiGroupCell,
+  UiRowLink,
+  UiTd,
+  UiTr,
+  formatAmount,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
-import { decimalPlaces } from '@shared/format/decimal-places';
-import { pluralKey } from '@shared/format/plural-key';
-import { RatioPipe } from '@shared/format/ratio-pipe';
-import { ShortDatePipe } from '@shared/format/short-date-pipe';
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import type { AccountGroup } from '../holding-list-store';
+import { filteredCount, groupCount } from './group-count';
 import { HoldingAccountGroupRow } from './row/holding-account-group-row';
 
 @Component({
-  selector: 'app-holding-account-group',
-  imports: [
-    HoldingAccountGroupRow,
-    RatioPipe,
-    RouterLink,
-    ShortDatePipe,
-    TranslocoPipe,
-    UiAmount,
-    UiDelta,
-    UiRow,
-    UiTable,
-    UiTd,
-    UiTh,
-    UiTr,
-  ],
+  selector: 'tbody[app-holding-account-group]',
+  imports: [HoldingAccountGroupRow, TranslocoPipe, UiAmount, UiCellSub, UiGroupCell, UiRowLink, UiTd, UiTr],
   templateUrl: './holding-account-group.html',
+  hostDirectives: [UiGroup],
+  host: { 'data-testid': 'account-group', '[attr.data-account-id]': 'group().accountId' },
 })
 export class HoldingAccountGroup {
   readonly group = input.required<AccountGroup>();
-  readonly expanded = input(false);
   readonly compact = input(false, { transform: booleanAttribute });
   readonly selectedHoldingId = input<string | undefined>(undefined);
 
   readonly editCash = output<string>();
+  readonly enterQuote = output<HoldingResponse>();
 
-  protected readonly decimalPlaces = decimalPlaces;
-  protected readonly pluralKey = pluralKey;
+  readonly #locale = inject(LOCALE_ID);
+  readonly #masked = inject(UI_AMOUNT_MASKED);
+
+  protected readonly filteredCount = filteredCount;
+  protected readonly groupCount = groupCount;
+  protected readonly accountTotal = computed(() =>
+    formatAmount(this.group().filtered?.accountValueEur, { locale: this.#locale, currency: 'EUR' }, this.#masked()),
+  );
 }

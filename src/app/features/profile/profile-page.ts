@@ -1,13 +1,17 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
   type SegmentedOption,
+  UiAlert,
   UiAvatar,
+  UiBackLink,
   UiButton,
   UiCard,
   UiRow,
+  UiRowTile,
   UiSegmented,
+  UiSkeleton,
   UiSwitch,
   UiTable,
   UiTd,
@@ -19,41 +23,42 @@ import {
   LucideChevronRight,
   LucideDownload,
   LucideFileText,
-  LucideKeyRound,
   LucideLogOut,
-  LucideTrash2,
   LucideUpload,
 } from '@lucide/angular';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
-import { RelativeDatePipe } from '@shared/format/relative-date-pipe';
-
+import { ProfilePasskeyDeleteDialog } from './passkey-delete-dialog/profile-passkey-delete-dialog';
 import { ProfilePasskeyDialog } from './passkey-dialog/profile-passkey-dialog';
+import { ProfilePasskeyList } from './passkey-list/profile-passkey-list';
 import { PortfolioImportStore } from './portfolio-import-store';
-import { ProfileStore } from './profile-store';
+import { type PasskeyView, ProfileStore } from './profile-store';
 
 @Component({
   selector: 'app-profile-page',
   imports: [
+    UiAlert,
+    UiAvatar,
+    UiBackLink,
+    UiCard,
     LucideBook,
     LucideChevronRight,
     LucideDownload,
     LucideFileText,
-    LucideKeyRound,
     LucideLogOut,
-    LucideTrash2,
     LucideUpload,
+    ProfilePasskeyDeleteDialog,
     ProfilePasskeyDialog,
-    RelativeDatePipe,
+    ProfilePasskeyList,
     RouterLink,
     TranslocoPipe,
-    UiAvatar,
-    UiButton,
-    UiCard,
     UiRow,
+    UiRowTile,
+    UiButton,
     UiSegmented,
+    UiSkeleton,
     UiSwitch,
     UiTable,
     UiTd,
@@ -64,17 +69,24 @@ import { ProfileStore } from './profile-store';
 })
 export class ProfilePage {
   #store = inject(ProfileStore);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly #injector = inject(Injector);
   #signIn = inject(SignInRedirect);
 
+  protected readonly identityState = this.#store.identityState;
+  protected readonly passkeysState = this.#store.passkeysState;
   protected readonly owner = this.#store.owner;
+  protected readonly username = this.#store.username;
+  protected readonly signInMethod = this.#store.signInMethod;
   protected readonly passkeys = this.#store.passkeys;
-  protected readonly onlyKey = computed(() => this.passkeys().length === 1);
-  protected readonly revocationRefused = this.#store.revocationRefused;
   protected readonly theme = this.#store.theme;
+  protected readonly systemScheme = this.#store.systemScheme;
   protected readonly language = this.#store.language;
   protected readonly hideAmounts = this.#store.hideAmounts;
+  protected readonly instrumentCount = this.#store.instrumentCount;
 
   protected readonly passkeyDialogOpen = signal(false);
+  protected readonly passkeyToDelete = signal<PasskeyView | undefined>(undefined);
 
   #importStore = inject(PortfolioImportStore);
   protected readonly importing = this.#importStore.importing;
@@ -119,12 +131,21 @@ export class ProfilePage {
     }
   }
 
-  protected async onRevoke(credentialId: string): Promise<void> {
-    await this.#store.revokePasskey(credentialId);
-  }
-
   protected onPasskeyRegistered(): void {
     this.passkeyDialogOpen.set(false);
+    this.#store.reloadPasskeys();
+  }
+
+  protected onPasskeyDeleted(): void {
+    this.passkeyToDelete.set(undefined);
+    this.#store.reloadPasskeys();
+    afterNextRender(
+      () => this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="manage-passkeys"]')?.focus(),
+      { injector: this.#injector },
+    );
+  }
+
+  protected retryPasskeys(): void {
     this.#store.reloadPasskeys();
   }
 

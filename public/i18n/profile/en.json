@@ -1,11 +1,16 @@
 {
-  "avatarLabel": "My account",
-  "connectedByPasskey": "Signed in with a passkey on this device",
   "appearance": "Appearance",
   "themeLabel": "Theme",
-  "theme": { "system": "System", "light": "Light", "dark": "Dark" },
+  "theme": {
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "languageLabel": "Language",
-  "language": { "en": "English", "fr": "Français" },
+  "language": {
+    "en": "English",
+    "fr": "Français"
+  },
   "hideAmounts": "Hide amounts",
   "hideAmountsHint": "For showing the application to someone. Amounts become •••• € on every screen; percentages stay visible.",
   "manageData": {
@@ -43,11 +48,50 @@
   "addPasskeySubmitting": "Adding...",
   "addPasskeyUnsupported": "This browser cannot create a passkey.",
   "addPasskeyFailed": "The passkey could not be added. Try again.",
-  "created": "Created {{when}}",
-  "lastUsed": "Last used {{when}}",
-  "neverUsed": "Never used yet",
   "onlyKey": "This is your only key: it cannot be deleted. Add a key on another device to keep a backup way in.",
   "revokeNamed": "Delete the {{label}} key",
-  "revokeRefused": "This is your only passkey. Add another device before deleting this one.",
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "title": "Profile",
+  "back": "Portfolio",
+  "avatarLabel": "Profile avatar",
+  "signedIn": {
+    "PASSKEY": "{{username}} · signed in with a passkey",
+    "PASSWORD": "{{username}} · signed in with a password"
+  },
+  "themeHint": {
+    "system": "Follows the device setting, currently {{scheme}}.",
+    "light": "Forced to light, whatever the device.",
+    "dark": "Forced to dark, whatever the device."
+  },
+  "scheme": {
+    "light": "light",
+    "dark": "dark"
+  },
+  "passkeysErrorTitle": "The keys could not be loaded",
+  "passkeysErrorMessage": "The server did not answer.",
+  "retry": "Retry",
+  "currentDevice": "This device",
+  "provider": {
+    "ICLOUD_KEYCHAIN": "iCloud",
+    "GOOGLE_PASSWORD_MANAGER": "Google Password Manager",
+    "WINDOWS_HELLO": "Windows Hello",
+    "ONE_PASSWORD": "1Password",
+    "BITWARDEN": "Bitwarden",
+    "SECURITY_KEY": "Security key"
+  },
+  "created": "Created on {{date}}",
+  "lastUsed": {
+    "today": "Used today",
+    "yesterday": "Used yesterday",
+    "on": "Used on {{date}}",
+    "never": "Never used"
+  },
+  "delete": {
+    "title": "Delete the key \"{{label}}\"?",
+    "description": "This device will no longer be able to sign in to Cairn with this key. Your other keys remain valid.",
+    "cancel": "Cancel",
+    "submit": "Delete the key",
+    "refused": "This is your only passkey. Add another device before deleting it.",
+    "error": "The key could not be deleted."
+  }
 }

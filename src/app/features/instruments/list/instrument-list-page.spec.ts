@@ -1,14 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { InstrumentListPage } from './instrument-list-page';
 import { InstrumentListStore } from './instrument-list-store';
@@ -25,7 +25,7 @@ const instrument = {
 describe('InstrumentListPage', () => {
   let httpTesting: HttpTestingController;
 
-  const renderPage = async (): Promise<void> => {
+  const renderPage = async (extraProviders: Provider[] = []): Promise<void> => {
     await render(InstrumentListPage, {
       imports: [getTranslocoTestingModule()],
       providers: [
@@ -35,6 +35,7 @@ describe('InstrumentListPage', () => {
         provideRouter([]),
         provideTranslocoScope('instruments'),
         InstrumentListStore,
+        ...extraProviders,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -46,6 +47,16 @@ describe('InstrumentListPage', () => {
   };
 
   afterEach(() => httpTesting.verify());
+
+  it('does not translate its instruments scope keys before the scope has loaded', async () => {
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await renderPage([delayedScopeLoader()]);
+    await flushOne();
+
+    expect(translate.mock.calls.filter(([key]) => String(key).startsWith('instruments.count'))).toEqual([]);
+
+    translate.mockRestore();
+  });
 
   it('should list the instruments the server returns', async () => {
     await renderPage();
@@ -59,8 +70,8 @@ describe('InstrumentListPage', () => {
     await flushOne();
     await screen.findAllByTestId('instrument-row');
 
-    expect(screen.getByText('enums.assetClass.ETF')).toBeInTheDocument();
-    expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
+    expect(screen.getAllByText('enums.assetClass.ETF').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('enums.priceSource.YAHOO').length).toBeGreaterThan(0);
     expect(screen.getByText('ESE.PA')).toBeInTheDocument();
   });
 
@@ -68,7 +79,8 @@ describe('InstrumentListPage', () => {
     await renderPage();
     await flushOne([{ ...instrument, priceSource: 'MANUAL', sourceRef: null }]);
 
-    expect(await screen.findByText('enums.priceSource.MANUAL')).toHaveClass('text-(--muted-foreground)');
+    expect((await screen.findAllByText('enums.priceSource.MANUAL'))[0]).toHaveClass('text-(--muted-foreground)');
+    expect(screen.getByText('instruments.manualCaption')).toBeInTheDocument();
   });
 
   it('shows the holding count, or "Aucune" for an instrument no line uses', async () => {
@@ -83,6 +95,7 @@ describe('InstrumentListPage', () => {
     await flushOne();
 
     expect(await screen.findByText('instruments.noLines')).toBeInTheDocument();
+    expect(screen.getByText('instruments.noLinesFull')).toBeInTheDocument();
   });
 
   it('should filter the instruments by name or isin', async () => {
@@ -96,7 +109,7 @@ describe('InstrumentListPage', () => {
     await user.type(screen.getByTestId('instruments-search'), 'bitcoin');
 
     expect(await screen.findAllByTestId('instrument-row')).toHaveLength(1);
-    expect(screen.getByText('Bitcoin')).toBeInTheDocument();
+    expect(screen.getAllByText('Bitcoin').length).toBeGreaterThan(0);
   });
 
   it('should show an empty state with no match', async () => {
@@ -121,10 +134,7 @@ describe('InstrumentListPage', () => {
     await renderPage();
     await flushOne();
 
-    expect(await screen.findByRole('link', { name: 'BNP Paribas Easy S&P 500' })).toHaveAttribute(
-      'href',
-      '/instruments/i1',
-    );
+    expect(await screen.findByTestId('instrument-row-mobile')).toHaveAttribute('href', '/instruments/i1');
   });
 
   it('navigates to the edit screen from the row menu', async () => {
@@ -177,8 +187,64 @@ describe('InstrumentListPage', () => {
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1').flush(null));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush([]));
 
     expect(await screen.findByText('instruments.empty')).toBeInTheDocument();
+  });
+
+  it('shows the back link to the profile and the instrument count, and a dash for a missing ISIN', async () => {
+    await renderPage();
+    await flushOne([
+      instrument,
+      { id: 'i2', name: 'Bitcoin', isin: null, assetClass: 'CRYPTO', priceSource: 'COINGECKO' },
+    ]);
+
+    expect(await screen.findByTestId('instruments-back')).toHaveAttribute('href', '/profile');
+    expect(screen.getAllByText('instruments.count_other').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('instrument-row')[0]).toHaveTextContent('—');
+  });
+
+  it('shows a count skeleton while loading', async () => {
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-count-skeleton')).toBeInTheDocument();
+
+    await flushOne([]);
+  });
+
+  it('shows the symbol in the ISIN or symbol column for an instrument without ISIN', async () => {
+    await renderPage();
+    await flushOne([
+      { id: 'i2', name: 'Bitcoin', isin: null, symbol: 'BTC', assetClass: 'CRYPTO', priceSource: 'COINGECKO' },
+    ]);
+
+    expect((await screen.findByTestId('instrument-row')).querySelectorAll('td')[1]).toHaveTextContent('BTC');
+  });
+
+  it('lists the instruments alphabetically', async () => {
+    await renderPage();
+    await flushOne([
+      { ...instrument, id: 'z', name: 'Zalando' },
+      { ...instrument, id: 'e', name: 'Édenred' },
+      { ...instrument, id: 'a', name: 'Accor' },
+    ]);
+
+    const rows = await screen.findAllByTestId('instrument-row');
+
+    expect(rows.map((row) => row.querySelector('td')?.textContent?.trim())).toEqual(['Accor', 'Édenred', 'Zalando']);
+  });
+
+  it('uses the long search placeholder on a desktop viewport', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute(
+      'placeholder',
+      'instruments.searchPlaceholderDesktop',
+    );
+
+    vi.unstubAllGlobals();
+    await flushOne([]);
   });
 
   it('should show an error when instruments cannot load', async () => {
@@ -189,6 +255,51 @@ describe('InstrumentListPage', () => {
     );
     httpTesting.expectOne('/api/holdings').flush([]);
 
-    expect(await screen.findByText('instruments.error')).toBeInTheDocument();
+    expect(await screen.findByText('instruments.errorTitle')).toBeInTheDocument();
+  });
+
+  it('reloads both calls from the error block retry', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await vi.waitFor(() =>
+      httpTesting.expectOne('/api/instruments').flush(null, { status: 500, statusText: 'Server Error' }),
+    );
+    httpTesting.expectOne('/api/holdings').flush([]);
+
+    await user.click(await screen.findByRole('button', { name: 'instruments.retry' }));
+
+    await flushOne();
+    expect(await screen.findAllByTestId('instrument-row')).toHaveLength(1);
+  });
+
+  it('follows the viewport width for the search placeholder', async () => {
+    const query = Object.assign(new EventTarget(), { matches: false });
+    vi.stubGlobal('matchMedia', () => query);
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
+
+    query.matches = true;
+    query.dispatchEvent(new Event('change'));
+
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('instruments-search')).toHaveAttribute(
+        'placeholder',
+        'instruments.searchPlaceholderDesktop',
+      ),
+    );
+
+    vi.unstubAllGlobals();
+    await flushOne([]);
+  });
+
+  it('falls back to the short placeholder where the browser has no media queries', async () => {
+    vi.stubGlobal('matchMedia', undefined);
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
+
+    vi.unstubAllGlobals();
+    await flushOne([]);
   });
 });

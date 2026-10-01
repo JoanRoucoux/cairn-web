@@ -1,10 +1,10 @@
-<div class="flex flex-wrap items-start gap-2.5">
-  <ui-field
-    class="grow"
-    [error]="blank() ? ('instruments.lookup.blank' | transloco) : undefined"
-    [label]="'instruments.lookup.label' | transloco"
-  >
+<ui-field
+  [error]="blank() ? ('instruments.lookup.blank' | transloco) : undefined"
+  [label]="'instruments.lookup.label' | transloco"
+>
+  <div class="flex w-full gap-2.5">
     <input
+      class="min-w-0 flex-1"
       data-testid="isin-input"
       type="search"
       uiInput
@@ -12,14 +12,11 @@
       [value]="query()"
       (input)="onQueryInput($event)"
     />
-  </ui-field>
-  <div class="flex flex-col gap-1.5">
-    <span aria-hidden="true" class="text-label leading-[17px] font-medium">&nbsp;</span>
     <button data-testid="isin-search" type="button" ui-button [disabled]="searching()" (click)="onSearch()">
       {{ 'instruments.lookup.search' | transloco }}
     </button>
   </div>
-</div>
+</ui-field>
 
 @if (searching()) {
   <p class="text-label mt-3 text-(--muted-foreground)" role="status">
@@ -32,17 +29,12 @@
 }
 
 @if (candidates().length > 0) {
-  <ul class="mt-3 flex flex-col gap-2" role="list">
+  <ul class="mt-3 flex flex-col" role="list">
     @for (candidate of candidates(); track candidate.sourceRef) {
       <li>
-        <button
-          class="rounded-control flex min-h-11 w-full items-center justify-between gap-3 border border-(--border) bg-(--card) px-3.5 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-          data-testid="isin-candidate"
-          type="button"
-          (click)="picked.emit(candidate)"
-        >
-          <span class="flex min-w-0 flex-col gap-0.5">
-            <span class="text-label truncate font-medium">{{ candidate.name }}</span>
+        <button data-testid="isin-candidate" size="dense" type="button" ui-row (click)="picked.emit(candidate)">
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="text-body truncate font-medium">{{ candidate.name }}</span>
             <span class="text-caption text-(--subtle-foreground) tabular-nums">
               {{ candidate.source }} &middot; {{ candidate.sourceRef }}
               @if (candidate.exchange) {

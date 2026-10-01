@@ -13,6 +13,7 @@ export type AccountView = {
   type: AccountType;
   institution: string;
   valueEur: number | null;
+  share: number | null;
   lineCount: number;
 };
 
@@ -46,9 +47,9 @@ export class AccountListStore {
       return [];
     }
 
-    const holdings = this.#portfolio.value().holdings;
+    const { holdings, totalEur } = this.#portfolio.value();
 
-    return this.#accounts.value().map((account) => {
+    const views = this.#accounts.value().map((account) => {
       const own = holdings.filter((holding) => holding.accountId === account.id);
       const lineCount = own.filter((holding) => !holding.accountCash).length;
       const unvalued = own.some((holding) => holding.marketValueEur === null || holding.marketValueEur === undefined);
@@ -58,12 +59,17 @@ export class AccountListStore {
         id: account.id,
         name: account.name,
         type: account.type,
-        institution: account.institution,
+        institution: account.institution.trim(),
         valueEur,
+        share: valueEur !== null && valueEur > 0 && totalEur > 0 ? valueEur / totalEur : null,
         lineCount,
       };
     });
+
+    return views.sort((a, b) => (b.valueEur ?? -1) - (a.valueEur ?? -1));
   });
+
+  readonly totalEur = computed(() => (this.#portfolio.hasValue() ? this.#portfolio.value().totalEur : null));
 
   retry(): void {
     this.#accounts.reload();

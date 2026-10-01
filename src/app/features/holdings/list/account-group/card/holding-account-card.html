@@ -1,0 +1,103 @@
+<header class="flex items-end justify-between gap-3 px-1 pt-3">
+  <div class="flex min-w-0 flex-col">
+    <h2 class="text-title m-0 font-semibold outline-none" data-group-heading tabindex="-1">
+      {{ group().accountName }}
+    </h2>
+    <span class="text-label text-(--muted-foreground)">
+      @if (group().filtered; as filtered) {
+        {{
+          'holdings.filteredMeta'
+            | transloco
+              : {
+                  total: accountTotal(),
+                  lines: filteredCount(filtered.rowCount).key | transloco: filteredCount(filtered.rowCount),
+                }
+        }}
+      } @else {
+        {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
+        @if (group().institution) {
+          {{ group().institution }} &middot;
+        }
+        {{ groupCount(group()).key | transloco: { count: groupCount(group()).count } }}
+      }
+    </span>
+  </div>
+  <span class="text-title font-semibold whitespace-nowrap tabular-nums">
+    <ui-amount currency="EUR" [value]="group().valueEur" />
+  </span>
+</header>
+<ui-card clip padding="none">
+  <div class="flex flex-col px-2 py-1.5">
+    @for (holding of group().holdings; track holding.id) {
+      <a
+        data-testid="holding-row-mobile"
+        padding="sm"
+        queryParamsHandling="preserve"
+        size="card"
+        ui-row
+        [attr.data-holding-id]="holding.id"
+        [routerLink]="['/holdings', holding.id]"
+      >
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
+          <span
+            class="text-label truncate tabular-nums"
+            [class]="holding.stale ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
+          >
+            @if (isBooklet(holding)) {
+              {{ 'holdings.booklet' | transloco }}
+            } @else if (holding.stale) {
+              {{ 'holdings.staleLate' | transloco: { date: holding.priceAsOf | shortDate } }}
+            } @else if (unpriced(holding)) {
+              {{ 'holdings.noQuoteToEnter' | transloco }}
+            } @else {
+              <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
+              &times;
+              <ui-amount [currency]="holding.priceCurrency ?? 'EUR'" [value]="holding.price" />
+            }
+          </span>
+        </div>
+        <div class="flex flex-col items-end whitespace-nowrap tabular-nums">
+          <span class="text-body font-medium">
+            <ui-amount currency="EUR" [value]="holding.marketValueEur" />
+          </span>
+          @if (!isBooklet(holding)) {
+            @if (unpriced(holding)) {
+              <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
+            } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
+              <ui-delta
+                weight="regular"
+                [unknownLabel]="'holdings.unknown' | transloco"
+                [value]="holding.unrealizedGainRatio"
+                >{{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</ui-delta
+              >
+            } @else {
+              <span class="text-label text-(--muted-foreground)">{{
+                'holdings.averageCostUnknownShort' | transloco
+              }}</span>
+            }
+          }
+        </div>
+      </a>
+    }
+    @if (group().showCash) {
+      <button
+        data-testid="edit-cash-mobile"
+        padding="sm"
+        size="card"
+        type="button"
+        ui-row
+        [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        (click)="editCash.emit(group().accountId)"
+      >
+        <div class="flex min-w-0 flex-1 flex-col">
+          <span class="text-body truncate font-medium">{{ 'holdings.cash.line' | transloco }}</span>
+          <span class="text-label truncate text-(--subtle-foreground)">{{ 'holdings.cash.entered' | transloco }}</span>
+        </div>
+        <span class="text-body font-medium whitespace-nowrap tabular-nums">
+          <ui-amount currency="EUR" [value]="group().cashEur" />
+        </span>
+      </button>
+    }
+  </div>
+</ui-card>

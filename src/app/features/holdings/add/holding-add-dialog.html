@@ -7,63 +7,85 @@
   [open]="open()"
   (dismissed)="dismiss()"
 >
-  <ui-field [label]="'holdings.add.account' | transloco">
-    <select data-testid="holding-add-account" uiSelect [value]="accountId()" (change)="onAccountChange($event)">
-      <option value="">{{ 'holdings.add.chooseAccount' | transloco }}</option>
-      @for (account of accounts.value(); track account.id) {
-        <option [value]="account.id">{{ account.name }}</option>
+  <form class="flex flex-col gap-4" id="holding-add-form" novalidate (submit)="onSubmit($event)">
+    <ui-field [label]="'holdings.add.account' | transloco">
+      <select
+        data-testid="holding-add-account"
+        size="lg"
+        uiSelect
+        [value]="accountId()"
+        (change)="onAccountChange($event)"
+      >
+        @for (account of accountOptions(); track account.id) {
+          <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
+        }
+      </select>
+    </ui-field>
+
+    <div class="flex flex-col gap-4">
+      @if (!picked()) {
+        <app-holding-add-search
+          [candidates]="candidates()"
+          [catalogResults]="catalogResults()"
+          [onlineError]="onlineError()"
+          [onlineSearched]="onlineSearched()"
+          [query]="query()"
+          [searchingOnline]="searchingOnline()"
+          (pickedCatalog)="pickCatalog($event)"
+          (pickedManual)="pickManual()"
+          (pickedOnline)="pickOnline($event)"
+          (queryInput)="onQueryInput($event)"
+          (retried)="retryOnline()"
+        />
+      } @else {
+        <app-holding-add-picked
+          [assetClass]="assetClass()"
+          [assetClasses]="assetClasses"
+          [averageCostText]="averageCostText()"
+          [gainAtProbe]="gainAtProbe()"
+          [isNew]="isNew()"
+          [manual]="picked()?.kind === 'manual'"
+          [name]="pickedName()"
+          [quantityText]="quantityText()"
+          [sourceLabel]="pickedSourceLabel()"
+          [sub]="pickedSub()"
+          [trialPrice]="trialPrice()"
+          [valueAtProbe]="valueAtProbe()"
+          (assetClassInput)="onAssetClassChange($event)"
+          (averageCostInput)="onAverageCostInput($event)"
+          (changed)="unpick()"
+          (quantityInput)="onQuantityInput($event)"
+        />
       }
-    </select>
-  </ui-field>
+    </div>
 
-  <div class="mt-4 flex flex-col gap-2">
-    @if (!picked()) {
-      <app-holding-add-search
-        [candidates]="candidates()"
-        [filteredCatalog]="filteredCatalog()"
-        [onlineError]="onlineError()"
-        [onlineSearched]="onlineSearched()"
-        [query]="query()"
-        [searchingOnline]="searchingOnline()"
-        (pickedCatalog)="pickCatalog($event)"
-        (pickedManual)="pickManual()"
-        (pickedOnline)="pickOnline($event)"
-        (queryInput)="onQueryInput($event)"
-        (retried)="retryOnline()"
-      />
-    } @else {
-      <app-holding-add-picked
-        [assetClass]="assetClass()"
-        [assetClasses]="assetClasses"
-        [averageCostText]="averageCostText()"
-        [isNew]="isNew()"
-        [manual]="picked()?.kind === 'manual'"
-        [name]="pickedName()"
-        [quantityText]="quantityText()"
-        [sub]="pickedSub()"
-        [valueAtProbe]="valueAtProbe()"
-        (assetClassInput)="onAssetClassChange($event)"
-        (averageCostInput)="onAverageCostInput($event)"
-        (changed)="unpick()"
-        (quantityInput)="onQuantityInput($event)"
-      />
+    @if (error()) {
+      <ui-alert data-testid="holding-add-error">
+        {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
+      </ui-alert>
     }
-  </div>
-
-  @if (error()) {
-    <p class="text-label mt-3 text-(--negative)" data-testid="holding-add-error" role="alert">
-      {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
-    </p>
-  }
+  </form>
 
   <button
-    data-testid="holding-add-submit"
+    class="max-lg:hidden"
+    data-testid="holding-add-cancel"
     dialogActions
     type="button"
     ui-button
+    variant="outline"
+    [disabled]="submitting()"
+    (click)="dismiss()"
+  >
+    {{ 'holdings.add.cancel' | transloco }}
+  </button>
+  <button
+    data-testid="holding-add-submit"
+    dialogActions
+    form="holding-add-form"
+    type="submit"
+    ui-button
     [disabled]="!valid() || submitting()"
     [loading]="submitting()"
-    (click)="confirm()"
   >
     {{ (isNew() ? 'holdings.add.submitNew' : 'holdings.add.submit') | transloco }}
   </button>

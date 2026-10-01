@@ -34,6 +34,7 @@ describe('HoldingAddDialogStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/accounts').flush(accounts);
     httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/holdings').flush([]);
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
@@ -197,6 +198,7 @@ describe('HoldingAddDialogStore', () => {
       assetClass: 'ETF',
       priceSource: 'YAHOO',
       sourceRef: 'IWDA.AS',
+      symbol: null,
     });
     createInstrument.flush({ id: 'i9' });
 
@@ -371,6 +373,7 @@ describe('HoldingAddDialogStore', () => {
     httpTesting
       .expectOne('/api/instruments')
       .flush([...instruments, { ...instruments[0], id: 'i9', name: 'Bitcoin', isin: null }]);
+    httpTesting.expectOne('/api/holdings').flush([]);
     await TestBed.inject(ApplicationRef).whenStable();
 
     store.onQueryChange('bitcoin');

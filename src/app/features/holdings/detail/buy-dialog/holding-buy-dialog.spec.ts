@@ -1,15 +1,15 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
-import { render, screen } from '@testing-library/angular';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
+import { fireEvent, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
+import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingBuyDialog } from './holding-buy-dialog';
 
@@ -27,7 +27,7 @@ describe('HoldingBuyDialog', () => {
   const bought = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (input: HoldingResponse = holding): Promise<void> => {
+  const renderDialog = async (input: HoldingResponse = holding, extraProviders: Provider[] = []): Promise<void> => {
     await render(HoldingBuyDialog, {
       inputs: { holding: input },
       on: { bought, dismissed },
@@ -38,6 +38,7 @@ describe('HoldingBuyDialog', () => {
         provideHttpClientTesting(),
         { provide: LOCALE_ID, useValue: 'en-GB' },
         provideTranslocoScope('holdings'),
+        ...extraProviders,
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -47,6 +48,15 @@ describe('HoldingBuyDialog', () => {
     httpTesting.verify();
     bought.mockClear();
     dismissed.mockClear();
+  });
+
+  it('does not translate its holdings scope keys before the scope has loaded', async () => {
+    const translate = vi.spyOn(TranslocoService.prototype, 'translate');
+    await renderDialog(holding, [delayedScopeLoader()]);
+
+    expect(translate.mock.calls.filter(([key]) => String(key).startsWith('holdings.buy.submit'))).toEqual([]);
+
+    translate.mockRestore();
   });
 
   it('keeps the submit button disabled until both fields are positive', async () => {
@@ -72,6 +82,20 @@ describe('HoldingBuyDialog', () => {
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'));
     expect(request.request.body).toEqual({ quantity: 1200.5, unitPrice: 10 });
+    request.flush({});
+  });
+
+  it('submits the form', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-buy-quantity'), '5');
+    await user.type(screen.getByTestId('holding-buy-price'), '10');
+    await vi.waitFor(() => expect(screen.getByTestId('holding-buy-submit')).toBeEnabled());
+    fireEvent.submit(screen.getByTestId('holding-buy-quantity').closest('form')!);
+
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'));
+    expect(request.request.body).toEqual({ quantity: 5, unitPrice: 10 });
     request.flush({});
   });
 
@@ -132,11 +156,18 @@ describe('HoldingBuyDialog', () => {
     expect(bought).not.toHaveBeenCalled();
   });
 
+  it('shows the current price in the hint', async () => {
+    await renderDialog();
+
+    expect(screen.getByTestId('holding-buy-hint')).toHaveTextContent('holdings.buy.currentPrice');
+  });
+
   it('takes the unit price as the cost basis when none was known yet', async () => {
     const user = userEvent.setup();
     await renderDialog({ ...holding, averageCost: undefined } as unknown as HoldingResponse);
 
     expect(screen.getByTestId('holding-buy-hint')).toHaveTextContent('holdings.buy.noCostHint');
+    expect(screen.getByText('holdings.buy.rows.averageCostUnknown')).toBeInTheDocument();
 
     await user.type(screen.getByTestId('holding-buy-quantity'), '20');
     await user.type(screen.getByTestId('holding-buy-price'), '51.2');

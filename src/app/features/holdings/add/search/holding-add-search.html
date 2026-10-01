@@ -1,90 +1,118 @@
-<ui-field [label]="'holdings.add.title2' | transloco">
-  <input
-    autocomplete="off"
-    data-testid="holding-add-query"
-    type="search"
-    uiInput
-    [placeholder]="'holdings.add.titlePlaceholder' | transloco"
-    [value]="query()"
-    (input)="queryInput.emit($event)"
-  />
-</ui-field>
+<div class="flex flex-col gap-1.5">
+  <ui-field [label]="'holdings.add.title2' | transloco">
+    <span uiFieldLeading><svg lucideSearch [size]="18" [strokeWidth]="1.75" /></span>
+    <input
+      autocomplete="off"
+      data-testid="holding-add-query"
+      size="lg"
+      type="search"
+      uiInput
+      [placeholder]="'holdings.add.titlePlaceholder' | transloco"
+      [value]="query()"
+      (input)="queryInput.emit($event)"
+    />
+  </ui-field>
 
-@if (query().trim()) {
-  <div class="rounded-control border border-(--hairline) p-1">
-    @if (filteredCatalog().length > 0) {
-      <div class="text-caption px-2 pt-2 pb-1 font-medium text-(--subtle-foreground)">
-        {{ 'holdings.add.catalogHeading' | transloco }}
-      </div>
-      @for (instrument of filteredCatalog(); track instrument.id) {
-        <button
-          class="rounded-control flex w-full items-center justify-between gap-3 px-2.5 py-1.5 text-left hover:bg-(--glow) focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-          data-testid="holding-add-catalog-candidate"
-          type="button"
-          (click)="pickedCatalog.emit(instrument)"
-        >
-          <span class="flex min-w-0 flex-col">
-            <span class="text-body truncate font-medium">{{ instrument.name }}</span>
-            <span class="text-caption text-(--subtle-foreground)">
-              {{ instrument.isin }} &middot; {{ 'enums.assetClass.' + instrument.assetClass | transloco }}
+  @if (showResults()) {
+    <ui-card border="hairline" class="mt-1 flex flex-col" padding="xs" variant="inset">
+      @if (catalogResults().length > 0) {
+        <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
+          {{ 'holdings.add.catalogHeading' | transloco }}
+        </div>
+        @for (result of catalogResults(); track result.instrument.id) {
+          <button
+            data-testid="holding-add-catalog-candidate"
+            size="dense"
+            type="button"
+            ui-row
+            (click)="pickedCatalog.emit(result.instrument)"
+          >
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="text-body truncate font-medium">{{ result.instrument.name }}</span>
+              <span class="text-caption text-(--subtle-foreground)">
+                {{ result.instrument.isin }} &middot;
+                {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
+              </span>
             </span>
-          </span>
-        </button>
+            @if (result.lineCount !== null) {
+              <span class="text-caption flex-none text-(--muted-foreground)">
+                {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
+              </span>
+            }
+          </button>
+        }
       }
-    }
 
-    <div class="text-caption px-2 pt-2 pb-1 font-medium text-(--subtle-foreground)">
-      {{ 'holdings.add.onlineHeading' | transloco }}
-    </div>
-    @if (searchingOnline()) {
-      <p class="text-label px-2 py-1.5 text-(--muted-foreground)" role="status">
-        {{ 'holdings.add.onlineHeading' | transloco }}
-      </p>
-    } @else if (onlineError()) {
-      <div class="flex items-center justify-between gap-3 px-2 py-1.5" role="alert">
-        <span class="text-label text-(--muted-foreground)">{{ 'holdings.add.onlineError' | transloco }}</span>
-        <button
-          data-testid="holding-add-online-retry"
-          type="button"
-          ui-button
-          variant="outline"
-          (click)="retried.emit()"
+      @if (showOnline()) {
+        <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
+          {{ 'holdings.add.onlineHeading' | transloco }}
+        </div>
+        <ui-async
+          variant="inline"
+          [errorMessage]="'holdings.add.onlineError' | transloco"
+          [retryLabel]="'holdings.add.onlineRetry' | transloco"
+          [state]="onlineState()"
+          (retry)="retried.emit()"
         >
-          {{ 'holdings.add.onlineRetry' | transloco }}
-        </button>
-      </div>
-    } @else if (candidates().length > 0) {
-      @for (candidate of candidates(); track candidate.sourceRef) {
-        <button
-          class="rounded-control flex w-full items-center justify-between gap-3 px-2.5 py-1.5 text-left hover:bg-(--glow) focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring)"
-          data-testid="holding-add-online-candidate"
-          type="button"
-          (click)="pickedOnline.emit(candidate)"
-        >
-          <span class="flex min-w-0 flex-col">
-            <span class="text-body truncate font-medium">{{ candidate.name }}</span>
-            <span class="text-caption text-(--subtle-foreground)">
-              {{ candidate.exchange }} &middot; {{ candidate.sourceRef }}
-            </span>
-          </span>
-          <ui-amount class="text-label flex-none font-medium" currency="EUR" [value]="candidate.probePrice" />
-        </button>
+          <div
+            asyncLoading
+            class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
+            data-testid="holding-add-online-loading"
+            role="status"
+          >
+            <span class="sr-only">{{ 'holdings.add.onlineSearching' | transloco }}</span>
+            <div class="flex justify-between gap-3">
+              <span class="block w-55"><ui-skeleton [height]="16" /></span>
+              <span class="block w-16"><ui-skeleton [height]="16" /></span>
+            </div>
+            <div class="flex justify-between gap-3">
+              <span class="block w-45"><ui-skeleton [height]="16" /></span>
+              <span class="block w-16"><ui-skeleton [height]="16" /></span>
+            </div>
+          </div>
+          @if (candidates().length > 0) {
+            @for (candidate of candidates(); track candidate.sourceRef) {
+              <button
+                data-testid="holding-add-online-candidate"
+                size="dense"
+                type="button"
+                ui-row
+                (click)="pickedOnline.emit(candidate)"
+              >
+                <span class="flex min-w-0 flex-1 flex-col">
+                  <span class="text-body truncate font-medium">{{ candidate.name }}</span>
+                  <span class="text-caption truncate text-(--subtle-foreground)">{{ candidateSub(candidate) }}</span>
+                </span>
+                <span class="flex flex-none flex-col items-end">
+                  <ui-amount class="text-label font-medium" currency="EUR" [value]="candidate.probePrice" />
+                  <span class="text-caption text-(--subtle-foreground)">{{
+                    'holdings.add.trialPriceCaption' | transloco
+                  }}</span>
+                </span>
+              </button>
+            }
+          } @else if (catalogResults().length > 0) {
+            <div class="text-label px-2.5 pt-1.5 pb-2.5 text-(--muted-foreground)">
+              {{ 'holdings.add.noOtherOnline' | transloco }}
+            </div>
+          } @else {
+            <div class="flex flex-col items-start gap-2 px-2.5 pt-1.5 pb-2.5">
+              <p class="text-label text-(--muted-foreground)">
+                {{ 'holdings.add.notFound' | transloco: { query: query() } }}
+              </p>
+              <button
+                data-testid="holding-add-create-manual"
+                type="button"
+                ui-button
+                variant="outline"
+                (click)="pickedManual.emit()"
+              >
+                {{ 'holdings.add.createManual' | transloco }}
+              </button>
+            </div>
+          }
+        </ui-async>
       }
-    } @else if (onlineSearched()) {
-      <div class="flex flex-col gap-2 px-2 py-2">
-        <p class="text-label text-(--muted-foreground)">
-          {{ 'holdings.add.notFound' | transloco: { query: query() } }}
-        </p>
-        <button
-          data-testid="holding-add-create-manual"
-          type="button"
-          ui-button
-          variant="outline"
-          (click)="pickedManual.emit()"
-        >
-          {{ 'holdings.add.createManual' | transloco }}
-        </button>
-      </div>
-    }
-  </div>
-}
+    </ui-card>
+  }
+</div>

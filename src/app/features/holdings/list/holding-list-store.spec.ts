@@ -119,36 +119,17 @@ describe('HoldingListStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  it('should group holdings by account', async () => {
+  it('should group holdings by account in the order of the accounts list', async () => {
     await load();
 
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Esalia', 'Saxo Investor', 'Livret A']);
-  });
-
-  it('should order groups by value, largest first', async () => {
-    await load();
-
-    expect(store.groups()[0]!.valueEur).toBe(119258);
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
   });
 
   it('should subtotal each account', async () => {
     await load();
 
-    expect(store.groups()[1]!.valueEur).toBeCloseTo(43150.87, 2);
-  });
-
-  it('should leave an account subtotal unknown when any line has no cost basis', async () => {
-    await load();
-
-    expect(store.groups()[0]!.unrealizedGainEur).toBeNull();
-    expect(store.groups()[1]!.unrealizedGainEur).toBeCloseTo(8171.66, 2);
-  });
-
-  it('should mark an account stale when any of its lines is', async () => {
-    await load();
-
-    expect(store.groups()[0]!.stale).toBe(true);
-    expect(store.groups()[1]!.stale).toBe(false);
+    expect(store.groups()[0]!.valueEur).toBeCloseTo(43150.87, 2);
+    expect(store.groups()[1]!.valueEur).toBe(119258);
   });
 
   it('should filter on the instrument name, case-insensitively', async () => {
@@ -167,12 +148,6 @@ describe('HoldingListStore', () => {
     expect(store.groups().flatMap((group) => group.holdings)).toHaveLength(0);
   });
 
-  it('should count lines and accounts', async () => {
-    await load();
-
-    expect(store.totals()).toEqual({ lines: 4, accounts: 3, valueEur: 182408.87, unvaluedCount: 1 });
-  });
-
   it('should render a cash-only account with zero lines and its cash row', async () => {
     await load();
 
@@ -184,28 +159,24 @@ describe('HoldingListStore', () => {
     expect(livretA?.valueEur).toBe(20000);
   });
 
-  it('should show a cash-only account with an empty search', async () => {
-    await load();
-
-    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(true);
-  });
-
-  it('should hide a cash-only account whose name does not match the search', async () => {
+  it('should drop an account with no matching line while searching', async () => {
     await load();
 
     store.search.set('esalia');
 
-    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(false);
+    expect(store.groups()).toEqual([]);
   });
 
-  it('should show a cash-only account whose name matches the search', async () => {
+  it('should hide the cash line while searching and keep the account total', async () => {
     await load();
 
-    store.search.set('livret');
+    store.search.set('amundi');
 
     expect(store.groups()).toHaveLength(1);
-    expect(store.groups()[0]!.accountName).toBe('Livret A');
-    expect(store.groups()[0]!.cashEur).toBe(20000);
+    expect(store.groups()[0]!.showCash).toBe(false);
+    expect(store.groups()[0]!.valueEur).toBeCloseTo(43150.87, 2);
+    expect(store.groups()[0]!.lineCount).toBe(3);
+    expect(store.groups()[0]!.holdings).toHaveLength(1);
   });
 
   it('should exclude the EUR cash line from the positions and its lineCount', async () => {
@@ -215,6 +186,7 @@ describe('HoldingListStore', () => {
 
     expect(saxo?.holdings.some((holding) => holding.instrumentName === 'Euros')).toBe(false);
     expect(saxo?.holdings).toHaveLength(3);
+    expect(saxo?.lineCount).toBe(3);
   });
 
   it('should include the cash balance in the account subtotal', async () => {
@@ -245,21 +217,42 @@ describe('HoldingListStore', () => {
     expect(livretA?.institution).toBe('');
   });
 
-  it('should keep the cash balance in a visible group even when the search hides every position', async () => {
+  it('should show the cash line of an account that has none, at zero', async () => {
     await load();
 
-    store.search.set('amundi');
+    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
 
-    expect(store.groups()).toHaveLength(1);
-    expect(store.groups()[0]!.cashEur).toBe(732.4);
+    expect(esalia?.showCash).toBe(true);
+    expect(esalia?.cashEur).toBe(0);
   });
 
-  it('should count unvalued lines per account without folding them into the subtotal', async () => {
+  it('should not show a cash line for a savings account without a cash balance', async () => {
+    const booklet = {
+      ...holdings[0]!,
+      id: 'h8',
+      accountId: 'a4',
+      accountName: 'Fortuneo',
+      accountType: 'SAVINGS',
+      assetClass: 'CASH',
+      instrumentName: 'Livret A',
+    };
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush([booklet]);
+    httpTesting
+      .expectOne('/api/accounts')
+      .flush([...accounts, { id: 'a4', name: 'Fortuneo', type: 'SAVINGS', institution: 'Fortuneo' }]);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.groups()[0]!.showCash).toBe(false);
+    expect(store.groups()[0]!.bookletCount).toBe(1);
+    expect(store.groups()[0]!.lineCount).toBe(0);
+  });
+
+  it('should leave unvalued lines out of the account subtotal', async () => {
     await load();
 
     const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
 
-    expect(saxo?.unvaluedCount).toBe(1);
     expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
   });
 
@@ -284,48 +277,6 @@ describe('HoldingListStore', () => {
     ).toBe(true);
   });
 
-  it('should filter to holdings with a stale quote from a query param', async () => {
-    configure({ filter: 'stale' });
-    expect(store.staleFilter()).toBe(true);
-    await load();
-
-    expect(store.groups()).toHaveLength(1);
-    expect(store.groups()[0]!.accountName).toBe('Esalia');
-  });
-
-  it('should not seed a cash-only account while the stale filter is active', async () => {
-    configure({ filter: 'stale' });
-    await load();
-
-    expect(store.groups().some((group) => group.accountName === 'Livret A')).toBe(false);
-  });
-
-  it('should filter to one account from a query param', async () => {
-    configure({ account: 'Saxo Investor' });
-    expect(store.accountFilter()).toBe('Saxo Investor');
-    await load();
-
-    expect(store.groups()).toHaveLength(1);
-    expect(store.groups()[0]!.accountName).toBe('Saxo Investor');
-  });
-
-  it('should filter positions to one asset class from a query param', async () => {
-    const classed = holdings.map((holding) => ({ ...holding, assetClass: holding.assetClass ?? 'ETF' }));
-    configure({ assetClass: 'ETF' });
-    TestBed.tick();
-    httpTesting.expectOne('/api/holdings').flush(classed);
-    httpTesting.expectOne('/api/accounts').flush(accounts);
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.assetClassFilter()).toBe('ETF');
-    expect(
-      store
-        .groups()
-        .flatMap((group) => group.holdings)
-        .every((holding) => holding.assetClass === 'ETF'),
-    ).toBe(true);
-  });
-
   it('should carry the account institution onto each group', async () => {
     await load();
 
@@ -334,11 +285,43 @@ describe('HoldingListStore', () => {
     expect(saxo?.institution).toBe('Saxo');
   });
 
-  it('should leave the filters unset without matching query params', async () => {
+  it('should expose the add query param', async () => {
+    configure({ add: 'a1' });
     await load();
 
-    expect(store.staleFilter()).toBe(false);
-    expect(store.accountFilter()).toBeNull();
-    expect(store.assetClassFilter()).toBeNull();
+    expect(store.addParam()).toBe('a1');
+  });
+
+  it('should ignore filter params it no longer knows', async () => {
+    configure({ filter: 'stale', account: 'Esalia', assetClass: 'ETF' });
+    await load();
+
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
+  });
+
+  it('should not find a savings booklet by its name', async () => {
+    const booklet = {
+      ...holdings[0]!,
+      id: 'h8',
+      accountId: 'a3',
+      accountName: 'Livret A',
+      accountType: 'SAVINGS',
+      assetClass: 'CASH',
+      instrumentName: 'Livret A',
+    };
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush([booklet]);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    store.search.set('livret');
+
+    expect(store.groups()).toEqual([]);
+  });
+
+  it('should read the add param and nothing else from the query', async () => {
+    await load();
+
+    expect(store.addParam()).toBeNull();
   });
 });

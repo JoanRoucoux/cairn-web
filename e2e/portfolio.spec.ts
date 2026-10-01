@@ -94,9 +94,31 @@ test.describe('portfolio', () => {
     await expect(page).toHaveURL(href as string);
   });
 
-  test('shows the total and movers blocks in error when /api/portfolio fails, and recovers on retry', async ({
-    page,
-  }) => {
+  test('shows only the movers block in error when /api/holdings fails, and recovers on retry', async ({ page }) => {
+    let fail = true;
+
+    await page.route('**/api/holdings', async (route) => {
+      if (route.request().method() === 'GET' && fail) {
+        return route.fulfill({ status: 500, json: { message: 'boom' } });
+      }
+
+      return route.fallback();
+    });
+
+    const portfolio = new PortfolioPageObject(page);
+    await portfolio.goto();
+
+    await expect(page.getByRole('alert')).toHaveCount(1);
+    await expect(portfolio.totalValue).toBeVisible();
+
+    fail = false;
+    await page.getByRole('button', { name: 'Retry' }).click();
+
+    await expect(page.getByRole('alert')).toHaveCount(0);
+    await expect(portfolio.moversTable.or(portfolio.moversList).first()).toBeAttached();
+  });
+
+  test('shows only the total block in error when /api/portfolio fails, and recovers on retry', async ({ page }) => {
     let fail = true;
 
     await page.route('**/api/portfolio', async (route) => {
@@ -110,11 +132,11 @@ test.describe('portfolio', () => {
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
 
-    await expect(page.getByRole('alert')).toHaveCount(2);
+    await expect(page.getByRole('alert')).toHaveCount(1);
     await expect(portfolio.chart).toBeVisible();
 
     fail = false;
-    await page.getByRole('button', { name: 'Retry' }).first().click();
+    await page.getByRole('button', { name: 'Retry' }).click();
 
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(portfolio.totalValue).toBeVisible();
@@ -140,7 +162,7 @@ test.describe('portfolio', () => {
     await expect(portfolio.tooltip).toBeVisible();
     expect(await portfolio.tooltip.innerText()).not.toMatch(noAmountDigits);
 
-    const table = portfolio.chart.locator('xpath=following-sibling::table');
+    const table = portfolio.chart.locator('xpath=following-sibling::div/table');
     expect(await table.innerText()).not.toMatch(noAmountDigits);
 
     const bodyText = await page.locator('body').innerText();

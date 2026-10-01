@@ -1,29 +1,42 @@
 {
-  "title": "Holdings",
   "averageCost": "Average cost",
   "unknown": "Not available",
-  "unknownAverageCost": "Unknown, set on the first purchase",
-  "staleQuote": "Stale quote",
   "staleShort": "Price as of {{date}}",
+  "noQuote": "No quote",
+  "staleLate": "Price as of {{date}}, late",
+  "noQuoteToEnter": "No price, to enter",
   "searchLabel": "Search holdings",
   "searchPlaceholder": "Search by name or ISIN",
-  "summary": "{{lines}} across {{accounts}}",
-  "summaryLines_one": "{{count}} holding",
-  "summaryLines_other": "{{count}} holdings",
-  "summaryAccounts_one": "{{count}} account",
-  "summaryAccounts_other": "{{count}} accounts",
+  "searchPlaceholderShort": "Search a holding",
   "lineCount_one": "{{count}} holding",
   "lineCount_other": "{{count}} holdings",
+  "bookletCount_one": "{{count}} savings book",
+  "bookletCount_other": "{{count}} savings books",
+  "booklet": "Savings book",
+  "averageCostUnknownShort": "Cost unknown",
   "loading": "Loading your holdings",
   "empty": "No holding matches your search.",
   "noSearchResults": "No holding matches \"{{query}}\"",
   "noSearchResultsHint": "The search looks at the name and the ISIN.",
+  "noResultsInClass": "No holding matches \"{{query}}\" in {{class}}",
+  "noClassResults": "No holding in {{class}}",
+  "noClassHint": "Remove the {{class}} filter to search all holdings.",
+  "classFilter": {
+    "label": "Filter by asset class",
+    "all": "All"
+  },
+  "classSummary": {
+    "share_one": "· {{share}} of your wealth, in {{count}} account",
+    "share_other": "· {{share}} of your wealth, in {{count}} accounts"
+  },
+  "filteredMeta": "of {{total}} · {{lines}}",
   "error": "Your holdings could not be loaded.",
+  "errorTitle": "Your holdings could not be loaded",
+  "errorMessage": "The server did not answer. Check your connection, then try again.",
+  "retry": "Retry",
   "notFound": "This holding no longer exists.",
-  "chartLabel": "Price over the selected range",
-  "externalLink": "Full factsheet on {{source}}",
-  "priceSource": "Price source",
-  "lastQuote": "Last quote",
+  "chartLabel": "Value over the selected range",
+  "externalLink": "Page on {{domain}}",
   "columns": {
     "line": "Holding",
     "quantity": "Quantity",
@@ -31,17 +44,9 @@
     "price": "Price",
     "value": "Value",
     "unrealized": "Unrealized gain",
-    "day": "Today",
-    "actions": "Actions"
+    "day": "Today"
   },
   "addLine": "Add a holding",
-  "addLineShort": "Add a holding",
-  "filters": {
-    "stale": "Stale quotes",
-    "account": "Account: {{name}}",
-    "assetClass": "Class: {{name}}",
-    "remove": "Remove the {{label}} filter"
-  },
   "manualQuote": {
     "open": "Enter a price",
     "title": "Price for {{name}}",
@@ -70,17 +75,29 @@
     "error": "This holding could not be deleted."
   },
   "detail": {
+    "tooltip": "{{value}} · price {{price}}",
     "back": "Holdings",
     "close": "Close the detail",
     "menu": "More actions",
     "unrealized": "Unrealized gain",
     "today": "today",
-    "isin": "ISIN or symbol",
-    "class": "Class",
-    "description": "Description"
+    "value": "Value",
+    "isin": "ISIN",
+    "symbol": "Symbol",
+    "unknownCost": "Unknown",
+    "firstBuyFixes": "Set at the first purchase",
+    "quoteAt": "Price of {{date}} at {{time}}",
+    "quoteOn": "Price of {{date}}",
+    "rangeChange": {
+      "1d": "today",
+      "7d": "over 7 days",
+      "1m": "over 1 month",
+      "1y": "over 1 year",
+      "5y": "over 5 years",
+      "max": "since purchase"
+    },
+    "panel": "Holding detail"
   },
-  "unvaluedCount_one": "{{count}} unvalued",
-  "unvaluedCount_other": "{{count}} unvalued",
   "noQuoteYet": "No quote yet for this instrument.",
   "cash": {
     "line": "Cash",
@@ -90,7 +107,8 @@
     "zeroHint": "0 removes the line.",
     "cancel": "Cancel",
     "submit": "Save",
-    "error": "That balance was refused."
+    "error": "That balance was refused.",
+    "entered": "Entered balance"
   },
   "buy": {
     "open": "Buy",
@@ -100,17 +118,18 @@
     "price": "Unit price",
     "unit": "units",
     "currencyUnit": "EUR",
-    "currentPriceHint": "Current price {{price}}",
     "noCostHint": "No cost basis yet: this first purchase sets it.",
     "rows": {
       "quantity": "Quantity",
       "averageCost": "Average cost",
-      "amount": "Purchase amount"
+      "amount": "Purchase amount",
+      "averageCostUnknown": "Unknown"
     },
     "submitDefault": "Buy",
     "submit_one": "Buy {{count}} unit",
     "submit_other": "Buy {{count}} units",
-    "error": "That purchase was refused."
+    "error": "That purchase was refused.",
+    "currentPrice": "Current price"
   },
   "sell": {
     "open": "Sell",
@@ -119,33 +138,31 @@
     "quantity": "Quantity sold",
     "unit": "units",
     "sellAll": "Sell all",
-    "held_one": "You hold {{count}} unit, price {{price}}",
-    "held_other": "You hold {{count}} units, price {{price}}",
     "over_one": "You hold {{count}} unit.",
     "over_other": "You hold {{count}} units.",
     "closesWarning": "You are selling the whole quantity: the holding will be removed from {{account}}. This cannot be undone.",
     "rows": {
       "quantity": "Quantity",
-      "averageCostNote": "(unchanged)",
       "averageCostUnknown": "Unknown",
       "realizedGain": "Estimated realized gain",
       "realizedGainUnknown": "Unknown cost basis",
-      "amount": "Estimated amount at the current price"
+      "amount": "Estimated amount at the current price",
+      "averageCostUnchanged": ", unchanged"
     },
     "closes": "Holding removed",
     "submitDefault": "Sell",
     "submit_one": "Sell {{count}} unit",
     "submit_other": "Sell {{count}} units",
     "submitCloses": "Sell all and remove the holding",
-    "error": "That sale was refused."
+    "error": "That sale was refused.",
+    "held_one": "You hold {{count}} unit",
+    "held_other": "You hold {{count}} units",
+    "price": "price"
   },
   "add": {
-    "open": "Add a holding",
     "title": "Add a holding",
-    "close": "Close",
     "account": "Account",
-    "chooseAccount": "Choose an account",
-    "title2": "Title",
+    "title2": "Instrument",
     "titlePlaceholder": "Name or ISIN",
     "catalogHeading": "In the catalogue",
     "onlineHeading": "New instrument, found online",
@@ -161,10 +178,19 @@
     "quantity": "Quantity",
     "averageCost": "Average cost",
     "averageCostOptional": "(optional)",
-    "valueAtProbe": "Value at the probe price {{value}}",
+    "valueAtProbe": "Value at the trial price",
     "submit": "Add the holding",
     "submitNew": "Create the instrument and add the holding",
     "error": "This holding could not be added.",
-    "instrumentError": "This instrument could not be created."
+    "instrumentError": "This instrument could not be created.",
+    "noLine": "No holdings",
+    "lineCount_one": "{{count}} holding",
+    "lineCount_other": "{{count}} holdings",
+    "trialPriceCaption": "trial price",
+    "trialPrice": "Trial price",
+    "noOtherOnline": "No other instrument found online.",
+    "onlineSearching": "Searching online",
+    "gainAtProbe": "unrealized gain",
+    "cancel": "Cancel"
   }
 }

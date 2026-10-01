@@ -1,0 +1,12 @@
+<button
+  size="xs"
+  type="button"
+  ui-button
+  uiRowAction
+  variant="outline"
+  [attr.data-testid]="narrow() ? 'enter-quote-narrow' : 'enter-quote'"
+  [class]="narrow() ? 'mt-1 lg:hidden' : ''"
+  (click)="entered.emit()"
+>
+  {{ 'holdings.manualQuote.open' | transloco }}
+</button>

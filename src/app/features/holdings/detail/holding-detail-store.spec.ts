@@ -9,7 +9,7 @@ import { of } from 'rxjs';
 import { HoldingDetailStore } from './holding-detail-store';
 
 const holdings = [
-  { id: 'h1', instrumentId: 'i1', instrumentName: 'BNP Paribas Easy S&P 500', marketValueEur: 22515.47 },
+  { id: 'h1', instrumentId: 'i1', instrumentName: 'BNP Paribas Easy S&P 500', quantity: 2, marketValueEur: 22515.47 },
   { id: 'h2', instrumentId: 'i2', instrumentName: 'Amundi MSCI World Swap', marketValueEur: 19903 },
 ];
 
@@ -94,7 +94,49 @@ describe('HoldingDetailStore', () => {
       .forEach((request) => request.flush([{ asOf: '2026-08-21', price: 33.3069 }]));
     await settle();
 
-    expect(store.points()).toEqual([{ t: Date.parse('2026-08-21'), v: 33.3069 }]);
+    expect(store.points()).toEqual([{ t: Date.parse('2026-08-21'), v: 66.6138 }]);
+    expect(store.rangeChange()).toBeUndefined();
+  });
+
+  it('should plot the value of the line and summarise the change over the range', async () => {
+    configure('h1');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await settle();
+    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
+    await settle();
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) =>
+        request.flush([
+          { asOf: '2026-08-21', price: 50 },
+          { asOf: '2026-09-21', price: 55 },
+        ]),
+      );
+    await settle();
+
+    expect(store.points().map((point) => point.v)).toEqual([100, 110]);
+    expect(store.rangeChange()).toEqual({ amount: 10, ratio: 0.1 });
+  });
+
+  it('should leave the ratio unknown when the range starts at a zero value', async () => {
+    configure('h1');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await settle();
+    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
+    await settle();
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) =>
+        request.flush([
+          { asOf: '2026-08-21', price: 0 },
+          { asOf: '2026-09-21', price: 5 },
+        ]),
+      );
+    await settle();
+
+    expect(store.rangeChange()).toEqual({ amount: 10, ratio: null });
   });
 
   it('should fetch the whole history when the max range is picked', async () => {
