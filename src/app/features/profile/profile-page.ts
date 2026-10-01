@@ -125,7 +125,7 @@ export class ProfilePage {
 
   protected onPasskeyRegistered(): void {
     this.passkeyDialogOpen.set(false);
-    this.#store.reloadSession();
+    this.#store.reloadPasskeys();
   }
 
   // Navigation stays in the page: the store returns, the page decides where to go.

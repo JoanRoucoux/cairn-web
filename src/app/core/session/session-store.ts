@@ -18,24 +18,6 @@ export class SessionStore {
   });
 
   readonly owner = computed(() => this.#session.value() ?? NO_OWNER);
-  readonly passkeys = computed(() => this.#session.value()?.passkeys ?? []);
-
-  // Returns false when the server refused: the last passkey cannot be revoked without locking
-  // the owner out for good, and the screen has to say so rather than pretend it worked.
-  async revokePasskey(credentialId: string): Promise<boolean> {
-    try {
-      await firstValueFrom(this.#sessionApiClient.revokePasskey(credentialId));
-      this.#session.reload();
-
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  reload(): void {
-    this.#session.reload();
-  }
 
   async signOut(): Promise<void> {
     // A failed logout must not strand the user on a screen they can no longer use: the caller

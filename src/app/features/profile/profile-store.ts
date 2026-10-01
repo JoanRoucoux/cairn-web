@@ -1,6 +1,10 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+
+import { firstValueFrom } from 'rxjs';
 
 import { AmountVisibility } from '@core/amounts/amount-visibility';
+import { SessionService } from '@core/api-client/session/session.service';
 import { LanguageStore } from '@core/i18n/language-store';
 import { SessionStore } from '@core/session/session-store';
 import { type ThemePreference, ThemeStore } from '@core/theme/theme-store';
@@ -8,12 +12,17 @@ import { type ThemePreference, ThemeStore } from '@core/theme/theme-store';
 @Injectable()
 export class ProfileStore {
   #session = inject(SessionStore);
+  #sessionApiClient = inject(SessionService);
   #theme = inject(ThemeStore);
   #language = inject(LanguageStore);
   #amountVisibility = inject(AmountVisibility);
 
+  readonly #passkeys = rxResource({
+    stream: () => this.#sessionApiClient.listPasskeys(),
+  });
+
   readonly owner = this.#session.owner;
-  readonly passkeys = this.#session.passkeys;
+  readonly passkeys = computed(() => this.#passkeys.value() ?? []);
   readonly theme = this.#theme.preference;
   readonly language = this.#language.activeLang;
   readonly availableLanguages = this.#language.availableLangs;
@@ -33,16 +42,22 @@ export class ProfileStore {
     this.#amountVisibility.setHidden(value);
   }
 
+  // The server refuses to revoke the last passkey, which would lock the owner out for good.
   async revokePasskey(credentialId: string): Promise<void> {
     this.revocationRefused.set(false);
-    this.revocationRefused.set(!(await this.#session.revokePasskey(credentialId)));
+    try {
+      await firstValueFrom(this.#sessionApiClient.revokePasskey(credentialId));
+      this.#passkeys.reload();
+    } catch {
+      this.revocationRefused.set(true);
+    }
   }
 
   async signOut(): Promise<void> {
     await this.#session.signOut();
   }
 
-  reloadSession(): void {
-    this.#session.reload();
+  reloadPasskeys(): void {
+    this.#passkeys.reload();
   }
 }

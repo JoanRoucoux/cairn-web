@@ -35,7 +35,8 @@ describe('signedInGuard', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush({
       displayName: 'Joan Roucoux',
       initials: 'JR',
-      passkeys: [],
+      username: 'joan',
+      signInMethod: 'PASSKEY',
     });
 
     expect(await decision).toBeInstanceOf(RedirectCommand);

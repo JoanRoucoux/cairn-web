@@ -22,19 +22,23 @@ const CSV_HEADER = 'account;accountType;institution;instrument;isinOrTicker;quan
 
 const csvFile = (): File => new File([`${CSV_HEADER}\r\n`], 'portfolio.csv', { type: 'text/csv' });
 
-const session = {
-  displayName: 'Joan Roucoux',
-  initials: 'JR',
-  passkeys: [
-    { credentialId: 'aXBob25l', label: 'iPhone de Joan', createdAt: '2026-02-01T10:00:00Z', lastUsedAt: null },
-    {
-      credentialId: 'bWFj',
-      label: 'MacBook',
-      createdAt: '2026-02-02T10:00:00Z',
-      lastUsedAt: '2026-02-10T10:00:00Z',
-    },
-  ],
-};
+const session = { displayName: 'Joan Roucoux', initials: 'JR', username: 'joan', signInMethod: 'PASSKEY' };
+const passkeys = [
+  {
+    credentialId: 'aXBob25l',
+    label: 'iPhone de Joan',
+    createdAt: '2026-02-01T10:00:00Z',
+    lastUsedAt: null,
+    current: true,
+  },
+  {
+    credentialId: 'bWFj',
+    label: 'MacBook',
+    createdAt: '2026-02-02T10:00:00Z',
+    lastUsedAt: '2026-02-10T10:00:00Z',
+    current: false,
+  },
+];
 
 // Simulates the profile scope's real, asynchronous load: the plain TranslocoTestingModule loader
 // resolves scopes synchronously, which cannot reproduce the race between first render and the
@@ -67,7 +71,7 @@ describe('ProfilePage', () => {
 
   const renderPage = async (
     translations = getTranslocoTestingModule(),
-    sessionOverride: typeof session = session,
+    passkeysOverride: typeof passkeys = passkeys,
   ): Promise<void> => {
     localStorage.clear();
     register = vi.fn();
@@ -85,7 +89,8 @@ describe('ProfilePage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(sessionOverride);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeysOverride);
   };
 
   afterEach(() => httpTesting.verify());
@@ -112,7 +117,7 @@ describe('ProfilePage', () => {
     expect(screen.getByTestId('profile-passkey-dialog')).toBeInTheDocument();
   });
 
-  it('should reload the session and close the dialog once a passkey is registered', async () => {
+  it('should reload the passkeys and close the dialog once a passkey is registered', async () => {
     const user = userEvent.setup();
     await renderPage();
     register.mockResolvedValue('ok');
@@ -121,7 +126,7 @@ describe('ProfilePage', () => {
     await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
     await user.click(screen.getByTestId('passkey-register'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument());
   });
 
@@ -142,7 +147,7 @@ describe('ProfilePage', () => {
     await user.click((await screen.findAllByTestId('revoke-passkey'))[1]!);
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
   });
 
   it('should say so when the server refuses to revoke the last device', async () => {
@@ -308,7 +313,7 @@ describe('ProfilePage', () => {
   });
 
   it('should hide the delete button for the only remaining passkey and explain why', async () => {
-    await renderPage(getTranslocoTestingModule(), { ...session, passkeys: [session.passkeys[0]!] });
+    await renderPage(getTranslocoTestingModule(), [passkeys[0]!]);
 
     expect(await screen.findByText('iPhone de Joan')).toBeInTheDocument();
     expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
@@ -364,6 +369,7 @@ describe('ProfilePage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
 
     expect(screen.queryByRole('radio', { name: 'Dark' })).not.toBeInTheDocument();
 

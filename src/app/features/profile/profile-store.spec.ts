@@ -10,11 +10,20 @@ import { ProfileStore } from './profile-store';
 const session = {
   displayName: 'Joan Roucoux',
   initials: 'JR',
-  passkeys: [
-    { credentialId: 'aXBob25l', label: 'iPhone de Joan', createdAt: '2026-02-01T10:00:00Z', lastUsedAt: null },
-    { credentialId: 'bWFj', label: 'MacBook', createdAt: '2026-02-02T10:00:00Z', lastUsedAt: null },
-  ],
+  username: 'joan',
+  signInMethod: 'PASSKEY',
 };
+
+const passkeys = [
+  {
+    credentialId: 'aXBob25l',
+    label: 'iPhone de Joan',
+    createdAt: '2026-02-01T10:00:00Z',
+    lastUsedAt: null,
+    current: true,
+  },
+  { credentialId: 'bWFj', label: 'MacBook', createdAt: '2026-02-02T10:00:00Z', lastUsedAt: null, current: false },
+];
 
 describe('ProfileStore', () => {
   let store: ProfileStore;
@@ -22,6 +31,7 @@ describe('ProfileStore', () => {
 
   const settleSession = async (): Promise<void> => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
@@ -69,7 +79,7 @@ describe('ProfileStore', () => {
     await settleSession();
   });
 
-  it('should revoke a passkey and reload the session', async () => {
+  it('should revoke a passkey and reload the passkeys', async () => {
     await settleSession();
 
     const revoked = store.revokePasskey('bWFj');
@@ -77,7 +87,7 @@ describe('ProfileStore', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
     await revoked;
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
     expect(store.revocationRefused()).toBe(false);
   });
 
@@ -110,15 +120,15 @@ describe('ProfileStore', () => {
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
     await accepted;
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
   });
 
-  it('should reload the session on request', async () => {
+  it('should reload the passkeys on request', async () => {
     await settleSession();
 
-    store.reloadSession();
+    store.reloadPasskeys();
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush(session);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys'))).flush(passkeys);
   });
 
   it('should sign the user out', async () => {

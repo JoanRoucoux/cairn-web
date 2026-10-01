@@ -6,7 +6,7 @@ import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstr
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
 import { buyHolding, resolveInstrument, sellHolding } from './trading';
-import { getSession, mockWebauthn } from './webauthn';
+import { getPasskeys, getSession, mockWebauthn } from './webauthn';
 
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
 // fixed JSON here instead, so the suite is self-contained in CI and locally.
@@ -166,6 +166,7 @@ const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/accounts': accounts,
   'GET /api/instruments': instruments,
   'GET /api/session': getSession(),
+  'GET /api/session/passkeys': getPasskeys(),
 };
 
 type Handler = (route: Route, match: RegExpExecArray) => Promise<void>;
