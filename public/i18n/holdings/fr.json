@@ -2,28 +2,43 @@
   "title": "Lignes",
   "averageCost": "PRU",
   "unknown": "Non disponible",
-  "unknownAverageCost": "Inconnu, fixé au premier achat",
   "staleQuote": "Cours obsolète",
   "staleShort": "Cours du {{date}}",
+  "noQuote": "Aucun cours",
+  "staleLate": "Cours du {{date}}, en retard",
+  "noQuoteToEnter": "Aucun cours, à saisir",
   "searchLabel": "Rechercher une ligne",
   "searchPlaceholder": "Rechercher par nom ou ISIN",
-  "summary": "{{lines}} sur {{accounts}}",
-  "summaryLines_one": "{{count}} ligne",
-  "summaryLines_other": "{{count}} lignes",
-  "summaryAccounts_one": "{{count}} compte",
-  "summaryAccounts_other": "{{count}} comptes",
+  "searchPlaceholderShort": "Rechercher une ligne",
   "lineCount_one": "{{count}} ligne",
   "lineCount_other": "{{count}} lignes",
+  "bookletCount_one": "{{count}} livret",
+  "bookletCount_other": "{{count}} livrets",
+  "booklet": "Livret",
+  "averageCostUnknownShort": "PRU inconnu",
   "loading": "Chargement de vos lignes",
   "empty": "Aucune ligne ne correspond à votre recherche.",
   "noSearchResults": "Aucune ligne ne correspond à « {{query}} »",
   "noSearchResultsHint": "La recherche porte sur le nom et l'ISIN.",
+  "noResultsInClass": "Aucune ligne ne correspond à « {{query}} » en {{class}}",
+  "noClassResults": "Aucune ligne en {{class}}",
+  "noClassHint": "Retirez le filtre {{class}} pour chercher dans toutes les lignes.",
+  "classFilter": {
+    "label": "Filtrer par classe d'actif",
+    "all": "Toutes"
+  },
+  "classSummary": {
+    "share_one": "· {{share}} du patrimoine, dans {{count}} compte",
+    "share_other": "· {{share}} du patrimoine, dans {{count}} comptes"
+  },
+  "filteredMeta": "sur {{total}} · {{lines}}",
   "error": "Vos lignes n'ont pas pu être chargées.",
+  "errorTitle": "Les lignes n'ont pas pu être chargées",
+  "errorMessage": "Le serveur n'a pas répondu. Vérifiez la connexion, puis réessayez.",
+  "retry": "Réessayer",
   "notFound": "Cette ligne n'existe plus.",
-  "chartLabel": "Cours sur la plage sélectionnée",
-  "externalLink": "Fiche complète sur {{source}}",
-  "priceSource": "Source du cours",
-  "lastQuote": "Dernière cotation",
+  "chartLabel": "Valeur sur la plage sélectionnée",
+  "externalLink": "Fiche sur {{domain}}",
   "columns": {
     "line": "Ligne",
     "quantity": "Quantité",
@@ -36,12 +51,6 @@
   },
   "addLine": "Ajouter une ligne",
   "addLineShort": "Ajouter une ligne",
-  "filters": {
-    "stale": "Cours en retard",
-    "account": "Compte : {{name}}",
-    "assetClass": "Classe : {{name}}",
-    "remove": "Retirer le filtre {{label}}"
-  },
   "manualQuote": {
     "open": "Saisir un cours",
     "title": "Cours de {{name}}",
@@ -70,14 +79,28 @@
     "error": "Cette ligne n'a pas pu être supprimée."
   },
   "detail": {
+    "tooltip": "{{value}} · cours {{price}}",
     "back": "Lignes",
     "close": "Fermer le détail",
     "menu": "Autres actions",
     "unrealized": "Plus-value latente",
     "today": "aujourd'hui",
-    "isin": "ISIN ou symbole",
-    "class": "Classe",
-    "description": "Description"
+    "value": "Valeur",
+    "isin": "ISIN",
+    "symbol": "Symbole",
+    "unknownCost": "Inconnu",
+    "firstBuyFixes": "Fixé au premier achat",
+    "quoteAt": "Cours du {{date}} à {{time}}",
+    "quoteOn": "Cours du {{date}}",
+    "rangeChange": {
+      "1d": "aujourd'hui",
+      "7d": "sur 7 jours",
+      "1m": "sur 1 mois",
+      "1y": "sur 1 an",
+      "5y": "sur 5 ans",
+      "max": "depuis l'achat"
+    },
+    "panel": "Détail de la ligne"
   },
   "unvaluedCount_one": "{{count}} non valorisée",
   "unvaluedCount_other": "{{count}} non valorisées",
@@ -90,7 +113,8 @@
     "zeroHint": "0 retire la ligne.",
     "cancel": "Annuler",
     "submit": "Enregistrer",
-    "error": "Ce solde a été refusé."
+    "error": "Ce solde a été refusé.",
+    "entered": "Solde saisi"
   },
   "buy": {
     "open": "Acheter",

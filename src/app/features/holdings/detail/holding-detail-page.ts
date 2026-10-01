@@ -2,10 +2,11 @@ import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angu
 import { Router, RouterLink } from '@angular/router';
 
 import {
+  type ChartPoint,
   type SegmentedOption,
   UI_AMOUNT_MASKED,
   UiAmount,
-  UiBadge,
+  UiBackLink,
   UiButton,
   UiCard,
   UiDelta,
@@ -17,35 +18,40 @@ import {
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideChevronLeft, LucideEllipsis, LucideX } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
+import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { RatioPipe } from '@shared/format/ratio-pipe';
-import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+import { HoldingDetailBar } from './bar/holding-detail-bar';
 import { HoldingDetailDescription } from './description/holding-detail-description';
 import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
 import { HoldingDetailFacts } from './facts/holding-detail-facts';
+import { HoldingDetailFigures } from './figures/holding-detail-figures';
 import { HoldingDetailStore } from './holding-detail-store';
 
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
+    FocusOnInit,
+    HoldingDetailBar,
     HoldingDetailDescription,
     HoldingDetailDialogs,
     HoldingDetailFacts,
-    LucideChevronLeft,
+    HoldingDetailFigures,
     LucideEllipsis,
+    LucidePencil,
+    LucideTrash2,
     LucideX,
     RatioPipe,
     RouterLink,
-    ShortDatePipe,
     TranslocoPipe,
     UiAmount,
-    UiBadge,
+    UiBackLink,
     UiButton,
     UiCard,
     UiDelta,
@@ -74,6 +80,10 @@ export class HoldingDetailPage {
   protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
+  protected readonly rangeChange = this.#store.rangeChange;
+  protected readonly instrumentDetail = computed(() =>
+    this.instrument.hasValue() ? this.instrument.value() : undefined,
+  );
 
   protected readonly isCash = computed(() => this.holding()?.assetClass === 'CASH');
 
@@ -88,6 +98,19 @@ export class HoldingDetailPage {
   });
 
   protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
+
+  protected readonly tooltipFormat = computed(() => {
+    this.#language.activeLang();
+
+    const quantity = this.holding()!.quantity;
+    const { value } = this.chart();
+
+    return (point: ChartPoint): string =>
+      this.#transloco.translate('holdings.detail.tooltip', {
+        value: value(point.v),
+        price: value(point.v / quantity),
+      });
+  });
 
   protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
   protected readonly buyOpen = signal(false);

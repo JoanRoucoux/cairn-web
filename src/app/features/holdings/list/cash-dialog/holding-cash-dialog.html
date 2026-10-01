@@ -14,9 +14,9 @@
   </ui-field>
 
   @if (error()) {
-    <p class="text-label text-(--negative)" data-testid="holding-cash-error" role="alert">
+    <ui-alert data-testid="holding-cash-error">
       {{ 'holdings.cash.error' | transloco }}
-    </p>
+    </ui-alert>
   }
 
   <button

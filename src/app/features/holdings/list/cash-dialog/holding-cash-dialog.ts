@@ -1,7 +1,7 @@
 import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { focusInitial } from '@shared/dialog/focus-initial';
@@ -10,7 +10,7 @@ import { HoldingCashStore } from './holding-cash-store';
 
 @Component({
   selector: 'app-holding-cash-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-cash-dialog.html',
   providers: [HoldingCashStore],
 })

@@ -1,37 +1,63 @@
-import { Component, ElementRef, computed, effect, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 
-import { UiAmount, UiButton, UiField, UiInput, UiSkeleton } from '@joanroucoux/cairn-ui';
+import {
+  type AsyncState,
+  type FilterChipOption,
+  UiAsync,
+  UiButton,
+  UiCard,
+  UiField,
+  UiFieldLeading,
+  UiFilterChips,
+  UiInput,
+  UiSkeleton,
+  UiTable,
+  UiTh,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucidePlus, LucideX } from '@lucide/angular';
+import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
-import { LanguageStore } from '@core/i18n/language-store';
-
-import { pluralKey } from '@shared/format/plural-key';
+import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
+import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
-import { HoldingListStore } from './holding-list-store';
+import { HoldingListEmpty } from './empty/holding-list-empty';
+import { CLASS_ORDER, HoldingListStore } from './holding-list-store';
+import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
+import { HoldingClassSummary } from './summary/holding-class-summary';
+
+const ALL = 'ALL';
 
 @Component({
   selector: 'app-holding-list-page',
   imports: [
+    HoldingAccountCard,
     HoldingAccountGroup,
     HoldingAddDialog,
+    HoldingClassSummary,
     HoldingCashDialog,
+    HoldingListEmpty,
+    HoldingListSkeleton,
     LucidePlus,
-    LucideX,
-    RouterLink,
+    ManualQuoteDialog,
     RouterOutlet,
     TranslocoPipe,
-    UiAmount,
+    UiAsync,
     UiButton,
+    UiCard,
     UiField,
+    UiFieldLeading,
+    UiFilterChips,
     UiInput,
     UiSkeleton,
+    UiTable,
+    UiTh,
   ],
   templateUrl: './holding-list-page.html',
   providers: [HoldingListStore],
@@ -41,36 +67,46 @@ export class HoldingListPage {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
-  #transloco = inject(TranslocoService);
-  #language = inject(LanguageStore);
+  #destroyRef = inject(DestroyRef);
+
+  readonly #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
-  protected readonly totals = this.#store.totals;
-
-  protected readonly summaryText = computed(() => {
-    this.#language.activeLang();
-    const totals = this.totals();
-    const lines = this.#transloco.translate(pluralKey('holdings.summaryLines', totals.lines), { count: totals.lines });
-    const accounts = this.#transloco.translate(pluralKey('holdings.summaryAccounts', totals.accounts), {
-      count: totals.accounts,
-    });
-
-    return this.#transloco.translate('holdings.summary', { lines, accounts });
-  });
-
-  protected readonly unvaluedCountText = computed(() => {
-    this.#language.activeLang();
-    const count = this.totals().unvaluedCount;
-
-    return this.#transloco.translate(pluralKey('holdings.unvaluedCount', count), { count });
-  });
   protected readonly search = this.#store.search;
-  protected readonly staleFilter = this.#store.staleFilter;
-  protected readonly accountFilter = this.#store.accountFilter;
-  protected readonly assetClassFilter = this.#store.assetClassFilter;
+  protected readonly assetClass = this.#store.assetClass;
+  protected readonly classSummary = this.#store.classSummary;
 
+  protected readonly desktop = signal(true);
+  protected readonly state = computed<AsyncState>(() => {
+    if (this.holdings.error()) {
+      return 'error';
+    }
+
+    return this.holdings.isLoading() ? 'loading' : 'ready';
+  });
+
+  protected readonly chips = computed<FilterChipOption[]>(() => {
+    this.#translocoEvents();
+
+    const counts = this.state() === 'ready' ? this.#store.classCounts() : null;
+
+    return [
+      { value: ALL, label: this.#transloco.translate('holdings.classFilter.all'), count: counts?.total },
+      ...CLASS_ORDER.map((assetClass) => ({
+        value: assetClass,
+        label: this.#transloco.translate(`enums.assetClass.${assetClass}`),
+        count: counts?.byClass[assetClass],
+      })),
+    ];
+  });
+
+  protected readonly chipValue = computed(() => this.assetClass() ?? ALL);
+
+  protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
+  protected readonly presetAccountId = signal<string | null>(null);
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
@@ -87,16 +123,67 @@ export class HoldingListPage {
   protected readonly compact = computed(() => this.selectedHoldingId() !== undefined);
 
   #wasCompact = false;
+  #lastSelected: string | undefined;
+  #landedOn: string | undefined;
 
   constructor() {
+    const query = globalThis.matchMedia?.('(min-width: 1024px)');
+
+    if (query) {
+      const update = (): void => this.desktop.set(query.matches);
+
+      update();
+      query.addEventListener('change', update);
+      this.#destroyRef.onDestroy(() => query.removeEventListener('change', update));
+    }
+
+    afterRenderEffect(() => {
+      const accountId = this.#store.accountParam();
+
+      if (!accountId || this.state() !== 'ready' || accountId === this.#landedOn) {
+        return;
+      }
+
+      const heading = [...this.#host.nativeElement.querySelectorAll<HTMLElement>('[data-account-id]')]
+        .filter((group) => group.dataset['accountId'] === accountId)
+        .map((group) => group.querySelector<HTMLElement>('h2[data-group-heading]'))
+        .find((candidate) => candidate?.offsetParent);
+
+      if (heading) {
+        this.#landedOn = accountId;
+        heading.focus();
+      }
+    });
+
+    effect(() => {
+      const account = this.#store.addParam();
+
+      if (account) {
+        this.presetAccountId.set(account);
+        this.addOpen.set(true);
+        void this.#router.navigate([], {
+          relativeTo: this.#route,
+          queryParams: { add: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
+
     effect(() => {
       const compact = this.compact();
+      const selected = this.selectedHoldingId();
 
       if (this.#wasCompact && !compact) {
-        this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="holdings-summary"]')?.focus();
+        const rows = [
+          ...this.#host.nativeElement.querySelectorAll<HTMLElement>(`[data-holding-id="${this.#lastSelected}"]`),
+        ];
+
+        rows.find((row) => row.offsetParent !== null)?.focus();
       }
 
       this.#wasCompact = compact;
+      this.#lastSelected = selected ?? this.#lastSelected;
     });
   }
 
@@ -104,13 +191,24 @@ export class HoldingListPage {
     this.search.set((event.target as HTMLInputElement).value);
   }
 
+  protected onClassChange(value: string): void {
+    this.assetClass.set(value === ALL ? null : (value as AssetClass));
+  }
+
   protected onAddSaved(): void {
     this.addOpen.set(false);
+    this.presetAccountId.set(null);
     this.holdings.reload();
   }
 
   protected onAddDismissed(): void {
     this.addOpen.set(false);
+    this.presetAccountId.set(null);
+  }
+
+  protected onQuoteSaved(): void {
+    this.quoteTarget.set(undefined);
+    this.holdings.reload();
   }
 
   protected onCashSaved(): void {

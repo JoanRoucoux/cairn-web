@@ -2,204 +2,167 @@
   <p class="text-(--negative)" role="alert">{{ 'holdings.error' | transloco }}</p>
 } @else if (holding(); as holding) {
   <article
-    class="fixed inset-0 z-40 flex flex-col gap-4 overflow-y-auto bg-(--background) p-4 pb-44 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0 lg:pb-0"
+    class="fixed inset-x-0 top-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-30 overflow-y-auto bg-(--background) px-4 pb-25 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
   >
-    <div class="flex items-center justify-between lg:hidden">
-      <a
-        class="text-body rounded-control flex items-center gap-1 py-2 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-        data-testid="holding-detail-back"
-        queryParamsHandling="preserve"
-        routerLink="/holdings"
-      >
-        <svg lucideChevronLeft [size]="24" [strokeWidth]="1.75" />
-        {{ 'holdings.detail.back' | transloco }}
-      </a>
-      <button
-        aria-label="{{ 'holdings.detail.menu' | transloco }}"
-        data-testid="holding-menu-trigger-mobile"
-        size="icon"
-        type="button"
-        ui-button
-        variant="ghost"
-        [uiMenuTrigger]="menu"
-      >
-        <svg lucideEllipsis [size]="22" [strokeWidth]="1.75" />
-      </button>
-    </div>
-
-    <ui-menu #menu class="w-50" [label]="'holdings.detail.menu' | transloco">
-      <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
-        {{ 'holdings.edit.open' | transloco }}
-      </button>
-      <button data-testid="holding-delete" destructive type="button" uiMenuItem (click)="openDelete()">
-        {{ 'holdings.delete.open' | transloco }}
-      </button>
-    </ui-menu>
-
-    <ui-card>
-      <div class="flex flex-col gap-0.5">
-        <p class="flex flex-wrap gap-2 lg:hidden">
-          <span
-            class="rounded-control text-caption bg-(--soft) px-2 py-1 font-semibold tracking-[0.05em] text-(--muted-foreground)"
-          >
-            {{ holding.accountName }} &middot; {{ 'enums.accountType.' + holding.accountType | transloco }}
-          </span>
-          <ui-badge>{{ 'enums.assetClass.' + holding.assetClass | transloco }}</ui-badge>
-        </p>
-
-        <div class="flex items-start justify-between gap-3">
-          <h1 class="text-title mt-2.5 min-w-0 truncate leading-snug font-semibold lg:mt-0">
-            {{ holding.instrumentName }}
-          </h1>
+    <ui-card surface="lg">
+      <div class="flex flex-col gap-4 lg:gap-6">
+        <div class="-mx-2 -mb-3 flex h-(--header-height) shrink-0 items-center justify-between lg:hidden">
           <a
-            aria-label="{{ 'holdings.detail.close' | transloco }}"
-            class="rounded-control hidden size-9 flex-none items-center justify-center text-(--muted-foreground) hover:bg-(--glow) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-(--ring) lg:flex"
+            data-testid="holding-detail-back"
             queryParamsHandling="preserve"
             routerLink="/holdings"
+            size="header"
+            ui-back-link
           >
-            <svg lucideX [size]="20" [strokeWidth]="1.75" />
+            {{ 'holdings.detail.back' | transloco }}
           </a>
-        </div>
-
-        <span class="text-label hidden text-(--muted-foreground) lg:block">
-          {{ holding.accountName }} &middot; {{ 'enums.accountType.' + holding.accountType | transloco }}
-        </span>
-      </div>
-
-      <ui-amount
-        class="text-display mt-4 block leading-none font-semibold"
-        currency="EUR"
-        [value]="holding.marketValueEur"
-      />
-
-      <div class="mt-2.5 flex flex-col gap-1">
-        <span class="text-label flex flex-wrap items-center gap-1.5">
-          <span class="text-(--muted-foreground)">{{ 'holdings.detail.unrealized' | transloco }}</span>
-          <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.unrealizedGainEur">
-            <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding.unrealizedGainEur" />
-            @if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
-              &middot; {{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
-            }
-          </ui-delta>
-        </span>
-        @if (holding.stale) {
-          <span class="text-label font-medium text-(--stale)" data-testid="stale-price">
-            {{ 'holdings.staleShort' | transloco: { date: holding.priceAsOf | shortDate } }}
-          </span>
-        } @else {
-          <span class="text-label flex flex-wrap items-center gap-1.5">
-            <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding.dayChangeEur">
-              <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding.dayChangeEur" />
-              @if (holding.dayChangeRatio !== null && holding.dayChangeRatio !== undefined) {
-                &middot; {{ holding.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
-              }
-            </ui-delta>
-            <span class="text-(--muted-foreground)">{{ 'holdings.detail.today' | transloco }}</span>
-          </span>
-        }
-      </div>
-
-      @if (!isCash()) {
-        <div class="hidden lg:mt-4 lg:grid lg:grid-cols-[1fr_1fr_auto] lg:gap-2">
-          <button data-testid="holding-buy" size="lg" type="button" ui-button (click)="buyOpen.set(true)">
-            {{ 'holdings.buy.open' | transloco }}
-          </button>
-          <button
-            data-testid="holding-sell"
-            size="lg"
-            type="button"
-            ui-button
-            variant="outline"
-            (click)="sellOpen.set(true)"
-          >
-            {{ 'holdings.sell.open' | transloco }}
-          </button>
           <button
             aria-label="{{ 'holdings.detail.menu' | transloco }}"
-            data-testid="holding-menu-trigger-desktop"
+            data-testid="holding-menu-trigger-mobile"
             size="icon"
             type="button"
             ui-button
-            variant="outline"
+            variant="ghost"
             [uiMenuTrigger]="menu"
           >
-            <svg lucideEllipsis [size]="20" [strokeWidth]="1.75" />
+            <svg lucideEllipsis [size]="22" [strokeWidth]="1.75" />
           </button>
         </div>
-      }
 
-      @if (holding.price !== null && holding.price !== undefined) {
-        <div class="mt-4 h-40 lg:h-36">
-          <ui-line-chart
-            [axisFormat]="chart().axis"
-            [deltaFormat]="chart().delta"
-            [label]="'holdings.chartLabel' | transloco"
-            [points]="points()"
-            [startLabel]="startLabel()"
-            [timeColumnLabel]="'chart.time' | transloco"
-            [timeFormat]="chart().time"
-            [valueColumnLabel]="'chart.value' | transloco"
-            [valueFormat]="chart().value"
-          />
+        <ui-menu #menu [label]="'holdings.detail.menu' | transloco" [width]="208">
+          <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
+            <svg lucidePencil [size]="18" [strokeWidth]="1.75" />
+            {{ 'holdings.edit.open' | transloco }}
+          </button>
+          <button data-testid="holding-delete" destructive type="button" uiMenuItem (click)="openDelete()">
+            <svg lucideTrash2 [size]="18" [strokeWidth]="1.75" />
+            {{ 'holdings.delete.open' | transloco }}
+          </button>
+        </ui-menu>
+
+        <div class="flex items-start justify-between gap-3 px-1 lg:px-0">
+          <div class="flex min-w-0 flex-col gap-0.5">
+            <h1 appFocusOnInit class="text-title m-0 font-semibold text-pretty outline-none" tabindex="-1">
+              {{ holding.instrumentName }}
+            </h1>
+            <span class="text-label text-(--muted-foreground) lg:leading-[normal]">
+              {{ holding.accountName }} &middot; {{ 'enums.accountType.' + holding.accountType | transloco }}
+            </span>
+          </div>
+          <div class="-mt-1 -mr-2 max-lg:hidden">
+            <a
+              aria-label="{{ 'holdings.detail.close' | transloco }}"
+              queryParamsHandling="preserve"
+              routerLink="/holdings"
+              size="icon-sm"
+              ui-button
+              variant="quiet-glow"
+            >
+              <svg lucideX [size]="20" [strokeWidth]="1.75" />
+            </a>
+          </div>
         </div>
 
-        <div class="mt-3">
-          <ui-segmented
-            class="block w-full"
-            [label]="'chart.rangeLabel' | transloco"
-            [options]="rangeOptions()"
-            [value]="range()"
-            (valueChange)="setRange($event)"
-          />
-        </div>
-      } @else {
-        <p class="text-label mt-4 text-(--muted-foreground)" data-testid="no-quote-yet">
-          {{ 'holdings.noQuoteYet' | transloco }}
-        </p>
-      }
+        <ui-card class="lg:contents" surface="max-lg">
+          <div class="flex flex-col gap-5 lg:contents">
+            <app-holding-detail-figures [holding]="holding" />
+
+            @if (!isCash()) {
+              <div class="hidden lg:grid lg:grid-cols-[1fr_1fr_auto] lg:gap-2">
+                <button data-testid="holding-buy" type="button" ui-button (click)="buyOpen.set(true)">
+                  {{ 'holdings.buy.open' | transloco }}
+                </button>
+                <button
+                  data-testid="holding-sell"
+                  type="button"
+                  ui-button
+                  variant="outline"
+                  (click)="sellOpen.set(true)"
+                >
+                  {{ 'holdings.sell.open' | transloco }}
+                </button>
+                <button
+                  aria-label="{{ 'holdings.detail.menu' | transloco }}"
+                  data-testid="holding-menu-trigger-desktop"
+                  size="icon"
+                  type="button"
+                  ui-button
+                  variant="outline"
+                  [uiMenuTrigger]="menu"
+                >
+                  <svg lucideEllipsis [size]="20" [strokeWidth]="1.75" />
+                </button>
+              </div>
+            }
+
+            @if (holding.price !== null && holding.price !== undefined) {
+              <div class="flex flex-col gap-3">
+                @if (rangeChange(); as change) {
+                  <div
+                    class="text-label flex items-baseline gap-1.5 leading-[normal] tabular-nums"
+                    data-testid="range-change"
+                  >
+                    <ui-delta size="inherit" [unknownLabel]="'holdings.unknown' | transloco" [value]="change.amount">
+                      <ui-amount currency="EUR" signed whenMasked="hide" [value]="change.amount" />
+                      @if (change.ratio !== null) {
+                        &middot; {{ change.ratio | ratio: { signed: true, decimals: 2 } }}
+                      }
+                    </ui-delta>
+                    <span class="text-(--muted-foreground)">{{
+                      'holdings.detail.rangeChange.' + range() | transloco
+                    }}</span>
+                  </div>
+                }
+                <div class="h-[179px] lg:h-[169px]">
+                  <ui-line-chart
+                    axisTicks="3"
+                    [axisFormat]="chart().axis"
+                    [deltaFormat]="chart().delta"
+                    [label]="'holdings.chartLabel' | transloco"
+                    [points]="points()"
+                    [startLabel]="startLabel()"
+                    [timeColumnLabel]="'chart.time' | transloco"
+                    [timeFormat]="chart().time"
+                    [tooltipDelta]="false"
+                    [tooltipFormat]="tooltipFormat()"
+                    [valueColumnLabel]="'chart.value' | transloco"
+                    [valueFormat]="chart().value"
+                  />
+                </div>
+                <ui-segmented
+                  class="block w-full"
+                  size="sm"
+                  [label]="'chart.rangeLabel' | transloco"
+                  [options]="rangeOptions()"
+                  [value]="range()"
+                  (valueChange)="setRange($event)"
+                />
+              </div>
+            } @else {
+              <p class="text-label text-(--muted-foreground)" data-testid="no-quote-yet">
+                {{ 'holdings.noQuoteYet' | transloco }}
+              </p>
+            }
+          </div>
+        </ui-card>
+
+        <app-holding-detail-facts [holding]="holding" [priceSourceLabel]="priceSourceLabel()" />
+        @if (instrumentDetail(); as detail) {
+          @if (detail.description) {
+            <app-holding-detail-description [description]="detail.description" [externalUrl]="detail.externalUrl" />
+          }
+        }
+
+        @if (holding.priceSource === 'MANUAL' || holding.price === null || holding.price === undefined) {
+          <button data-testid="enter-quote" type="button" ui-button variant="outline" (click)="onEnterQuote()">
+            {{ 'holdings.manualQuote.open' | transloco }}
+          </button>
+        }
+      </div>
     </ui-card>
 
-    @if (instrument.hasValue()) {
-      <app-holding-detail-description
-        [description]="instrument.value().description"
-        [externalUrl]="instrument.value().externalUrl"
-        [sourceLabel]="priceSourceLabel()"
-      />
-    }
-
-    <app-holding-detail-facts [holding]="holding" [priceSourceLabel]="priceSourceLabel()" />
-
-    @if (holding.priceSource === 'MANUAL' || holding.price === null || holding.price === undefined) {
-      <div class="flex gap-2.5">
-        <button
-          class="rounded-control text-label min-h-11 flex-1 border border-(--border) bg-(--elevated) font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-          data-testid="enter-quote"
-          type="button"
-          (click)="onEnterQuote()"
-        >
-          {{ 'holdings.manualQuote.open' | transloco }}
-        </button>
-      </div>
-    }
-
     @if (!isCash()) {
-      <div
-        class="fixed inset-x-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-40 grid grid-cols-2 gap-2 border-t border-(--hairline) bg-(--background) p-3 lg:hidden"
-      >
-        <button
-          data-testid="holding-sell-bar"
-          size="xl"
-          type="button"
-          ui-button
-          variant="outline"
-          (click)="sellOpen.set(true)"
-        >
-          {{ 'holdings.sell.open' | transloco }}
-        </button>
-        <button data-testid="holding-buy-bar" size="xl" type="button" ui-button (click)="buyOpen.set(true)">
-          {{ 'holdings.buy.open' | transloco }}
-        </button>
-      </div>
+      <app-holding-detail-bar (buy)="buyOpen.set(true)" (sell)="sellOpen.set(true)" />
     }
 
     <app-holding-detail-dialogs

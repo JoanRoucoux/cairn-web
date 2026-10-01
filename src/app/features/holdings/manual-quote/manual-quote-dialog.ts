@@ -1,7 +1,7 @@
 import { Component, ElementRef, afterRenderEffect, inject, input, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { focusInitial } from '@shared/dialog/focus-initial';
@@ -10,7 +10,7 @@ import { ManualQuoteDialogStore } from './manual-quote-dialog-store';
 
 @Component({
   selector: 'app-manual-quote-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './manual-quote-dialog.html',
   providers: [ManualQuoteDialogStore],
 })
