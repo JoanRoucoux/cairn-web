@@ -5,9 +5,10 @@ import { TestBed } from '@angular/core/testing';
 import { RouterOutlet } from '@angular/router';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TRANSLOCO_LOADER, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
+import { map, timer } from 'rxjs';
 
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -61,7 +62,7 @@ describe('HoldingListPage class filter', () => {
   let httpTesting: HttpTestingController;
   const masked = signal(false);
 
-  const open = async (initialRoute = '/', flush = true): Promise<void> => {
+  const open = async (initialRoute = '/', flush = true, scopeDelay = 0): Promise<void> => {
     await render(TestHost, {
       imports: [getTranslocoTestingModule({ langs: { ...translations, fr: {}, 'holdings/fr': {} } })],
       routes: [{ path: '', component: HoldingListPage }],
@@ -74,6 +75,19 @@ describe('HoldingListPage class filter', () => {
         { provide: LOCALE_ID, useValue: 'en-GB' },
         { provide: UI_AMOUNT_MASKED, useValue: masked },
         provideTranslocoScope('holdings'),
+        ...(scopeDelay
+          ? [
+              {
+                provide: TRANSLOCO_LOADER,
+                useValue: {
+                  getTranslation: (lang: string) =>
+                    timer(lang.includes('/') ? scopeDelay : 0).pipe(
+                      map(() => (translations as Record<string, object>)[lang] ?? {}),
+                    ),
+                },
+              },
+            ]
+          : []),
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
@@ -102,6 +116,14 @@ describe('HoldingListPage class filter', () => {
     expect(chip(/^Funds\s*1$/)).toBeInTheDocument();
     expect(chip(/^Stocks\s*0$/)).toBeInTheDocument();
     expect(chip(/^Cash\s*2$/)).toBeInTheDocument();
+  });
+
+  it('should never draw a raw translation key on a chip while the scope loads', async () => {
+    await open('/', true, 300);
+
+    expect(await screen.findByRole('button', { name: /^ETF/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /holdings.classFilter/ })).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^All/ })).toBeInTheDocument();
   });
 
   it('should keep the chip labels while loading and add the counts when the data arrives', async () => {
@@ -188,6 +210,9 @@ describe('HoldingListPage class filter', () => {
 
     expect(screen.queryByTestId('class-summary')).not.toBeInTheDocument();
     expect(await screen.findByTestId('holdings-loading-rows')).toBeInTheDocument();
+    const [phone, desktop] = screen.getAllByTestId('summary-skeleton');
+    expect(phone!.querySelectorAll('span')).toHaveLength(2);
+    expect(desktop!.querySelectorAll('span')).toHaveLength(1);
 
     httpTesting.expectOne('/api/holdings').flush(null, { status: 500, statusText: 'Server Error' });
     httpTesting.expectOne('/api/accounts').flush(accounts);

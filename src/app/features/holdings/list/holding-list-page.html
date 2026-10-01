@@ -56,7 +56,8 @@
   />
   @if (assetClass(); as selected) {
     @if (state() === 'loading') {
-      <ui-skeleton [height]="16" [style.width.px]="260" />
+      <ui-skeleton class="w-65 px-1 lg:hidden" data-testid="summary-skeleton" [height]="16" [lines]="2" />
+      <ui-skeleton class="hidden w-65 lg:flex" data-testid="summary-skeleton" [height]="16" />
     } @else if (state() === 'ready' && classSummary(); as summary) {
       <app-holding-class-summary data-testid="class-summary" [assetClass]="selected" [summary]="summary" />
     }

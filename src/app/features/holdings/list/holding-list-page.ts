@@ -66,9 +66,15 @@ export class HoldingListPage {
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
   #destroyRef = inject(DestroyRef);
-  #transloco = inject(TranslocoService);
 
-  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #transloco = inject(TranslocoService);
+  readonly #allLabel = toSignal(this.#transloco.selectTranslate('classFilter.all', {}, 'holdings'), {
+    initialValue: '',
+  });
+  readonly #classLabels = toSignal(
+    this.#transloco.selectTranslate(CLASS_ORDER.map((assetClass) => `enums.assetClass.${assetClass}`)),
+    { initialValue: [] as string[] },
+  );
 
   protected readonly holdings = this.#store.holdings;
   protected readonly groups = this.#store.groups;
@@ -86,15 +92,13 @@ export class HoldingListPage {
   });
 
   protected readonly chips = computed<FilterChipOption[]>(() => {
-    this.#translocoEvents();
-
     const counts = this.state() === 'ready' ? this.#store.classCounts() : null;
 
     return [
-      { value: ALL, label: this.#transloco.translate('holdings.classFilter.all'), count: counts?.total },
-      ...CLASS_ORDER.map((assetClass) => ({
+      { value: ALL, label: this.#allLabel(), count: counts?.total },
+      ...CLASS_ORDER.map((assetClass, index) => ({
         value: assetClass,
-        label: this.#transloco.translate(`enums.assetClass.${assetClass}`),
+        label: this.#classLabels()[index]!,
         count: counts?.byClass[assetClass],
       })),
     ];
