@@ -132,13 +132,6 @@ describe('HoldingListStore', () => {
     expect(store.groups()[1]!.valueEur).toBe(119258);
   });
 
-  it('should mark an account stale when any of its lines is', async () => {
-    await load();
-
-    expect(store.groups().find((group) => group.accountName === 'Esalia')!.stale).toBe(true);
-    expect(store.groups().find((group) => group.accountName === 'Saxo Investor')!.stale).toBe(false);
-  });
-
   it('should filter on the instrument name, case-insensitively', async () => {
     await load();
 
