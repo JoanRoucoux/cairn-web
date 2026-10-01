@@ -9,6 +9,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { UiAlert, UiAmount, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -32,6 +33,7 @@ import { HoldingSellDialogStore } from './holding-sell-dialog-store';
 export class HoldingSellDialog {
   #store = inject(HoldingSellDialogStore);
   #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
@@ -65,19 +67,24 @@ export class HoldingSellDialog {
 
   protected readonly closes = computed(() => this.preview()?.closesHolding === true);
 
-  protected readonly held = computed(() =>
-    this.#transloco.translate(pluralKey('holdings.sell.held', this.holding().quantity), {
-      count: this.holding().quantity,
-    }),
-  );
+  protected readonly held = computed(() => {
+    this.#translocoEvents();
 
-  protected readonly overHint = computed(() =>
-    this.#transloco.translate(pluralKey('holdings.sell.over', this.holding().quantity), {
+    return this.#transloco.translate(pluralKey('holdings.sell.held', this.holding().quantity), {
       count: this.holding().quantity,
-    }),
-  );
+    });
+  });
+
+  protected readonly overHint = computed(() => {
+    this.#translocoEvents();
+
+    return this.#transloco.translate(pluralKey('holdings.sell.over', this.holding().quantity), {
+      count: this.holding().quantity,
+    });
+  });
 
   protected readonly cta = computed(() => {
+    this.#translocoEvents();
     const quantity = this.#store.quantity();
 
     if (!this.valid() || quantity === null) {

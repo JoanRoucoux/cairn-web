@@ -9,6 +9,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { UiAmount, UiButton, UiDialog, UiField, UiInput, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
@@ -32,6 +33,7 @@ import { HoldingBuyDialogStore } from './holding-buy-dialog-store';
 export class HoldingBuyDialog {
   #store = inject(HoldingBuyDialogStore);
   #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
@@ -59,6 +61,7 @@ export class HoldingBuyDialog {
   });
 
   protected readonly cta = computed(() => {
+    this.#translocoEvents();
     const quantity = this.#store.quantity();
 
     return quantity !== null && quantity > 0 && this.valid()

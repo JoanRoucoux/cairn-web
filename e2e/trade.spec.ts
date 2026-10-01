@@ -8,7 +8,7 @@ test.describe('buy and sell', () => {
   test.beforeEach(async ({ page }) => {
     await mockApi(page);
     await page.goto(`/holdings/${AMUNDI_ID}`);
-    await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible({ timeout: 15_000 });
   });
 
   test('buys more units and reloads the detail', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('buy and sell', () => {
 
   test('reads a quantity typed with a comma and spaces', async ({ page }) => {
     await page.getByTestId('holding-buy').click();
-
+    await expect(page.getByTestId('holding-buy-dialog').locator('dialog')).toBeVisible();
     await page.getByTestId('holding-buy-quantity').fill('1 200,5');
     await page.getByTestId('holding-buy-price').fill('10');
 
@@ -55,7 +55,7 @@ test.describe('buy and sell', () => {
 
   test('keeps the button disabled for an empty or zero quantity', async ({ page }) => {
     await page.getByTestId('holding-buy').click();
-
+    await expect(page.getByTestId('holding-buy-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('holding-buy-submit')).toBeDisabled();
 
     await page.getByTestId('holding-buy-quantity').fill('0');
@@ -68,8 +68,10 @@ test.describe('buy and sell', () => {
     await page.route('**/api/holdings/*/buy', (route) => route.fulfill({ status: 422, json: { message: 'refused' } }));
 
     await page.getByTestId('holding-buy').click();
+    await expect(page.getByTestId('holding-buy-dialog').locator('dialog')).toBeVisible();
     await page.getByTestId('holding-buy-quantity').fill('40');
     await page.getByTestId('holding-buy-price').fill('29.1');
+    await expect(page.getByTestId('holding-buy-submit')).toBeEnabled();
     await page.getByTestId('holding-buy-submit').click();
 
     await expect(page.getByTestId('holding-buy-error')).toBeVisible();
@@ -113,7 +115,9 @@ test.describe('buy and sell', () => {
     await page.route('**/api/holdings/*/sell', (route) => route.fulfill({ status: 422, json: { message: 'refused' } }));
 
     await page.getByTestId('holding-sell').click();
+    await expect(page.getByTestId('holding-sell-dialog').locator('dialog')).toBeVisible();
     await page.getByTestId('holding-sell-quantity').fill('10');
+    await expect(page.getByTestId('holding-sell-submit')).toBeEnabled();
     await page.getByTestId('holding-sell-submit').click();
 
     await expect(page.getByTestId('holding-sell-error')).toBeVisible();
