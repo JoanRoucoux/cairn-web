@@ -35,10 +35,13 @@ test.describe('accounts', () => {
 
     const link = page.getByTestId('account-empty-add');
     const href = await link.getAttribute('href');
+    expect(href).toMatch(/^\/holdings\?add=/);
+    const accountId = new URLSearchParams(href!.split('?')[1]).get('add')!;
     await link.click();
 
-    await expect(page).toHaveURL(/\/holdings\?add=/);
-    expect(href).toMatch(/^\/holdings\?add=/);
+    await expect(page).toHaveURL(/\/holdings$/);
+    await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByTestId('holding-add-account')).toHaveValue(accountId);
   });
 
   test('links each account name to its lines', async ({ page }) => {
