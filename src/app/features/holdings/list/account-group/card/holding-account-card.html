@@ -1,6 +1,8 @@
 <header class="flex items-end justify-between gap-3 px-1 pt-3">
   <div class="flex min-w-0 flex-col">
-    <h2 class="text-title m-0 font-semibold">{{ group().accountName }}</h2>
+    <h2 class="text-title m-0 font-semibold outline-none" data-group-heading tabindex="-1">
+      {{ group().accountName }}
+    </h2>
     <span class="text-label text-(--muted-foreground)">
       @if (group().filtered; as filtered) {
         {{
@@ -28,10 +30,10 @@
   <div class="flex flex-col px-2 py-1.5">
     @for (holding of group().holdings; track holding.id) {
       <a
-        class="min-h-17! gap-2!"
         data-testid="holding-row-mobile"
         padding="sm"
         queryParamsHandling="preserve"
+        size="card"
         ui-row
         [attr.data-holding-id]="holding.id"
         [routerLink]="['/holdings', holding.id]"
@@ -63,9 +65,12 @@
             @if (unpriced(holding)) {
               <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
             } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
-              <span class="text-label" [class]="deltaTone(holding.unrealizedGainRatio)">{{
-                holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 }
-              }}</span>
+              <ui-delta
+                weight="regular"
+                [unknownLabel]="'holdings.unknown' | transloco"
+                [value]="holding.unrealizedGainRatio"
+                >{{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</ui-delta
+              >
             } @else {
               <span class="text-label text-(--muted-foreground)">{{
                 'holdings.averageCostUnknownShort' | transloco
@@ -77,9 +82,9 @@
     }
     @if (group().showCash) {
       <button
-        class="min-h-17! gap-2!"
         data-testid="edit-cash-mobile"
         padding="sm"
+        size="card"
         type="button"
         ui-row
         [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"

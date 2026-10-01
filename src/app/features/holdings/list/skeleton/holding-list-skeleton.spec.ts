@@ -5,7 +5,7 @@ import { HoldingListSkeleton } from './holding-list-skeleton';
 describe('HoldingListSkeleton', () => {
   it('draws two cards of a header and four rows on the iPhone', async () => {
     const { container } = await render(HoldingListSkeleton);
-    const cards = container.querySelectorAll('[data-testid="holdings-loading-cards"] > div');
+    const cards = container.querySelectorAll('[data-testid="holdings-loading-cards"] > ui-card > div');
 
     expect(cards).toHaveLength(2);
     for (const card of cards) {

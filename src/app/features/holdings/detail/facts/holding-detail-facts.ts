@@ -1,6 +1,6 @@
-import { Component, LOCALE_ID, computed, inject, input } from '@angular/core';
+import { Component, DestroyRef, LOCALE_ID, computed, inject, input, signal } from '@angular/core';
 
-import { UiAmount } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiCard, UiFact, UiFacts } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -11,13 +11,10 @@ import { ShortDatePipe } from '@shared/format/short-date-pipe';
 const PARIS_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
 
 @Component({
-  selector: 'dl[app-holding-detail-facts]',
-  imports: [ShortDatePipe, TranslocoPipe, UiAmount],
+  selector: 'app-holding-detail-facts',
+  imports: [ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiFact, UiFacts],
   templateUrl: './holding-detail-facts.html',
-  host: {
-    class:
-      'flex flex-col max-lg:rounded-container max-lg:bg-(--card) max-lg:px-(--inset-card) max-lg:py-1 max-lg:shadow-[inset_0_0_0_1px_var(--border)] lg:shadow-[inset_0_1px_0_var(--hairline)]',
-  },
+  host: { class: 'block' },
 })
 export class HoldingDetailFacts {
   readonly holding = input.required<HoldingResponse>();
@@ -25,9 +22,31 @@ export class HoldingDetailFacts {
 
   readonly #locale = inject(LOCALE_ID);
 
+  protected readonly desktop = signal(false);
+
+  constructor() {
+    const query = globalThis.matchMedia?.('(min-width: 1024px)');
+
+    if (query) {
+      const update = (): void => this.desktop.set(query.matches);
+
+      update();
+      query.addEventListener('change', update);
+      inject(DestroyRef).onDestroy(() => query.removeEventListener('change', update));
+    }
+  }
+
   protected readonly decimalPlaces = decimalPlaces;
 
   protected readonly crypto = computed(() => this.holding().assetClass === 'CRYPTO');
+  protected readonly priceSubKey = computed(() => {
+    if (this.holding().stale) {
+      return 'holdings.staleLate';
+    }
+
+    return this.quoteTime() ? 'holdings.detail.quoteAt' : 'holdings.detail.quoteOn';
+  });
+
   protected readonly identifier = computed(() =>
     this.crypto() ? this.holding().symbol || this.holding().isin : this.holding().isin,
   );

@@ -1,11 +1,11 @@
 import { Component, booleanAttribute, input, output } from '@angular/core';
 
-import { UiRowAction } from '@joanroucoux/cairn-ui';
+import { UiButton, UiRowAction } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({
   selector: 'app-holding-enter-quote',
-  imports: [TranslocoPipe, UiRowAction],
+  imports: [TranslocoPipe, UiButton, UiRowAction],
   templateUrl: './holding-enter-quote.html',
   host: { class: 'contents' },
 })

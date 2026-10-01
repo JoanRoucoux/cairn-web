@@ -79,6 +79,7 @@
     "error": "Cette ligne n'a pas pu être supprimée."
   },
   "detail": {
+    "tooltip": "{{value}} · cours {{price}}",
     "back": "Lignes",
     "close": "Fermer le détail",
     "menu": "Autres actions",

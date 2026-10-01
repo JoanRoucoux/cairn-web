@@ -1,12 +1,6 @@
 <p class="text-label m-0 text-(--muted-foreground)">{{ description() }}</p>
 @if (domain()) {
-  <a
-    class="text-label flex items-center gap-1.5 self-start rounded-sm font-medium hover:underline hover:underline-offset-[3px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) max-lg:min-h-11"
-    rel="noopener noreferrer"
-    target="_blank"
-    [href]="externalUrl()"
-  >
+  <a class="self-start" rel="noopener noreferrer" target="_blank" ui-external-link [href]="externalUrl()">
     {{ 'holdings.externalLink' | transloco: { domain: domain() } }}
-    <svg lucideExternalLink [size]="14" [strokeWidth]="1.75" />
   </a>
 }

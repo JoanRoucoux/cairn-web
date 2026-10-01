@@ -7,6 +7,7 @@ import {
   type FilterChipOption,
   UiAsync,
   UiButton,
+  UiCard,
   UiField,
   UiFieldLeading,
   UiFilterChips,
@@ -49,6 +50,7 @@ const ALL = 'ALL';
     TranslocoPipe,
     UiAsync,
     UiButton,
+    UiCard,
     UiField,
     UiFieldLeading,
     UiFilterChips,
@@ -148,12 +150,11 @@ export class HoldingListPage {
 
       const heading = [...this.#host.nativeElement.querySelectorAll<HTMLElement>('[data-account-id]')]
         .filter((group) => group.dataset['accountId'] === accountId)
-        .map((group) => group.querySelector<HTMLElement>('h2'))
+        .map((group) => group.querySelector<HTMLElement>('h2[data-group-heading]'))
         .find((candidate) => candidate?.offsetParent);
 
       if (heading) {
         this.#landedOn = accountId;
-        heading.tabIndex = -1;
         heading.focus();
       }
     });

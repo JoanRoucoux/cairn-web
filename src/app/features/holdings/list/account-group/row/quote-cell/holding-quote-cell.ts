@@ -7,7 +7,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
-import { isMissing } from '../../../../delta-tone';
+import { isMissing } from '../../../../is-missing';
 import { HoldingEnterQuote } from '../enter-quote/holding-enter-quote';
 
 @Component({

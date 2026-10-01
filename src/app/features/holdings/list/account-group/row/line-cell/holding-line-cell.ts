@@ -9,7 +9,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
-import { isMissing } from '../../../../delta-tone';
+import { isMissing } from '../../../../is-missing';
 import { isBooklet } from '../../../holding-list-store';
 
 @Component({

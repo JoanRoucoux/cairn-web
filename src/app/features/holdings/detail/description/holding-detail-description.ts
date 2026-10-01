@@ -1,11 +1,11 @@
 import { Component, computed, input } from '@angular/core';
 
+import { UiExternalLink } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideExternalLink } from '@lucide/angular';
 
 @Component({
   selector: 'app-holding-detail-description',
-  imports: [LucideExternalLink, TranslocoPipe],
+  imports: [TranslocoPipe, UiExternalLink],
   templateUrl: './holding-detail-description.html',
   host: { class: 'flex flex-col gap-2 max-lg:px-1 max-lg:pt-1 lg:-mt-2' },
 })

@@ -2,10 +2,13 @@ import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angu
 import { Router, RouterLink } from '@angular/router';
 
 import {
+  type ChartPoint,
   type SegmentedOption,
   UI_AMOUNT_MASKED,
   UiAmount,
+  UiBackLink,
   UiButton,
+  UiCard,
   UiDelta,
   UiLineChart,
   UiMenu,
@@ -15,7 +18,7 @@ import {
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideChevronLeft, LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
@@ -40,7 +43,6 @@ import { HoldingDetailStore } from './holding-detail-store';
     HoldingDetailDialogs,
     HoldingDetailFacts,
     HoldingDetailFigures,
-    LucideChevronLeft,
     LucideEllipsis,
     LucidePencil,
     LucideTrash2,
@@ -49,7 +51,9 @@ import { HoldingDetailStore } from './holding-detail-store';
     RouterLink,
     TranslocoPipe,
     UiAmount,
+    UiBackLink,
     UiButton,
+    UiCard,
     UiDelta,
     UiLineChart,
     UiMenu,
@@ -94,6 +98,19 @@ export class HoldingDetailPage {
   });
 
   protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
+
+  protected readonly tooltipFormat = computed(() => {
+    this.#language.activeLang();
+
+    const quantity = this.holding()!.quantity;
+    const { value } = this.chart();
+
+    return (point: ChartPoint): string =>
+      this.#transloco.translate('holdings.detail.tooltip', {
+        value: value(point.v),
+        price: value(point.v / quantity),
+      });
+  });
 
   protected readonly pricingInstrument = signal<{ id: string; name: string } | undefined>(undefined);
   protected readonly buyOpen = signal(false);

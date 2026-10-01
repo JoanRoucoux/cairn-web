@@ -1,7 +1,7 @@
 import { Component, LOCALE_ID, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UI_AMOUNT_MASKED, UiAmount, UiCard, UiRow, formatAmount } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiAmount, UiCard, UiDelta, UiRow, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -10,13 +10,13 @@ import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
-import { deltaTone, isMissing } from '../../../delta-tone';
+import { isMissing } from '../../../is-missing';
 import { type AccountGroup, isBooklet } from '../../holding-list-store';
 import { filteredCount, groupCount } from '../group-count';
 
 @Component({
   selector: 'app-holding-account-card',
-  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiRow],
+  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiDelta, UiRow],
   templateUrl: './holding-account-card.html',
   host: {
     class: 'flex flex-col gap-2',
@@ -36,7 +36,6 @@ export class HoldingAccountCard {
     formatAmount(this.group().filtered?.accountValueEur, { locale: this.#locale, currency: 'EUR' }, this.#masked()),
   );
   protected readonly decimalPlaces = decimalPlaces;
-  protected readonly deltaTone = deltaTone;
   protected readonly filteredCount = filteredCount;
   protected readonly groupCount = groupCount;
   protected readonly isBooklet = isBooklet;

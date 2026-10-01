@@ -107,7 +107,7 @@ describe('HoldingDetailPage', () => {
     await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
     expect(screen.getAllByText('enums.accountType.PEA', { exact: false }).length).toBeGreaterThan(0);
     expect(screen.getAllByText('enums.assetClass.ETF').length).toBeGreaterThan(0);
-    expect(screen.getByTestId('quote-line')).toHaveTextContent('enums.priceSource.YAHOO');
+    expect(screen.getByText(/enums.priceSource.YAHOO/)).toBeInTheDocument();
   });
 
   it('shows the unrealized gain and the day change as amount and percent', async () => {

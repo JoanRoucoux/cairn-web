@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
@@ -41,9 +42,13 @@ describe('HoldingDetailPage figures', () => {
   const renderPage = async (
     fixtureHolding: Record<string, unknown> = holding,
     quotes: unknown[] = [],
-  ): Promise<void> => {
-    await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
+  ): Promise<HoldingDetailPage> => {
+    const { fixture } = await render(TestHost, {
+      imports: [
+        getTranslocoTestingModule({
+          langs: { en: {}, fr: {}, 'holdings/en': { detail: { tooltip: '{{value}} / {{price}}' } }, 'holdings/fr': {} },
+        }),
+      ],
       routes: [{ path: 'holdings/:holdingId', component: HoldingDetailPage }],
       initialRoute: 'holdings/h1',
       providers: [
@@ -65,9 +70,20 @@ describe('HoldingDetailPage figures', () => {
       .match((request) => request.url === '/api/instruments/i1')
       .forEach((request) => request.flush({ description: 'ETF.' }));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush(quotes));
+
+    return fixture.debugElement.query(By.directive(HoldingDetailPage)).componentInstance as HoldingDetailPage;
   };
 
   afterEach(() => httpTesting.verify());
+
+  it('gives the chart tooltip the value and the unit price', async () => {
+    const page = await renderPage();
+    const tooltip = (
+      page as unknown as { tooltipFormat: () => (point: { t: number; v: number }) => string }
+    ).tooltipFormat();
+
+    expect(tooltip({ t: 0, v: 300 })).toBe('€300.00 / €30.00');
+  });
 
   it('summarises the change of the value over the range above the chart', async () => {
     await renderPage(holding, [
@@ -99,7 +115,7 @@ describe('HoldingDetailPage figures', () => {
   it('shows the stale quote line instead of a day change', async () => {
     await renderPage({ ...holding, stale: true });
 
-    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.staleLate');
+    expect(await screen.findByText(/holdings.staleLate/)).toBeInTheDocument();
   });
 
   it('shows the unknown cost basis text when the average cost is missing', async () => {

@@ -79,6 +79,7 @@
     "error": "This holding could not be deleted."
   },
   "detail": {
+    "tooltip": "{{value}} · price {{price}}",
     "back": "Holdings",
     "close": "Close the detail",
     "menu": "More actions",

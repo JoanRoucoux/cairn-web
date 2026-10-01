@@ -178,7 +178,7 @@ test.describe('holding detail', () => {
   test('shows the stale price instead of a day change', async ({ page }) => {
     await page.goto('/holdings/22222222-2222-2222-2222-222222222222');
 
-    await expect(page.getByTestId('quote-line')).toContainText(/late/i);
+    await expect(page.locator('aside').getByText(/price as of .*, late|cours du .*, en retard/i)).toBeVisible();
   });
 
   test('shows Saisir un cours for a line with no quote yet', async ({ page }) => {

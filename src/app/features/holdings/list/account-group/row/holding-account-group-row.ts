@@ -1,13 +1,14 @@
 import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 
-import { UiAmount, UiCellSub, UiTd } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiCellSub, UiDelta, UiTd } from '@joanroucoux/cairn-ui';
+import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
-import { deltaTone, isMissing } from '../../../delta-tone';
+import { isMissing } from '../../../is-missing';
 import { isBooklet } from '../../holding-list-store';
 import { HoldingEnterQuote } from './enter-quote/holding-enter-quote';
 import { HoldingLineCell } from './line-cell/holding-line-cell';
@@ -15,7 +16,17 @@ import { HoldingQuoteCell } from './quote-cell/holding-quote-cell';
 
 @Component({
   selector: 'tr[app-holding-account-group-row]',
-  imports: [HoldingEnterQuote, HoldingLineCell, HoldingQuoteCell, RatioPipe, UiAmount, UiCellSub, UiTd],
+  imports: [
+    HoldingEnterQuote,
+    HoldingLineCell,
+    HoldingQuoteCell,
+    RatioPipe,
+    TranslocoPipe,
+    UiAmount,
+    UiCellSub,
+    UiDelta,
+    UiTd,
+  ],
   templateUrl: './holding-account-group-row.html',
   host: { 'data-testid': 'holding-row' },
 })
@@ -27,7 +38,6 @@ export class HoldingAccountGroupRow {
   readonly enterQuote = output<HoldingResponse>();
 
   protected readonly decimalPlaces = decimalPlaces;
-  protected readonly deltaTone = deltaTone;
   protected readonly booklet = computed(() => isBooklet(this.holding()));
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
   protected readonly unknownDay = computed(() => isMissing(this.holding().dayChangeRatio));

@@ -21,17 +21,44 @@
   }
 </td>
 @if (!compact()) {
-  <td numeric uiTd [class]="deltaTone(holding().unrealizedGainEur)">
+  <td numeric uiTd>
     @if (!booklet() && hasGain()) {
-      <ui-amount currency="EUR" signed [value]="holding().unrealizedGainEur" />
+      <div class="flex justify-end">
+        <ui-delta
+          size="inherit"
+          weight="regular"
+          [unknownLabel]="'holdings.unknown' | transloco"
+          [value]="holding().unrealizedGainEur"
+        >
+          <ui-amount currency="EUR" signed [value]="holding().unrealizedGainEur" />
+        </ui-delta>
+      </div>
       @if (hasGainRatio()) {
-        <span tone="inherit" uiCellSub>{{ holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</span>
+        <div class="flex justify-end">
+          <ui-delta
+            size="inherit"
+            weight="regular"
+            [unknownLabel]="'holdings.unknown' | transloco"
+            [value]="holding().unrealizedGainEur"
+          >
+            <span tone="inherit" uiCellSub>{{
+              holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 }
+            }}</span>
+          </ui-delta>
+        </div>
       }
     }
   </td>
 }
-<td numeric uiTd [class]="deltaTone(holding().dayChangeRatio)">
+<td numeric uiTd>
   @if (!booklet() && !holding().stale && !unknownDay()) {
-    {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+    <ui-delta
+      size="inherit"
+      weight="regular"
+      [unknownLabel]="'holdings.unknown' | transloco"
+      [value]="holding().dayChangeRatio"
+    >
+      {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+    </ui-delta>
   }
 </td>

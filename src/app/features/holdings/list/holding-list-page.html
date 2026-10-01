@@ -15,7 +15,6 @@
       <path d="m21 21-4.3-4.3" />
     </svg>
     <input
-      class="[&::-webkit-search-cancel-button]:appearance-none"
       data-testid="holdings-search"
       surface="card"
       type="search"
@@ -66,65 +65,62 @@
 
 <div class="mt-4 grid grid-cols-1 items-start gap-4" [class]="compact() ? 'lg:grid-cols-[1fr_400px]' : ''">
   <div class="min-w-0" [class.max-lg:hidden]="compact()">
-    <div
-      class="md:rounded-container md:bg-(--card) md:px-4 md:pt-2 md:pb-3 md:shadow-[inset_0_0_0_1px_var(--border)]"
-      data-testid="holdings-list"
-      [class]="
-        state() !== 'error'
-          ? ''
-          : 'max-md:rounded-container max-md:bg-(--card) max-md:shadow-[inset_0_0_0_1px_var(--border)]'
-      "
-    >
-      <ui-async
-        [errorMessage]="'holdings.errorMessage' | transloco"
-        [errorTitle]="'holdings.errorTitle' | transloco"
-        [retryLabel]="'holdings.retry' | transloco"
-        [state]="state()"
-        (retry)="holdings.reload()"
-      >
-        <div asyncLoading>
-          <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
-          <app-holding-list-skeleton />
-        </div>
-        <div class="flex flex-col gap-4 md:hidden">
-          @for (group of groups(); track group.accountId) {
-            <app-holding-account-card [group]="group" (editCash)="accountToEditCashFor.set($event)" />
-          }
-        </div>
+    <ui-card data-testid="holdings-list" padding="none" surface="lg">
+      <div class="lg:px-4 lg:pt-2 lg:pb-3">
+        <ui-async
+          align="auto"
+          variant="emphasis"
+          [card]="!desktop()"
+          [errorMessage]="'holdings.errorMessage' | transloco"
+          [errorTitle]="'holdings.errorTitle' | transloco"
+          [retryLabel]="'holdings.retry' | transloco"
+          [state]="state()"
+          (retry)="holdings.reload()"
+        >
+          <div asyncLoading>
+            <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
+            <app-holding-list-skeleton />
+          </div>
+          <div class="flex flex-col gap-4 lg:hidden">
+            @for (group of groups(); track group.accountId) {
+              <app-holding-account-card [group]="group" (editCash)="accountToEditCashFor.set($event)" />
+            }
+          </div>
 
-        <table class="max-md:hidden" row="60" uiTable [rule]="false">
-          <thead>
-            <tr>
-              <th primary uiTh>{{ 'holdings.columns.line' | transloco }}</th>
-              @if (!compact()) {
-                <th numeric secondary uiTh width="108px">{{ 'holdings.columns.quantity' | transloco }}</th>
-                <th numeric secondary uiTh width="116px">{{ 'holdings.columns.averageCost' | transloco }}</th>
-                <th numeric secondary uiTh width="128px">{{ 'holdings.columns.price' | transloco }}</th>
-              }
-              <th numeric uiTh width="140px">{{ 'holdings.columns.value' | transloco }}</th>
-              @if (!compact()) {
-                <th numeric uiTh width="152px">{{ 'holdings.columns.unrealized' | transloco }}</th>
-              }
-              <th numeric uiTh width="92px">{{ 'holdings.columns.day' | transloco }}</th>
-            </tr>
-          </thead>
-          @for (group of groups(); track group.accountId) {
-            <tbody
-              app-holding-account-group
-              [compact]="compact()"
-              [group]="group"
-              [selectedHoldingId]="selectedHoldingId()"
-              (editCash)="accountToEditCashFor.set($event)"
-              (enterQuote)="quoteTarget.set($event)"
-            ></tbody>
-          }
-        </table>
+          <table class="max-lg:hidden" row="60" uiTable [rule]="false">
+            <thead>
+              <tr>
+                <th primary uiTh>{{ 'holdings.columns.line' | transloco }}</th>
+                @if (!compact()) {
+                  <th numeric secondary uiTh width="108px">{{ 'holdings.columns.quantity' | transloco }}</th>
+                  <th numeric secondary uiTh width="116px">{{ 'holdings.columns.averageCost' | transloco }}</th>
+                  <th numeric secondary uiTh width="128px">{{ 'holdings.columns.price' | transloco }}</th>
+                }
+                <th numeric uiTh width="140px">{{ 'holdings.columns.value' | transloco }}</th>
+                @if (!compact()) {
+                  <th numeric uiTh width="152px">{{ 'holdings.columns.unrealized' | transloco }}</th>
+                }
+                <th numeric uiTh width="92px">{{ 'holdings.columns.day' | transloco }}</th>
+              </tr>
+            </thead>
+            @for (group of groups(); track group.accountId) {
+              <tbody
+                app-holding-account-group
+                [compact]="compact()"
+                [group]="group"
+                [selectedHoldingId]="selectedHoldingId()"
+                (editCash)="accountToEditCashFor.set($event)"
+                (enterQuote)="quoteTarget.set($event)"
+              ></tbody>
+            }
+          </table>
 
-        @if (groups().length === 0) {
-          <app-holding-list-empty [assetClass]="assetClass()" [search]="search()" />
-        }
-      </ui-async>
-    </div>
+          @if (groups().length === 0) {
+            <app-holding-list-empty [assetClass]="assetClass()" [search]="search()" />
+          }
+        </ui-async>
+      </div>
+    </ui-card>
   </div>
 
   <aside class="lg:sticky lg:top-6" [attr.aria-label]="'holdings.detail.panel' | transloco" [class.hidden]="!compact()">

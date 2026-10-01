@@ -20,41 +20,62 @@ const holding = {
 } as HoldingResponse;
 
 const renderFacts = (overrides: Record<string, unknown> = {}): ReturnType<typeof render> =>
-  render('<dl app-holding-detail-facts [holding]="holding" priceSourceLabel="Yahoo"></dl>', {
+  render('<app-holding-detail-facts [holding]="holding" priceSourceLabel="Yahoo" />', {
     componentProperties: { holding: { ...holding, ...overrides } },
     imports: [HoldingDetailFacts, getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
 
 describe('HoldingDetailFacts', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('rules the list with a hairline from the desktop breakpoint, and follows the viewport', async () => {
+    let listener: () => void = () => undefined;
+    const query = {
+      matches: true,
+      addEventListener: (_: string, callback: () => void) => (listener = callback),
+      removeEventListener: () => undefined,
+    };
+    vi.stubGlobal('matchMedia', () => query);
+    await renderFacts();
+    const list = (await screen.findByText('holdings.columns.quantity')).closest('dl')!;
+
+    expect(list.className).toContain('inset_0_1px_0');
+
+    query.matches = false;
+    listener();
+
+    await vi.waitFor(() => expect(list.className).not.toContain('inset_0_1px_0'));
+  });
+
   it('adds the time of the quote once the API gives the fetch instant', async () => {
     await renderFacts({ priceFetchedAt: '2026-09-25T15:35:00Z' });
 
-    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteAt');
+    expect(await screen.findByText(/holdings.detail.quoteAt/)).toBeInTheDocument();
   });
 
   it('gives the date only without a fetch instant, or for a fund', async () => {
     await renderFacts({ assetClass: 'FUND', priceFetchedAt: '2026-09-25T15:35:00Z' });
 
-    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteOn');
+    expect(await screen.findByText(/holdings.detail.quoteOn/)).toBeInTheDocument();
   });
 
   it('gives the date only when the quote day is not the fetch day in Paris', async () => {
     await renderFacts({ priceAsOf: '2026-09-24', priceFetchedAt: '2026-09-25T15:35:00Z' });
 
-    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteOn');
+    expect(await screen.findByText(/holdings.detail.quoteOn/)).toBeInTheDocument();
   });
 
   it('compares the days in Paris, not in UTC', async () => {
     await renderFacts({ priceAsOf: '2026-09-26', priceFetchedAt: '2026-09-25T22:30:00Z' });
 
-    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteAt');
+    expect(await screen.findByText(/holdings.detail.quoteAt/)).toBeInTheDocument();
   });
 
   it('gives the date only when the API sends no fetch instant', async () => {
     await renderFacts();
 
-    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteOn');
+    expect(await screen.findByText(/holdings.detail.quoteOn/)).toBeInTheDocument();
   });
 
   it('shows the quote in its own currency', async () => {
@@ -97,6 +118,6 @@ describe('HoldingDetailFacts', () => {
     await renderFacts({ priceAsOf: null, price: null });
     await screen.findByText('holdings.columns.price');
 
-    expect(screen.queryByTestId('quote-line')).not.toBeInTheDocument();
+    expect(screen.queryByText(/holdings.(detail.quote|staleLate)/)).not.toBeInTheDocument();
   });
 });

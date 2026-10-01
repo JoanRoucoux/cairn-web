@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 
-import { UiSkeleton } from '@joanroucoux/cairn-ui';
+import { UiCard, UiSkeleton } from '@joanroucoux/cairn-ui';
 
 @Component({
   selector: 'app-holding-list-skeleton',
-  imports: [UiSkeleton],
+  imports: [UiCard, UiSkeleton],
   templateUrl: './holding-list-skeleton.html',
   host: { 'data-testid': 'holdings-loading' },
 })
