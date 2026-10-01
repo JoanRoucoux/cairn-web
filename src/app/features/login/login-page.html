@@ -27,6 +27,7 @@
           <input
             autocapitalize="none"
             autocomplete="username"
+            autocorrect="off"
             class="h-12 lg:h-11"
             data-testid="login-username"
             enterkeyhint="next"
@@ -68,12 +69,15 @@
         </ui-field>
 
         <button
-          class="mt-1 lg:h-11!"
+          class="mt-1 lg:h-11"
           data-testid="login-submit"
           size="xxl"
           type="submit"
           ui-button
-          [loading]="form().submitting()"
+          [attr.aria-busy]="form().submitting() || null"
+          [attr.aria-disabled]="form().submitting() || null"
+          [class.opacity-70]="form().submitting()"
+          [class.pointer-events-none]="form().submitting()"
         >
           {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
         </button>
@@ -104,7 +108,7 @@
         }
 
         <button
-          class="lg:h-11!"
+          class="lg:h-11"
           data-testid="login-passkey"
           size="xxl"
           type="button"

@@ -67,6 +67,10 @@ export class LoginPage {
   protected async onSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
 
+    if (this.form().submitting()) {
+      return;
+    }
+
     if (!(await this.#store.signIn())) {
       return;
     }

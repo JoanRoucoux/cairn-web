@@ -277,6 +277,24 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-passkey-hint')).toHaveTextContent('login.passkeyWaitingHint');
   });
 
+  it('should dim the submit button without a spinner and send once while signing in', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await fillIn(user, 'a-real-password');
+
+    const submit = await screen.findByTestId('login-submit');
+    expect(submit).toHaveAttribute('aria-busy', 'true');
+    expect(submit).toHaveTextContent('login.submitting');
+    expect(submit.querySelector('.animate-spin')).toBeNull();
+
+    submit.closest('form')?.requestSubmit();
+
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'));
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
+  });
+
   it('should let the password form work once shown', async () => {
     const user = userEvent.setup();
     await renderPage();
