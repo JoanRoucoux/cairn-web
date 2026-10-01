@@ -1,10 +1,10 @@
 @if (portfolio.hasValue()) {
-  <p class="text-body mb-4 text-(--muted-foreground)">
+  <p class="text-label lg:text-body mb-4 px-1 text-(--muted-foreground) lg:px-0 lg:leading-[normal]">
     {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()" />
   </p>
 }
 
-<div class="grid gap-4 lg:grid-cols-[minmax(0,auto)_minmax(0,auto)] lg:items-stretch">
+<div class="grid gap-4 lg:grid-cols-[1fr_1fr] lg:items-stretch">
   <div
     class="rounded-container flex flex-col gap-1 bg-(--card) px-2 pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:gap-2 lg:px-4 lg:pb-3"
   >
@@ -17,9 +17,9 @@
       [state]="assetClassState()"
       (retry)="retry()"
     >
-      <div asyncLoading class="flex flex-col items-center gap-4 lg:flex-row lg:gap-8">
-        <ui-skeleton class="lg:hidden" shape="ring" [size]="232" />
-        <ui-skeleton class="max-lg:hidden" shape="ring" [size]="240" />
+      <div asyncLoading class="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
+        <ui-skeleton class="sm:hidden" shape="ring" [size]="232" />
+        <ui-skeleton class="max-sm:hidden" shape="ring" [size]="240" />
         <ng-container *ngTemplateOutlet="legendSkeleton; context: { $implicit: classSkeleton }" />
       </div>
       <span asyncEmpty class="text-label text-(--muted-foreground)">{{
@@ -48,9 +48,9 @@
       [state]="accountState()"
       (retry)="retry()"
     >
-      <div asyncLoading class="flex flex-col items-center gap-4 lg:flex-row lg:gap-8">
-        <ui-skeleton class="lg:hidden" shape="ring" [size]="232" />
-        <ui-skeleton class="max-lg:hidden" shape="ring" [size]="240" />
+      <div asyncLoading class="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
+        <ui-skeleton class="sm:hidden" shape="ring" [size]="232" />
+        <ui-skeleton class="max-sm:hidden" shape="ring" [size]="240" />
         <ng-container *ngTemplateOutlet="legendSkeleton; context: { $implicit: accountSkeleton }" />
       </div>
       <span asyncEmpty class="text-label text-(--muted-foreground)">{{

@@ -1,6 +1,6 @@
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiCard } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { chartFormats } from '@shared/chart/chart-formats';
@@ -15,7 +15,7 @@ import { PortfolioTotal } from './total/portfolio-total';
 
 @Component({
   selector: 'app-portfolio-page',
-  imports: [PortfolioCurve, PortfolioEmpty, PortfolioEnvelopes, PortfolioMovers, PortfolioTotal, TranslocoPipe],
+  imports: [UiCard, PortfolioCurve, PortfolioEmpty, PortfolioEnvelopes, PortfolioMovers, PortfolioTotal, TranslocoPipe],
   templateUrl: './portfolio-page.html',
   providers: [PortfolioStore],
 })

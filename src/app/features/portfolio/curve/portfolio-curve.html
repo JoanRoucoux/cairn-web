@@ -1,6 +1,6 @@
 @if (blocking()) {
   <ui-async
-    class="flex flex-1 flex-col [--inset-card:1rem] [&>[role=alert]]:min-h-63 [&>[role=alert]]:flex-1 [&>[role=alert]]:items-center [&>[role=alert]]:justify-center [&>[role=alert]]:text-center lg:[&>[role=alert]]:min-h-93"
+    class="flex flex-1 flex-col [&>[role=alert]]:min-h-63 [&>[role=alert]]:flex-1 [&>[role=alert]]:items-center [&>[role=alert]]:justify-center [&>[role=alert]]:text-center lg:[&>[role=alert]]:min-h-93"
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.curve.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
@@ -13,7 +13,7 @@
         <div class="w-55"><ui-skeleton [height]="20" /></div>
         <div class="w-75"><ui-skeleton [height]="36" /></div>
       </div>
-      <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-75" />
+      <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-75" shape="chart" />
       <div class="lg:hidden"><ui-skeleton [height]="44" /></div>
     </div>
   </ui-async>
@@ -48,7 +48,7 @@
 
     <div class="flex flex-col self-stretch [grid-area:chart]">
       <ui-async
-        class="flex flex-1 flex-col [--inset-card:1rem]"
+        class="flex flex-1 flex-col"
         [errorMessage]="'portfolio.error.message' | transloco"
         [errorTitle]="'portfolio.curve.error' | transloco"
         [retryLabel]="'portfolio.error.retry' | transloco"
@@ -56,7 +56,7 @@
         (retry)="retry.emit()"
       >
         <div asyncLoading class="flex flex-1 flex-col" data-testid="curve-loading">
-          <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-101" />
+          <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-101" shape="chart" />
         </div>
 
         <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>

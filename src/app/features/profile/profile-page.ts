@@ -3,7 +3,9 @@ import { RouterLink } from '@angular/router';
 
 import {
   type SegmentedOption,
+  UiAvatar,
   UiButton,
+  UiCard,
   UiRow,
   UiSegmented,
   UiSkeleton,
@@ -35,6 +37,8 @@ import { type PasskeyView, ProfileStore } from './profile-store';
 @Component({
   selector: 'app-profile-page',
   imports: [
+    UiAvatar,
+    UiCard,
     LucideBook,
     LucideChevronLeft,
     LucideChevronRight,

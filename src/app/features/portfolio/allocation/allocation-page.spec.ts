@@ -75,7 +75,9 @@ describe('AllocationPage', () => {
   it('should show the cash balances as the cash sub-label instead of a line count', async () => {
     await renderPage();
 
-    expect(await screen.findByText('portfolio.allocation.cashSubtitle')).toBeInTheDocument();
+    const cashSubtitle = await screen.findByText('portfolio.allocation.cashSubtitle');
+
+    expect(cashSubtitle.parentElement).toHaveTextContent('enums.assetClass.CASH');
     expect(screen.getByText('portfolio.allocation.lineCount')).toBeInTheDocument();
   });
 

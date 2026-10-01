@@ -13,12 +13,7 @@
   @switch (identityState()) {
     @case ('ready') {
       <div class="flex items-center gap-3.5 px-5 pt-1 lg:gap-4 lg:px-1 lg:pt-1" data-testid="identity">
-        <span
-          aria-hidden="true"
-          class="rounded-pill text-title grid size-14 flex-none place-items-center bg-(--muted) font-medium"
-        >
-          {{ owner().initials }}
-        </span>
+        <ui-avatar size="lg" [initials]="owner().initials" [label]="'profile.avatarLabel' | transloco" />
         <span class="flex min-w-0 flex-col">
           <h1 class="text-heading tracking-display font-semibold lg:hidden">{{ owner().displayName }}</h1>
           <span class="text-title font-semibold max-lg:hidden">{{ owner().displayName }}</span>
@@ -43,9 +38,7 @@
     }
   }
 
-  <div
-    class="rounded-container flex flex-col gap-3 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)]"
-  >
+  <ui-card class="flex flex-col gap-3">
     <h2 class="text-title font-semibold">{{ 'profile.appearance' | transloco }}</h2>
 
     <div class="flex flex-col gap-1.5">
@@ -91,23 +84,13 @@
         (change)="onHideAmountsChange($event)"
       />
     </div>
-  </div>
+  </ui-card>
 
-  <div
-    class="rounded-container flex flex-col gap-3 bg-(--card) p-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)]"
-  >
+  <ui-card class="flex flex-col gap-3 pb-2">
     <h2 class="text-title font-semibold">{{ 'profile.manageData.title' | transloco }}</h2>
 
-    <div class="-mt-1 flex flex-col">
-      <a
-        class="-mx-2 w-auto"
-        data-testid="export-csv"
-        download
-        href="/api/portfolio/export"
-        padding="sm"
-        size="xl"
-        ui-row
-      >
+    <div class="-mx-2 -mt-1 flex flex-col">
+      <a data-testid="export-csv" download href="/api/portfolio/export" padding="sm" size="xl" ui-row>
         <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
           <svg lucideDownload [size]="18" [strokeWidth]="1.75" />
         </span>
@@ -119,7 +102,6 @@
       </a>
 
       <button
-        class="-mx-2 w-auto"
         data-testid="import-csv"
         padding="sm"
         size="xl"
@@ -140,15 +122,7 @@
         <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
       </button>
 
-      <a
-        class="-mx-2 w-auto"
-        data-testid="import-template"
-        download
-        href="/api/portfolio/import/template"
-        padding="sm"
-        size="xl"
-        ui-row
-      >
+      <a data-testid="import-template" download href="/api/portfolio/import/template" padding="sm" size="xl" ui-row>
         <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
           <svg lucideFileText [size]="18" [strokeWidth]="1.75" />
         </span>
@@ -159,7 +133,7 @@
         <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
       </a>
 
-      <a class="-mx-2 w-auto" data-testid="manage-instruments" padding="sm" routerLink="/instruments" size="xl" ui-row>
+      <a data-testid="manage-instruments" padding="sm" routerLink="/instruments" size="xl" ui-row>
         <span class="rounded-control grid size-9 flex-none place-items-center bg-(--muted)">
           <svg lucideBook [size]="18" [strokeWidth]="1.75" />
         </span>
@@ -222,7 +196,7 @@
         </div>
       }
     </div>
-  </div>
+  </ui-card>
 
   <app-profile-passkey-list
     [passkeys]="passkeys()"

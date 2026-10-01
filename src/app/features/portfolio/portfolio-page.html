@@ -5,9 +5,7 @@
 } @else {
   <div class="flex flex-col gap-(--stack-section)">
     <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_360px]">
-      <div
-        class="rounded-container flex flex-col gap-5 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)] lg:gap-8"
-      >
+      <ui-card class="flex flex-col gap-5 lg:gap-8">
         <app-portfolio-total [portfolio]="portfolio()" [state]="totalState()" (retry)="retryTotal()" />
 
         <app-portfolio-curve
@@ -24,7 +22,7 @@
           (rangeChange)="setRange($event)"
           (retry)="retryCurve()"
         />
-      </div>
+      </ui-card>
 
       <div
         class="rounded-container bg-(--card) px-(--inset-card) pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:px-4 lg:pb-3"
