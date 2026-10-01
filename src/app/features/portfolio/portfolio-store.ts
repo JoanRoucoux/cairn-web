@@ -1,4 +1,4 @@
-import { Injectable, type Signal, computed, inject, signal } from '@angular/core';
+import { Injectable, type Signal, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { type AsyncState, type ChartPoint } from '@joanroucoux/cairn-ui';
@@ -95,6 +95,12 @@ export class PortfolioStore {
   });
 
   readonly rangeChange = computed(() => {
+    const dayTotal = this.range() === '1d' ? this.performanceValue()?.total : undefined;
+
+    if (dayTotal) {
+      return { eur: dayTotal.changeEur, ratio: dayTotal.changeRatio ?? null };
+    }
+
     const points = this.points();
 
     if (points.length < 2) {
@@ -125,6 +131,12 @@ export class PortfolioStore {
 
   readonly curveState = computed<AsyncState>(() => toAsyncState(this.history, (value) => value.points.length === 0));
 
+  readonly #curveShown = signal(false);
+
+  readonly curveBlocking = computed(
+    () => (this.curveState() === 'loading' || this.curveState() === 'error') && !this.#curveShown(),
+  );
+
   readonly envelopesState = computed<AsyncState>(() =>
     toAsyncState(this.performance, (value) => value.byEnvelope.length === 0),
   );
@@ -132,6 +144,18 @@ export class PortfolioStore {
   readonly moversState = computed<AsyncState>(() =>
     toAsyncState(this.holdings, (value) => !value.some((holding) => Boolean(holding.dayChangeRatio))),
   );
+
+  constructor() {
+    effect(() => {
+      const status = this.history.status();
+
+      if (isSettled(status)) {
+        this.#curveShown.set(true);
+      } else if (status === 'error') {
+        this.#curveShown.set(false);
+      }
+    });
+  }
 
   readonly allFailed = computed(
     () =>

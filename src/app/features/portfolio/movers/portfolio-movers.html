@@ -14,7 +14,7 @@
         <div class="flex items-center justify-between gap-4 py-2.5">
           <div class="flex flex-col gap-1.5">
             <div [style.width.px]="width"><ui-skeleton [height]="16" /></div>
-            <div class="w-22"><ui-skeleton [height]="12" /></div>
+            <div class="w-22.5"><ui-skeleton [height]="12" /></div>
           </div>
           <div class="flex flex-col items-end gap-1.5">
             <div class="w-25"><ui-skeleton [height]="16" /></div>
@@ -29,7 +29,7 @@
     <div class="-mx-2 flex flex-col lg:hidden" data-testid="movers-list">
       @for (mover of movers(); track mover.id) {
         <a
-          class="rounded-control flex min-h-15 items-center gap-2 px-2 py-1.5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
+          class="rounded-control flex min-h-18 items-center gap-2 px-2 py-1.5 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--ring) active:bg-(--soft)"
           [routerLink]="['/holdings', mover.id]"
         >
           <span class="flex min-w-0 flex-1 flex-col">
@@ -74,9 +74,9 @@
         <span class="text-right" role="columnheader">{{ 'portfolio.movers.columns.value' | transloco }}</span>
         <span class="text-right" role="columnheader">{{ 'portfolio.movers.columns.day' | transloco }}</span>
         <span class="text-right" role="columnheader">{{ 'portfolio.movers.columns.dayPercent' | transloco }}</span>
-        <span></span>
+        <span role="columnheader"></span>
       </div>
-      <div class="h-1"></div>
+      <div class="h-1" role="presentation"></div>
       @for (mover of movers(); track mover.id) {
         <div
           class="text-body rounded-control relative grid min-h-12 grid-cols-[minmax(0,1fr)_200px_150px_130px_100px_16px] items-center gap-4 px-2 tabular-nums hover:bg-(--glow) active:bg-(--soft) has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-(--ring)"

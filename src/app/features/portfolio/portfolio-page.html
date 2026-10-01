@@ -4,13 +4,15 @@
   <p class="text-(--negative)" role="alert">{{ 'portfolio.pageError' | transloco }}</p>
 } @else {
   <div class="flex flex-col gap-(--stack-section)">
-    <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_344px]">
+    <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_360px]">
       <div
         class="rounded-container flex flex-col gap-5 bg-(--card) p-(--inset-card) shadow-[inset_0_0_0_1px_var(--border)] lg:gap-8"
       >
         <app-portfolio-total [portfolio]="portfolio()" [state]="totalState()" (retry)="retryTotal()" />
 
         <app-portfolio-curve
+          class="flex min-h-0 flex-1 flex-col"
+          [blocking]="curveBlocking()"
           [formats]="chartFormats()"
           [points]="points()"
           [range]="range()"

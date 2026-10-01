@@ -18,6 +18,7 @@ const points: ChartPoint[] = [
 const renderCurve = (
   overrides: Partial<{
     state: AsyncState;
+    blocking: boolean;
     points: ChartPoint[];
     range: ChartRange;
     rangeChangeEur: number | undefined;
@@ -66,6 +67,34 @@ describe('PortfolioCurve', () => {
     await renderCurve({ range: '7d' });
 
     expect(await screen.findByText('portfolio.curve.period.7d')).toBeInTheDocument();
+  });
+
+  it('should replace the whole block with a skeleton on a blocking load, segmented control included', async () => {
+    await renderCurve({ state: 'loading', blocking: true });
+
+    expect(await screen.findByTestId('curve-loading')).toBeInTheDocument();
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
+  });
+
+  it('should show only the error card on a blocking error, with a working retry', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderCurve({ state: 'error', blocking: true });
+    const retried = vi.fn();
+    fixture.componentInstance.retry.subscribe(retried);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('portfolio.curve.error');
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
+
+    expect(retried).toHaveBeenCalledOnce();
+  });
+
+  it('should keep the segmented control while a range change reloads data already shown', async () => {
+    await renderCurve({ state: 'loading', blocking: false });
+
+    expect(await screen.findAllByRole('radio')).toHaveLength(6);
+    expect(screen.getByTestId('curve-range-loading')).toBeInTheDocument();
   });
 
   it('should replace the range change line with a skeleton while loading, and drop it on error', async () => {

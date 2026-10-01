@@ -28,6 +28,7 @@ export class PortfolioPage {
   protected readonly curveState = this.#store.curveState;
   protected readonly envelopesState = this.#store.envelopesState;
   protected readonly moversState = this.#store.moversState;
+  protected readonly curveBlocking = this.#store.curveBlocking;
   protected readonly allFailed = this.#store.allFailed;
 
   protected readonly portfolio = this.#store.portfolioValue;
