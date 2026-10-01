@@ -58,13 +58,13 @@
         />
       }
     </div>
-  </form>
 
-  @if (error()) {
-    <ui-alert data-testid="holding-add-error">
-      {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
-    </ui-alert>
-  }
+    @if (error()) {
+      <ui-alert data-testid="holding-add-error">
+        {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
+      </ui-alert>
+    }
+  </form>
 
   <button
     class="max-lg:hidden"
