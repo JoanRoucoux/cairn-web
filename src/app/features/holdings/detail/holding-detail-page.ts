@@ -19,13 +19,14 @@ import {
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucideTrash2, LucideX } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideTrash, LucideX } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
+import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 import { HoldingDetailBar } from './bar/holding-detail-bar';
@@ -38,6 +39,7 @@ import { HoldingDetailStore } from './holding-detail-store';
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
+    AmountSeparator,
     FocusOnInit,
     HoldingDetailBar,
     HoldingDetailDescription,
@@ -46,7 +48,7 @@ import { HoldingDetailStore } from './holding-detail-store';
     HoldingDetailFigures,
     LucideEllipsis,
     LucidePencil,
-    LucideTrash2,
+    LucideTrash,
     LucideX,
     RatioPipe,
     RouterLink,

@@ -14,7 +14,7 @@ export type AccountDraftSource = { name: string; type: AccountType; institution:
 
 export const initialAccountDraft = (account?: AccountDraftSource): AccountDraft => ({
   name: account?.name ?? '',
-  type: account?.type ?? '',
+  type: account?.type ?? 'PEA',
   institution: account?.institution ?? '',
 });
 

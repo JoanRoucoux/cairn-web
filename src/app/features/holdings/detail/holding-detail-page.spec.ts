@@ -163,6 +163,7 @@ describe('HoldingDetailPage', () => {
     httpTesting.expectOne('/api/holdings').flush('boom', { status: 500, statusText: 'Server error' });
 
     expect(await screen.findByRole('alert')).toHaveTextContent('holdings.error');
+    expect(screen.getByTestId('holding-detail-back')).toHaveAttribute('href', '/holdings');
   });
 
   it('should tell the user when the holding does not exist', async () => {
@@ -387,7 +388,7 @@ describe('HoldingDetailPage', () => {
     await renderPage();
 
     expect(await screen.findByTestId('holding-edit')).toContainElement(document.querySelector('svg.lucide-pencil'));
-    expect(screen.getByTestId('holding-delete')).toContainElement(document.querySelector('svg.lucide-trash-2'));
+    expect(screen.getByTestId('holding-delete')).toContainElement(document.querySelector('svg.lucide-trash'));
   });
 
   it('links the back link to the holdings list', async () => {

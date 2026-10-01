@@ -61,7 +61,7 @@
     "title": "Edit this holding",
     "quantity": "Quantity",
     "averageCost": "Average cost",
-    "averageCostHint": "Leave empty if you do not know it - Cairn will show a dash rather than a zero.",
+    "averageCostHint": "Leave empty if you do not know it: Cairn will show a dash rather than a zero.",
     "cancel": "Cancel",
     "submit": "Save",
     "error": "That holding was refused. Check the quantity."

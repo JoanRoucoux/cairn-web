@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { type ActivatedRoute, provideRouter } from '@angular/router';
+import { type ActivatedRoute, Router, provideRouter } from '@angular/router';
 
 import { render, screen } from '@testing-library/angular';
 
@@ -84,6 +84,21 @@ describe('AppShell', () => {
     await settleSession();
 
     expect(screen.getByRole('link', { name: 'pageTitle.profile' })).toHaveAttribute('href', '/profile');
+  });
+
+  it('should mark the avatar link as the current page on the profile route only', async () => {
+    await renderShell([
+      { path: '', component: StubPage },
+      { path: 'profile', component: StubPage },
+    ]);
+    await settleSession();
+    const avatar = screen.getByRole('link', { name: 'pageTitle.profile' });
+
+    expect(avatar).not.toHaveAttribute('aria-current');
+
+    await TestBed.inject(Router).navigateByUrl('/profile');
+
+    await vi.waitFor(() => expect(avatar).toHaveAttribute('aria-current', 'page'));
   });
 
   it('should show the signed-in owner initials on the avatar once the session answers', async () => {
