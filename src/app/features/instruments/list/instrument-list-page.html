@@ -37,7 +37,7 @@
     @if (state() === 'loading') {
       <span class="block w-24 max-lg:hidden"><ui-skeleton [height]="14" /></span>
     } @else if (state() === 'ready' || state() === 'empty') {
-      <span class="text-label whitespace-nowrap text-(--muted-foreground)">{{ countLabel() }}</span>
+      <span class="text-label whitespace-nowrap text-(--muted-foreground) max-lg:hidden">{{ countLabel() }}</span>
     }
     <a
       aria-label="{{ 'instruments.add' | transloco }}"

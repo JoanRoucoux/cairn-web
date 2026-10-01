@@ -27,11 +27,14 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 import { AccountListStore, type AccountView } from './account-list-store';
 import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
 import { AccountFormDialog, type AccountFormTarget } from './form-dialog/account-form-dialog';
+import { linesLabel } from './lines-label';
+import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
 
 @Component({
   selector: 'app-account-list-page',
   imports: [
     AccountDeleteDialog,
+    AccountMobileRows,
     AccountFormDialog,
     LucideEllipsis,
     LucidePencil,
@@ -64,6 +67,7 @@ export class AccountListPage {
 
   protected readonly accounts = this.#store.accounts;
   protected readonly totalEur = this.#store.totalEur;
+  protected readonly linesLabel = linesLabel;
   protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
   protected readonly cardPadding = computed(
@@ -74,14 +78,6 @@ export class AccountListPage {
   protected readonly formOpen = signal(false);
   protected readonly accountToEdit = signal<AccountFormTarget | undefined>(undefined);
   protected readonly accountToDelete = signal<AccountView | undefined>(undefined);
-
-  protected linesLabel(account: AccountView): string {
-    if (account.lineCount === 0) {
-      return 'accounts.noLine';
-    }
-
-    return pluralKey(account.type === 'SAVINGS' ? 'accounts.bookletCount' : 'accounts.lineCount', account.lineCount);
-  }
 
   protected onAdd(): void {
     this.accountToEdit.set(undefined);
