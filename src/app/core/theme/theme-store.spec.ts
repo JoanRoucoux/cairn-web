@@ -60,4 +60,40 @@ describe('ThemeStore', () => {
 
     expect(root.hasAttribute('data-theme')).toBe(false);
   });
+
+  describe('device scheme', () => {
+    let listener: ((event: { matches: boolean }) => void) | undefined;
+
+    const withDevice = (dark: boolean): ThemeStore => {
+      const defaultView = {
+        matchMedia: () => ({
+          matches: dark,
+          addEventListener: (_: string, callback: typeof listener) => (listener = callback),
+        }),
+      };
+      root = document.createElement('html');
+      localStorage.clear();
+      TestBed.configureTestingModule({
+        providers: [{ provide: DOCUMENT, useValue: { documentElement: root, defaultView } }],
+      });
+
+      return TestBed.inject(ThemeStore);
+    };
+
+    it('should read the device scheme', () => {
+      expect(withDevice(true).systemScheme()).toBe('dark');
+    });
+
+    it('should follow the device when it switches', () => {
+      const store = withDevice(false);
+
+      listener?.({ matches: true });
+
+      expect(store.systemScheme()).toBe('dark');
+    });
+
+    it('should assume light where the browser cannot tell', () => {
+      expect(configure(null).systemScheme()).toBe('light');
+    });
+  });
 });
