@@ -119,46 +119,6 @@ describe('HoldingDetailStore', () => {
     expect(store.rangeChange()).toEqual({ amount: 10, ratio: 0.1 });
   });
 
-  it('should plot the euro value of a line priced in another currency', async () => {
-    configure('h3');
-    TestBed.tick();
-    httpTesting
-      .expectOne('/api/holdings')
-      .flush([{ id: 'h3', instrumentId: 'i3', quantity: 10, price: 100, priceCurrency: 'USD', marketValueEur: 900 }]);
-    await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i3').forEach((request) => request.flush({}));
-    await settle();
-    httpTesting
-      .match((request) => request.url.includes('/quotes'))
-      .forEach((request) =>
-        request.flush([
-          { asOf: '2026-08-21', price: 90 },
-          { asOf: '2026-09-21', price: 100 },
-        ]),
-      );
-    await settle();
-
-    expect(store.points().map((point) => point.v)).toEqual([810, 900]);
-    expect(store.rangeChange()).toEqual({ amount: 90, ratio: 90 / 810 });
-  });
-
-  it('should keep the native value when the euro value is unknown', async () => {
-    configure('h3');
-    TestBed.tick();
-    httpTesting
-      .expectOne('/api/holdings')
-      .flush([{ id: 'h3', instrumentId: 'i3', quantity: 10, price: 100, priceCurrency: 'USD', marketValueEur: null }]);
-    await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i3').forEach((request) => request.flush({}));
-    await settle();
-    httpTesting
-      .match((request) => request.url.includes('/quotes'))
-      .forEach((request) => request.flush([{ asOf: '2026-08-21', price: 90 }]));
-    await settle();
-
-    expect(store.points().map((point) => point.v)).toEqual([900]);
-  });
-
   it('should leave the ratio unknown when the range starts at a zero value', async () => {
     configure('h1');
     TestBed.tick();

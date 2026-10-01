@@ -54,22 +54,10 @@ export class HoldingDetailStore {
     defaultValue: [],
   });
 
-  readonly #eurPerUnit = computed(() => {
-    const holding = this.holding();
-    const native = (holding?.price ?? 0) * (holding?.quantity ?? 0);
-
-    if (!holding || holding.priceCurrency === 'EUR' || !holding.priceCurrency || native === 0) {
-      return 1;
-    }
-
-    return (holding.marketValueEur ?? native) / native;
-  });
-
   readonly points = computed<ChartPoint[]>(() => {
     const quantity = this.holding()?.quantity ?? 0;
-    const rate = this.#eurPerUnit();
 
-    return this.quotes.value().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity * rate }));
+    return this.quotes.value().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
   });
 
   readonly rangeChange = computed(() => {

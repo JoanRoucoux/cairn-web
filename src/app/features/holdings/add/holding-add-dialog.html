@@ -11,7 +11,7 @@
     <select data-testid="holding-add-account" uiSelect [value]="accountId()" (change)="onAccountChange($event)">
       <option value="">{{ 'holdings.add.chooseAccount' | transloco }}</option>
       @for (account of accounts.value(); track account.id) {
-        <option [selected]="account.id === accountId()" [value]="account.id">{{ account.name }}</option>
+        <option [value]="account.id">{{ account.name }}</option>
       }
     </select>
   </ui-field>

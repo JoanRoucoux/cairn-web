@@ -39,6 +39,18 @@ describe('HoldingDetailFacts', () => {
     expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteOn');
   });
 
+  it('gives the date only when the quote day is not the fetch day in Paris', async () => {
+    await renderFacts({ priceAsOf: '2026-09-24', priceFetchedAt: '2026-09-25T15:35:00Z' });
+
+    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteOn');
+  });
+
+  it('compares the days in Paris, not in UTC', async () => {
+    await renderFacts({ priceAsOf: '2026-09-26', priceFetchedAt: '2026-09-25T22:30:00Z' });
+
+    expect(await screen.findByTestId('quote-line')).toHaveTextContent('holdings.detail.quoteAt');
+  });
+
   it('gives the date only when the API sends no fetch instant', async () => {
     await renderFacts();
 

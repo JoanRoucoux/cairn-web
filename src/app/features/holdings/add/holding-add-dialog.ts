@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, inject, output, signal } from '@angular/core';
 
 import { UiButton, UiDialog, UiField, UiSelect } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -24,7 +24,6 @@ import { HoldingAddSearch } from './search/holding-add-search';
 export class HoldingAddDialog {
   #store = inject(HoldingAddDialogStore);
 
-  readonly presetAccountId = input<string>();
   readonly saved = output<void>();
   readonly dismissed = output<void>();
 
@@ -53,14 +52,6 @@ export class HoldingAddDialog {
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
-    effect(() => {
-      const preset = this.presetAccountId();
-
-      if (preset) {
-        this.accountId.set(preset);
-      }
-    });
-
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();

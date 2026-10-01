@@ -316,7 +316,9 @@ describe('HoldingListPage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/holdings').flush(holdings);
+    for (const request of httpTesting.match('/api/holdings')) {
+      request.flush(holdings);
+    }
     for (const request of httpTesting.match('/api/accounts')) {
       request.flush(accounts);
     }

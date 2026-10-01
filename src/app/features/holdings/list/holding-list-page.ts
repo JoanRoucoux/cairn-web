@@ -71,8 +71,8 @@ export class HoldingListPage {
 
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
-  protected readonly presetAccountId = signal<string | undefined>(undefined);
-  protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
+  protected readonly presetAccountId = signal<string | null>(null);
+  protected readonly accountToEditCashFor = signal<string | null>(null);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
   );
@@ -139,13 +139,13 @@ export class HoldingListPage {
 
   protected onAddSaved(): void {
     this.addOpen.set(false);
-    this.presetAccountId.set(undefined);
+    this.presetAccountId.set(null);
     this.holdings.reload();
   }
 
   protected onAddDismissed(): void {
     this.addOpen.set(false);
-    this.presetAccountId.set(undefined);
+    this.presetAccountId.set(null);
   }
 
   protected onQuoteSaved(): void {

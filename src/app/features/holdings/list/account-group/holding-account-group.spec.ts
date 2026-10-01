@@ -111,6 +111,20 @@ describe('HoldingAccountGroup', () => {
     expect(cells[3]).toHaveTextContent(/^\s*289\.11\s*$/);
   });
 
+  it('should name the currency of a quote that is not in euros', async () => {
+    await renderGroup({ holdings: [{ ...holding, priceCurrency: 'USD', stale: false } as never] });
+    const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
+
+    expect(cells[3]).toHaveTextContent('US$289.11');
+  });
+
+  it('should name the currency of a quote that is not in euros', async () => {
+    await renderGroup({ holdings: [{ ...holding, priceCurrency: 'USD', stale: false } as never] });
+    const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
+
+    expect(cells[3]).toHaveTextContent('US$289.11');
+  });
+
   it('should show the stale date under the quote', async () => {
     await renderGroup();
 

@@ -8,6 +8,8 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+const PARIS_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
+
 @Component({
   selector: 'dl[app-holding-detail-facts]',
   imports: [ShortDatePipe, TranslocoPipe, UiAmount],
@@ -28,9 +30,15 @@ export class HoldingDetailFacts {
   protected readonly crypto = computed(() => this.holding().assetClass === 'CRYPTO');
 
   protected readonly quoteTime = computed(() => {
-    const { assetClass, priceFetchedAt, stale } = this.holding();
+    const { assetClass, priceAsOf, priceFetchedAt, stale } = this.holding();
 
     if (stale || assetClass === 'FUND' || !priceFetchedAt) {
+      return null;
+    }
+
+    const fetched = new Date(priceFetchedAt);
+
+    if (PARIS_DAY.format(fetched) !== priceAsOf) {
       return null;
     }
 
@@ -38,6 +46,6 @@ export class HoldingDetailFacts {
       hour: '2-digit',
       minute: '2-digit',
       timeZone: 'Europe/Paris',
-    }).format(new Date(priceFetchedAt));
+    }).format(fetched);
   });
 }

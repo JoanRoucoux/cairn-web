@@ -20,5 +20,10 @@ export class HoldingQuoteCell {
 
   readonly enterQuote = output<HoldingResponse>();
 
+  protected readonly foreignCurrency = computed(() => {
+    const currency = this.holding().priceCurrency;
+
+    return currency && currency !== 'EUR' ? currency : undefined;
+  });
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
 }

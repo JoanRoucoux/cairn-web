@@ -24,7 +24,6 @@ import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
-import { deltaTone } from '../delta-tone';
 import { HoldingDetailBar } from './bar/holding-detail-bar';
 import { HoldingDetailDescription } from './description/holding-detail-description';
 import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
@@ -70,7 +69,6 @@ export class HoldingDetailPage {
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
 
-  protected readonly deltaTone = deltaTone;
   protected readonly menu = viewChild.required<UiMenu>('menu');
 
   protected readonly holding = this.#store.holding;

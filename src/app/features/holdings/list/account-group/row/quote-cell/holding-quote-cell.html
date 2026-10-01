@@ -1,7 +1,7 @@
 @if (unpriced()) {
   <app-holding-enter-quote (entered)="enterQuote.emit(holding())" />
 } @else {
-  <ui-amount [value]="holding().price" />
+  <ui-amount [currency]="foreignCurrency()" [value]="holding().price" />
 }
 @if (holding().stale) {
   <span tone="stale" uiCellSub>{{ 'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate } }}</span>
