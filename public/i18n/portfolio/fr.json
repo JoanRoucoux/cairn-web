@@ -1,6 +1,5 @@
 {
   "unknown": "Non disponible",
-  "loading": "Chargement de votre patrimoine",
   "pageError": "Votre patrimoine n'a pas pu être chargé.",
   "error": {
     "message": "Le serveur n'a pas répondu.",

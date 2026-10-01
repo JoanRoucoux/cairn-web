@@ -57,8 +57,6 @@ const group = {
   showCash: true,
   lineCount: 1,
   bookletCount: 0,
-  unvaluedCount: 0,
-  stale: true,
   holdings: [holding],
 } as unknown as AccountGroup;
 

@@ -1,8 +1,6 @@
 {
-  "name": "Name",
   "type": "Envelope",
   "institution": "Institution",
-  "choose": "Choose an envelope",
   "add": "New account",
   "empty": "No account yet.",
   "errorTitle": "Accounts could not be loaded",

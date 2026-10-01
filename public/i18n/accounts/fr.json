@@ -1,8 +1,6 @@
 {
-  "name": "Nom",
   "type": "Enveloppe",
   "institution": "Établissement",
-  "choose": "Choisir une enveloppe",
   "add": "Nouveau compte",
   "empty": "Aucun compte pour le moment.",
   "errorTitle": "Les comptes n'ont pas pu être chargés",

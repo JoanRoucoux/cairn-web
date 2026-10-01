@@ -18,8 +18,6 @@ export type AccountGroup = {
   showCash: boolean;
   lineCount: number;
   bookletCount: number;
-  unvaluedCount: number;
-  stale: boolean;
   holdings: HoldingResponse[];
   filtered: { accountValueEur: number; rowCount: number } | null;
 };
@@ -116,8 +114,6 @@ export class HoldingListStore {
       showCash: accountType !== 'SAVINGS' || cashByAccount.has(accountId),
       lineCount: 0,
       bookletCount: 0,
-      unvaluedCount: 0,
-      stale: false,
       holdings: [],
       filtered: null,
     });
@@ -126,11 +122,7 @@ export class HoldingListStore {
       const group =
         byAccount.get(holding.accountId) ?? newGroup(holding.accountId, holding.accountName, holding.accountType);
 
-      if (holding.marketValueEur === null || holding.marketValueEur === undefined) {
-        group.unvaluedCount += 1;
-      } else {
-        group.valueEur += holding.marketValueEur;
-      }
+      group.valueEur += holding.marketValueEur ?? 0;
 
       if (isBooklet(holding)) {
         group.bookletCount += 1;
@@ -138,7 +130,6 @@ export class HoldingListStore {
         group.lineCount += 1;
       }
 
-      group.stale = group.stale || holding.stale;
       group.holdings.push(holding);
       byAccount.set(holding.accountId, group);
     }

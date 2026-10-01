@@ -1,8 +1,6 @@
 {
-  "title": "Holdings",
   "averageCost": "Average cost",
   "unknown": "Not available",
-  "staleQuote": "Stale quote",
   "staleShort": "Price as of {{date}}",
   "noQuote": "No quote",
   "staleLate": "Price as of {{date}}, late",
@@ -46,11 +44,9 @@
     "price": "Price",
     "value": "Value",
     "unrealized": "Unrealized gain",
-    "day": "Today",
-    "actions": "Actions"
+    "day": "Today"
   },
   "addLine": "Add a holding",
-  "addLineShort": "Add a holding",
   "manualQuote": {
     "open": "Enter a price",
     "title": "Price for {{name}}",
@@ -102,8 +98,6 @@
     },
     "panel": "Holding detail"
   },
-  "unvaluedCount_one": "{{count}} unvalued",
-  "unvaluedCount_other": "{{count}} unvalued",
   "noQuoteYet": "No quote yet for this instrument.",
   "cash": {
     "line": "Cash",
@@ -166,9 +160,7 @@
     "price": "price"
   },
   "add": {
-    "open": "Add a holding",
     "title": "Add a holding",
-    "close": "Close",
     "account": "Account",
     "title2": "Instrument",
     "titlePlaceholder": "Name or ISIN",

@@ -1,8 +1,6 @@
 {
-  "title": "Lignes",
   "averageCost": "PRU",
   "unknown": "Non disponible",
-  "staleQuote": "Cours obsolète",
   "staleShort": "Cours du {{date}}",
   "noQuote": "Aucun cours",
   "staleLate": "Cours du {{date}}, en retard",
@@ -46,11 +44,9 @@
     "price": "Cours",
     "value": "Valeur",
     "unrealized": "Plus-value latente",
-    "day": "Jour",
-    "actions": "Actions"
+    "day": "Jour"
   },
   "addLine": "Ajouter une ligne",
-  "addLineShort": "Ajouter une ligne",
   "manualQuote": {
     "open": "Saisir un cours",
     "title": "Cours de {{name}}",
@@ -102,8 +98,6 @@
     },
     "panel": "Détail de la ligne"
   },
-  "unvaluedCount_one": "{{count}} non valorisée",
-  "unvaluedCount_other": "{{count}} non valorisées",
   "noQuoteYet": "Aucune cotation pour cet instrument.",
   "cash": {
     "line": "Liquidités",
@@ -166,9 +160,7 @@
     "price": "cours"
   },
   "add": {
-    "open": "Ajouter une ligne",
     "title": "Ajouter une ligne",
-    "close": "Fermer",
     "account": "Compte",
     "title2": "Titre",
     "titlePlaceholder": "Nom ou ISIN",

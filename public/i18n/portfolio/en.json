@@ -1,6 +1,5 @@
 {
   "unknown": "Not available",
-  "loading": "Loading your portfolio",
   "pageError": "Your portfolio could not be loaded.",
   "error": {
     "message": "The server did not answer.",

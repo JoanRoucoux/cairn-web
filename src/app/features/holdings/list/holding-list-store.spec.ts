@@ -255,12 +255,11 @@ describe('HoldingListStore', () => {
     expect(store.groups()[0]!.lineCount).toBe(0);
   });
 
-  it('should count unvalued lines per account without folding them into the subtotal', async () => {
+  it('should leave unvalued lines out of the account subtotal', async () => {
     await load();
 
     const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
 
-    expect(saxo?.unvaluedCount).toBe(1);
     expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
   });
 
