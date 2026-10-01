@@ -91,6 +91,7 @@
     "description": "Cet appareil ne pourra plus se connecter à Cairn avec cette clé. Les autres clés restent valables.",
     "cancel": "Annuler",
     "submit": "Supprimer la clé",
-    "refused": "C'est votre seule clé d'accès. Ajoutez un autre appareil avant de la supprimer."
+    "refused": "C'est votre seule clé d'accès. Ajoutez un autre appareil avant de la supprimer.",
+    "error": "La clé n'a pas pu être supprimée."
   }
 }

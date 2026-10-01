@@ -183,6 +183,7 @@ describe('ProfilePage', () => {
     httpTesting.expectNone('/api/session');
 
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-delete-dialog')).not.toBeInTheDocument());
+    await vi.waitFor(() => expect(screen.getByTestId('manage-passkeys')).toHaveFocus());
   });
 
   it('should offer the three theme preferences', async () => {

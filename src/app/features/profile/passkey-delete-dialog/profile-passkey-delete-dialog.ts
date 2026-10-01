@@ -1,6 +1,6 @@
 import { Component, Injector, afterNextRender, inject, input, output, signal } from '@angular/core';
 
-import { UiButton, UiDialog } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { PasskeyView } from '../profile-store';
@@ -8,7 +8,7 @@ import { ProfilePasskeyDeleteStore } from './profile-passkey-delete-store';
 
 @Component({
   selector: 'app-profile-passkey-delete-dialog',
-  imports: [TranslocoPipe, UiButton, UiDialog],
+  imports: [TranslocoPipe, UiAlert, UiButton, UiDialog],
   templateUrl: './profile-passkey-delete-dialog.html',
   providers: [ProfilePasskeyDeleteStore],
 })
@@ -23,6 +23,7 @@ export class ProfilePasskeyDeleteDialog {
   protected readonly open = signal(true);
   protected readonly deleting = this.#store.deleting;
   protected readonly refused = this.#store.refused;
+  protected readonly failed = this.#store.failed;
 
   protected cancel(): void {
     this.open.set(false);

@@ -91,6 +91,7 @@
     "description": "This device will no longer be able to sign in to Cairn with this key. Your other keys remain valid.",
     "cancel": "Cancel",
     "submit": "Delete the key",
-    "refused": "This is your only passkey. Add another device before deleting it."
+    "refused": "This is your only passkey. Add another device before deleting it.",
+    "error": "The key could not be deleted."
   }
 }

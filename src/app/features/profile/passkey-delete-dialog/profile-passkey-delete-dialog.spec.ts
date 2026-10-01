@@ -97,4 +97,18 @@ describe('ProfilePasskeyDeleteDialog', () => {
     expect(await screen.findByTestId('passkey-delete-refused')).toBeInTheDocument();
     expect(deleted).not.toHaveBeenCalled();
   });
+
+  it('should say the key could not be deleted when the failure is not the only-key refusal', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('passkey-delete-confirm'));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null, {
+      status: 500,
+      statusText: 'Server Error',
+    });
+
+    expect(await screen.findByTestId('passkey-delete-failed')).toBeInTheDocument();
+    expect(screen.queryByTestId('passkey-delete-refused')).not.toBeInTheDocument();
+  });
 });

@@ -9,9 +9,10 @@
   <p class="text-body text-(--muted-foreground)">{{ 'profile.delete.description' | transloco }}</p>
 
   @if (refused()) {
-    <p class="text-label text-(--negative)" data-testid="passkey-delete-refused" role="alert">
-      {{ 'profile.delete.refused' | transloco }}
-    </p>
+    <ui-alert data-testid="passkey-delete-refused">{{ 'profile.delete.refused' | transloco }}</ui-alert>
+  }
+  @if (failed()) {
+    <ui-alert data-testid="passkey-delete-failed">{{ 'profile.delete.error' | transloco }}</ui-alert>
   }
 
   <button

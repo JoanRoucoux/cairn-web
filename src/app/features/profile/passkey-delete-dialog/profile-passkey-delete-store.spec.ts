@@ -35,6 +35,23 @@ describe('ProfilePasskeyDeleteStore', () => {
     expect(store.refused()).toBe(false);
   });
 
+  it('should report a generic failure apart from the only-key refusal', async () => {
+    const failed = store.remove('bWFj');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null, {
+      status: 500,
+      statusText: 'Server Error',
+    });
+
+    await expect(failed).resolves.toBe(false);
+    expect(store.failed()).toBe(true);
+    expect(store.refused()).toBe(false);
+
+    const accepted = store.remove('bWFj');
+    expect(store.failed()).toBe(false);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
+    await accepted;
+  });
+
   it('should report a refusal and clear it on the next attempt', async () => {
     const refused = store.remove('aXBob25l');
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/aXBob25l'))).flush(null, {

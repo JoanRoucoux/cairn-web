@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
@@ -65,6 +65,8 @@ import { type PasskeyView, ProfileStore } from './profile-store';
 })
 export class ProfilePage {
   #store = inject(ProfileStore);
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly #injector = inject(Injector);
   #signIn = inject(SignInRedirect);
 
   protected readonly identityState = this.#store.identityState;
@@ -133,6 +135,10 @@ export class ProfilePage {
   protected onPasskeyDeleted(): void {
     this.passkeyToDelete.set(undefined);
     this.#store.reloadPasskeys();
+    afterNextRender(
+      () => this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="manage-passkeys"]')?.focus(),
+      { injector: this.#injector },
+    );
   }
 
   protected retryPasskeys(): void {

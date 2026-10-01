@@ -1,7 +1,7 @@
 import { Component, ElementRef, afterRenderEffect, inject, output, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { focusInitial } from '@shared/dialog/focus-initial';
@@ -10,7 +10,7 @@ import { ProfilePasskeyDialogStore } from './profile-passkey-dialog-store';
 
 @Component({
   selector: 'app-profile-passkey-dialog',
-  imports: [FormField, TranslocoPipe, UiButton, UiDialog, UiField, UiInput],
+  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './profile-passkey-dialog.html',
   providers: [ProfilePasskeyDialogStore],
 })

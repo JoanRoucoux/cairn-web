@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 
 import { firstValueFrom } from 'rxjs';
@@ -10,17 +11,23 @@ export class ProfilePasskeyDeleteStore {
 
   readonly deleting = signal(false);
   readonly refused = signal(false);
+  readonly failed = signal(false);
 
   async remove(credentialId: string): Promise<boolean> {
     this.deleting.set(true);
     this.refused.set(false);
+    this.failed.set(false);
 
     try {
       await firstValueFrom(this.#sessionApiClient.revokePasskey(credentialId));
 
       return true;
-    } catch {
-      this.refused.set(true);
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 409) {
+        this.refused.set(true);
+      } else {
+        this.failed.set(true);
+      }
 
       return false;
     } finally {
