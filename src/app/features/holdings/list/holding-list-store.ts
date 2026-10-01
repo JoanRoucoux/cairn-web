@@ -53,8 +53,10 @@ export class HoldingListStore {
     defaultValue: [],
   });
 
+  readonly #accountList = computed(() => (this.accounts.hasValue() ? this.accounts.value() : []));
+
   readonly #institutionByAccount = computed(
-    () => new Map(this.accounts.value().map((account) => [account.id, account.institution])),
+    () => new Map(this.#accountList().map((account) => [account.id, account.institution])),
   );
 
   readonly #allHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
@@ -140,7 +142,7 @@ export class HoldingListStore {
       }
     }
 
-    const order = new Map(this.accounts.value().map((account, index) => [account.id, index]));
+    const order = new Map(this.#accountList().map((account, index) => [account.id, index]));
     const rank = (group: AccountGroup): number => order.get(group.accountId) ?? Number.MAX_SAFE_INTEGER;
     const account = this.accountFilter();
     const groups = [...byAccount.values()]

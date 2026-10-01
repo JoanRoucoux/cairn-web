@@ -3,6 +3,8 @@ import { Component, booleanAttribute, input, output } from '@angular/core';
 import { UiAmount, UiCellSub, UiGroup, UiGroupCell, UiRowLink, UiTd, UiTr } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+
 import type { AccountGroup } from '../holding-list-store';
 import { groupCount } from './group-count';
 import { HoldingAccountGroupRow } from './row/holding-account-group-row';
@@ -20,6 +22,7 @@ export class HoldingAccountGroup {
   readonly selectedHoldingId = input<string | undefined>(undefined);
 
   readonly editCash = output<string>();
+  readonly enterQuote = output<HoldingResponse>();
 
   protected readonly groupCount = groupCount;
 }

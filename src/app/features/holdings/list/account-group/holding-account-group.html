@@ -23,6 +23,7 @@
     [holding]="holding"
     [open]="holding.id === selectedHoldingId()"
     [selected]="holding.id === selectedHoldingId()"
+    (enterQuote)="enterQuote.emit($event)"
   ></tr>
 }
 @if (group().showCash) {

@@ -2,12 +2,25 @@ import { Component, DestroyRef, ElementRef, computed, effect, inject, signal } f
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
-import { UiButton, UiField, UiFieldLeading, UiInput, UiSkeleton, UiTable, UiTh } from '@joanroucoux/cairn-ui';
+import {
+  type AsyncState,
+  UiAsync,
+  UiButton,
+  UiField,
+  UiFieldLeading,
+  UiInput,
+  UiSkeleton,
+  UiTable,
+  UiTh,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucidePlus, LucideX } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
@@ -25,6 +38,8 @@ import { HoldingListStore } from './holding-list-store';
     RouterLink,
     RouterOutlet,
     TranslocoPipe,
+    ManualQuoteDialog,
+    UiAsync,
     UiButton,
     UiField,
     UiFieldLeading,
@@ -51,6 +66,18 @@ export class HoldingListPage {
   protected readonly assetClassFilter = this.#store.assetClassFilter;
 
   protected readonly desktop = signal(true);
+  protected readonly state = computed<AsyncState>(() => {
+    if (this.holdings.error()) {
+      return 'error';
+    }
+
+    return this.holdings.isLoading() ? 'loading' : 'ready';
+  });
+
+  protected readonly skeletonCards = [1, 2];
+  protected readonly skeletonRows = [1, 2, 3, 4];
+  protected readonly skeletonDesktopRows = [1, 2, 3, 4, 5, 6, 7, 8];
+  protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
   protected readonly presetAccountId = signal<string | undefined>(undefined);
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
@@ -127,6 +154,11 @@ export class HoldingListPage {
   protected onAddDismissed(): void {
     this.addOpen.set(false);
     this.presetAccountId.set(undefined);
+  }
+
+  protected onQuoteSaved(): void {
+    this.quoteTarget.set(undefined);
+    this.holdings.reload();
   }
 
   protected onCashSaved(): void {

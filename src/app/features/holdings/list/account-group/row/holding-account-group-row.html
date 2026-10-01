@@ -36,8 +36,10 @@
     </span>
     @if (holding().stale) {
       <span narrow tone="stale" uiCellSub>{{
-        'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
+        'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate }
       }}</span>
+    } @else if (unpriced()) {
+      <span narrow uiCellSub>{{ 'holdings.noQuoteToEnter' | transloco }}</span>
     }
   }
 </td>
@@ -54,23 +56,44 @@
   </td>
   <td numeric secondary uiTd>
     @if (!booklet()) {
-      <ui-amount [value]="holding().price" />
+      @if (unpriced()) {
+        <button
+          class="rounded-control text-label h-8 bg-(--card) px-2.5 font-medium whitespace-nowrap shadow-[inset_0_0_0_1px_var(--border)] hover:bg-(--glow) active:scale-(--press-scale)"
+          data-testid="enter-quote"
+          type="button"
+          uiRowAction
+          (click)="enterQuote.emit(holding())"
+        >
+          {{ 'holdings.manualQuote.open' | transloco }}
+        </button>
+      } @else {
+        <ui-amount [value]="holding().price" />
+      }
       @if (holding().stale) {
         <span tone="stale" uiCellSub>{{
           'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
         }}</span>
-      } @else if (unpriced()) {
-        <span uiCellSub>{{ 'holdings.manualQuote.open' | transloco }}</span>
       }
     }
   </td>
 }
 <td class="font-medium" numeric uiTd>
   <ui-amount currency="EUR" [value]="holding().marketValueEur" />
+  @if (unpriced() && !booklet() && !compact()) {
+    <button
+      class="rounded-control text-label mt-1 h-8 bg-(--card) px-2.5 font-medium whitespace-nowrap shadow-[inset_0_0_0_1px_var(--border)] hover:bg-(--glow) active:scale-(--press-scale) lg:hidden"
+      data-testid="enter-quote-narrow"
+      type="button"
+      uiRowAction
+      (click)="enterQuote.emit(holding())"
+    >
+      {{ 'holdings.manualQuote.open' | transloco }}
+    </button>
+  }
 </td>
 @if (!compact()) {
   <td numeric uiTd [class]="deltaTone(holding().unrealizedGainEur)">
-    @if (!booklet()) {
+    @if (!booklet() && hasGain()) {
       <ui-amount currency="EUR" signed [value]="holding().unrealizedGainEur" />
       @if (hasGainRatio()) {
         <span tone="inherit" uiCellSub>{{ holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</span>
@@ -79,12 +102,7 @@
   </td>
 }
 <td numeric uiTd [class]="deltaTone(holding().dayChangeRatio)">
-  @if (!booklet()) {
-    @if (unknownDay()) {
-      <span aria-hidden="true">&mdash;</span>
-      <span class="sr-only">{{ 'holdings.unknown' | transloco }}</span>
-    } @else {
-      {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
-    }
+  @if (!booklet() && !holding().stale && !unknownDay()) {
+    {{ holding().dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
   }
 </td>

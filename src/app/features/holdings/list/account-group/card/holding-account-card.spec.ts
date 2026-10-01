@@ -66,6 +66,23 @@ describe('HoldingAccountCard', () => {
     expect(await screen.findByText('holdings.averageCostUnknownShort')).toBeInTheDocument();
   });
 
+  it('should say a stale line is late, in place of the quantity and the quote', async () => {
+    await renderCard({ holdings: [{ ...holding, stale: true, priceAsOf: '2026-09-24' } as never] });
+    const row = await screen.findByTestId('holding-row-mobile');
+
+    expect(row).toHaveTextContent('holdings.staleLate');
+    expect(row).not.toHaveTextContent('412.5');
+  });
+
+  it('should send an unvalued line to the quote entry through its detail', async () => {
+    await renderCard({ holdings: [{ ...holding, price: null, marketValueEur: null } as never] });
+    const row = await screen.findByTestId('holding-row-mobile');
+
+    expect(row).toHaveTextContent('holdings.noQuoteToEnter');
+    expect(row).toHaveTextContent('holdings.manualQuote.open');
+    expect(row).toHaveAttribute('href', '/holdings/h3');
+  });
+
   it('should caption a booklet with Livret', async () => {
     await renderCard({ holdings: [{ ...holding, assetClass: 'CASH' } as never] });
 

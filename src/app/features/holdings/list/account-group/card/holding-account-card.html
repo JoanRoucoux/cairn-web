@@ -27,9 +27,16 @@
       >
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
-          <span class="text-label truncate text-(--subtle-foreground) tabular-nums">
+          <span
+            class="text-label truncate tabular-nums"
+            [class]="holding.stale ? 'font-medium text-(--stale)' : 'text-(--subtle-foreground)'"
+          >
             @if (isBooklet(holding)) {
               {{ 'holdings.booklet' | transloco }}
+            } @else if (holding.stale) {
+              {{ 'holdings.staleLate' | transloco: { date: holding.priceAsOf | shortDate } }}
+            } @else if (unpriced(holding)) {
+              {{ 'holdings.noQuoteToEnter' | transloco }}
             } @else {
               <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
               &times;
@@ -42,7 +49,9 @@
             <ui-amount currency="EUR" [value]="holding.marketValueEur" />
           </span>
           @if (!isBooklet(holding)) {
-            @if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
+            @if (unpriced(holding)) {
+              <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
+            } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
               <span class="text-label" [class]="deltaTone(holding.unrealizedGainRatio)">{{
                 holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 }
               }}</span>

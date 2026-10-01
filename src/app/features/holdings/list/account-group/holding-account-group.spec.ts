@@ -19,6 +19,7 @@ import { HoldingAccountGroup } from './holding-account-group';
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
       (editCash)="editCash.emit($event)"
+      (enterQuote)="enterQuote.emit($event)"
     ></tbody>
   </table>`,
 })
@@ -27,6 +28,7 @@ class TestHost {
   readonly compact = input(false);
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
+  readonly enterQuote = output<unknown>();
 }
 
 const holding = {
@@ -149,6 +151,32 @@ describe('HoldingAccountGroup', () => {
     await renderGroup({ holdings: [{ ...holding, price: null, marketValueEur: null, stale: false } as never] }, true);
 
     expect(await screen.findByText('holdings.noQuote')).toBeInTheDocument();
+  });
+
+  it('should show no day change on a stale line and keep the stale date in the stale tone', async () => {
+    await renderGroup({ holdings: [{ ...holding, dayChangeRatio: 0.01 } as never] });
+    const row = await screen.findByTestId('holding-row');
+
+    expect(row.querySelectorAll('td')[6]).toBeEmptyDOMElement();
+    expect(row.querySelectorAll('td')[3]).toHaveTextContent('holdings.staleShort');
+  });
+
+  it('should offer to enter a quote from the Cours column of an unvalued line', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderGroup({
+      holdings: [{ ...holding, price: null, marketValueEur: null, stale: false } as never],
+    });
+    const entered = vi.fn();
+    fixture.componentInstance.enterQuote.subscribe(entered);
+
+    await user.click(await screen.findByTestId('enter-quote'));
+
+    expect(entered).toHaveBeenCalledWith(expect.objectContaining({ id: 'h3' }));
+    await user.click(screen.getByTestId('enter-quote-narrow'));
+
+    expect(entered).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId('enter-quote-narrow')).toHaveClass('lg:hidden');
+    expect(screen.getByText('holdings.noQuoteToEnter')).toBeInTheDocument();
   });
 
   it('should link each line to its detail screen', async () => {

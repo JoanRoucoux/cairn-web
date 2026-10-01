@@ -1,7 +1,7 @@
-import { Component, booleanAttribute, computed, input } from '@angular/core';
+import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiAmount, UiCellSub, UiRowLink, UiTd } from '@joanroucoux/cairn-ui';
+import { UiAmount, UiCellSub, UiRowAction, UiRowLink, UiTd } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -15,7 +15,7 @@ import { deltaTone, isMissing } from '../delta-tone';
 
 @Component({
   selector: 'tr[app-holding-account-group-row]',
-  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCellSub, UiRowLink, UiTd],
+  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCellSub, UiRowAction, UiRowLink, UiTd],
   templateUrl: './holding-account-group-row.html',
   host: { 'data-testid': 'holding-row' },
 })
@@ -24,10 +24,13 @@ export class HoldingAccountGroupRow {
   readonly compact = input(false, { transform: booleanAttribute });
   readonly open = input(false, { transform: booleanAttribute });
 
+  readonly enterQuote = output<HoldingResponse>();
+
   protected readonly decimalPlaces = decimalPlaces;
   protected readonly deltaTone = deltaTone;
   protected readonly booklet = computed(() => isBooklet(this.holding()));
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
   protected readonly unknownDay = computed(() => isMissing(this.holding().dayChangeRatio));
+  protected readonly hasGain = computed(() => !isMissing(this.holding().unrealizedGainEur));
   protected readonly hasGainRatio = computed(() => !isMissing(this.holding().unrealizedGainRatio));
 }
