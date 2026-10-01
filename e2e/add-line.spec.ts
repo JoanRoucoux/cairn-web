@@ -79,6 +79,6 @@ test.describe('add a line', () => {
 
     await expect(page.getByText('The online search did not answer.')).toBeVisible();
     await expect(page.getByTestId('holding-add-catalog-candidate')).toBeVisible();
-    await expect(page.getByTestId('holding-add-online-retry')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
 });

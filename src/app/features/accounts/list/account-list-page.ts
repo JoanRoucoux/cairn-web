@@ -6,6 +6,7 @@ import {
   UiAsync,
   UiBadge,
   UiButton,
+  UiCard,
   UiMenu,
   UiMenuItem,
   UiMenuTrigger,
@@ -45,6 +46,7 @@ import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
     UiAmount,
     UiAsync,
     UiBadge,
+    UiCard,
     UiButton,
     UiMenu,
     UiMenuItem,
@@ -69,7 +71,7 @@ export class AccountListPage {
   protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
   protected readonly cardPadding = computed(
-    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: 'px-4 py-5', empty: 'p-4' })[this.state()],
+    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
   );
   protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
 

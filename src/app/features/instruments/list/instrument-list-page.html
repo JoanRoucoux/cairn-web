@@ -1,13 +1,6 @@
 <div class="lg:hidden">
   <div class="-mx-2 flex h-12 items-center">
-    <a
-      class="text-body rounded-control flex h-11 items-center gap-0.5 pr-3 pl-1 font-medium transition-transform duration-(--duration-press) ease-(--ease-out) focus-visible:outline-2 focus-visible:outline-(--ring) active:scale-(--press-scale)"
-      data-testid="instruments-back"
-      routerLink="/profile"
-    >
-      <svg lucideChevronLeft [size]="22" [strokeWidth]="1.75" />
-      {{ 'pageTitle.profile' | transloco }}
-    </a>
+    <a data-testid="instruments-back" routerLink="/profile" ui-back-link>{{ 'pageTitle.profile' | transloco }}</a>
   </div>
   <div class="flex items-baseline justify-between gap-3 pb-2">
     <h1 class="text-heading font-semibold">{{ 'pageTitle.instruments' | transloco }}</h1>
@@ -56,149 +49,153 @@
   </div>
 </div>
 
-<div
-  class="rounded-container mt-4 bg-(--card) shadow-[inset_0_0_0_1px_var(--border)] lg:px-4 lg:pt-2 lg:pb-3"
-  [class]="cardPadding()"
->
-  <table class="hidden lg:table" row="48" spaced uiTable>
-    <thead>
-      <tr>
-        <th primary tall uiTh>{{ 'instruments.columns.instrument' | transloco }}</th>
-        <th tall uiTh width="166px">{{ 'instruments.columns.symbol' | transloco }}</th>
-        <th tall uiTh width="126px">{{ 'instruments.columns.assetClass' | transloco }}</th>
-        <th tall uiTh width="236px">{{ 'instruments.columns.priceSource' | transloco }}</th>
-        <th numeric tall uiTh width="106px">{{ 'instruments.columns.lines' | transloco }}</th>
-        <th tall uiTh width="56px">
-          <span class="sr-only">{{ 'instruments.actions' | transloco }}</span>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      @if (state() === 'ready') {
+<ui-card class="mt-4 block" padding="none">
+  <div class="lg:px-4 lg:pt-2 lg:pb-3" [class]="cardPadding()">
+    <table class="hidden lg:table" row="48" spaced uiTable>
+      <thead>
+        <tr>
+          <th primary tall uiTh>{{ 'instruments.columns.instrument' | transloco }}</th>
+          <th tall uiTh width="166px">{{ 'instruments.columns.symbol' | transloco }}</th>
+          <th tall uiTh width="126px">{{ 'instruments.columns.assetClass' | transloco }}</th>
+          <th tall uiTh width="236px">{{ 'instruments.columns.priceSource' | transloco }}</th>
+          <th numeric tall uiTh width="106px">{{ 'instruments.columns.lines' | transloco }}</th>
+          <th tall uiTh width="56px">
+            <span class="sr-only">{{ 'instruments.actions' | transloco }}</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (state() === 'ready') {
+          @for (row of filteredRows(); track row.id) {
+            <tr data-testid="instrument-row" uiTr>
+              <td primary uiTd>
+                <span class="block truncate font-medium">{{ row.name }}</span>
+              </td>
+              <td uiTd>
+                <span class="text-label text-(--muted-foreground) tabular-nums">{{
+                  row.isin || row.symbol || row.sourceRef || '—'
+                }}</span>
+              </td>
+              <td uiTd>
+                <ui-badge>{{ 'enums.assetClass.' + row.assetClass | transloco }}</ui-badge>
+              </td>
+              <td uiTd>
+                <span
+                  class="text-label block"
+                  [class.font-medium]="row.priceSource !== 'MANUAL'"
+                  [class.text-(--muted-foreground)]="row.priceSource === 'MANUAL'"
+                >
+                  {{ 'enums.priceSource.' + row.priceSource | transloco }}
+                </span>
+                @if (row.sourceRef) {
+                  <span class="text-caption block truncate text-(--subtle-foreground)">{{ row.sourceRef }}</span>
+                } @else if (row.priceSource === 'MANUAL') {
+                  <span class="text-caption block truncate text-(--subtle-foreground)">{{
+                    'instruments.manualCaption' | transloco
+                  }}</span>
+                }
+              </td>
+              <td numeric uiTd>
+                <span class="text-label text-(--muted-foreground)">
+                  {{ linesLabel(row, false) | transloco: { count: row.holdingCount } }}
+                </span>
+              </td>
+              <td uiTd>
+                <div class="flex justify-end">
+                  <button
+                    aria-label="{{ 'instruments.actionsFor' | transloco: { name: row.name } }}"
+                    data-testid="instrument-menu-trigger"
+                    size="icon-sm"
+                    type="button"
+                    ui-button
+                    variant="quiet"
+                    [uiMenuTrigger]="rowMenu"
+                  >
+                    <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
+                  </button>
+                  <ui-menu #rowMenu [label]="'instruments.actionsFor' | transloco: { name: row.name }" [width]="218">
+                    <button
+                      data-testid="instrument-menu-edit"
+                      type="button"
+                      uiMenuItem
+                      (click)="editInstrument(row.id)"
+                    >
+                      <svg lucidePencil [strokeWidth]="1.75" />
+                      {{ 'instruments.edit.title' | transloco }}
+                    </button>
+                    <button
+                      data-testid="instrument-menu-delete"
+                      destructive
+                      type="button"
+                      uiMenuItem
+                      (click)="toDelete.set(row)"
+                    >
+                      <svg lucideTrash2 [strokeWidth]="1.75" />
+                      {{ 'instruments.edit.delete' | transloco }}
+                    </button>
+                  </ui-menu>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    @if (state() === 'ready') {
+      <div class="flex flex-col lg:hidden">
         @for (row of filteredRows(); track row.id) {
-          <tr data-testid="instrument-row" uiTr>
-            <td primary uiTd>
-              <span class="block truncate font-medium">{{ row.name }}</span>
-            </td>
-            <td uiTd>
-              <span class="text-label text-(--muted-foreground) tabular-nums">{{
-                row.isin || row.symbol || row.sourceRef || '—'
-              }}</span>
-            </td>
-            <td uiTd>
-              <ui-badge>{{ 'enums.assetClass.' + row.assetClass | transloco }}</ui-badge>
-            </td>
-            <td uiTd>
+          <a data-testid="instrument-row-mobile" padding="sm" size="xl" ui-row [routerLink]="['/instruments', row.id]">
+            <span class="flex min-w-0 flex-1 flex-col">
+              <span class="text-body truncate font-medium">{{ row.name }}</span>
+              <span class="text-label truncate text-(--subtle-foreground)">
+                {{ row.isin || row.symbol || row.sourceRef || '—' }} &middot;
+                {{ 'enums.assetClass.' + row.assetClass | transloco }}
+              </span>
+            </span>
+            <span class="flex flex-none flex-col items-end whitespace-nowrap">
               <span
-                class="text-label block"
+                class="text-label"
                 [class.font-medium]="row.priceSource !== 'MANUAL'"
                 [class.text-(--muted-foreground)]="row.priceSource === 'MANUAL'"
               >
                 {{ 'enums.priceSource.' + row.priceSource | transloco }}
               </span>
-              @if (row.sourceRef) {
-                <span class="text-caption block truncate text-(--subtle-foreground)">{{ row.sourceRef }}</span>
-              } @else if (row.priceSource === 'MANUAL') {
-                <span class="text-caption block truncate text-(--subtle-foreground)">{{
-                  'instruments.manualCaption' | transloco
-                }}</span>
-              }
-            </td>
-            <td numeric uiTd>
-              <span class="text-label text-(--muted-foreground)">
-                {{ linesLabel(row, false) | transloco: { count: row.holdingCount } }}
+              <span class="text-caption text-(--subtle-foreground)">
+                {{ linesLabel(row, true) | transloco: { count: row.holdingCount } }}
               </span>
-            </td>
-            <td uiTd>
-              <div class="flex justify-end">
-                <button
-                  aria-label="{{ 'instruments.actionsFor' | transloco: { name: row.name } }}"
-                  class="text-(--muted-foreground) hover:text-(--foreground) lg:size-9"
-                  data-testid="instrument-menu-trigger"
-                  size="icon"
-                  type="button"
-                  ui-button
-                  variant="ghost"
-                  [uiMenuTrigger]="rowMenu"
-                >
-                  <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
-                </button>
-                <ui-menu #rowMenu class="w-50" [label]="'instruments.actionsFor' | transloco: { name: row.name }">
-                  <button data-testid="instrument-menu-edit" type="button" uiMenuItem (click)="editInstrument(row.id)">
-                    <svg class="size-5 pointer-fine:size-4" lucidePencil [strokeWidth]="1.75" />
-                    {{ 'instruments.edit.title' | transloco }}
-                  </button>
-                  <button
-                    data-testid="instrument-menu-delete"
-                    destructive
-                    type="button"
-                    uiMenuItem
-                    (click)="toDelete.set(row)"
-                  >
-                    <svg class="size-5 pointer-fine:size-4" lucideTrash2 [strokeWidth]="1.75" />
-                    {{ 'instruments.edit.delete' | transloco }}
-                  </button>
-                </ui-menu>
-              </div>
-            </td>
-          </tr>
+            </span>
+          </a>
         }
-      }
-    </tbody>
-  </table>
+      </div>
+    }
 
-  @if (state() === 'ready') {
-    <div class="flex flex-col lg:hidden">
-      @for (row of filteredRows(); track row.id) {
-        <a data-testid="instrument-row-mobile" padding="sm" size="xl" ui-row [routerLink]="['/instruments', row.id]">
-          <span class="flex min-w-0 flex-1 flex-col">
-            <span class="text-body truncate font-medium">{{ row.name }}</span>
-            <span class="text-label truncate text-(--subtle-foreground)">
-              {{ row.isin || row.symbol || row.sourceRef || '—' }} &middot;
-              {{ 'enums.assetClass.' + row.assetClass | transloco }}
+    <ui-async
+      align="auto"
+      variant="plain"
+      [errorMessage]="'instruments.errorMessage' | transloco"
+      [errorTitle]="'instruments.errorTitle' | transloco"
+      [retryLabel]="'instruments.retry' | transloco"
+      [state]="state()"
+      (retry)="retry()"
+    >
+      <span asyncLoading class="flex flex-col lg:px-2 lg:py-1">
+        @for (width of skeletonWidths; track $index) {
+          <span class="flex h-15 items-center justify-between lg:h-12">
+            <span class="flex flex-col gap-1.5">
+              <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
+              <span class="block w-32.5 lg:hidden"><ui-skeleton [height]="12" /></span>
             </span>
+            <span class="block w-20 lg:w-130"><ui-skeleton [height]="14" /></span>
           </span>
-          <span class="flex flex-none flex-col items-end whitespace-nowrap">
-            <span
-              class="text-label"
-              [class.font-medium]="row.priceSource !== 'MANUAL'"
-              [class.text-(--muted-foreground)]="row.priceSource === 'MANUAL'"
-            >
-              {{ 'enums.priceSource.' + row.priceSource | transloco }}
-            </span>
-            <span class="text-caption text-(--subtle-foreground)">
-              {{ linesLabel(row, true) | transloco: { count: row.holdingCount } }}
-            </span>
-          </span>
-        </a>
-      }
-    </div>
-  }
-
-  <ui-async
-    class="block [&_[role=alert]]:bg-transparent [&_[role=alert]]:p-0 lg:[&_[role=alert]]:items-center lg:[&_[role=alert]]:py-12 lg:[&_[role=alert]]:text-center"
-    [errorMessage]="'instruments.errorMessage' | transloco"
-    [errorTitle]="'instruments.errorTitle' | transloco"
-    [retryLabel]="'instruments.retry' | transloco"
-    [state]="state()"
-    (retry)="retry()"
-  >
-    <span asyncLoading class="flex flex-col lg:px-2 lg:py-1">
-      @for (width of skeletonWidths; track $index) {
-        <span class="flex h-15 items-center justify-between lg:h-12">
-          <span class="flex flex-col gap-1.5">
-            <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
-            <span class="block w-32.5 lg:hidden"><ui-skeleton [height]="12" /></span>
-          </span>
-          <span class="block w-20 lg:w-130"><ui-skeleton [height]="14" /></span>
-        </span>
-      }
-    </span>
-    <span asyncEmpty class="block p-4 text-(--muted-foreground)" role="status">{{
-      'instruments.empty' | transloco
-    }}</span>
-  </ui-async>
-</div>
+        }
+      </span>
+      <span asyncEmpty class="block p-4 text-(--muted-foreground)" role="status">{{
+        'instruments.empty' | transloco
+      }}</span>
+    </ui-async>
+  </div>
+</ui-card>
 
 @if (toDelete(); as instrument) {
   <app-instrument-delete-dialog

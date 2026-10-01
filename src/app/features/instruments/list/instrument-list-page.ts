@@ -4,8 +4,10 @@ import { Router, RouterLink } from '@angular/router';
 
 import {
   UiAsync,
+  UiBackLink,
   UiBadge,
   UiButton,
+  UiCard,
   UiField,
   UiFieldLeading,
   UiInput,
@@ -20,14 +22,7 @@ import {
   UiTr,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import {
-  LucideChevronLeft,
-  LucideEllipsis,
-  LucidePencil,
-  LucidePlus,
-  LucideSearch,
-  LucideTrash2,
-} from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash2 } from '@lucide/angular';
 import { type Observable, fromEvent, map, of, startWith } from 'rxjs';
 
 import { pluralKey } from '@shared/format/plural-key';
@@ -51,7 +46,6 @@ const desktopQuery = (): Observable<boolean> => {
   selector: 'app-instrument-list-page',
   imports: [
     InstrumentDeleteDialog,
-    LucideChevronLeft,
     LucideEllipsis,
     LucidePencil,
     LucidePlus,
@@ -60,8 +54,10 @@ const desktopQuery = (): Observable<boolean> => {
     RouterLink,
     TranslocoPipe,
     UiAsync,
+    UiBackLink,
     UiBadge,
     UiButton,
+    UiCard,
     UiField,
     UiFieldLeading,
     UiInput,
@@ -92,7 +88,7 @@ export class InstrumentListPage {
   protected readonly desktop = toSignal(desktopQuery(), { requireSync: true });
 
   protected readonly cardPadding = computed(
-    () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: 'px-4 py-5', empty: 'p-4' })[this.state()],
+    () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
   );
 
   protected readonly countLabel = computed(() => {

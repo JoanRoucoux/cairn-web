@@ -52,5 +52,5 @@
   "rowEmptyCompact": "No holdings. Add a holding or import a CSV.",
   "rowEmptyImport": "Import a CSV",
   "nameLabel": "Account name",
-  "institutionOptional": "Institution (optional)"
+  "optional": "(optional)"
 }

@@ -1,8 +1,18 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { UiAmount, UiButton, UiField, UiFieldLeading, UiInput, UiRow, UiSkeleton } from '@joanroucoux/cairn-ui';
+import {
+  type AsyncState,
+  UiAmount,
+  UiAsync,
+  UiButton,
+  UiField,
+  UiFieldLeading,
+  UiInput,
+  UiRow,
+  UiSkeleton,
+} from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideRotateCw, LucideSearch } from '@lucide/angular';
+import { LucideSearch } from '@lucide/angular';
 
 import type { InstrumentCandidateResponse, InstrumentResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -15,10 +25,10 @@ export type CatalogResult = { instrument: InstrumentResponse; lineCount: number 
 @Component({
   selector: 'app-holding-add-search',
   imports: [
-    LucideRotateCw,
     LucideSearch,
     TranslocoPipe,
     UiAmount,
+    UiAsync,
     UiButton,
     UiField,
     UiFieldLeading,
@@ -46,6 +56,9 @@ export class HoldingAddSearch {
   protected readonly showOnline = computed(() => this.query().trim().length >= 3);
   protected readonly onlineLoading = computed(
     () => this.searchingOnline() || (!this.onlineSearched() && !this.onlineError()),
+  );
+  protected readonly onlineState = computed<AsyncState>(() =>
+    this.onlineLoading() ? 'loading' : this.onlineError() ? 'error' : 'ready',
   );
   protected readonly typedIsin = computed(() => isinOf(this.query()));
 

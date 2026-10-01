@@ -20,8 +20,9 @@
       }
     </div>
     <button
-      class="-mt-2 -mr-1 flex-none"
+      class="-mt-2 -mr-1"
       data-testid="holding-add-change"
+      size="slim"
       type="button"
       ui-button
       variant="ghost"
@@ -36,6 +37,7 @@
   <ui-field [label]="'holdings.add.assetClass' | transloco">
     <select
       data-testid="holding-add-asset-class"
+      size="lg"
       uiSelect
       [value]="assetClass() ?? ''"
       (change)="assetClassInput.emit($event)"
@@ -55,6 +57,7 @@
       data-testid="holding-add-quantity"
       enterkeyhint="done"
       inputmode="decimal"
+      size="lg"
       type="text"
       uiInput
       [value]="quantityText()"
@@ -64,13 +67,15 @@
   <ui-field
     class="min-w-0"
     unit="€"
-    [label]="('holdings.add.averageCost' | transloco) + ' ' + ('holdings.add.averageCostOptional' | transloco)"
+    [label]="'holdings.add.averageCost' | transloco"
+    [optional]="'holdings.add.averageCostOptional' | transloco"
   >
     <input
       autocomplete="off"
       data-testid="holding-add-average-cost"
       enterkeyhint="done"
       inputmode="decimal"
+      size="lg"
       type="text"
       uiInput
       [value]="averageCostText()"

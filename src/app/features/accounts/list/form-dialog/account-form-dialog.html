@@ -12,8 +12,8 @@
     [label]="'accounts.nameLabel' | transloco"
   >
     <input
-      class="max-lg:h-12"
       data-testid="account-form-name"
+      size="lg"
       type="text"
       uiInput
       [formField]="form.name"
@@ -31,10 +31,10 @@
     />
   </ui-field>
 
-  <ui-field [label]="'accounts.institutionOptional' | transloco">
+  <ui-field [label]="'accounts.institution' | transloco" [optional]="'accounts.optional' | transloco">
     <input
-      class="max-lg:h-12"
       data-testid="account-form-institution"
+      size="lg"
       type="text"
       uiInput
       [formField]="form.institution"

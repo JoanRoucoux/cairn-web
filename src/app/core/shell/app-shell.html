@@ -27,14 +27,9 @@
       <div class="mx-auto flex h-full max-w-[1120px] items-center justify-between lg:gap-6">
         <div class="flex items-center gap-2">
           @if (headerBack(); as back) {
-            <a
-              class="text-body rounded-control -ml-1 flex h-9 items-center gap-0.5 pr-2 pl-0.5 font-medium text-(--muted-foreground) hover:bg-(--glow) hover:text-(--foreground) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) max-lg:hidden"
-              data-testid="header-back"
-              [routerLink]="back.path"
-            >
-              <svg lucideChevronLeft [size]="22" [strokeWidth]="1.75" />
-              {{ back.labelKey | transloco }}
-            </a>
+            <a class="max-lg:hidden" data-testid="header-back" size="sm" ui-back-link [routerLink]="back.path">{{
+              back.labelKey | transloco
+            }}</a>
             <span aria-hidden="true" class="text-(--subtle-foreground) max-lg:hidden">/</span>
           }
           @if (headerKey(); as key) {

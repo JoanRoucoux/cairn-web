@@ -124,7 +124,7 @@ describe('HoldingAddDialog', () => {
     expect(await screen.findByText('holdings.add.onlineError')).toBeInTheDocument();
     expect(screen.getByTestId('holding-add-catalog-candidate')).toBeInTheDocument();
 
-    await user.click(screen.getByTestId('holding-add-online-retry'));
+    await user.click(screen.getByRole('button', { name: 'holdings.add.onlineRetry' }));
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([]);
   });
 

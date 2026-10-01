@@ -52,5 +52,5 @@
   "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
   "rowEmptyImport": "Importer un CSV",
   "nameLabel": "Nom du compte",
-  "institutionOptional": "Établissement (facultatif)"
+  "optional": "(facultatif)"
 }

@@ -9,7 +9,13 @@
 >
   <form class="flex flex-col gap-4" id="holding-add-form" novalidate (submit)="onSubmit($event)">
     <ui-field [label]="'holdings.add.account' | transloco">
-      <select data-testid="holding-add-account" uiSelect [value]="accountId()" (change)="onAccountChange($event)">
+      <select
+        data-testid="holding-add-account"
+        size="lg"
+        uiSelect
+        [value]="accountId()"
+        (change)="onAccountChange($event)"
+      >
         @for (account of accountOptions(); track account.id) {
           <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
         }

@@ -4,6 +4,7 @@
     <input
       autocomplete="off"
       data-testid="holding-add-query"
+      size="lg"
       type="search"
       uiInput
       [placeholder]="'holdings.add.titlePlaceholder' | transloco"
@@ -21,6 +22,7 @@
         @for (result of catalogResults(); track result.instrument.id) {
           <button
             data-testid="holding-add-catalog-candidate"
+            size="dense"
             type="button"
             ui-row
             (click)="pickedCatalog.emit(result.instrument)"
@@ -45,8 +47,19 @@
         <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
           {{ 'holdings.add.onlineHeading' | transloco }}
         </div>
-        @if (onlineLoading()) {
-          <div class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3" data-testid="holding-add-online-loading" role="status">
+        <ui-async
+          variant="inline"
+          [errorMessage]="'holdings.add.onlineError' | transloco"
+          [retryLabel]="'holdings.add.onlineRetry' | transloco"
+          [state]="onlineState()"
+          (retry)="retried.emit()"
+        >
+          <div
+            asyncLoading
+            class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
+            data-testid="holding-add-online-loading"
+            role="status"
+          >
             <span class="sr-only">{{ 'holdings.add.onlineSearching' | transloco }}</span>
             <div class="flex justify-between gap-3">
               <span class="block w-55"><ui-skeleton [height]="16" /></span>
@@ -57,61 +70,48 @@
               <span class="block w-16"><ui-skeleton [height]="16" /></span>
             </div>
           </div>
-        } @else if (onlineError()) {
-          <div class="flex items-center justify-between gap-3 py-1.5 pr-1.5 pl-2.5" role="alert">
-            <span class="text-label text-(--muted-foreground)">{{ 'holdings.add.onlineError' | transloco }}</span>
-            <button
-              class="flex-none"
-              data-testid="holding-add-online-retry"
-              type="button"
-              ui-button
-              variant="outline"
-              (click)="retried.emit()"
-            >
-              <svg lucideRotateCw [size]="16" [strokeWidth]="1.75" />
-              {{ 'holdings.add.onlineRetry' | transloco }}
-            </button>
-          </div>
-        } @else if (candidates().length > 0) {
-          @for (candidate of candidates(); track candidate.sourceRef) {
-            <button
-              data-testid="holding-add-online-candidate"
-              type="button"
-              ui-row
-              (click)="pickedOnline.emit(candidate)"
-            >
-              <span class="flex min-w-0 flex-1 flex-col">
-                <span class="text-body truncate font-medium">{{ candidate.name }}</span>
-                <span class="text-caption truncate text-(--subtle-foreground)">{{ candidateSub(candidate) }}</span>
-              </span>
-              <span class="flex flex-none flex-col items-end">
-                <ui-amount class="text-label font-medium" currency="EUR" [value]="candidate.probePrice" />
-                <span class="text-caption text-(--subtle-foreground)">{{
-                  'holdings.add.trialPriceCaption' | transloco
-                }}</span>
-              </span>
-            </button>
+          @if (candidates().length > 0) {
+            @for (candidate of candidates(); track candidate.sourceRef) {
+              <button
+                data-testid="holding-add-online-candidate"
+                size="dense"
+                type="button"
+                ui-row
+                (click)="pickedOnline.emit(candidate)"
+              >
+                <span class="flex min-w-0 flex-1 flex-col">
+                  <span class="text-body truncate font-medium">{{ candidate.name }}</span>
+                  <span class="text-caption truncate text-(--subtle-foreground)">{{ candidateSub(candidate) }}</span>
+                </span>
+                <span class="flex flex-none flex-col items-end">
+                  <ui-amount class="text-label font-medium" currency="EUR" [value]="candidate.probePrice" />
+                  <span class="text-caption text-(--subtle-foreground)">{{
+                    'holdings.add.trialPriceCaption' | transloco
+                  }}</span>
+                </span>
+              </button>
+            }
+          } @else if (catalogResults().length > 0) {
+            <div class="text-label px-2.5 pt-1.5 pb-2.5 text-(--muted-foreground)">
+              {{ 'holdings.add.noOtherOnline' | transloco }}
+            </div>
+          } @else {
+            <div class="flex flex-col items-start gap-2 px-2.5 pt-1.5 pb-2.5">
+              <p class="text-label text-(--muted-foreground)">
+                {{ 'holdings.add.notFound' | transloco: { query: query() } }}
+              </p>
+              <button
+                data-testid="holding-add-create-manual"
+                type="button"
+                ui-button
+                variant="outline"
+                (click)="pickedManual.emit()"
+              >
+                {{ 'holdings.add.createManual' | transloco }}
+              </button>
+            </div>
           }
-        } @else if (catalogResults().length > 0) {
-          <div class="text-label px-2.5 pt-1.5 pb-2.5 text-(--muted-foreground)">
-            {{ 'holdings.add.noOtherOnline' | transloco }}
-          </div>
-        } @else {
-          <div class="flex flex-col items-start gap-2 px-2.5 pt-1.5 pb-2.5">
-            <p class="text-label text-(--muted-foreground)">
-              {{ 'holdings.add.notFound' | transloco: { query: query() } }}
-            </p>
-            <button
-              data-testid="holding-add-create-manual"
-              type="button"
-              ui-button
-              variant="outline"
-              (click)="pickedManual.emit()"
-            >
-              {{ 'holdings.add.createManual' | transloco }}
-            </button>
-          </div>
-        }
+        </ui-async>
       }
     </div>
   }

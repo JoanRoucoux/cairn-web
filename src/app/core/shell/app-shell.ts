@@ -2,9 +2,8 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 
-import { UiAvatar, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
+import { UiAvatar, UiBackLink, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideChevronLeft } from '@lucide/angular';
 import { filter, map } from 'rxjs';
 
 import { SessionStore } from '@core/session/session-store';
@@ -30,13 +29,13 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
   selector: 'app-shell',
   imports: [
     CairnLogo,
-    LucideChevronLeft,
     OfflineBanner,
     RouterLink,
     RouterOutlet,
     ShellDestinationIcon,
     TranslocoPipe,
     UiAvatar,
+    UiBackLink,
     UiNavItem,
     UiTab,
     UiTabBar,

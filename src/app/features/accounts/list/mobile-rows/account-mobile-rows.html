@@ -1,15 +1,8 @@
 <div class="flex flex-col">
   @for (account of accounts(); track account.id) {
     <div data-testid="account-row-mobile">
-      <div class="flex items-center gap-1">
-        <a
-          class="min-w-0 flex-1"
-          data-testid="account-link-mobile"
-          padding="sm"
-          routerLink="/holdings"
-          size="xl"
-          ui-row
-        >
+      <div uiRowItem>
+        <a data-testid="account-link-mobile" padding="sm" routerLink="/holdings" size="xl" ui-row>
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body truncate font-medium">{{ account.name }}</span>
             <span class="text-label truncate text-(--subtle-foreground)">
@@ -32,20 +25,24 @@
           </span>
         </a>
         <button
-          class="text-(--muted-foreground)"
           data-testid="account-menu-trigger-mobile"
-          size="icon"
+          size="icon-sm"
           type="button"
           ui-button
-          variant="ghost"
+          variant="quiet"
           [attr.aria-label]="'accounts.actions' | transloco: { name: account.name }"
           [uiMenuTrigger]="mobileMenu"
         >
           <svg lucideEllipsis [size]="20" [strokeWidth]="1.75" />
         </button>
-        <ui-menu #mobileMenu class="w-52.5" [label]="'accounts.actions' | transloco: { name: account.name }">
+        <ui-menu
+          #mobileMenu
+          sheet
+          [heading]="account.name"
+          [label]="'accounts.actions' | transloco: { name: account.name }"
+        >
           <button data-testid="account-edit-mobile" type="button" uiMenuItem (click)="edit.emit(account)">
-            <svg class="size-5" lucidePencil [strokeWidth]="1.75" />
+            <svg lucidePencil [strokeWidth]="1.75" />
             {{ 'accounts.edit' | transloco }}
           </button>
           <button
@@ -55,7 +52,7 @@
             uiMenuItem
             (click)="remove.emit(account)"
           >
-            <svg class="size-5" lucideTrash2 [strokeWidth]="1.75" />
+            <svg lucideTrash2 [strokeWidth]="1.75" />
             {{ 'accounts.delete.action' | transloco }}
           </button>
         </ui-menu>
@@ -67,9 +64,9 @@
         >
           <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmptyCompact' | transloco }}</span>
           <a
-            class="h-9 min-h-0 flex-none px-3!"
             data-testid="account-empty-add-mobile"
             routerLink="/holdings"
+            size="sm"
             ui-button
             variant="outline"
             [queryParams]="{ add: account.id }"
