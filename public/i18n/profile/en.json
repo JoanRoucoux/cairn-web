@@ -53,6 +53,7 @@
   "signOut": "Sign out",
   "title": "Profile",
   "back": "Portfolio",
+  "avatarLabel": "Profile avatar",
   "signedIn": {
     "PASSKEY": "{{username}} · signed in with a passkey",
     "PASSWORD": "{{username}} · signed in with a password"

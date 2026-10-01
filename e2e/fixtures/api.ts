@@ -1,6 +1,7 @@
 import type { Page, Route } from '@playwright/test';
 
 import { buildAccountCrudHandlers } from './account-crud';
+import { buildAllocationFixtures } from './allocation';
 import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdings';
 import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstrument } from './instruments';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
@@ -160,6 +161,7 @@ const { intradayHistory, performance } = buildPerformanceFixtures(
 const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/portfolio': portfolio,
   'GET /api/portfolio/performance': performance,
+  ...buildAllocationFixtures(portfolio, holdings, accounts),
   'GET /api/history': history,
   'GET /api/history/intraday': intradayHistory,
   'GET /api/holdings': holdings,

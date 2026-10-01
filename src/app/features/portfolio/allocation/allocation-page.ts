@@ -15,7 +15,7 @@ import {
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
-import type { AccountResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
+import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
@@ -48,46 +48,48 @@ export class AllocationPage {
 
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
-  protected readonly portfolio = this.#store.portfolio;
+  protected readonly totalEur = computed<number | undefined>(() => {
+    if (this.#store.classes.hasValue()) {
+      return this.#store.classes.value().totalEur;
+    }
 
-  protected readonly totalEur = computed(() => this.portfolio.value()!.totalEur);
+    return this.#store.accounts.hasValue() ? this.#store.accounts.value().totalEur : undefined;
+  });
 
   protected readonly assetClassState = computed<AsyncState>(() =>
     asyncStateFor(
-      this.portfolio.isLoading(),
-      !!this.portfolio.error(),
-      this.portfolio.hasValue() && this.portfolio.value().byAssetClass.length === 0,
+      this.#store.classes.isLoading(),
+      !!this.#store.classes.error(),
+      this.#store.classes.hasValue() && this.#store.classes.value().items.length === 0,
     ),
   );
 
   protected readonly accountState = computed<AsyncState>(() =>
     asyncStateFor(
-      this.portfolio.isLoading(),
-      !!this.portfolio.error(),
-      this.portfolio.hasValue() && this.portfolio.value().byAccount.length === 0,
+      this.#store.accounts.isLoading(),
+      !!this.#store.accounts.error(),
+      this.#store.accounts.hasValue() && this.#store.accounts.value().items.length === 0,
     ),
   );
 
   protected readonly assetClassSlices = computed<DonutSlice[]>(() => {
     this.#translocoEvents();
 
-    if (!this.portfolio.hasValue()) {
+    if (!this.#store.classes.hasValue()) {
       return [];
     }
 
-    return assetClassSlicesOf(this.portfolio.value(), (key, params) => this.#transloco.translate(key, params));
+    return assetClassSlicesOf(this.#store.classes.value(), (key, params) => this.#transloco.translate(key, params));
   });
 
   protected readonly accountSlices = computed<DonutSlice[]>(() => {
     this.#translocoEvents();
 
-    if (!this.portfolio.hasValue()) {
+    if (!this.#store.accounts.hasValue()) {
       return [];
     }
 
-    return accountSlicesOf(this.portfolio.value(), this.#store.accounts.value(), (key) =>
-      this.#transloco.translate(key),
-    );
+    return accountSlicesOf(this.#store.accounts.value(), (key) => this.#transloco.translate(key));
   });
 
   protected readonly formatEur = (value: number): string =>
@@ -108,8 +110,12 @@ export class AllocationPage {
       : 'block p-2';
   };
 
-  protected retry(): void {
-    this.#store.retry();
+  protected retryClasses(): void {
+    this.#store.retryClasses();
+  }
+
+  protected retryAccounts(): void {
+    this.#store.retryAccounts();
   }
 
   protected onAssetClassSelect(id: string): void {
@@ -121,37 +127,31 @@ export class AllocationPage {
   }
 }
 
-const lineCountOf = (portfolio: PortfolioResponse, assetClass: string): number =>
-  portfolio.holdings.filter((holding) => holding.assetClass === assetClass).length;
-
 function assetClassSlicesOf(
-  portfolio: PortfolioResponse,
+  allocation: AssetClassAllocationResponse,
   translate: (key: string, params?: Record<string, unknown>) => string,
 ): DonutSlice[] {
-  return portfolio.byAssetClass.map((row) => ({
-    id: row.label,
-    label: translate(`enums.assetClass.${row.label}`),
+  return allocation.items.map((row) => ({
+    id: row.assetClass,
+    label: translate(`enums.assetClass.${row.assetClass}`),
     value: row.valueEur,
     sublabel:
-      row.label === 'CASH'
+      row.assetClass === 'CASH'
         ? translate('portfolio.allocation.cashSubtitle')
-        : translate(pluralKey('portfolio.allocation.lineCount', lineCountOf(portfolio, row.label)), {
-            count: lineCountOf(portfolio, row.label),
-          }),
+        : translate(pluralKey('portfolio.allocation.lineCount', row.lineCount), { count: row.lineCount }),
   }));
 }
 
-function accountSlicesOf(
-  portfolio: PortfolioResponse,
-  accounts: AccountResponse[],
-  translate: (key: string) => string,
-): DonutSlice[] {
-  const byName = new Map(accounts.map((account) => [account.name, account]));
+function accountSlicesOf(allocation: AccountAllocationResponse, translate: (key: string) => string): DonutSlice[] {
+  return allocation.items.map(({ account, valueEur }) => {
+    const type = translate(`enums.accountType.${account.type}`);
+    const institution = account.institution.trim();
 
-  return portfolio.byAccount.map((row) => {
-    const account = byName.get(row.label);
-    const sublabel = account ? `${translate(`enums.accountType.${account.type}`)} · ${account.institution}` : '';
-
-    return { id: row.label, label: row.label, value: row.valueEur, sublabel };
+    return {
+      id: account.name,
+      label: account.name,
+      value: valueEur,
+      sublabel: institution ? `${type} · ${institution}` : type,
+    };
   });
 }

@@ -1,12 +1,12 @@
-@if (portfolio.hasValue()) {
+@if (totalEur() !== undefined) {
   <p class="text-label lg:text-body mb-4 px-1 text-(--muted-foreground) lg:px-0 lg:leading-[normal]">
-    {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()" />
+    {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()!" />
   </p>
 }
 
 <div class="@container">
   <div
-    class="grid gap-4 lg:gap-6 @min-[960px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @min-[1113px]:grid-cols-[max-content_max-content]"
+    class="grid grid-cols-[minmax(0,1fr)] gap-4 @min-[960px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @min-[960px]:gap-6 @min-[1113px]:mr-[calc(-1*var(--gutter))] @min-[1113px]:grid-cols-[minmax(0,max-content)_minmax(0,max-content)]"
   >
     <div
       class="rounded-container flex flex-col gap-1 bg-(--card) px-2 pt-(--inset-card) pb-2 shadow-[inset_0_0_0_1px_var(--border)] lg:gap-2 lg:px-4 lg:pb-3"
@@ -18,7 +18,7 @@
         [errorTitle]="'portfolio.allocation.byAssetClassErrorTitle' | transloco"
         [retryLabel]="'portfolio.error.retry' | transloco"
         [state]="assetClassState()"
-        (retry)="retry()"
+        (retry)="retryClasses()"
       >
         <div asyncLoading class="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
           <ui-skeleton class="sm:hidden" shape="ring" [size]="232" />
@@ -49,7 +49,7 @@
         [errorTitle]="'portfolio.allocation.byAccountErrorTitle' | transloco"
         [retryLabel]="'portfolio.error.retry' | transloco"
         [state]="accountState()"
-        (retry)="retry()"
+        (retry)="retryAccounts()"
       >
         <div asyncLoading class="flex flex-col items-center gap-4 sm:flex-row sm:gap-8">
           <ui-skeleton class="sm:hidden" shape="ring" [size]="232" />

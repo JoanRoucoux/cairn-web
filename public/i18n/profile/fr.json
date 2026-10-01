@@ -53,6 +53,7 @@
   "signOut": "Se déconnecter",
   "title": "Profil",
   "back": "Portefeuille",
+  "avatarLabel": "Avatar du profil",
   "signedIn": {
     "PASSKEY": "{{username}} · connecté par clé d'accès",
     "PASSWORD": "{{username}} · connecté par mot de passe"

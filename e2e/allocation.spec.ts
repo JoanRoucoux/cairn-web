@@ -49,11 +49,9 @@ test.describe('allocation', () => {
     expect(url.searchParams.get('account')).toBe('PEA Boursorama');
   });
 
-  test('shows an error with a retry when the portfolio fails to load, without hiding the other donut', async ({
-    page,
-  }) => {
+  test('shows an error on the failing ring only and retries just that call', async ({ page }) => {
     let failed = true;
-    await page.route('**/api/portfolio', async (route) => {
+    await page.route('**/api/portfolio/allocation/classes', async (route) => {
       if (failed) {
         failed = false;
         return route.fulfill({ status: 500, json: { message: 'boom' } });
@@ -64,9 +62,10 @@ test.describe('allocation', () => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await expect(page.getByRole('alert')).toHaveCount(2);
+    await expect(page.getByRole('alert')).toHaveCount(1);
+    await expect(allocation.donuts).toHaveCount(1);
 
-    await page.getByRole('button', { name: 'Retry' }).first().click();
+    await page.getByRole('button', { name: 'Retry' }).click();
 
     await expect(page.getByRole('alert')).toHaveCount(0);
     await expect(allocation.donuts).toHaveCount(2);
