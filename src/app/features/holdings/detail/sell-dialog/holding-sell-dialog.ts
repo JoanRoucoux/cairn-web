@@ -109,11 +109,17 @@ export class HoldingSellDialog {
     this.quantityText.set(
       new Intl.NumberFormat(this.#locale, { maximumFractionDigits: 6, useGrouping: false }).format(quantity),
     );
+    focusInitial(this.#host.nativeElement, 'holding-sell-quantity');
   }
 
   protected dismiss(): void {
     this.open.set(false);
     this.dismissed.emit();
+  }
+
+  protected onSubmit(event: Event): void {
+    event.preventDefault();
+    void this.confirm();
   }
 
   protected async confirm(): Promise<void> {

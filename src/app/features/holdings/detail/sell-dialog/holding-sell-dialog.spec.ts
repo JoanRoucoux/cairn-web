@@ -66,6 +66,15 @@ describe('HoldingSellDialog', () => {
     expect(screen.getByTestId('holding-sell-submit')).toBeDisabled();
   });
 
+  it('returns focus to the quantity field after Tout vendre', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.click(screen.getByTestId('holding-sell-all'));
+
+    expect(screen.getByTestId('holding-sell-quantity')).toHaveFocus();
+  });
+
   it('fills the exact held quantity, including crypto decimals, with "Tout vendre"', async () => {
     const user = userEvent.setup();
     await renderDialog({ ...holding, quantity: 2.4513 } as unknown as HoldingResponse);
@@ -115,6 +124,37 @@ describe('HoldingSellDialog', () => {
     expect(submit).toHaveClass('bg-(--destructive)');
     expect(submit).toBeEnabled();
     expect(screen.getByTestId('holding-sell-closes-warning')).toBeInTheDocument();
+  });
+
+  it('submits with Enter from the quantity field', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '100{Enter}');
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({});
+
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith(false));
+  });
+
+  it('does not submit with Enter when the quantity is over what is held', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '600{Enter}');
+
+    httpTesting.expectNone('/api/holdings/h1/sell');
+  });
+
+  it('puts the over-held message in the hint row and marks the field invalid', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '600');
+
+    expect(screen.getByTestId('holding-sell-hint')).toHaveTextContent('holdings.sell.over_other');
+    expect(screen.getByTestId('holding-sell-hint')).toHaveClass('text-(--negative)');
+    expect(screen.getByTestId('holding-sell-quantity')).toBeInvalid();
   });
 
   it('emits sold with closed=false after a partial sale', async () => {

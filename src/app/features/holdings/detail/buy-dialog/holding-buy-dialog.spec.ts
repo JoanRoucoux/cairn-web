@@ -4,7 +4,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
-import { render, screen } from '@testing-library/angular';
+import { fireEvent, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -72,6 +72,20 @@ describe('HoldingBuyDialog', () => {
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'));
     expect(request.request.body).toEqual({ quantity: 1200.5, unitPrice: 10 });
+    request.flush({});
+  });
+
+  it('submits the form', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('holding-buy-quantity'), '5');
+    await user.type(screen.getByTestId('holding-buy-price'), '10');
+    await vi.waitFor(() => expect(screen.getByTestId('holding-buy-submit')).toBeEnabled());
+    fireEvent.submit(screen.getByTestId('holding-buy-quantity').closest('form')!);
+
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'));
+    expect(request.request.body).toEqual({ quantity: 5, unitPrice: 10 });
     request.flush({});
   });
 

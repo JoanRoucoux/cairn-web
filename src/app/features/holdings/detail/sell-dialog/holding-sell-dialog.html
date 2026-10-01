@@ -8,103 +8,108 @@
   [open]="open()"
   (dismissed)="dismiss()"
 >
-  <ui-field
-    [error]="over() ? overHint() : undefined"
-    [label]="'holdings.sell.quantity' | transloco"
-    [unit]="'holdings.sell.unit' | transloco"
-  >
-    <input
-      autocomplete="off"
-      class="h-12 lg:h-10"
-      data-testid="holding-sell-quantity"
-      inputmode="decimal"
-      type="text"
-      uiInput
-      [value]="quantityText()"
-      (input)="onQuantityInput($event)"
-    />
-  </ui-field>
+  <form class="flex flex-col gap-4 lg:gap-5" id="holding-sell-form" novalidate (submit)="onSubmit($event)">
+    <ui-field [label]="'holdings.sell.quantity' | transloco" [unit]="'holdings.sell.unit' | transloco">
+      <input
+        autocomplete="off"
+        class="h-12 lg:h-10"
+        data-testid="holding-sell-quantity"
+        inputmode="decimal"
+        type="text"
+        uiInput
+        [attr.aria-invalid]="over() ? true : null"
+        [value]="quantityText()"
+        (input)="onQuantityInput($event)"
+      />
+    </ui-field>
 
-  <div class="-mt-2 flex min-h-5 items-center justify-between gap-3">
-    @if (!over()) {
-      <p class="text-label text-(--muted-foreground)" data-testid="holding-sell-hint">
-        {{ held() }} · {{ 'holdings.sell.price' | transloco }} <ui-amount currency="EUR" [value]="holding().price" />
-      </p>
-    } @else {
-      <span></span>
-    }
-    <button
-      class="rounded-control text-label relative -mr-1 h-8 flex-none bg-(--muted) px-2.5 font-medium transition-transform duration-(--duration-press) ease-out before:absolute before:-inset-x-1 before:-inset-y-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) active:scale-(--press-scale) lg:-mr-2 lg:h-7 lg:bg-transparent lg:px-2 lg:hover:bg-(--glow)"
-      data-testid="holding-sell-all"
-      type="button"
-      (click)="fillAll()"
-    >
-      {{ 'holdings.sell.sellAll' | transloco }}
-    </button>
-  </div>
-
-  <div class="rounded-control flex flex-col bg-(--background) px-3 py-1">
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.quantity' | transloco }}</span>
-      <span class="flex items-baseline gap-1.5 text-right">
-        <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
-        <span class="text-(--subtle-foreground)">&rarr;</span>
-        <span class="font-medium">{{
-          preview() ? (closes() ? ('holdings.sell.closes' | transloco) : fmtQty(preview()!.quantityAfter)) : '—'
-        }}</span>
-      </span>
-    </div>
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.averageCost' | transloco }}</span>
-      @if (holding().averageCost === null || holding().averageCost === undefined) {
-        <span class="font-medium">{{ 'holdings.sell.rows.averageCostUnknown' | transloco }}</span>
-      } @else {
-        <span class="font-medium">
-          <ui-amount currency="EUR" [value]="holding().averageCost" />{{
-            'holdings.sell.rows.averageCostUnchanged' | transloco
-          }}
-        </span>
-      }
-    </div>
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGain' | transloco }}</span>
-      @if (preview()?.realizedGain !== null && preview()?.realizedGain !== undefined) {
-        <span
-          class="font-medium"
-          [class.text-(--negative)]="preview()!.realizedGain! < 0"
-          [class.text-(--positive)]="preview()!.realizedGain! > 0"
-        >
-          <ui-amount currency="EUR" signed [value]="preview()!.realizedGain" />
-        </span>
-      } @else if (holding().averageCost === null || holding().averageCost === undefined) {
-        <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGainUnknown' | transloco }}</span>
-      } @else {
-        <span class="text-(--muted-foreground)">&mdash;</span>
-      }
-    </div>
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.amount' | transloco }}</span>
-      <span class="font-medium">
-        @if (preview() && preview()!.amount !== null) {
-          <ui-amount currency="EUR" [value]="preview()!.amount" />
+    <div class="-mt-2 flex min-h-5 items-center justify-between gap-3 lg:-mt-3.5 lg:min-h-7">
+      <p
+        class="text-label"
+        data-testid="holding-sell-hint"
+        [class.font-medium]="over()"
+        [class.text-(--muted-foreground)]="!over()"
+        [class.text-(--negative)]="over()"
+      >
+        @if (over()) {
+          {{ overHint() }}
         } @else {
-          —
+          {{ held() }} · {{ 'holdings.sell.price' | transloco }} <ui-amount currency="EUR" [value]="holding().price" />
         }
-      </span>
+      </p>
+      <button
+        class="rounded-control text-label relative -mr-1 h-8 flex-none bg-(--muted) px-2.5 font-medium transition-transform duration-(--duration-press) ease-out before:absolute before:-inset-x-1 before:-inset-y-1.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) active:scale-(--press-scale) lg:-mr-2 lg:h-7 lg:bg-transparent lg:px-2 lg:hover:bg-(--glow)"
+        data-testid="holding-sell-all"
+        type="button"
+        (click)="fillAll()"
+      >
+        {{ 'holdings.sell.sellAll' | transloco }}
+      </button>
     </div>
-  </div>
 
-  @if (closes()) {
-    <ui-alert class="-mt-1" data-testid="holding-sell-closes-warning" variant="warning">
-      {{ 'holdings.sell.closesWarning' | transloco: { account: holding().accountName } }}
-    </ui-alert>
-  }
+    <div class="rounded-control flex flex-col bg-(--background) px-3 py-1">
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.quantity' | transloco }}</span>
+        <span class="flex items-baseline gap-1.5 text-right">
+          <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
+          <span class="text-(--subtle-foreground)">&rarr;</span>
+          <span class="font-medium">{{
+            preview() ? (closes() ? ('holdings.sell.closes' | transloco) : fmtQty(preview()!.quantityAfter)) : '—'
+          }}</span>
+        </span>
+      </div>
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.averageCost' | transloco }}</span>
+        @if (holding().averageCost === null || holding().averageCost === undefined) {
+          <span class="font-medium">{{ 'holdings.sell.rows.averageCostUnknown' | transloco }}</span>
+        } @else {
+          <span class="font-medium">
+            <ui-amount currency="EUR" [value]="holding().averageCost" />{{
+              'holdings.sell.rows.averageCostUnchanged' | transloco
+            }}
+          </span>
+        }
+      </div>
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGain' | transloco }}</span>
+        @if (preview()?.realizedGain !== null && preview()?.realizedGain !== undefined) {
+          <span
+            class="font-medium"
+            [class.text-(--negative)]="preview()!.realizedGain! < 0"
+            [class.text-(--positive)]="preview()!.realizedGain! > 0"
+          >
+            <ui-amount currency="EUR" signed [value]="preview()!.realizedGain" />
+          </span>
+        } @else if (holding().averageCost === null || holding().averageCost === undefined) {
+          <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGainUnknown' | transloco }}</span>
+        } @else {
+          <span class="text-(--muted-foreground)">&mdash;</span>
+        }
+      </div>
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.amount' | transloco }}</span>
+        <span class="font-medium">
+          @if (preview() && preview()!.amount !== null) {
+            <ui-amount currency="EUR" [value]="preview()!.amount" />
+          } @else {
+            —
+          }
+        </span>
+      </div>
+    </div>
 
-  @if (error()) {
-    <p class="text-label mt-3 text-(--negative)" data-testid="holding-sell-error" role="alert">
-      {{ 'holdings.sell.error' | transloco }}
-    </p>
-  }
+    @if (closes()) {
+      <ui-alert class="-mt-1" data-testid="holding-sell-closes-warning" variant="warning">
+        {{ 'holdings.sell.closesWarning' | transloco: { account: holding().accountName } }}
+      </ui-alert>
+    }
+
+    @if (error()) {
+      <p class="text-label text-(--negative)" data-testid="holding-sell-error" role="alert">
+        {{ 'holdings.sell.error' | transloco }}
+      </p>
+    }
+  </form>
 
   <button
     class="max-lg:hidden"
@@ -121,12 +126,12 @@
   <button
     data-testid="holding-sell-submit"
     dialogActions
-    type="button"
+    form="holding-sell-form"
+    type="submit"
     ui-button
     [disabled]="!valid() || submitting()"
     [loading]="submitting()"
     [variant]="closes() ? 'destructive' : 'primary'"
-    (click)="confirm()"
   >
     {{ cta() }}
   </button>

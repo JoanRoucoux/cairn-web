@@ -32,6 +32,27 @@ test.describe('buy and sell', () => {
     await expect(page.getByTestId('holding-buy-submit')).toBeEnabled();
   });
 
+  test('submits a buy with Enter from the price field', async ({ page }) => {
+    await page.getByTestId('holding-buy').click();
+    await expect(page.getByTestId('holding-buy-dialog').locator('dialog')).toBeVisible();
+    await page.getByTestId('holding-buy-quantity').fill('40');
+    await page.getByTestId('holding-buy-price').fill('29.1');
+    await expect(page.getByTestId('holding-buy-submit')).toBeEnabled();
+    await page.getByTestId('holding-buy-price').press('Enter');
+
+    await expect(page.getByTestId('holding-buy-dialog')).toHaveCount(0);
+  });
+
+  test('submits a sell with Enter from the quantity field', async ({ page }) => {
+    await page.getByTestId('holding-sell').click();
+    await expect(page.getByTestId('holding-sell-dialog').locator('dialog')).toBeVisible();
+    await page.getByTestId('holding-sell-quantity').fill('100');
+    await expect(page.getByTestId('holding-sell-submit')).toBeEnabled();
+    await page.getByTestId('holding-sell-quantity').press('Enter');
+
+    await expect(page.getByTestId('holding-sell-dialog')).toHaveCount(0);
+  });
+
   test('keeps the button disabled for an empty or zero quantity', async ({ page }) => {
     await page.getByTestId('holding-buy').click();
 

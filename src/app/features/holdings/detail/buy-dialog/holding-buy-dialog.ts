@@ -89,6 +89,11 @@ export class HoldingBuyDialog {
     this.dismissed.emit();
   }
 
+  protected onSubmit(event: Event): void {
+    event.preventDefault();
+    void this.confirm();
+  }
+
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.holding().id)) {
       this.open.set(false);

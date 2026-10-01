@@ -8,87 +8,89 @@
   [open]="open()"
   (dismissed)="dismiss()"
 >
-  <div class="grid grid-cols-2 gap-2">
-    <ui-field [label]="'holdings.buy.quantity' | transloco" [unit]="'holdings.buy.unit' | transloco">
-      <input
-        autocomplete="off"
-        class="h-12 lg:h-10"
-        data-testid="holding-buy-quantity"
-        inputmode="decimal"
-        type="text"
-        uiInput
-        [value]="quantityText()"
-        (input)="onQuantityInput($event)"
-      />
-    </ui-field>
-    <ui-field [label]="'holdings.buy.price' | transloco" [unit]="'holdings.buy.currencyUnit' | transloco">
-      <input
-        autocomplete="off"
-        class="h-12 lg:h-10"
-        data-testid="holding-buy-price"
-        inputmode="decimal"
-        type="text"
-        uiInput
-        [value]="priceText()"
-        (input)="onPriceInput($event)"
-      />
-    </ui-field>
-  </div>
-
-  <p class="text-label -mt-2 min-h-5 text-(--muted-foreground)" data-testid="holding-buy-hint">
-    @if (holding().averageCost === null || holding().averageCost === undefined) {
-      {{ 'holdings.buy.noCostHint' | transloco }}
-    } @else {
-      {{ 'holdings.buy.currentPrice' | transloco }} <ui-amount currency="EUR" [value]="holding().price" />
-    }
-  </p>
-
-  <div class="rounded-control flex flex-col bg-(--background) px-3 py-1">
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.quantity' | transloco }}</span>
-      <span class="flex items-baseline gap-1.5 text-right">
-        <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
-        <span class="text-(--subtle-foreground)">&rarr;</span>
-        <span class="font-medium">{{ preview() ? fmtQty(preview()!.quantityAfter) : '—' }}</span>
-      </span>
+  <form class="flex flex-col gap-4 lg:gap-5" id="holding-buy-form" novalidate (submit)="onSubmit($event)">
+    <div class="grid grid-cols-2 gap-2 lg:gap-3">
+      <ui-field [label]="'holdings.buy.quantity' | transloco" [unit]="'holdings.buy.unit' | transloco">
+        <input
+          autocomplete="off"
+          class="h-12 lg:h-10"
+          data-testid="holding-buy-quantity"
+          inputmode="decimal"
+          type="text"
+          uiInput
+          [value]="quantityText()"
+          (input)="onQuantityInput($event)"
+        />
+      </ui-field>
+      <ui-field [label]="'holdings.buy.price' | transloco" [unit]="'holdings.buy.currencyUnit' | transloco">
+        <input
+          autocomplete="off"
+          class="h-12 lg:h-10"
+          data-testid="holding-buy-price"
+          inputmode="decimal"
+          type="text"
+          uiInput
+          [value]="priceText()"
+          (input)="onPriceInput($event)"
+        />
+      </ui-field>
     </div>
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.averageCost' | transloco }}</span>
-      <span class="flex items-baseline gap-1.5 text-right">
-        <span class="text-(--subtle-foreground)">
-          @if (holding().averageCost === null || holding().averageCost === undefined) {
-            {{ 'holdings.buy.rows.averageCostUnknown' | transloco }}
-          } @else {
-            <ui-amount currency="EUR" [value]="holding().averageCost" />
-          }
+
+    <p class="text-label -mt-2 min-h-5 text-(--muted-foreground) lg:-mt-3.5 lg:min-h-7" data-testid="holding-buy-hint">
+      @if (holding().averageCost === null || holding().averageCost === undefined) {
+        {{ 'holdings.buy.noCostHint' | transloco }}
+      } @else {
+        {{ 'holdings.buy.currentPrice' | transloco }} <ui-amount currency="EUR" [value]="holding().price" />
+      }
+    </p>
+
+    <div class="rounded-control flex flex-col bg-(--background) px-3 py-1">
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.quantity' | transloco }}</span>
+        <span class="flex items-baseline gap-1.5 text-right">
+          <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
+          <span class="text-(--subtle-foreground)">&rarr;</span>
+          <span class="font-medium">{{ preview() ? fmtQty(preview()!.quantityAfter) : '—' }}</span>
         </span>
-        <span class="text-(--subtle-foreground)">&rarr;</span>
+      </div>
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.averageCost' | transloco }}</span>
+        <span class="flex items-baseline gap-1.5 text-right">
+          <span class="text-(--subtle-foreground)">
+            @if (holding().averageCost === null || holding().averageCost === undefined) {
+              {{ 'holdings.buy.rows.averageCostUnknown' | transloco }}
+            } @else {
+              <ui-amount currency="EUR" [value]="holding().averageCost" />
+            }
+          </span>
+          <span class="text-(--subtle-foreground)">&rarr;</span>
+          <span class="font-medium">
+            @if (preview()) {
+              <ui-amount currency="EUR" [value]="preview()!.averageCostAfter" />
+            } @else {
+              —
+            }
+          </span>
+        </span>
+      </div>
+      <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
+        <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.amount' | transloco }}</span>
         <span class="font-medium">
           @if (preview()) {
-            <ui-amount currency="EUR" [value]="preview()!.averageCostAfter" />
+            <ui-amount currency="EUR" [value]="preview()!.amount" />
           } @else {
             —
           }
         </span>
-      </span>
+      </div>
     </div>
-    <div class="text-label flex items-baseline justify-between gap-3 py-[9px] shadow-[inset_0_1px_0_var(--hairline)]">
-      <span class="text-(--muted-foreground)">{{ 'holdings.buy.rows.amount' | transloco }}</span>
-      <span class="font-medium">
-        @if (preview()) {
-          <ui-amount currency="EUR" [value]="preview()!.amount" />
-        } @else {
-          —
-        }
-      </span>
-    </div>
-  </div>
 
-  @if (error()) {
-    <p class="text-label mt-3 text-(--negative)" data-testid="holding-buy-error" role="alert">
-      {{ 'holdings.buy.error' | transloco }}
-    </p>
-  }
+    @if (error()) {
+      <p class="text-label text-(--negative)" data-testid="holding-buy-error" role="alert">
+        {{ 'holdings.buy.error' | transloco }}
+      </p>
+    }
+  </form>
 
   <button
     class="max-lg:hidden"
@@ -105,11 +107,11 @@
   <button
     data-testid="holding-buy-submit"
     dialogActions
-    type="button"
+    form="holding-buy-form"
+    type="submit"
     ui-button
     [disabled]="!valid() || submitting()"
     [loading]="submitting()"
-    (click)="confirm()"
   >
     {{ cta() }}
   </button>
