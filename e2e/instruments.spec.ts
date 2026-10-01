@@ -39,13 +39,14 @@ test.describe('instruments', () => {
     await page.waitForURL('**/instruments');
     await expect(page.getByTestId('instrument-row')).toHaveCount(2);
     const row = page.getByTestId('instrument-row').filter({ hasText: 'Bitcoin' });
-    await expect(row.getByRole('link', { name: 'Bitcoin' })).toBeVisible();
+    await expect(row.getByText('Bitcoin').first()).toBeVisible();
     await expect(row).toContainText('None');
   });
 
   test('edits an instrument and sees the change in the list', async ({ page }) => {
     await page.goto('/instruments');
-    await page.getByRole('link', { name: 'Amundi MSCI World' }).click();
+    await page.getByTestId('instrument-menu-trigger').click();
+    await page.getByTestId('instrument-menu-edit').click();
     // Typing before the draft is seeded loses the keystrokes to the prefill that follows.
     await expect(page.getByTestId('instrument-name')).toHaveValue('Amundi MSCI World');
 
@@ -53,13 +54,14 @@ test.describe('instruments', () => {
     await page.getByTestId('instrument-save').click();
 
     await page.waitForURL('**/instruments');
-    await expect(page.getByText('Amundi MSCI World (renamed)')).toBeVisible();
+    await expect(page.getByText('Amundi MSCI World (renamed)').first()).toBeVisible();
   });
 
   test('deletes an instrument and sees it gone from the list', async ({ page }) => {
     await page.goto('/instruments');
     await expect(page.getByTestId('instrument-row')).toHaveCount(1);
-    await page.getByRole('link', { name: 'Amundi MSCI World' }).click();
+    await page.getByTestId('instrument-menu-trigger').click();
+    await page.getByTestId('instrument-menu-edit').click();
 
     await page.getByTestId('instrument-delete').click();
     await page.getByTestId('instrument-delete-confirm').click();

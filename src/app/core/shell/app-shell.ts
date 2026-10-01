@@ -4,6 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from 
 
 import { UiAvatar, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LucideChevronLeft } from '@lucide/angular';
 import { filter, map } from 'rxjs';
 
 import { SessionStore } from '@core/session/session-store';
@@ -12,6 +13,8 @@ import { CairnLogo } from './cairn-logo';
 import { OfflineBanner } from './offline-banner';
 import { ShellDestinationIcon } from './shell-destination-icon';
 import { SHELL_DESTINATIONS } from './shell-nav';
+
+export type HeaderBack = { labelKey: string; path: string };
 
 export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
   let current: ActivatedRoute | null = route;
@@ -27,6 +30,7 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
   selector: 'app-shell',
   imports: [
     CairnLogo,
+    LucideChevronLeft,
     OfflineBanner,
     RouterLink,
     RouterOutlet,
@@ -61,6 +65,14 @@ export class AppShell {
     this.#navigationEnd.pipe(map(() => this.#currentMobileHeaderHidden())),
     { initialValue: this.#currentMobileHeaderHidden() },
   );
+
+  protected readonly headerBack = toSignal(this.#navigationEnd.pipe(map(() => this.#currentHeaderBack())), {
+    initialValue: this.#currentHeaderBack(),
+  });
+
+  #currentHeaderBack(): HeaderBack | undefined {
+    return deepestData(this.#route.root)['headerBack'] as HeaderBack | undefined;
+  }
 
   #currentHeaderKey(): string | undefined {
     return deepestData(this.#route.root)['headerKey'] as string | undefined;

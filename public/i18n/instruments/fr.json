@@ -3,7 +3,7 @@
   "searchPlaceholder": "Nom ou ISIN",
   "empty": "Aucun instrument ne correspond à votre recherche.",
   "error": "Vos instruments n'ont pas pu être chargés.",
-  "add": "Ajouter un instrument",
+  "add": "Nouvel instrument",
   "name": "Nom",
   "isin": "ISIN",
   "currency": "Devise",
@@ -37,5 +37,21 @@
     "cancel": "Annuler",
     "submit": "Supprimer",
     "error": "Cet instrument n'a pas pu être supprimé."
-  }
+  },
+  "count_one": "{{count}} instrument",
+  "count_other": "{{count}} instruments",
+  "searchPlaceholderDesktop": "Rechercher par nom ou ISIN",
+  "columns": {
+    "instrument": "Instrument",
+    "symbol": "ISIN ou symbole",
+    "assetClass": "Classe",
+    "priceSource": "Source du cours",
+    "lines": "Lignes"
+  },
+  "lineCount_one": "{{count}} ligne",
+  "lineCount_other": "{{count}} lignes",
+  "noLinesFull": "Aucune ligne",
+  "errorTitle": "Le catalogue n'a pas pu être chargé",
+  "errorMessage": "Le serveur n'a pas répondu.",
+  "retry": "Réessayer"
 }

@@ -59,6 +59,42 @@ describe('InstrumentListStore', () => {
     expect(store.rows().every((row) => row.holdingCount === 0)).toBe(true);
   });
 
+  it('should order the rows alphabetically, ignoring accents and case', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/instruments').flush([
+      { id: 'a', name: 'iShares MSCI World', assetClass: 'ETF', priceSource: 'YAHOO' },
+      { id: 'b', name: 'Société Générale', assetClass: 'EQUITY', priceSource: 'YAHOO' },
+      { id: 'c', name: 'Amundi MSCI World', assetClass: 'ETF', priceSource: 'YAHOO' },
+      { id: 'd', name: 'Édenred', assetClass: 'EQUITY', priceSource: 'YAHOO' },
+    ]);
+    httpTesting.expectOne('/api/holdings').flush([]);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.rows().map((row) => row.name)).toEqual([
+      'Amundi MSCI World',
+      'Édenred',
+      'iShares MSCI World',
+      'Société Générale',
+    ]);
+  });
+
+  it('should report loading, ready, empty and error states, and reload both calls on retry', async () => {
+    TestBed.tick();
+    expect(store.state()).toBe('loading');
+    httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(store.state()).toBe('ready');
+
+    store.search.set('zzzz');
+    expect(store.state()).toBe('empty');
+
+    store.retry();
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush(null, { status: 500, statusText: 'x' }));
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush([]));
+    await vi.waitFor(() => expect(store.state()).toBe('error'));
+  });
+
   it('should count the holdings backing each instrument', async () => {
     await load();
 

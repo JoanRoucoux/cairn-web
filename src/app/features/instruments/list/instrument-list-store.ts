@@ -1,5 +1,7 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, LOCALE_ID, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
+
+import { type AsyncState } from '@joanroucoux/cairn-ui';
 
 import type { InstrumentResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
@@ -13,6 +15,8 @@ export type InstrumentRow = InstrumentResponse & { holdingCount: number };
 export class InstrumentListStore {
   #instrumentsApiClient = inject(InstrumentService);
   #holdingsApiClient = inject(HoldingService);
+
+  readonly #collator = new Intl.Collator(inject(LOCALE_ID), { sensitivity: 'base', numeric: true });
 
   readonly search = signal('');
 
@@ -41,7 +45,20 @@ export class InstrumentListStore {
     const counts = this.#holdingCountByInstrument();
     const instruments = this.instruments.hasValue() ? this.instruments.value() : [];
 
-    return instruments.map((instrument) => ({ ...instrument, holdingCount: counts.get(instrument.id) ?? 0 }));
+    return instruments
+      .map((instrument) => ({ ...instrument, holdingCount: counts.get(instrument.id) ?? 0 }))
+      .sort((a, b) => this.#collator.compare(a.name, b.name));
+  });
+
+  readonly state = computed<AsyncState>(() => {
+    if (this.instruments.error() || this.holdings.error()) {
+      return 'error';
+    }
+    if (this.instruments.isLoading() || this.holdings.isLoading()) {
+      return 'loading';
+    }
+
+    return this.filteredRows().length === 0 ? 'empty' : 'ready';
   });
 
   readonly filteredRows = computed(() => {
@@ -55,4 +72,9 @@ export class InstrumentListStore {
       normalizeSearch(`${instrument.name} ${instrument.isin ?? ''}`).includes(search),
     );
   });
+
+  retry(): void {
+    this.instruments.reload();
+    this.holdings.reload();
+  }
 }

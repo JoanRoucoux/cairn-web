@@ -59,7 +59,7 @@ describe('InstrumentListPage', () => {
     await flushOne();
     await screen.findAllByTestId('instrument-row');
 
-    expect(screen.getByText('enums.assetClass.ETF')).toBeInTheDocument();
+    expect(screen.getAllByText('enums.assetClass.ETF').length).toBeGreaterThan(0);
     expect(screen.getByText('enums.priceSource.YAHOO')).toBeInTheDocument();
     expect(screen.getByText('ESE.PA')).toBeInTheDocument();
   });
@@ -83,6 +83,7 @@ describe('InstrumentListPage', () => {
     await flushOne();
 
     expect(await screen.findByText('instruments.noLines')).toBeInTheDocument();
+    expect(screen.getByText('instruments.noLinesFull')).toBeInTheDocument();
   });
 
   it('should filter the instruments by name or isin', async () => {
@@ -96,7 +97,7 @@ describe('InstrumentListPage', () => {
     await user.type(screen.getByTestId('instruments-search'), 'bitcoin');
 
     expect(await screen.findAllByTestId('instrument-row')).toHaveLength(1);
-    expect(screen.getByText('Bitcoin')).toBeInTheDocument();
+    expect(screen.getAllByText('Bitcoin').length).toBeGreaterThan(0);
   });
 
   it('should show an empty state with no match', async () => {
@@ -177,8 +178,55 @@ describe('InstrumentListPage', () => {
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1').flush(null));
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush([]));
 
     expect(await screen.findByText('instruments.empty')).toBeInTheDocument();
+  });
+
+  it('shows the back link to the profile and the instrument count, and a dash for a missing ISIN', async () => {
+    await renderPage();
+    await flushOne([
+      instrument,
+      { id: 'i2', name: 'Bitcoin', isin: null, assetClass: 'CRYPTO', priceSource: 'COINGECKO' },
+    ]);
+
+    expect(await screen.findByTestId('instruments-back')).toHaveAttribute('href', '/profile');
+    expect(screen.getAllByText('instruments.count_other').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('instrument-row')[0]).toHaveTextContent('—');
+  });
+
+  it('shows a count skeleton while loading', async () => {
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-count-skeleton')).toBeInTheDocument();
+
+    await flushOne([]);
+  });
+
+  it('lists the instruments alphabetically', async () => {
+    await renderPage();
+    await flushOne([
+      { ...instrument, id: 'z', name: 'Zalando' },
+      { ...instrument, id: 'e', name: 'Édenred' },
+      { ...instrument, id: 'a', name: 'Accor' },
+    ]);
+
+    const rows = await screen.findAllByTestId('instrument-row');
+
+    expect(rows.map((row) => row.querySelector('a')?.textContent?.trim())).toEqual(['Accor', 'Édenred', 'Zalando']);
+  });
+
+  it('uses the long search placeholder on a desktop viewport', async () => {
+    vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    await renderPage();
+
+    expect(screen.getByTestId('instruments-search')).toHaveAttribute(
+      'placeholder',
+      'instruments.searchPlaceholderDesktop',
+    );
+
+    vi.unstubAllGlobals();
+    await flushOne([]);
   });
 
   it('should show an error when instruments cannot load', async () => {
@@ -189,6 +237,6 @@ describe('InstrumentListPage', () => {
     );
     httpTesting.expectOne('/api/holdings').flush([]);
 
-    expect(await screen.findByText('instruments.error')).toBeInTheDocument();
+    expect(await screen.findByText('instruments.errorTitle')).toBeInTheDocument();
   });
 });

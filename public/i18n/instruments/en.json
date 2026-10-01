@@ -3,7 +3,7 @@
   "searchPlaceholder": "Name or ISIN",
   "empty": "No instrument matches your search.",
   "error": "Your instruments could not be loaded.",
-  "add": "Add an instrument",
+  "add": "New instrument",
   "name": "Name",
   "isin": "ISIN",
   "currency": "Currency",
@@ -37,5 +37,21 @@
     "cancel": "Cancel",
     "submit": "Delete",
     "error": "This instrument could not be deleted."
-  }
+  },
+  "count_one": "{{count}} instrument",
+  "count_other": "{{count}} instruments",
+  "searchPlaceholderDesktop": "Search by name or ISIN",
+  "columns": {
+    "instrument": "Instrument",
+    "symbol": "ISIN or symbol",
+    "assetClass": "Class",
+    "priceSource": "Price source",
+    "lines": "Holdings"
+  },
+  "lineCount_one": "{{count}} holding",
+  "lineCount_other": "{{count}} holdings",
+  "noLinesFull": "No holdings",
+  "errorTitle": "The catalogue could not be loaded",
+  "errorMessage": "The server did not answer.",
+  "retry": "Retry"
 }
