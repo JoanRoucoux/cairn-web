@@ -108,11 +108,11 @@ describe('LoginStore', () => {
     expect(store.passkeySubmitting()).toBe(false);
   });
 
-  it('should report neither cancellation nor a message when the ceremony is dismissed', async () => {
+  it('should report a dismissed ceremony as a refusal, the way the handoff words it', async () => {
     authenticate.mockResolvedValue('cancelled');
 
     expect(await store.signInWithPasskey()).toBe(false);
-    expect(store.passkeyRefused()).toBe(false);
+    expect(store.passkeyRefused()).toBe(true);
     expect(store.passkeyUnsupported()).toBe(false);
     expect(store.passkeyFailed()).toBe(false);
   });

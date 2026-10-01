@@ -76,7 +76,6 @@ export class LoginStore {
         case 'ok':
           return true;
         case 'cancelled':
-          return false;
         case 'refused':
           this.passkeyRefused.set(true);
           return false;

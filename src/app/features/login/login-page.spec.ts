@@ -124,7 +124,7 @@ describe('LoginPage', () => {
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 
-  it('should disable the passkey button while the ceremony is running', async () => {
+  it('should block a second ceremony while one is running', async () => {
     const user = userEvent.setup();
     let resolveAuthenticate!: (outcome: PasskeyOutcome) => void;
     authenticate.mockReturnValue(new Promise((resolve) => (resolveAuthenticate = resolve)));
@@ -132,21 +132,26 @@ describe('LoginPage', () => {
 
     await user.click(screen.getByTestId('login-passkey'));
 
-    expect(await screen.findByTestId('login-passkey')).toBeDisabled();
+    await user.click(await screen.findByTestId('login-passkey'));
+
+    expect(authenticate).toHaveBeenCalledTimes(1);
 
     resolveAuthenticate('ok');
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 
-  it('should show no message when the passkey ceremony is dismissed', async () => {
+  it('should explain a dismissed ceremony and offer to try again', async () => {
     const user = userEvent.setup();
     authenticate.mockResolvedValue('cancelled');
     await renderPage();
 
     await user.click(screen.getByTestId('login-passkey'));
 
-    await vi.waitFor(() => expect(authenticate).toHaveBeenCalled());
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    const alert = await screen.findByTestId('login-passkey-refused');
+    expect(alert).toHaveAttribute('role', 'alert');
+    expect(alert).toHaveTextContent('login.passkeyRefusedTitle');
+    expect(alert).toHaveTextContent('login.passkeyRefused');
+    expect(screen.getByTestId('login-passkey')).toHaveTextContent('login.passkeyRetry');
     expect(load).not.toHaveBeenCalled();
   });
 
@@ -205,17 +210,78 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-username')).toHaveValue('joan');
   });
 
-  it('should fold the password form behind a toggle and let it work once expanded', async () => {
+  it('should replace the passkey block with the password form, and back', async () => {
     const user = userEvent.setup();
     await renderPage();
 
-    const toggle = screen.getByTestId('login-password-toggle');
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    expect(toggle).toHaveAttribute('aria-controls', 'login-password-form');
+    expect(screen.getByTestId('login-passkey-hint')).toBeInTheDocument();
     expect(screen.queryByTestId('login-username')).not.toBeInTheDocument();
 
+    await user.click(screen.getByTestId('login-password-toggle'));
+
+    expect(screen.queryByTestId('login-passkey')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('login-passkey-hint')).not.toBeInTheDocument();
+    expect(screen.getByTestId('login-username')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId('login-passkey-toggle'));
+
+    expect(screen.getByTestId('login-passkey')).toBeInTheDocument();
+    expect(screen.queryByTestId('login-username')).not.toBeInTheDocument();
+  });
+
+  it('should show and hide the password with the eye toggle', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await user.click(screen.getByTestId('login-password-toggle'));
+
+    const input = screen.getByTestId('login-password');
+    const eye = screen.getByTestId('login-password-reveal');
+    expect(input).toHaveAttribute('type', 'password');
+    expect(eye).toHaveAttribute('aria-pressed', 'false');
+    expect(eye).toHaveAccessibleName('login.showPassword');
+
+    await user.click(eye);
+
+    expect(input).toHaveAttribute('type', 'text');
+    expect(eye).toHaveAttribute('aria-pressed', 'true');
+    expect(eye).toHaveAccessibleName('login.hidePassword');
+  });
+
+  it('should put both fields in error under an alert when the password is refused', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await fillIn(user, 'wrong');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 401,
+      statusText: 'Unauthorized',
+    });
+
+    const alert = await screen.findByTestId('login-refused');
+    expect(alert).toHaveAttribute('role', 'alert');
+    expect(alert).toHaveTextContent('login.refused');
+    expect(screen.getByTestId('login-username')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByTestId('login-password')).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('should dim the passkey button and say what to do while the key is awaited', async () => {
+    const user = userEvent.setup();
+    authenticate.mockReturnValue(new Promise(() => undefined));
+    await renderPage();
+
+    await user.click(screen.getByTestId('login-passkey'));
+
+    const button = await screen.findByTestId('login-passkey');
+    expect(button).toHaveTextContent('login.passkeySubmitting');
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByTestId('login-passkey-hint')).toHaveTextContent('login.passkeyWaitingHint');
+  });
+
+  it('should let the password form work once shown', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
     await fillIn(user, 'a-real-password');
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
       status: 204,

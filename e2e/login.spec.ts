@@ -14,7 +14,7 @@ test.describe('login', () => {
     );
   });
 
-  test('folds the password form by default and unfolds it on demand', async ({ page }) => {
+  test('replaces the passkey block with the password form on demand, and back', async ({ page }) => {
     const login = new LoginPageObject(page);
     await login.goto();
 
@@ -24,9 +24,28 @@ test.describe('login', () => {
 
     await expect(login.username).toBeVisible();
     await expect(login.username).toBeFocused();
+    await expect(login.passkeyButton).not.toBeVisible();
+
+    await login.passkeyToggle.click();
+
+    await expect(login.passkeyButton).toBeFocused();
   });
 
-  test('shows the refused message under the password field and keeps the username', async ({ page }) => {
+  test('shows the alert when the passkey request is cancelled, and offers to retry', async ({ page }) => {
+    const login = new LoginPageObject(page);
+    await login.goto();
+    await page.evaluate(() => {
+      navigator.credentials.get = () => Promise.reject(new DOMException('cancelled', 'NotAllowedError'));
+    });
+
+    await login.passkeyButton.click();
+
+    await expect(login.passkeyRefused).toBeVisible();
+    await expect(login.passkeyRefused).toContainText('Sign-in did not complete');
+    await expect(login.passkeyButton).toContainText('Try again with a passkey');
+  });
+
+  test('shows the alert above the fields when the password is refused and keeps the username', async ({ page }) => {
     await page.route('**/api/authenticate', (route) =>
       route.fulfill({ status: 401, json: { message: 'unauthenticated' } }),
     );
@@ -36,6 +55,9 @@ test.describe('login', () => {
     await login.signInWithPassword('joan', 'wrong-password');
 
     await expect(login.refused).toBeVisible();
+    await expect(login.refused).toContainText('Incorrect username or password.');
+    await expect(login.username).toHaveAttribute('aria-invalid', 'true');
+    await expect(login.password).toHaveAttribute('aria-invalid', 'true');
     await expect(login.username).toHaveValue('joan');
     await expect(login.password).toBeFocused();
   });

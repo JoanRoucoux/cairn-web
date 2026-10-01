@@ -7,6 +7,8 @@ export class LoginPageObject {
   readonly password: Locator;
   readonly submit: Locator;
   readonly refused: Locator;
+  readonly passkeyRefused: Locator;
+  readonly passkeyToggle: Locator;
 
   constructor(private readonly page: Page) {
     this.passkeyButton = page.getByTestId('login-passkey');
@@ -15,6 +17,8 @@ export class LoginPageObject {
     this.password = page.getByTestId('login-password');
     this.submit = page.getByTestId('login-submit');
     this.refused = page.getByTestId('login-refused');
+    this.passkeyRefused = page.getByTestId('login-passkey-refused');
+    this.passkeyToggle = page.getByTestId('login-passkey-toggle');
   }
 
   async goto(): Promise<void> {

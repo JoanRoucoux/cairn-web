@@ -1,9 +1,9 @@
-import { Component, ElementRef, afterRenderEffect, inject, signal } from '@angular/core';
+import { Component, ElementRef, Injector, afterNextRender, afterRenderEffect, inject, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert, UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideKeyRound } from '@lucide/angular';
+import { LucideEye, LucideEyeOff, LucideKeyRound } from '@lucide/angular';
 
 import { PageLoad } from '@core/navigation/page-load';
 
@@ -13,7 +13,18 @@ import { LoginStore } from './login-store';
 
 @Component({
   selector: 'app-login-page',
-  imports: [CairnMark, FormField, LucideKeyRound, TranslocoPipe, UiButton, UiField, UiInput],
+  imports: [
+    CairnMark,
+    FormField,
+    LucideEye,
+    LucideEyeOff,
+    LucideKeyRound,
+    TranslocoPipe,
+    UiAlert,
+    UiButton,
+    UiField,
+    UiInput,
+  ],
   templateUrl: './login-page.html',
   providers: [LoginStore],
 })
@@ -30,13 +41,15 @@ export class LoginPage {
   protected readonly passkeyUnsupported = this.#store.passkeyUnsupported;
   protected readonly passkeyFailed = this.#store.passkeyFailed;
 
-  protected readonly passwordExpanded = signal(false);
+  protected readonly passwordMode = signal(false);
+  protected readonly passwordShown = signal(false);
 
+  #injector = inject(Injector);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
     afterRenderEffect(() => {
-      if (this.passwordExpanded()) {
+      if (this.passwordMode()) {
         this.#focus('login-username');
       }
     });
@@ -64,6 +77,10 @@ export class LoginPage {
   }
 
   protected async onPasskeySignIn(): Promise<void> {
+    if (this.passkeySubmitting()) {
+      return;
+    }
+
     if (!(await this.#store.signInWithPasskey())) {
       return;
     }
@@ -71,7 +88,16 @@ export class LoginPage {
     this.#pageLoad.to('/');
   }
 
-  protected togglePassword(): void {
-    this.passwordExpanded.update((expanded) => !expanded);
+  protected usePassword(): void {
+    this.passwordMode.set(true);
+  }
+
+  protected usePasskey(): void {
+    this.passwordMode.set(false);
+    afterNextRender(() => this.#focus('login-passkey'), { injector: this.#injector });
+  }
+
+  protected toggleShown(): void {
+    this.passwordShown.update((shown) => !shown);
   }
 }
