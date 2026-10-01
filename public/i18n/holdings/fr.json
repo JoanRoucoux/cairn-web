@@ -21,6 +21,7 @@
   "empty": "Aucune ligne ne correspond à votre recherche.",
   "noSearchResults": "Aucune ligne ne correspond à « {{query}} »",
   "noSearchResultsHint": "La recherche porte sur le nom et l'ISIN.",
+  "error": "Vos lignes n'ont pas pu être chargées.",
   "errorTitle": "Les lignes n'ont pas pu être chargées",
   "errorMessage": "Le serveur n'a pas répondu. Vérifiez la connexion, puis réessayez.",
   "retry": "Réessayer",

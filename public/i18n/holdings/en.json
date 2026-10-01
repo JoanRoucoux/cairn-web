@@ -21,6 +21,7 @@
   "empty": "No holding matches your search.",
   "noSearchResults": "No holding matches \"{{query}}\"",
   "noSearchResultsHint": "The search looks at the name and the ISIN.",
+  "error": "Your holdings could not be loaded.",
   "errorTitle": "Your holdings could not be loaded",
   "errorMessage": "The server did not answer. Check your connection, then try again.",
   "retry": "Retry",

@@ -56,7 +56,7 @@ export class HoldingListStore {
   readonly #accountList = computed(() => (this.accounts.hasValue() ? this.accounts.value() : []));
 
   readonly #institutionByAccount = computed(
-    () => new Map(this.#accountList().map((account) => [account.id, account.institution])),
+    () => new Map(this.#accountList().map((account) => [account.id, account.institution.trim()])),
   );
 
   readonly #allHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));

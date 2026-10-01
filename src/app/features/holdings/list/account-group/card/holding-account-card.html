@@ -29,7 +29,7 @@
           <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
           <span
             class="text-label truncate tabular-nums"
-            [class]="holding.stale ? 'font-medium text-(--stale)' : 'text-(--subtle-foreground)'"
+            [class]="holding.stale ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
           >
             @if (isBooklet(holding)) {
               {{ 'holdings.booklet' | transloco }}

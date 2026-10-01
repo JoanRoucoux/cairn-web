@@ -55,7 +55,9 @@ describe('HoldingListPage states', () => {
   it('shows a skeleton shaped like the list while loading', async () => {
     await renderPage();
 
-    expect(screen.getByTestId('holdings-loading').querySelectorAll('ui-skeleton').length).toBeGreaterThan(8);
+    expect(screen.getByTestId('holdings-loading')).toBeInTheDocument();
+    expect(screen.getByTestId('holdings-loading-rows').children).toHaveLength(8);
+    expect(screen.getByTestId('holdings-loading-cards').children).toHaveLength(2);
     httpTesting.expectOne('/api/holdings').flush([]);
     httpTesting.expectOne('/api/accounts').flush(accounts);
   });
@@ -73,6 +75,19 @@ describe('HoldingListPage states', () => {
 
     httpTesting.expectOne('/api/holdings').flush([unpriced]);
     expect((await screen.findAllByText('Newly listed fund')).length).toBeGreaterThan(0);
+  });
+
+  it('prints no dangling separator for a blank institution', async () => {
+    await renderPage();
+    httpTesting.expectOne('/api/holdings').flush([unpriced]);
+    httpTesting.expectOne('/api/accounts').flush([{ ...accounts[0], institution: '  ' }]);
+
+    const metas = await screen.findAllByText(/enums.accountType.PEA/);
+
+    for (const meta of metas) {
+      expect(meta.textContent).not.toMatch(/·s*·/);
+      expect(meta.textContent?.trim()).not.toMatch(/·$/);
+    }
   });
 
   it('survives an accounts call that fails', async () => {

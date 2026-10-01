@@ -1,94 +1,23 @@
-<td primary uiTd>
-  <a
-    queryParamsHandling="preserve"
-    uiRowLink
-    [attr.data-holding-id]="holding().id"
-    [current]="open()"
-    [routerLink]="['/holdings', holding().id]"
-  >
-    {{ holding().instrumentName }}
-  </a>
-  @if (booklet()) {
-    <span uiCellSub>{{ 'holdings.booklet' | transloco }}</span>
-  } @else if (compact()) {
-    @if (holding().stale) {
-      <span tone="stale" uiCellSub>{{
-        'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
-      }}</span>
-    } @else if (unpriced()) {
-      <span uiCellSub>{{ 'holdings.noQuote' | transloco }}</span>
-    } @else {
-      <span uiCellSub>{{ 'enums.assetClass.' + holding().assetClass | transloco }}</span>
-    }
-  } @else {
-    <span class="max-lg:hidden" uiCellSub>
-      @if (holding().isin) {
-        {{ holding().isin }} &middot;
-      }
-      {{ 'enums.assetClass.' + holding().assetClass | transloco }}
-    </span>
-    <span narrow uiCellSub>
-      <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
-      @if (!unpriced()) {
-        &times; <ui-amount currency="EUR" [value]="holding().price" />
-      }
-      &middot; {{ 'holdings.averageCost' | transloco }} <ui-amount currency="EUR" [value]="holding().averageCost" />
-    </span>
-    @if (holding().stale) {
-      <span narrow tone="stale" uiCellSub>{{
-        'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate }
-      }}</span>
-    } @else if (unpriced()) {
-      <span narrow uiCellSub>{{ 'holdings.noQuoteToEnter' | transloco }}</span>
-    }
-  }
-</td>
+<td app-holding-line-cell primary uiTd [compact]="compact()" [holding]="holding()" [open]="open()"></td>
 @if (!compact()) {
-  <td numeric secondary uiTd>
-    @if (!booklet()) {
+  @if (booklet()) {
+    <td numeric secondary uiTd></td>
+    <td numeric secondary uiTd></td>
+    <td numeric secondary uiTd></td>
+  } @else {
+    <td numeric secondary uiTd>
       <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
-    }
-  </td>
-  <td numeric secondary uiTd>
-    @if (!booklet()) {
+    </td>
+    <td numeric secondary uiTd>
       <ui-amount [value]="holding().averageCost" />
-    }
-  </td>
-  <td numeric secondary uiTd>
-    @if (!booklet()) {
-      @if (unpriced()) {
-        <button
-          class="rounded-control text-label h-8 bg-(--card) px-2.5 font-medium whitespace-nowrap shadow-[inset_0_0_0_1px_var(--border)] hover:bg-(--glow) active:scale-(--press-scale)"
-          data-testid="enter-quote"
-          type="button"
-          uiRowAction
-          (click)="enterQuote.emit(holding())"
-        >
-          {{ 'holdings.manualQuote.open' | transloco }}
-        </button>
-      } @else {
-        <ui-amount [value]="holding().price" />
-      }
-      @if (holding().stale) {
-        <span tone="stale" uiCellSub>{{
-          'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
-        }}</span>
-      }
-    }
-  </td>
+    </td>
+    <td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
+  }
 }
 <td class="font-medium" numeric uiTd>
   <ui-amount currency="EUR" [value]="holding().marketValueEur" />
   @if (unpriced() && !booklet() && !compact()) {
-    <button
-      class="rounded-control text-label mt-1 h-8 bg-(--card) px-2.5 font-medium whitespace-nowrap shadow-[inset_0_0_0_1px_var(--border)] hover:bg-(--glow) active:scale-(--press-scale) lg:hidden"
-      data-testid="enter-quote-narrow"
-      type="button"
-      uiRowAction
-      (click)="enterQuote.emit(holding())"
-    >
-      {{ 'holdings.manualQuote.open' | transloco }}
-    </button>
+    <app-holding-enter-quote narrow (entered)="enterQuote.emit(holding())" />
   }
 </td>
 @if (!compact()) {

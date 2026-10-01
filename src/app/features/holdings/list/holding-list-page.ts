@@ -1,6 +1,6 @@
 import { Component, DestroyRef, ElementRef, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 
 import {
   type AsyncState,
@@ -9,12 +9,11 @@ import {
   UiField,
   UiFieldLeading,
   UiInput,
-  UiSkeleton,
   UiTable,
   UiTh,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucidePlus, LucideX } from '@lucide/angular';
+import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -24,7 +23,9 @@ import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
+import { HoldingListFilters } from './filters/holding-list-filters';
 import { HoldingListStore } from './holding-list-store';
+import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
 
 @Component({
   selector: 'app-holding-list-page',
@@ -33,18 +34,17 @@ import { HoldingListStore } from './holding-list-store';
     HoldingAccountGroup,
     HoldingAddDialog,
     HoldingCashDialog,
+    HoldingListFilters,
+    HoldingListSkeleton,
     LucidePlus,
-    LucideX,
-    RouterLink,
+    ManualQuoteDialog,
     RouterOutlet,
     TranslocoPipe,
-    ManualQuoteDialog,
     UiAsync,
     UiButton,
     UiField,
     UiFieldLeading,
     UiInput,
-    UiSkeleton,
     UiTable,
     UiTh,
   ],
@@ -74,9 +74,6 @@ export class HoldingListPage {
     return this.holdings.isLoading() ? 'loading' : 'ready';
   });
 
-  protected readonly skeletonCards = [1, 2];
-  protected readonly skeletonRows = [1, 2, 3, 4];
-  protected readonly skeletonDesktopRows = [1, 2, 3, 4, 5, 6, 7, 8];
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
   protected readonly presetAccountId = signal<string | undefined>(undefined);

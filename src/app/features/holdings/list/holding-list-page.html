@@ -47,58 +47,7 @@
   </div>
 </div>
 
-@if (staleFilter() || accountFilter() || assetClassFilter()) {
-  <div class="mt-3 flex flex-wrap gap-2">
-    @if (staleFilter()) {
-      <a
-        class="rounded-pill text-caption inline-flex items-center gap-1.5 bg-(--muted) px-2.5 py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-        data-testid="filter-chip-stale"
-        queryParamsHandling="merge"
-        routerLink="."
-        [attr.aria-label]="'holdings.filters.remove' | transloco: { label: 'holdings.filters.stale' | transloco }"
-        [queryParams]="{ filter: null }"
-      >
-        {{ 'holdings.filters.stale' | transloco }}
-        <svg lucideX [size]="12" [strokeWidth]="2" />
-      </a>
-    }
-    @if (accountFilter(); as account) {
-      <a
-        class="rounded-pill text-caption inline-flex items-center gap-1.5 bg-(--muted) px-2.5 py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-        data-testid="filter-chip-account"
-        queryParamsHandling="merge"
-        routerLink="."
-        [attr.aria-label]="
-          'holdings.filters.remove' | transloco: { label: 'holdings.filters.account' | transloco: { name: account } }
-        "
-        [queryParams]="{ account: null }"
-      >
-        {{ 'holdings.filters.account' | transloco: { name: account } }}
-        <svg lucideX [size]="12" [strokeWidth]="2" />
-      </a>
-    }
-    @if (assetClassFilter(); as assetClass) {
-      <a
-        class="rounded-pill text-caption inline-flex items-center gap-1.5 bg-(--muted) px-2.5 py-1 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-        data-testid="filter-chip-asset-class"
-        queryParamsHandling="merge"
-        routerLink="."
-        [attr.aria-label]="
-          'holdings.filters.remove'
-            | transloco
-              : {
-                  label:
-                    'holdings.filters.assetClass' | transloco: { name: 'enums.assetClass.' + assetClass | transloco },
-                }
-        "
-        [queryParams]="{ assetClass: null }"
-      >
-        {{ 'holdings.filters.assetClass' | transloco: { name: 'enums.assetClass.' + assetClass | transloco } }}
-        <svg lucideX [size]="12" [strokeWidth]="2" />
-      </a>
-    }
-  </div>
-}
+<app-holding-list-filters [account]="accountFilter()" [assetClass]="assetClassFilter()" [stale]="staleFilter()" />
 
 <div class="mt-4 grid grid-cols-1 items-start gap-4" [class]="compact() ? 'lg:grid-cols-[1fr_400px]' : ''">
   <div class="min-w-0" [class.max-lg:hidden]="compact()">
@@ -118,23 +67,9 @@
         [state]="state()"
         (retry)="holdings.reload()"
       >
-        <div asyncLoading data-testid="holdings-loading">
+        <div asyncLoading>
           <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
-          <div class="flex flex-col gap-4 md:hidden">
-            @for (card of skeletonCards; track card) {
-              <div class="rounded-container flex flex-col bg-(--card) p-4 shadow-[inset_0_0_0_1px_var(--border)]">
-                <ui-skeleton shape="row" />
-                @for (row of skeletonRows; track row) {
-                  <ui-skeleton shape="row" />
-                }
-              </div>
-            }
-          </div>
-          <div class="flex flex-col max-md:hidden md:px-2 md:py-2">
-            @for (row of skeletonDesktopRows; track row) {
-              <ui-skeleton shape="row" />
-            }
-          </div>
+          <app-holding-list-skeleton />
         </div>
         <div class="flex flex-col gap-4 md:hidden">
           @for (group of groups(); track group.accountId) {

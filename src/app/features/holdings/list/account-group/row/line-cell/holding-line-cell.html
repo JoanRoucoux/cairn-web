@@ -1,0 +1,43 @@
+<a
+  queryParamsHandling="preserve"
+  uiRowLink
+  [attr.data-holding-id]="holding().id"
+  [current]="open()"
+  [routerLink]="['/holdings', holding().id]"
+>
+  {{ holding().instrumentName }}
+</a>
+@if (booklet()) {
+  <span uiCellSub>{{ 'holdings.booklet' | transloco }}</span>
+} @else if (compact()) {
+  @if (holding().stale) {
+    <span tone="stale" uiCellSub>{{
+      'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
+    }}</span>
+  } @else if (unpriced()) {
+    <span uiCellSub>{{ 'holdings.noQuote' | transloco }}</span>
+  } @else {
+    <span uiCellSub>{{ 'enums.assetClass.' + holding().assetClass | transloco }}</span>
+  }
+} @else {
+  <span class="max-lg:hidden" uiCellSub>
+    @if (holding().isin) {
+      {{ holding().isin }} &middot;
+    }
+    {{ 'enums.assetClass.' + holding().assetClass | transloco }}
+  </span>
+  <span narrow uiCellSub>
+    <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
+    @if (!unpriced()) {
+      &times; <ui-amount currency="EUR" [value]="holding().price" />
+    }
+    &middot; {{ 'holdings.averageCost' | transloco }} <ui-amount currency="EUR" [value]="holding().averageCost" />
+  </span>
+  @if (holding().stale) {
+    <span narrow tone="stale" uiCellSub>{{
+      'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate }
+    }}</span>
+  } @else if (unpriced()) {
+    <span narrow uiCellSub>{{ 'holdings.noQuoteToEnter' | transloco }}</span>
+  }
+}

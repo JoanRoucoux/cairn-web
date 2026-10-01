@@ -1,21 +1,21 @@
 import { Component, booleanAttribute, computed, input, output } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
-import { UiAmount, UiCellSub, UiRowAction, UiRowLink, UiTd } from '@joanroucoux/cairn-ui';
-import { TranslocoPipe } from '@jsverse/transloco';
+import { UiAmount, UiCellSub, UiTd } from '@joanroucoux/cairn-ui';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
-import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 import { isBooklet } from '../../holding-list-store';
 import { deltaTone, isMissing } from '../delta-tone';
+import { HoldingEnterQuote } from './enter-quote/holding-enter-quote';
+import { HoldingLineCell } from './line-cell/holding-line-cell';
+import { HoldingQuoteCell } from './quote-cell/holding-quote-cell';
 
 @Component({
   selector: 'tr[app-holding-account-group-row]',
-  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCellSub, UiRowAction, UiRowLink, UiTd],
+  imports: [HoldingEnterQuote, HoldingLineCell, HoldingQuoteCell, RatioPipe, UiAmount, UiCellSub, UiTd],
   templateUrl: './holding-account-group-row.html',
   host: { 'data-testid': 'holding-row' },
 })

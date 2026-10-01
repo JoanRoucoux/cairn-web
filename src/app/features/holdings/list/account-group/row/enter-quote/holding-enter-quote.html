@@ -1,0 +1,10 @@
+<button
+  class="rounded-control text-label h-8 bg-(--card) px-2.5 font-medium whitespace-nowrap shadow-[inset_0_0_0_1px_var(--border)] hover:bg-(--glow) active:scale-(--press-scale)"
+  type="button"
+  uiRowAction
+  [attr.data-testid]="narrow() ? 'enter-quote-narrow' : 'enter-quote'"
+  [class]="narrow() ? 'mt-1 lg:hidden' : ''"
+  (click)="entered.emit()"
+>
+  {{ 'holdings.manualQuote.open' | transloco }}
+</button>
