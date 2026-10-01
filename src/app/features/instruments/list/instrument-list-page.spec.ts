@@ -268,7 +268,8 @@ describe('InstrumentListPage', () => {
 
     expect(screen.getByTestId('instruments-search')).toHaveAttribute('placeholder', 'instruments.searchPlaceholder');
 
-    query.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+    query.matches = true;
+    query.dispatchEvent(new Event('change'));
 
     await vi.waitFor(() =>
       expect(screen.getByTestId('instruments-search')).toHaveAttribute(

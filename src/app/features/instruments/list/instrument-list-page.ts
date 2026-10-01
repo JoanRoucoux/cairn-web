@@ -23,24 +23,13 @@ import {
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash2 } from '@lucide/angular';
-import { type Observable, fromEvent, map, of, startWith } from 'rxjs';
 
 import { pluralKey } from '@shared/format/plural-key';
+import { injectDesktop } from '@shared/layout/desktop-media';
 
 import type { DeletableInstrument } from '../delete-dialog/instrument-delete-dialog';
 import { InstrumentDeleteDialog } from '../delete-dialog/instrument-delete-dialog';
 import { InstrumentListStore, type InstrumentRow } from './instrument-list-store';
-
-const desktopQuery = (): Observable<boolean> => {
-  const query = typeof matchMedia === 'function' ? matchMedia('(min-width: 1024px)') : undefined;
-
-  return query
-    ? fromEvent<MediaQueryListEvent>(query, 'change').pipe(
-        map((event) => event.matches),
-        startWith(query.matches),
-      )
-    : of(false);
-};
 
 @Component({
   selector: 'app-instrument-list-page',
@@ -85,7 +74,7 @@ export class InstrumentListPage {
   protected readonly search = this.#store.search;
   protected readonly state = this.#store.state;
   protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
-  protected readonly desktop = toSignal(desktopQuery(), { requireSync: true });
+  protected readonly desktop = injectDesktop();
 
   protected readonly cardPadding = computed(
     () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],

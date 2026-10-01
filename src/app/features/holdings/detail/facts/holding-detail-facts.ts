@@ -1,4 +1,4 @@
-import { Component, DestroyRef, LOCALE_ID, computed, inject, input, signal } from '@angular/core';
+import { Component, LOCALE_ID, computed, inject, input } from '@angular/core';
 
 import { UiAmount, UiCard, UiFact, UiFacts } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -7,6 +7,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
+import { injectDesktop } from '@shared/layout/desktop-media';
 
 const PARIS_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
 
@@ -22,19 +23,7 @@ export class HoldingDetailFacts {
 
   readonly #locale = inject(LOCALE_ID);
 
-  protected readonly desktop = signal(false);
-
-  constructor() {
-    const query = globalThis.matchMedia?.('(min-width: 1024px)');
-
-    if (query) {
-      const update = (): void => this.desktop.set(query.matches);
-
-      update();
-      query.addEventListener('change', update);
-      inject(DestroyRef).onDestroy(() => query.removeEventListener('change', update));
-    }
-  }
+  protected readonly desktop = injectDesktop();
 
   protected readonly decimalPlaces = decimalPlaces;
 

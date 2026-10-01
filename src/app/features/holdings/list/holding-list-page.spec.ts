@@ -98,7 +98,7 @@ describe('HoldingListPage', () => {
 
     expect(await screen.findByRole('searchbox', { name: 'holdings.searchLabel' })).toHaveAttribute(
       'placeholder',
-      'holdings.searchPlaceholder',
+      'holdings.searchPlaceholderShort',
     );
   });
 

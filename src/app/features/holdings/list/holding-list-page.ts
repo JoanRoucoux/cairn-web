@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 
@@ -21,6 +21,8 @@ import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+
+import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
@@ -67,7 +69,6 @@ export class HoldingListPage {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
-  #destroyRef = inject(DestroyRef);
 
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
@@ -78,7 +79,7 @@ export class HoldingListPage {
   protected readonly assetClass = this.#store.assetClass;
   protected readonly classSummary = this.#store.classSummary;
 
-  protected readonly desktop = signal(true);
+  protected readonly desktop = injectDesktop();
   protected readonly state = computed<AsyncState>(() => {
     if (this.holdings.error()) {
       return 'error';
@@ -127,16 +128,6 @@ export class HoldingListPage {
   #landedOn: string | undefined;
 
   constructor() {
-    const query = globalThis.matchMedia?.('(min-width: 1024px)');
-
-    if (query) {
-      const update = (): void => this.desktop.set(query.matches);
-
-      update();
-      query.addEventListener('change', update);
-      this.#destroyRef.onDestroy(() => query.removeEventListener('change', update));
-    }
-
     afterRenderEffect(() => {
       const accountId = this.#store.accountParam();
 
