@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterRenderEffect, inject, output, signal } from '@angular/core';
+import { Component, ElementRef, type OnInit, afterRenderEffect, inject, input, output, signal } from '@angular/core';
 
 import { UiButton, UiDialog, UiField, UiSelect } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -21,9 +21,10 @@ import { HoldingAddSearch } from './search/holding-add-search';
   templateUrl: './holding-add-dialog.html',
   providers: [HoldingAddDialogStore],
 })
-export class HoldingAddDialog {
+export class HoldingAddDialog implements OnInit {
   #store = inject(HoldingAddDialogStore);
 
+  readonly presetAccountId = input<string | null>(null);
   readonly saved = output<void>();
   readonly dismissed = output<void>();
 
@@ -57,6 +58,13 @@ export class HoldingAddDialog {
         this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();
       }
     });
+  }
+
+  ngOnInit(): void {
+    const preset = this.presetAccountId();
+    if (preset) {
+      this.accountId.set(preset);
+    }
   }
 
   protected onQueryInput(event: Event): void {

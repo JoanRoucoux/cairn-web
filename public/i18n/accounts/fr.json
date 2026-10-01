@@ -4,7 +4,6 @@
   "institution": "Établissement",
   "choose": "Choisir une enveloppe",
   "add": "Nouveau compte",
-  "summary": "{{count}} comptes",
   "empty": "Aucun compte pour le moment.",
   "errorTitle": "Les comptes n'ont pas pu être chargés",
   "errorMessage": "Le serveur n'a pas répondu.",
@@ -12,8 +11,8 @@
   "lineCount_one": "{{count}} ligne",
   "lineCount_other": "{{count}} lignes",
   "actions": "Actions sur {{name}}",
-  "edit": "Modifier",
-  "rowEmpty": "Ce compte n'a encore aucune ligne.",
+  "edit": "Modifier le compte",
+  "rowEmpty": "Ce compte n'a encore aucune ligne. Ajoutez un titre, ou importez les lignes depuis un fichier CSV.",
   "rowEmptyAction": "Ajouter une ligne",
   "form": {
     "createTitle": "Nouveau compte",
@@ -24,7 +23,7 @@
     "nameConflict": "Un compte porte déjà ce nom."
   },
   "delete": {
-    "action": "Supprimer",
+    "action": "Supprimer le compte",
     "title": "Supprimer le compte ?",
     "description": "Cette action est définitive.",
     "cancel": "Annuler",
@@ -32,5 +31,21 @@
     "refused_one": "Ce compte détient encore {{count}} ligne. Vendez-la ou supprimez-la d'abord.",
     "refused_other": "Ce compte détient encore {{count}} lignes. Vendez-les ou supprimez-les d'abord.",
     "error": "Ce compte n'a pas pu être supprimé."
-  }
+  },
+  "summary_one": "{{count}} compte",
+  "summary_other": "{{count}} comptes",
+  "columns": {
+    "account": "Compte",
+    "type": "Enveloppe",
+    "institution": "Établissement",
+    "lines": "Lignes",
+    "value": "Valeur",
+    "share": "Part",
+    "actions": "Actions"
+  },
+  "noLine": "Aucune ligne",
+  "bookletCount_one": "{{count}} livret",
+  "bookletCount_other": "{{count}} livrets",
+  "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
+  "rowEmptyImport": "Importer un CSV"
 }

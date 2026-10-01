@@ -147,6 +147,32 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
   });
 
+  it('opens the add dialog on the account named by the add query parameter, then drops the parameter', async () => {
+    await render(TestHost, {
+      imports: [getTranslocoTestingModule()],
+      routes: [{ path: '', component: HoldingListPage }],
+      initialRoute: '/?add=a1',
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await screen.findByTestId('holding-add-dialog');
+    httpTesting.match('/api/accounts').forEach((request) => request.flush(accounts));
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
+
+    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+
+    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
+    expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument();
+  });
+
   it('closes the add dialog when it is dismissed', async () => {
     const user = userEvent.setup();
     await renderPage();

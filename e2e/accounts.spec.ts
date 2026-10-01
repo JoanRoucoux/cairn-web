@@ -25,8 +25,27 @@ test.describe('accounts', () => {
     await accounts.goto();
 
     const row = accounts.rowFor('Livret A');
-    await expect(row).toContainText('0 holdings');
-    await expect(page.getByTestId('account-empty-hint').filter({ hasText: 'no line yet' })).toBeVisible();
+    await expect(row).toContainText('No holdings');
+    await expect(page.getByTestId('account-empty-hint').filter({ hasText: 'no holdings yet' })).toBeVisible();
+  });
+
+  test('opens the add-a-line dialog on the empty account from its row', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await page.getByTestId('account-empty-add').click();
+
+    await expect(page).toHaveURL(/\/holdings\?add=/);
+    await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByTestId('holding-add-account')).toHaveValue(/.+/);
+  });
+
+  test('summarises the accounts with their count and total above the table', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await expect(page.getByTestId('accounts-summary')).toContainText(/\d+ accounts/);
+    await expect(page.getByRole('columnheader', { name: 'Share' })).toBeVisible();
   });
 
   test('names the envelopes instead of showing their contract codes', async ({ page }) => {
