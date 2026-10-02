@@ -1,6 +1,8 @@
 import { DOCUMENT } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { vi } from 'vitest';
+
 import { ThemeStore } from './theme-store';
 
 describe('ThemeStore', () => {
@@ -59,6 +61,40 @@ describe('ThemeStore', () => {
     store.set('system');
 
     expect(root.hasAttribute('data-theme')).toBe(false);
+  });
+
+  describe('switching without transitions', () => {
+    let frame: FrameRequestCallback | undefined;
+
+    beforeEach(() => {
+      frame = undefined;
+      vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+        frame = callback;
+        return 1;
+      });
+    });
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('should hold data-theme-switching while the theme changes and release it on the next frame', () => {
+      const store = configure(null);
+
+      store.set('dark');
+
+      expect(root.getAttribute('data-theme')).toBe('dark');
+      expect(root.hasAttribute('data-theme-switching')).toBe(true);
+
+      frame?.(0);
+
+      expect(root.hasAttribute('data-theme-switching')).toBe(false);
+    });
+
+    it('should not hold it when the store starts', () => {
+      configure('dark');
+
+      expect(root.hasAttribute('data-theme-switching')).toBe(false);
+      expect(frame).toBeUndefined();
+    });
   });
 
   describe('device scheme', () => {
