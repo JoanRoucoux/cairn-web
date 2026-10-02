@@ -8,6 +8,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
@@ -66,6 +67,11 @@ export class AccountFormDialog {
 
   constructor() {
     effect(() => this.#store.prefill(this.account()));
+
+    effect(() => {
+      this.form.type().value();
+      untracked(() => this.#store.savingsConflict.set(false));
+    });
 
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {

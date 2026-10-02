@@ -182,6 +182,23 @@ describe('AccountFormDialog', () => {
     expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
   });
 
+  it('should clear the envelope error once another type is chosen', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
+    await user.click(screen.getByTestId('account-form-submit'));
+    await vi.waitFor(() =>
+      httpTesting.expectOne('/api/accounts').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
+    );
+    await screen.findByText('accounts.form.savingsConflict');
+
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEE' }));
+
+    expect(screen.queryByText('accounts.form.savingsConflict')).not.toBeInTheDocument();
+  });
+
   it('should clear the name conflict once the name is edited again', async () => {
     const user = userEvent.setup();
     await renderDialog();
