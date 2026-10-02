@@ -31,12 +31,18 @@ export class AccountListStore {
     stream: () => this.#portfolioApiClient.getPortfolio(),
   });
 
+  #isLoading(resource: { status: () => string; error: () => unknown }): boolean {
+    const status = resource.status();
+
+    return status === 'loading' || (status === 'reloading' && Boolean(resource.error()));
+  }
+
   readonly state = computed<AsyncState>(() => {
+    if (this.#isLoading(this.#accounts) || this.#isLoading(this.#portfolio)) {
+      return 'loading';
+    }
     if (this.#accounts.error() || this.#portfolio.error()) {
       return 'error';
-    }
-    if (this.#accounts.status() === 'loading' || this.#portfolio.status() === 'loading') {
-      return 'loading';
     }
 
     return this.accounts().length === 0 ? 'empty' : 'ready';

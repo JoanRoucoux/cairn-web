@@ -89,6 +89,22 @@ export class PortfolioStore {
     computation: (settled, previous) => settled ?? previous?.value ?? EMPTY_HISTORY,
   });
 
+  readonly shownRange = linkedSignal<{ range: ChartRange; settled: boolean }, ChartRange>({
+    source: () => ({ range: this.range(), settled: isSettled(this.history.status()) }),
+    computation: (source, previous) => (source.settled ? source.range : (previous?.value ?? source.range)),
+  });
+
+  readonly #performanceKept = linkedSignal<
+    { range: ChartRange; value: PerformanceResponse | undefined },
+    { range: ChartRange; value: PerformanceResponse } | undefined
+  >({
+    source: () => ({
+      range: this.range(),
+      value: settledValue<PerformanceResponse | undefined>(this.performance, undefined),
+    }),
+    computation: (source, previous) => (source.value ? { range: source.range, value: source.value } : previous?.value),
+  });
+
   readonly points = computed<ChartPoint[]>(() => {
     const value = this.#historyValue();
 
@@ -98,7 +114,8 @@ export class PortfolioStore {
   });
 
   readonly rangeChange = computed(() => {
-    const dayTotal = this.range() === '1d' ? this.performanceValue()?.total : undefined;
+    const kept = this.#performanceKept();
+    const dayTotal = this.shownRange() === '1d' && kept?.range === '1d' ? kept.value.total : undefined;
 
     if (dayTotal) {
       return { eur: dayTotal.changeEur, ratio: dayTotal.changeRatio ?? null };

@@ -75,4 +75,52 @@ describe('PortfolioStore range reload', () => {
     expect(store.curveReloading()).toBe(false);
     await drain();
   });
+
+  it('should keep the variation and its range with the series, then swap both at once', async () => {
+    await load(history(point('2026-08-20', 100), point('2026-08-21', 110)));
+    expect(store.rangeChange()).toEqual({ eur: 10, ratio: 0.1 });
+    expect(store.shownRange()).toBe('1m');
+
+    store.range.set('1y');
+    TestBed.tick();
+
+    expect(store.shownRange()).toBe('1m');
+    expect(store.rangeChange()).toEqual({ eur: 10, ratio: 0.1 });
+
+    await flushWhenSeen('/api/history', history(point('2025-08-21', 100), point('2026-08-21', 300)));
+    await vi.waitFor(() => expect(store.shownRange()).toBe('1y'));
+
+    expect(store.rangeChange()).toEqual({ eur: 200, ratio: 2 });
+    await drain();
+  });
+
+  it('should surface the error, not the old series, when the new range fails, and retry only that call', async () => {
+    await load(history(point('2026-08-20', 100), point('2026-08-21', 110)));
+    expect(store.curveBlocking()).toBe(false);
+
+    store.range.set('1y');
+    TestBed.tick();
+    await vi.waitFor(() =>
+      httpTesting
+        .match((candidate) => candidate.url === '/api/history')[0]
+        ?.flush(null, { status: 500, statusText: 'Server error' }),
+    );
+    await vi.waitFor(() => expect(store.curveState()).toBe('error'));
+
+    expect(store.curveBlocking()).toBe(true);
+
+    store.retryCurve();
+    TestBed.tick();
+
+    expect(store.curveState()).toBe('loading');
+    expect(store.curveBlocking()).toBe(true);
+    const retried = httpTesting.match((candidate) => candidate.url === '/api/history');
+    expect(retried).toHaveLength(1);
+    retried[0]?.flush(history(point('2025-08-21', 100), point('2026-08-21', 300)));
+    await vi.waitFor(() => expect(store.curveState()).toBe('ready'));
+
+    expect(store.curveBlocking()).toBe(false);
+    expect(store.shownRange()).toBe('1y');
+    await drain();
+  });
 });

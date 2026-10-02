@@ -187,6 +187,28 @@ describe('AccountListStore', () => {
     expect(store.state()).toBe('error');
   });
 
+  it('should go back to loading on a retry after an error, then to content', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/accounts').flush(null, { status: 500, statusText: 'Server error' });
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 100, byAssetClass: [], byAccount: [], holdings: [holding()] });
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(store.state()).toBe('error');
+
+    store.retry();
+    TestBed.tick();
+
+    expect(store.state()).toBe('loading');
+    httpTesting.expectOne('/api/accounts').flush([account]);
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 100, byAssetClass: [], byAccount: [], holdings: [holding()] });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.state()).toBe('ready');
+  });
+
   it('should reload both calls on retry', async () => {
     await flush([]);
 

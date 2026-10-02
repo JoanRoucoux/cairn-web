@@ -19,6 +19,7 @@
             [rangeChangeEur]="rangeChange()?.eur"
             [rangeChangeRatio]="rangeChange()?.ratio"
             [reconstructed]="reconstructed()"
+            [shownRange]="shownRange()"
             [startLabel]="'chart.startLabel' | transloco"
             [state]="curveState()"
             (rangeChange)="setRange($event)"

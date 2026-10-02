@@ -3,11 +3,13 @@ import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angu
 import { Router, RouterLink } from '@angular/router';
 
 import {
+  type AsyncState,
   type ChartPoint,
   type SegmentedOption,
   UI_AMOUNT_MASKED,
   UiAlert,
   UiAmount,
+  UiAsync,
   UiBackLink,
   UiButton,
   UiCard,
@@ -60,6 +62,7 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     TranslocoPipe,
     UiAlert,
     UiAmount,
+    UiAsync,
     UiBackLink,
     UiButton,
     UiCard,
@@ -90,10 +93,15 @@ export class HoldingDetailPage {
   protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
-  protected readonly rangeChange = this.#store.rangeChange;
+  protected readonly rangeChange = computed(() => (this.#store.quotesFailed() ? undefined : this.#store.rangeChange()));
+  protected readonly chartState = computed<AsyncState>(() => (this.#store.quotesFailed() ? 'error' : 'ready'));
+  protected readonly shownRange = this.#store.shownRange;
+  protected readonly quotesFailed = this.#store.quotesFailed;
   protected readonly instrumentDetail = computed(() =>
     this.instrument.hasValue() ? this.instrument.value() : undefined,
   );
+
+  protected readonly priced = computed(() => (this.holding()?.price ?? null) !== null);
 
   protected readonly isCash = computed(() => this.holding()?.assetClass === 'CASH');
 
@@ -107,7 +115,7 @@ export class HoldingDetailPage {
     return this.#transloco.translate('chart.startLabel');
   });
 
-  protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
+  protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.shownRange()));
 
   protected readonly tooltipFormat = computed(() => {
     this.#language.activeLang();
@@ -137,6 +145,10 @@ export class HoldingDetailPage {
     this.range.set(value as ChartRange);
   }
 
+  protected retryQuotes(): void {
+    this.#store.retryQuotes();
+  }
+
   protected onEnterQuote(): void {
     const holding = this.holding();
 
@@ -145,8 +157,9 @@ export class HoldingDetailPage {
     }
   }
 
-  protected onQuoteSaved(): void {
+  protected onQuoteSaved(holdingId: string): void {
     this.pricingInstrument.set(undefined);
+    this.#changes.touched(holdingId);
     this.#store.reload();
   }
 

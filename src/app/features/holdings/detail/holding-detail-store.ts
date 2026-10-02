@@ -56,21 +56,34 @@ export class HoldingDetailStore {
   });
 
   readonly #series = linkedSignal<
-    { instrumentId: string | undefined; quotes: QuoteResponse[] | undefined },
-    QuoteResponse[]
+    { instrumentId: string | undefined; range: ChartRange; quotes: QuoteResponse[] | undefined },
+    { range: ChartRange; quotes: QuoteResponse[] }
   >({
-    source: () => ({
-      instrumentId: this.holding()?.instrumentId,
-      quotes: this.quotes.status() === 'loading' || this.quotes.status() === 'error' ? undefined : this.quotes.value(),
-    }),
+    source: () => {
+      const status = this.quotes.status();
+
+      return {
+        instrumentId: this.holding()?.instrumentId,
+        range: this.range(),
+        quotes: status === 'loading' || status === 'error' ? undefined : this.quotes.value(),
+      };
+    },
     computation: (source, previous) =>
-      source.quotes ?? (previous && previous.source.instrumentId === source.instrumentId ? previous.value : []),
+      source.quotes
+        ? { range: source.range, quotes: source.quotes }
+        : previous && previous.source.instrumentId === source.instrumentId
+          ? previous.value
+          : { range: source.range, quotes: [] },
   });
+
+  readonly shownRange = computed(() => this.#series().range);
+
+  readonly quotesFailed = computed(() => this.quotes.status() === 'error');
 
   readonly points = computed<ChartPoint[]>(() => {
     const quantity = this.holding()?.quantity ?? 0;
 
-    return this.#series().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
+    return this.#series().quotes.map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
   });
 
   readonly rangeChange = computed(() => {
@@ -86,6 +99,10 @@ export class HoldingDetailStore {
 
     return { amount, ratio: first.v === 0 ? null : amount / first.v };
   });
+
+  retryQuotes(): void {
+    this.quotes.reload();
+  }
 
   reload(): void {
     this.holdings.reload();

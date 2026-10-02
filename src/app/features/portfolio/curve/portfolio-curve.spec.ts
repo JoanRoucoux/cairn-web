@@ -20,6 +20,7 @@ const renderCurve = (
     state: AsyncState;
     blocking: boolean;
     chartReloading: boolean;
+    shownRange: ChartRange;
     points: ChartPoint[];
     range: ChartRange;
     rangeChangeEur: number | undefined;
@@ -146,7 +147,15 @@ describe('PortfolioCurve', () => {
 
     expect(container.querySelector('ui-line-chart')).toBeInTheDocument();
     expect(screen.queryByTestId('curve-loading')).not.toBeInTheDocument();
-    expect(screen.getByTestId('curve-range-loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
+    expect(screen.getByText('portfolio.curve.period.1m')).toBeInTheDocument();
+  });
+
+  it('should label the variation with the range of the series shown, not the one picked', async () => {
+    await renderCurve({ state: 'loading', chartReloading: true, range: '1y', shownRange: '1m' });
+
+    expect(screen.getByText('portfolio.curve.period.1m')).toBeInTheDocument();
+    expect(screen.queryByText('portfolio.curve.period.1y')).not.toBeInTheDocument();
   });
 
   it('should show a skeleton while loading', async () => {

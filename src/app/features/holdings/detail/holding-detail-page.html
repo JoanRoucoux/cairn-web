@@ -92,7 +92,7 @@
               </div>
             }
 
-            @if (holding.price !== null && holding.price !== undefined) {
+            @if (priced()) {
               <div class="flex flex-col gap-3">
                 @if (rangeChange(); as change) {
                   <div
@@ -106,26 +106,34 @@
                       }
                     </ui-delta>
                     <span class="text-(--muted-foreground)">{{
-                      'holdings.detail.rangeChange.' + range() | transloco
+                      'holdings.detail.rangeChange.' + shownRange() | transloco
                     }}</span>
                   </div>
                 }
-                <div class="h-[179px] lg:h-[169px]">
-                  <ui-line-chart
-                    axisTicks="3"
-                    [axisFormat]="chart().axis"
-                    [deltaFormat]="chart().delta"
-                    [label]="'holdings.chartLabel' | transloco"
-                    [points]="points()"
-                    [startLabel]="startLabel()"
-                    [timeColumnLabel]="'chart.time' | transloco"
-                    [timeFormat]="chart().time"
-                    [tooltipDelta]="false"
-                    [tooltipFormat]="tooltipFormat()"
-                    [valueColumnLabel]="'chart.value' | transloco"
-                    [valueFormat]="chart().value"
-                  />
-                </div>
+                <ui-async
+                  [errorMessage]="'holdings.chartErrorMessage' | transloco"
+                  [errorTitle]="'holdings.chartErrorTitle' | transloco"
+                  [retryLabel]="'holdings.retry' | transloco"
+                  [state]="chartState()"
+                  (retry)="retryQuotes()"
+                >
+                  <div class="h-[179px] lg:h-[169px]">
+                    <ui-line-chart
+                      axisTicks="3"
+                      [axisFormat]="chart().axis"
+                      [deltaFormat]="chart().delta"
+                      [label]="'holdings.chartLabel' | transloco"
+                      [points]="points()"
+                      [startLabel]="startLabel()"
+                      [timeColumnLabel]="'chart.time' | transloco"
+                      [timeFormat]="chart().time"
+                      [tooltipDelta]="false"
+                      [tooltipFormat]="tooltipFormat()"
+                      [valueColumnLabel]="'chart.value' | transloco"
+                      [valueFormat]="chart().value"
+                    />
+                  </div>
+                </ui-async>
                 <ui-segmented
                   class="block w-full"
                   size="sm"
@@ -176,7 +184,7 @@
       (editDismissed)="editOpen.set(false)"
       (edited)="onEdited($event)"
       (quoteDismissed)="onQuoteDismissed()"
-      (quoteSaved)="onQuoteSaved()"
+      (quoteSaved)="onQuoteSaved(holding.id)"
       (sellDismissed)="sellOpen.set(false)"
       (sold)="onSold($event, holding.id)"
     />

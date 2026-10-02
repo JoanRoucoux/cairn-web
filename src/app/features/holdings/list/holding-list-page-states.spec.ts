@@ -92,7 +92,10 @@ describe('HoldingListPage states', () => {
 
     await user.click(screen.getByRole('button', { name: 'holdings.retry' }));
 
-    httpTesting.expectOne('/api/holdings').flush([unpriced]);
+    const retried = await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByTestId('holdings-loading')).toBeInTheDocument();
+    retried.flush([unpriced]);
     expect((await screen.findAllByText('Newly listed fund')).length).toBeGreaterThan(0);
   });
 

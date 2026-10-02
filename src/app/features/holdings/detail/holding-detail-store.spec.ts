@@ -221,7 +221,59 @@ describe('HoldingDetailStore', () => {
     await settle();
 
     expect(store.quotes.status()).toBe('error');
+    expect(store.quotesFailed()).toBe(true);
     expect(store.points()).toEqual(before);
+    expect(store.shownRange()).toBe('1m');
+
+    store.retryQuotes();
+    await settle();
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) => request.flush([{ asOf: '2026-01-01', price: 10 }]));
+    await settle();
+
+    expect(store.quotesFailed()).toBe(false);
+    expect(store.shownRange()).toBe('1y');
+  });
+
+  it('should keep the range of the series shown, and its variation, until the new range settles', async () => {
+    configure('h1');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await settle();
+    httpTesting
+      .match((request) => /^\/api\/instruments\/i\d$/.test(request.url))
+      .forEach((request) => request.flush({}));
+    await settle();
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) =>
+        request.flush([
+          { asOf: '2026-08-21', price: 50 },
+          { asOf: '2026-09-21', price: 55 },
+        ]),
+      );
+    await settle();
+    expect(store.rangeChange()).toEqual({ amount: 10, ratio: 0.1 });
+
+    store.range.set('1y');
+    await settle();
+
+    expect(store.shownRange()).toBe('1m');
+    expect(store.rangeChange()).toEqual({ amount: 10, ratio: 0.1 });
+
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) =>
+        request.flush([
+          { asOf: '2025-09-21', price: 10 },
+          { asOf: '2026-09-21', price: 30 },
+        ]),
+      );
+    await settle();
+
+    expect(store.shownRange()).toBe('1y');
+    expect(store.rangeChange()).toEqual({ amount: 40, ratio: 2 });
   });
 
   it('should drop the series of another instrument while its quotes load', async () => {

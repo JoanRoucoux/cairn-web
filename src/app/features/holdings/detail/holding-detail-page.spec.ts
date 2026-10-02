@@ -196,6 +196,7 @@ describe('HoldingDetailPage', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1/quotes').flush({}));
 
     await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
     httpTesting.expectOne('/api/holdings').flush([manualHolding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));

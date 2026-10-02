@@ -83,11 +83,13 @@ export class HoldingListPage {
 
   protected readonly desktop = injectDesktop();
   protected readonly state = computed<AsyncState>(() => {
-    if (this.holdings.error()) {
-      return 'error';
+    const status = this.holdings.status();
+
+    if (status === 'loading' || (status === 'reloading' && this.holdings.error())) {
+      return 'loading';
     }
 
-    return this.holdings.status() === 'loading' ? 'loading' : 'ready';
+    return this.holdings.error() ? 'error' : 'ready';
   });
 
   protected readonly chips = computed<FilterChipOption[]>(() => {
