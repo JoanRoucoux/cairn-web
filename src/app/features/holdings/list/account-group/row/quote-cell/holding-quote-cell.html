@@ -2,6 +2,9 @@
   <app-holding-enter-quote (entered)="enterQuote.emit(holding())" />
 } @else {
   <ui-amount [currency]="foreignCurrency()" [value]="holding().price" />
+  @if (foreignCurrency()) {
+    <app-holding-change-listing (changed)="changeListing.emit(holding())" />
+  }
 }
 @if (holding().stale) {
   <span tone="stale" uiCellSub>{{ 'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate } }}</span>

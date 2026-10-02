@@ -45,6 +45,7 @@ export class HoldingAccountGroup {
 
   readonly editCash = output<string>();
   readonly enterQuote = output<HoldingResponse>();
+  readonly changeListing = output<HoldingResponse>();
 
   readonly #locale = inject(LOCALE_ID);
   readonly #masked = inject(UI_AMOUNT_MASKED);

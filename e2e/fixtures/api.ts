@@ -8,7 +8,7 @@ import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstr
 import { buildUsdHolding } from './non-eur-holding';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
-import { buyHolding, resolveInstrument, sellHolding } from './trading';
+import { buyHolding, changeHoldingInstrument, resolveInstrument, sellHolding } from './trading';
 import { getPasskeys, getSession, mockWebauthn } from './webauthn';
 
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
@@ -328,6 +328,11 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/buy$'), handle: buyHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/sell$'), handle: sellHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
+  {
+    method: 'PUT',
+    path: new RegExp('^/api/holdings/([^/]+)/instrument$'),
+    handle: changeHoldingInstrument(holdings, allInstruments),
+  },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalanceHandler },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)$'), handle: updateAccount },
   { method: 'DELETE', path: new RegExp('^/api/accounts/([^/]+)$'), handle: deleteAccount },

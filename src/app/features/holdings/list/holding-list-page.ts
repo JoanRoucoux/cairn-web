@@ -25,6 +25,8 @@ import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.sche
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { listingQueryOf } from '../foreign-currency';
+import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
@@ -69,6 +71,7 @@ export class HoldingListPage {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  #changes = inject(HoldingChanges);
 
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
@@ -110,7 +113,15 @@ export class HoldingListPage {
   protected readonly chipValue = computed(() => this.assetClass() ?? ALL);
 
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
+  protected readonly listingTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
+  protected readonly addDialogOpen = computed(() => this.addOpen() || this.listingTarget() !== undefined);
+  protected readonly replaceHoldingId = computed(() => this.listingTarget()?.id ?? null);
+  protected readonly listingQuery = computed(() => {
+    const target = this.listingTarget();
+
+    return target ? listingQueryOf(target) : '';
+  });
   protected readonly presetAccountId = signal<string | null>(null);
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
@@ -210,14 +221,21 @@ export class HoldingListPage {
   }
 
   protected onAddSaved(): void {
-    this.addOpen.set(false);
-    this.presetAccountId.set(null);
-    this.holdings.reload();
+    const replaced = this.listingTarget();
+
+    this.onAddDismissed();
+
+    if (replaced) {
+      this.#changes.touched(replaced.id);
+    } else {
+      this.holdings.reload();
+    }
   }
 
   protected onAddDismissed(): void {
     this.addOpen.set(false);
     this.presetAccountId.set(null);
+    this.listingTarget.set(undefined);
   }
 
   protected onQuoteSaved(): void {

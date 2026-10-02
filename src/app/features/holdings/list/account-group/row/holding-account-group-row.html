@@ -6,10 +6,22 @@
   <td numeric secondary uiTd>
     <ui-amount [value]="holding().averageCost" />
   </td>
-  <td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
+  <td
+    app-holding-quote-cell
+    numeric
+    secondary
+    uiTd
+    [holding]="holding()"
+    (changeListing)="changeListing.emit($event)"
+    (enterQuote)="enterQuote.emit($event)"
+  ></td>
 }
 <td class="font-medium" numeric uiTd>
-  <ui-amount currency="EUR" [value]="holding().marketValueEur" />
+  @if (foreign()) {
+    <span class="text-(--subtle-foreground)"><ui-amount currency="EUR" [value]="holding().marketValueEur" /></span>
+  } @else {
+    <ui-amount currency="EUR" [value]="holding().marketValueEur" />
+  }
   @if (unpriced() && !compact()) {
     <app-holding-enter-quote narrow (entered)="enterQuote.emit(holding())" />
   }

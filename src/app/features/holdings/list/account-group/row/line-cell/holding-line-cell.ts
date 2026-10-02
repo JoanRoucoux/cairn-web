@@ -9,6 +9,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
+import { foreignCurrencyOf } from '../../../../foreign-currency';
 import { isMissing } from '../../../../is-missing';
 
 @Component({
@@ -22,5 +23,6 @@ export class HoldingLineCell {
   readonly open = input(false, { transform: booleanAttribute });
 
   protected readonly decimalPlaces = decimalPlaces;
+  protected readonly foreignCurrency = computed(() => foreignCurrencyOf(this.holding()));
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
 }

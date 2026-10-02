@@ -22,7 +22,7 @@ import {
   UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucideTrash, LucideX } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideRefreshCw, LucideTrash, LucideX } from '@lucide/angular';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { LanguageStore } from '@core/i18n/language-store';
@@ -33,13 +33,16 @@ import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
+import { foreignCurrencyOf } from '../foreign-currency';
 import { HoldingChanges } from '../holding-changes';
+import { HoldingDetailActions } from './actions/holding-detail-actions';
 import { HoldingDetailBar } from './bar/holding-detail-bar';
 import { HoldingDetailDescription } from './description/holding-detail-description';
 import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
 import { HoldingDetailFacts } from './facts/holding-detail-facts';
 import { HoldingDetailFigures } from './figures/holding-detail-figures';
 import { HoldingDetailStore } from './holding-detail-store';
+import { HoldingDetailQuoteAction } from './quote-action/holding-detail-quote-action';
 import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
 
 @Component({
@@ -47,13 +50,16 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
   imports: [
     AmountSeparator,
     FocusOnInit,
+    HoldingDetailActions,
     HoldingDetailBar,
     HoldingDetailDescription,
     HoldingDetailDialogs,
     HoldingDetailFacts,
     HoldingDetailFigures,
+    HoldingDetailQuoteAction,
     LucideEllipsis,
     LucidePencil,
+    LucideRefreshCw,
     LucideTrash,
     LucideX,
     NgTemplateOutlet,
@@ -103,9 +109,25 @@ export class HoldingDetailPage {
     this.instrument.hasValue() ? this.instrument.value() : undefined,
   );
 
-  protected readonly priced = computed(() => (this.holding()?.price ?? null) !== null);
+  protected readonly foreignCurrency = computed(() => foreignCurrencyOf(this.holding()!));
+
+  protected readonly priced = computed(
+    () => (this.holding()?.price ?? null) !== null && this.foreignCurrency() === undefined,
+  );
+
+  protected readonly noQuoteKey = computed(() =>
+    this.foreignCurrency() ? 'holdings.foreignQuote' : 'holdings.noQuoteYet',
+  );
+
+  protected readonly needsQuote = computed(() => {
+    const holding = this.holding()!;
+
+    return holding.priceSource === 'MANUAL' || (holding.price ?? null) === null;
+  });
 
   protected readonly isCash = computed(() => this.holding()?.assetClass === 'CASH');
+
+  protected readonly tradable = computed(() => !this.isCash() && this.foreignCurrency() === undefined);
 
   protected readonly rangeOptions = computed<SegmentedOption[]>(() => {
     this.#language.activeLang();
@@ -137,6 +159,7 @@ export class HoldingDetailPage {
   protected readonly sellOpen = signal(false);
   protected readonly editOpen = signal(false);
   protected readonly deleteOpen = signal(false);
+  protected readonly listingOpen = signal(false);
 
   protected readonly priceSourceLabel = computed(() => {
     this.#language.activeLang();
@@ -202,6 +225,17 @@ export class HoldingDetailPage {
   protected openEdit(): void {
     this.menu().close();
     this.editOpen.set(true);
+  }
+
+  protected openListing(): void {
+    this.menu().close();
+    this.listingOpen.set(true);
+  }
+
+  protected onListingChanged(holdingId: string): void {
+    this.listingOpen.set(false);
+    this.#changes.touched(holdingId);
+    this.#store.reload();
   }
 
   protected openDelete(): void {

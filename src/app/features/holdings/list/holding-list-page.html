@@ -109,6 +109,7 @@
                 [compact]="compact()"
                 [group]="group"
                 [selectedHoldingId]="selectedHoldingId()"
+                (changeListing)="listingTarget.set($event)"
                 (editCash)="accountToEditCashFor.set($event)"
                 (enterQuote)="quoteTarget.set($event)"
               ></tbody>
@@ -137,8 +138,14 @@
   />
 }
 
-@if (addOpen()) {
-  <app-holding-add-dialog [presetAccountId]="presetAccountId()" (dismissed)="onAddDismissed()" (saved)="onAddSaved()" />
+@if (addDialogOpen()) {
+  <app-holding-add-dialog
+    [initialQuery]="listingQuery()"
+    [presetAccountId]="presetAccountId()"
+    [replaceHoldingId]="replaceHoldingId()"
+    (dismissed)="onAddDismissed()"
+    (saved)="onAddSaved()"
+  />
 }
 
 @if (groupToEditCashFor(); as group) {

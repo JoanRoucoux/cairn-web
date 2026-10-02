@@ -45,6 +45,7 @@
     [holding]="holding"
     [open]="holding.id === selectedHoldingId()"
     [selected]="holding.id === selectedHoldingId()"
+    (changeListing)="changeListing.emit($event)"
     (enterQuote)="enterQuote.emit($event)"
   ></tr>
 }

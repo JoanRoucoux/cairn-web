@@ -97,6 +97,21 @@ describe('HoldingAccountCard', () => {
     expect(row).toHaveAttribute('href', '/holdings/h3');
   });
 
+  it('should caption a line quoted in another currency, with a subtle dash for the value', async () => {
+    await renderCard({
+      holdings: [{ ...holding, priceCurrency: 'USD', marketValueEur: null, unrealizedGainRatio: null } as never],
+    });
+    const row = await screen.findByTestId('holding-row-mobile');
+
+    expect(row).toHaveTextContent('holdings.foreignQuote');
+    expect(row).toHaveTextContent('—');
+    expect(row).toHaveTextContent('holdings.replace.open');
+    expect(row).not.toHaveTextContent('holdings.averageCostUnknownShort');
+    expect(row).not.toHaveTextContent('412.5');
+    expect(row.querySelectorAll('.text-body')[1]).toHaveClass('text-(--subtle-foreground)');
+    expect(row).toHaveAttribute('href', '/holdings/h3');
+  });
+
   it('should end with the cash line and emit when it is edited', async () => {
     const user = userEvent.setup();
     const { fixture } = await renderCard();

@@ -18,6 +18,7 @@ import { HoldingAccountGroup } from './holding-account-group';
       [compact]="compact()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
+      (changeListing)="changeListing.emit($event)"
       (editCash)="editCash.emit($event)"
       (enterQuote)="enterQuote.emit($event)"
     ></tbody>
@@ -29,6 +30,7 @@ class TestHost {
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
+  readonly changeListing = output<unknown>();
 }
 
 const holding = {
@@ -253,6 +255,54 @@ describe('HoldingAccountGroup', () => {
     expect(entered).toHaveBeenCalledTimes(2);
     expect(screen.getByTestId('enter-quote-narrow')).toHaveClass('lg:hidden');
     expect(screen.getByText('holdings.noQuoteToEnter')).toBeInTheDocument();
+  });
+
+  describe('a line quoted in another currency', () => {
+    const usd = { ...holding, priceCurrency: 'USD', marketValueEur: null, stale: false, averageCost: 250 };
+
+    it('should show a dash in the subtle tone for the value and the quote in its own currency', async () => {
+      await renderGroup({ holdings: [usd as never] });
+      const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
+
+      expect(cells[3]).toHaveTextContent('US$289.11');
+      expect(cells[4]).toHaveTextContent('—');
+      expect(cells[4]!.querySelector('span')).toHaveClass('text-(--subtle-foreground)');
+      expect(cells[4]).not.toHaveTextContent('holdings.manualQuote.open');
+    });
+
+    it('should caption the line as quoted in its currency and not counted', async () => {
+      await renderGroup({ holdings: [usd as never] });
+
+      expect(await screen.findByText('holdings.foreignQuote')).toBeInTheDocument();
+      expect(screen.queryByText('holdings.noQuote')).not.toBeInTheDocument();
+    });
+
+    it('should keep the caption in the line cell when the detail is open', async () => {
+      await renderGroup({ holdings: [usd as never] }, true);
+
+      expect(await screen.findByText('holdings.foreignQuote')).toBeInTheDocument();
+    });
+
+    it('should offer to change the listing from the Cours column and emit the line', async () => {
+      const user = userEvent.setup();
+      const { fixture } = await renderGroup({ holdings: [usd as never] });
+      const changed = vi.fn();
+      fixture.componentInstance.changeListing.subscribe(changed);
+
+      const button = await screen.findByTestId('change-listing');
+      expect(button).toHaveTextContent('holdings.replace.open');
+      expect(screen.queryByTestId('enter-quote')).not.toBeInTheDocument();
+      await user.click(button);
+
+      expect(changed).toHaveBeenCalledWith(expect.objectContaining({ id: 'h3' }));
+    });
+
+    it('should offer no change of listing for a line quoted in euros', async () => {
+      await renderGroup({ holdings: [{ ...usd, priceCurrency: 'EUR' } as never] });
+
+      await screen.findByTestId('holding-row');
+      expect(screen.queryByTestId('change-listing')).not.toBeInTheDocument();
+    });
   });
 
   it('should link each line to its detail screen', async () => {

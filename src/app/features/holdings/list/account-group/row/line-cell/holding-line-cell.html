@@ -8,7 +8,9 @@
   {{ holding().instrumentName }}
 </a>
 @if (compact()) {
-  @if (holding().stale) {
+  @if (foreignCurrency(); as currency) {
+    <span uiCellSub>{{ 'holdings.foreignQuote' | transloco: { currency } }}</span>
+  } @else if (holding().stale) {
     <span tone="stale" uiCellSub>{{
       'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
     }}</span>
@@ -31,6 +33,9 @@
     }
     &middot; {{ 'holdings.averageCost' | transloco }} <ui-amount currency="EUR" [value]="holding().averageCost" />
   </span>
+  @if (foreignCurrency(); as currency) {
+    <span uiCellSub>{{ 'holdings.foreignQuote' | transloco: { currency } }}</span>
+  }
   @if (holding().stale) {
     <span narrow tone="stale" uiCellSub>{{
       'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate }
