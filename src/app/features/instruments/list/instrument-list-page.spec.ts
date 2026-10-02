@@ -123,6 +123,18 @@ describe('InstrumentListPage', () => {
     expect(screen.getAllByText('instruments.count_other').length).toBeGreaterThan(0);
   });
 
+  it('keeps the plain count and the one line of an empty catalogue while a search is typed', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await flushOne([]);
+
+    await user.type(screen.getByTestId('instruments-search'), 'zzz');
+
+    expect(await screen.findByText('instruments.empty')).toBeInTheDocument();
+    expect(screen.getAllByText('instruments.count_other').length).toBeGreaterThan(0);
+    expect(screen.queryByText('instruments.countOf_other')).not.toBeInTheDocument();
+  });
+
   it('shows the empty state with the search, the hint and an add button when nothing matches', async () => {
     const user = userEvent.setup();
     await renderPage();

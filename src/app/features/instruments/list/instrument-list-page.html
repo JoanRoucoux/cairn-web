@@ -191,7 +191,7 @@
         }
       </span>
       <span asyncEmpty class="block">
-        @if (noMatch()) {
+        @if (searching()) {
           <ui-empty
             [heading]="'instruments.noMatch' | transloco: { query: query() }"
             [hint]="'instruments.noMatchHint' | transloco"

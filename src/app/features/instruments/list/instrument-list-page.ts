@@ -82,10 +82,10 @@ export class InstrumentListPage {
   );
 
   protected readonly query = this.#store.query;
-  protected readonly noMatch = computed(() => this.#store.total() > 0 && this.query() !== '');
+  protected readonly searching = computed(() => this.#store.total() > 0 && this.query() !== '');
 
   protected readonly countLabel = translateSignal(
-    computed(() => pluralKey(this.query() ? 'countOf' : 'count', this.#store.total())),
+    computed(() => pluralKey(this.searching() ? 'countOf' : 'count', this.#store.total())),
     computed(() => ({ count: this.#store.total(), shown: this.filteredRows().length })),
   );
 
