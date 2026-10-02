@@ -1,3 +1,5 @@
+@let unvalued = unvaluedMeta(group());
+@let nonEur = nonEurMeta(group());
 <tr group uiTr>
   <td
     size="lg"
@@ -15,7 +17,9 @@
         : ('enums.accountType.' + group().accountType | transloco) +
           ' · ' +
           (group().institution ? group().institution + ' · ' : '') +
-          (groupCount(group()).key | transloco: { count: groupCount(group()).count })
+          (groupCount(group()).key | transloco: { count: groupCount(group()).count }) +
+          (unvalued ? ' · ' + (unvalued.key | transloco: unvalued) : '') +
+          (nonEur ? ' · ' + (nonEur.key | transloco: nonEur) : '')
     "
     [name]="group().accountName"
   >

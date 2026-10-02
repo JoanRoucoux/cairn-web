@@ -6,6 +6,7 @@ import { AccountService } from '@core/api-client/account/account.service';
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 
+import { excludedCounts } from '@shared/format/excluded-lines';
 import { normalizeSearch } from '@shared/format/normalize-search';
 
 import { HoldingChanges } from '../holding-changes';
@@ -20,6 +21,8 @@ export type AccountGroup = {
   showCash: boolean;
   lineCount: number;
   bookletCount: number;
+  unvaluedCount: number;
+  nonEurCount: number;
   holdings: HoldingResponse[];
   filtered: { accountValueEur: number; rowCount: number } | null;
 };
@@ -133,6 +136,8 @@ export class HoldingListStore {
       showCash: accountType !== 'SAVINGS' || cashByAccount.has(accountId),
       lineCount: 0,
       bookletCount: 0,
+      unvaluedCount: 0,
+      nonEurCount: 0,
       holdings: [],
       filtered: null,
     });
@@ -163,7 +168,7 @@ export class HoldingListStore {
     const rank = (group: AccountGroup): number => order.get(group.accountId) ?? Number.MAX_SAFE_INTEGER;
 
     return [...byAccount.values()]
-      .map((group) => ({ ...group, valueEur: round(group.valueEur) }))
+      .map((group) => ({ ...group, valueEur: round(group.valueEur), ...excludedCounts(group.holdings) }))
       .sort((left, right) => rank(left) - rank(right));
   });
 

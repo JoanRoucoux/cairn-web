@@ -81,6 +81,28 @@ describe('HoldingAccountGroup', () => {
     );
   });
 
+  it('should add the lines left out to the meta, muted like the rest, singular then plural', async () => {
+    await renderGroup({ unvaluedCount: 1 });
+
+    expect(await screen.findByText(/enums.accountType.PEE/)).toHaveTextContent(
+      'enums.accountType.PEE · Amundi ESR · holdings.lineCount_one · holdings.uncounted.noQuote_one',
+    );
+  });
+
+  it('should name the non-EUR lines apart from the unpriced ones in the meta', async () => {
+    await renderGroup({ unvaluedCount: 2, nonEurCount: 1 });
+
+    expect(await screen.findByText(/enums.accountType.PEE/)).toHaveTextContent(
+      'holdings.lineCount_one · holdings.uncounted.noQuote_other · holdings.uncounted.nonEur_one',
+    );
+  });
+
+  it('should add nothing to the meta when every line is counted', async () => {
+    await renderGroup();
+
+    expect(await screen.findByText(/enums.accountType.PEE/)).not.toHaveTextContent('uncounted');
+  });
+
   it('should count booklets, not lines, for a savings account', async () => {
     await renderGroup({ accountType: 'SAVINGS', lineCount: 0, bookletCount: 2 });
 
@@ -268,6 +290,13 @@ describe('HoldingAccountGroup under a class filter', () => {
 
     expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell] span.truncate')).toHaveTextContent('holdings.filteredMeta');
+  });
+
+  it('should not repeat the lines left out in the filtered meta', async () => {
+    await renderGroup({ filtered, unvaluedCount: 1 });
+
+    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(document.querySelector('td[ui-group-cell]')).not.toHaveTextContent('uncounted');
   });
 
   it('should carry the account id so a deep link can find the group', async () => {

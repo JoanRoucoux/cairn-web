@@ -267,6 +267,30 @@ describe('HoldingListStore', () => {
     expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
   });
 
+  it('should count the lines a group leaves out, apart by reason', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush([
+      ...holdings,
+      {
+        id: 'h9',
+        accountId: 'a1',
+        accountName: 'Saxo Investor',
+        accountType: 'PEA',
+        instrumentName: 'US fund',
+        priceCurrency: 'USD',
+        stale: false,
+      },
+    ]);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
+
+    expect(saxo).toMatchObject({ unvaluedCount: 1, nonEurCount: 1 });
+    expect(esalia).toMatchObject({ unvaluedCount: 0, nonEurCount: 0 });
+  });
+
   it('should not reload on its own once loaded', async () => {
     await load();
     TestBed.tick();

@@ -16,7 +16,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import type { AccountGroup } from '../holding-list-store';
-import { filteredCount, groupCount } from './group-count';
+import { filteredCount, groupCount, nonEurMeta, unvaluedMeta } from './group-count';
 import { HoldingAccountGroupRow } from './row/holding-account-group-row';
 
 @Component({
@@ -39,6 +39,8 @@ export class HoldingAccountGroup {
 
   protected readonly filteredCount = filteredCount;
   protected readonly groupCount = groupCount;
+  protected readonly nonEurMeta = nonEurMeta;
+  protected readonly unvaluedMeta = unvaluedMeta;
   protected readonly accountTotal = computed(() =>
     formatAmount(this.group().filtered?.accountValueEur, { locale: this.#locale, currency: 'EUR' }, this.#masked()),
   );

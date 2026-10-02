@@ -12,6 +12,12 @@
   "lineCount_other": "{{count}} lignes",
   "bookletCount_one": "{{count}} livret",
   "bookletCount_other": "{{count}} livrets",
+  "uncounted": {
+    "noQuote_one": "{{count}} sans cours, non comptée",
+    "noQuote_other": "{{count}} sans cours, non comptées",
+    "nonEur_one": "{{count}} hors euro, non comptée",
+    "nonEur_other": "{{count}} hors euro, non comptées"
+  },
   "booklet": "Livret",
   "averageCostUnknownShort": "PRU inconnu",
   "loading": "Chargement de vos lignes",

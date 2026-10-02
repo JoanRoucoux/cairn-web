@@ -1,3 +1,5 @@
+@let unvalued = unvaluedMeta(group());
+@let nonEur = nonEurMeta(group());
 <header class="flex items-end justify-between gap-3 px-1 pt-3">
   <div class="flex min-w-0 flex-col">
     <h2 class="text-title m-0 font-semibold outline-none" data-group-heading tabindex="-1">
@@ -19,6 +21,12 @@
           {{ group().institution }} &middot;
         }
         {{ groupCount(group()).key | transloco: { count: groupCount(group()).count } }}
+        @if (unvalued) {
+          &middot; {{ unvalued.key | transloco: unvalued }}
+        }
+        @if (nonEur) {
+          &middot; {{ nonEur.key | transloco: nonEur }}
+        }
       }
     </span>
   </div>

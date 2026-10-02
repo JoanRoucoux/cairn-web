@@ -51,6 +51,20 @@ describe('HoldingAccountCard', () => {
     expect(container.querySelector('ui-card')!.contains(header)).toBe(false);
   });
 
+  it('should add the lines left out to the meta, apart by reason', async () => {
+    const { container } = await renderCard({ unvaluedCount: 1, nonEurCount: 2 });
+
+    expect(container.querySelector('header')).toHaveTextContent(
+      'holdings.lineCount_one · holdings.uncounted.noQuote_one · holdings.uncounted.nonEur_other',
+    );
+  });
+
+  it('should add nothing to the meta when every line is counted or the list is filtered', async () => {
+    const { container } = await renderCard({ unvaluedCount: 1, filtered: { accountValueEur: 1, rowCount: 1 } });
+
+    expect(container.querySelector('header')).not.toHaveTextContent('uncounted');
+  });
+
   it('should show the quantity times the quote and the unrealized ratio on a line', async () => {
     await renderCard();
     const row = await screen.findByTestId('holding-row-mobile');

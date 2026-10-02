@@ -161,11 +161,15 @@ application and has to navigate, so three things were added on purpose. They are
   ceremony against Spring Security's endpoints. A 401 sends the browser to the application's
   `/login`, except for the sign-in ceremony's own calls.
 
-Two conventions worth knowing before touching a screen:
+Conventions worth knowing before touching a screen:
 
 - **`null` is not `0`.** Twelve of the twenty-six holdings have no cost basis. `unrealizedGain*`,
   `dayChange*` and `averageCost` are nullable and the interface renders a dash - that is what
-  `ui-delta` is for. A subtotal containing one unknown line is itself unknown, never a partial sum.
+  `ui-delta` is for. A subtotal of unrealized gains containing one unknown line stays empty, never a partial sum.
+- **A value is the sum of the lines priced in EUR, and says what it leaves out.** An account, a group, an
+  envelope or a total adds only the lines with a `marketValueEur` and states how many it left out
+  ("hors N lignes sans cours", "hors N lignes" once one is quoted in another currency). A line without
+  a price, or quoted in another currency, renders a dash and is never summed.
 - **Never rebuild a provider URL from `priceSource` and `sourceRef`.** The backend computes
   `externalUrl`; duplicating the rule here would make it live in two places.
 
