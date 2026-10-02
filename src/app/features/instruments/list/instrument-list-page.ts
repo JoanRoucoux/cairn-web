@@ -70,7 +70,7 @@ export class InstrumentListPage {
   protected readonly filteredRows = this.#store.filteredRows;
   protected readonly search = this.#store.search;
   protected readonly state = this.#store.state;
-  protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
+  protected readonly skeletonWidths = [180, 140, 200, 160, 190, 150];
   protected readonly desktop = injectDesktop();
 
   protected readonly cardPadding = computed(

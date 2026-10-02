@@ -73,18 +73,16 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('account-form-type').getByRole('radio', { name: 'Life insurance' })).toBeVisible();
   });
 
-  test('keeps the submit disabled and names the missing envelope once the chips are left', async ({ page }) => {
+  test('preselects PEA and enables the submit once a name is typed', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
     await accounts.addButton.click();
+    await expect(page.getByTestId('account-form-type').getByRole('radio', { name: 'PEA', exact: true })).toBeChecked();
     await expect(page.getByTestId('account-form-submit')).toBeDisabled();
-    await page.getByTestId('account-form-type').getByRole('radio').first().focus();
-    await page.keyboard.press('Tab');
+    await page.getByTestId('account-form-name').fill('Test');
 
-    await expect(
-      page.getByTestId('account-form-type').locator('xpath=ancestor::ui-field').getByRole('alert'),
-    ).toHaveCount(1);
+    await expect(page.getByTestId('account-form-submit')).toBeEnabled();
   });
 
   test('creates an account and sees it in the list', async ({ page }) => {

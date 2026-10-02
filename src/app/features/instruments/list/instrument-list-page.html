@@ -51,7 +51,7 @@
 
 <ui-card class="mt-4 block" padding="none">
   <div class="lg:px-4 lg:pt-2 lg:pb-3" [class]="cardPadding()">
-    <table class="hidden lg:table" row="48" spaced uiTable>
+    <table class="hidden lg:table" row="48" uiTable [spaced]="state() !== 'error'">
       <thead>
         <tr>
           <th primary tall uiTh>{{ 'instruments.columns.instrument' | transloco }}</th>
@@ -179,7 +179,7 @@
       [state]="state()"
       (retry)="retry()"
     >
-      <span asyncLoading class="flex flex-col lg:px-2 lg:py-1">
+      <span asyncLoading class="flex flex-col lg:px-2 lg:pb-1">
         @for (width of skeletonWidths; track $index) {
           <span class="flex h-15 items-center justify-between lg:h-12">
             <span class="flex flex-col gap-1.5">
