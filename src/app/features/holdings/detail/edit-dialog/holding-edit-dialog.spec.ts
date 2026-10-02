@@ -71,9 +71,9 @@ describe('HoldingEditDialog', () => {
     await user.type(screen.getByTestId('holding-edit-quantity'), '700');
     await user.click(screen.getByTestId('holding-edit-submit'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush({ id: 'h1' });
 
-    await vi.waitFor(() => expect(savedForm).toHaveBeenCalled());
+    await vi.waitFor(() => expect(savedForm).toHaveBeenCalledWith({ id: 'h1' }));
   });
 
   it('emits dismissed when the native dialog closes', async () => {

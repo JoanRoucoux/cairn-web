@@ -33,7 +33,7 @@ import { filterDecimalInput } from '@shared/format/parse-decimal';
 import { pluralKey } from '@shared/format/plural-key';
 
 import { sellPreview } from '../trade-preview';
-import { HoldingSellDialogStore } from './holding-sell-dialog-store';
+import { HoldingSellDialogStore, type SellResult } from './holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-sell-dialog',
@@ -46,7 +46,7 @@ export class HoldingSellDialog {
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
-  readonly sold = output<boolean>();
+  readonly sold = output<SellResult>();
   readonly dismissed = output<void>();
 
   protected readonly open = signal(true);
@@ -143,11 +143,11 @@ export class HoldingSellDialog {
       return;
     }
 
-    const outcome = await this.#store.save(this.holding().id, quantity);
+    const result = await this.#store.save(this.holding().id, quantity);
 
-    if (outcome) {
+    if (result) {
       this.open.set(false);
-      this.sold.emit(outcome === 'closed');
+      this.sold.emit(result);
     }
   }
 }

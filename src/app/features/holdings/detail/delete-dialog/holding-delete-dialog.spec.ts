@@ -75,7 +75,7 @@ describe('HoldingDeleteDialog', () => {
       statusText: 'No Content',
     });
 
-    await vi.waitFor(() => expect(deleted).toHaveBeenCalled());
+    await vi.waitFor(() => expect(deleted).toHaveBeenCalledWith('h1'));
   });
 
   it('shows a generic error when the API refuses', async () => {

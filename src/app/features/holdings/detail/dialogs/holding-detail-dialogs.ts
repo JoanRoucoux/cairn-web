@@ -7,6 +7,7 @@ import { HoldingBuyDialog } from '../buy-dialog/holding-buy-dialog';
 import { HoldingDeleteDialog } from '../delete-dialog/holding-delete-dialog';
 import { HoldingEditDialog } from '../edit-dialog/holding-edit-dialog';
 import { HoldingSellDialog } from '../sell-dialog/holding-sell-dialog';
+import type { SellResult } from '../sell-dialog/holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-detail-dialogs',
@@ -23,12 +24,12 @@ export class HoldingDetailDialogs {
 
   readonly quoteSaved = output<void>();
   readonly quoteDismissed = output<void>();
-  readonly bought = output<void>();
+  readonly bought = output<HoldingResponse>();
   readonly buyDismissed = output<void>();
-  readonly sold = output<boolean>();
+  readonly sold = output<SellResult>();
   readonly sellDismissed = output<void>();
-  readonly edited = output<void>();
+  readonly edited = output<HoldingResponse>();
   readonly editDismissed = output<void>();
-  readonly deleted = output<void>();
+  readonly deleted = output<string>();
   readonly deleteDismissed = output<void>();
 }

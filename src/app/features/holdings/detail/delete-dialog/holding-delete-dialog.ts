@@ -18,7 +18,7 @@ export class HoldingDeleteDialog {
   #transloco = inject(TranslocoService);
 
   readonly holding = input.required<HoldingResponse>();
-  readonly deleted = output<void>();
+  readonly deleted = output<string>();
   readonly dismissed = output<void>();
 
   // The parent creates this component to open the dialog: it is open from its first render.
@@ -39,7 +39,7 @@ export class HoldingDeleteDialog {
   protected async confirm(): Promise<void> {
     if (await this.#store.remove(this.holding().id)) {
       this.open.set(false);
-      this.deleted.emit();
+      this.deleted.emit(this.holding().id);
     }
   }
 }

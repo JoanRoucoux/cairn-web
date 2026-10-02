@@ -53,16 +53,16 @@ describe('HoldingBuyDialogStore', () => {
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'));
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ quantity: 40, unitPrice: 29.1 });
-    request.flush({});
+    request.flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('never reaches the server while invalid', async () => {
     store.quantityText.set('');
     store.priceText.set('');
 
-    await expect(store.save('h1')).resolves.toBe(false);
+    await expect(store.save('h1')).resolves.toBeNull();
   });
 
   it('reports a refusal from the server', async () => {
@@ -76,7 +76,7 @@ describe('HoldingBuyDialogStore', () => {
       statusText: 'Unprocessable',
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBeNull();
     expect(store.error()).toBe(true);
   });
 });

@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { firstValueFrom } from 'rxjs';
 
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 
 import { parseDecimal } from '@shared/format/parse-decimal';
@@ -20,27 +21,25 @@ export class HoldingBuyDialogStore {
 
   readonly valid = computed(() => (this.quantity() ?? 0) > 0 && (this.price() ?? 0) > 0);
 
-  async save(holdingId: string): Promise<boolean> {
+  async save(holdingId: string): Promise<HoldingResponse | null> {
     if (!this.valid()) {
-      return false;
+      return null;
     }
 
     this.submitting.set(true);
     this.error.set(false);
 
     try {
-      await firstValueFrom(
+      return await firstValueFrom(
         this.#holdingsApiClient.buyHolding(holdingId, {
           quantity: this.quantity() as number,
           unitPrice: this.price() as number,
         }),
       );
-
-      return true;
     } catch {
       this.error.set(true);
 
-      return false;
+      return null;
     } finally {
       this.submitting.set(false);
     }

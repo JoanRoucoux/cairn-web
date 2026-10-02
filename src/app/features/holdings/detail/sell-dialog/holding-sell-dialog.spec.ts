@@ -169,9 +169,9 @@ describe('HoldingSellDialog', () => {
 
     await user.type(screen.getByTestId('holding-sell-quantity'), '100{Enter}');
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({ id: 'h1' });
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith(false));
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
   });
 
   it('does not submit with Enter when the quantity is over what is held', async () => {
@@ -195,7 +195,7 @@ describe('HoldingSellDialog', () => {
     expect(screen.getByTestId('holding-sell-quantity')).toBeInvalid();
   });
 
-  it('emits sold with closed=false after a partial sale', async () => {
+  it('emits sold with kept after a partial sale', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
@@ -203,14 +203,14 @@ describe('HoldingSellDialog', () => {
     await user.click(screen.getByTestId('holding-sell-submit'));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush(
-      {},
+      { id: 'h1' },
       { status: 200, statusText: 'OK' },
     );
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith(false));
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
   });
 
-  it('emits sold with closed=true after selling everything', async () => {
+  it('emits sold with closed after selling everything', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
@@ -222,7 +222,7 @@ describe('HoldingSellDialog', () => {
       statusText: 'No Content',
     });
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith(true));
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'closed', holding: null }));
   });
 
   it('shows a refusal from the server', async () => {

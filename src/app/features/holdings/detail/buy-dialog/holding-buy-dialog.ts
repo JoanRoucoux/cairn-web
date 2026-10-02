@@ -45,7 +45,7 @@ export class HoldingBuyDialog {
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
-  readonly bought = output<void>();
+  readonly bought = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
   protected readonly open = signal(true);
@@ -112,9 +112,11 @@ export class HoldingBuyDialog {
   }
 
   protected async confirm(): Promise<void> {
-    if (await this.#store.save(this.holding().id)) {
+    const bought = await this.#store.save(this.holding().id);
+
+    if (bought) {
       this.open.set(false);
-      this.bought.emit();
+      this.bought.emit(bought);
     }
   }
 }

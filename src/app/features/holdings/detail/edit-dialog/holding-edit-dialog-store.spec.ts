@@ -47,9 +47,9 @@ describe('HoldingEditDialogStore', () => {
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'));
     expect(request.request.method).toBe('PATCH');
     expect(request.request.body).toEqual({ quantity: 700, averageCost: 26.654 });
-    request.flush({});
+    request.flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('reports a generic failure', async () => {
@@ -62,7 +62,7 @@ describe('HoldingEditDialogStore', () => {
       statusText: 'Server error',
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBeNull();
     expect(store.error()).toBe(true);
   });
 });

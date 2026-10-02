@@ -39,11 +39,11 @@ describe('HoldingSellDialogStore', () => {
     const saved = store.save('h1', 100);
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush(
-      {},
+      { id: 'h1' },
       { status: 200, statusText: 'OK' },
     );
 
-    await expect(saved).resolves.toBe('kept');
+    await expect(saved).resolves.toEqual({ outcome: 'kept', holding: { id: 'h1' } });
   });
 
   it('reports selling the whole quantity as closed', async () => {
@@ -54,7 +54,7 @@ describe('HoldingSellDialogStore', () => {
       statusText: 'No Content',
     });
 
-    await expect(saved).resolves.toBe('closed');
+    await expect(saved).resolves.toEqual({ outcome: 'closed', holding: null });
   });
 
   it('reports a refusal from the server', async () => {
@@ -65,7 +65,7 @@ describe('HoldingSellDialogStore', () => {
       statusText: 'Unprocessable',
     });
 
-    await expect(saved).resolves.toBeUndefined();
+    await expect(saved).resolves.toBeNull();
     expect(store.error()).toBe(true);
   });
 });

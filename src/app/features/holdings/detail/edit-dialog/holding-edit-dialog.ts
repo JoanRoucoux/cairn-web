@@ -20,7 +20,7 @@ export class HoldingEditDialog {
   #store = inject(HoldingEditDialogStore);
 
   readonly holding = input.required<HoldingResponse>();
-  readonly savedForm = output<void>();
+  readonly savedForm = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
   // The parent creates this component to open the dialog: it is open from its first render.
@@ -48,9 +48,11 @@ export class HoldingEditDialog {
   }
 
   protected async confirm(): Promise<void> {
-    if (await this.#store.save(this.holding().id)) {
+    const saved = await this.#store.save(this.holding().id);
+
+    if (saved) {
       this.open.set(false);
-      this.savedForm.emit();
+      this.savedForm.emit(saved);
     }
   }
 }

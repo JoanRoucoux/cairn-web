@@ -11,6 +11,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailPage } from './holding-detail-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -68,6 +69,7 @@ describe('HoldingDetailPage', () => {
       ],
       initialRoute: `holdings/${holdingId}`,
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -228,9 +230,10 @@ describe('HoldingDetailPage', () => {
     expect(screen.getByTestId('holding-edit-dialog')).toBeInTheDocument();
 
     await user.click(screen.getByTestId('holding-edit-submit'));
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush({ id: 'h1' });
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-edit-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -251,6 +254,7 @@ describe('HoldingDetailPage', () => {
     });
 
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
+    expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
   });
 
   it('opens the buy dialog and reloads once a purchase is saved', async () => {
@@ -264,9 +268,10 @@ describe('HoldingDetailPage', () => {
     await user.type(screen.getByTestId('holding-buy-price'), '29.1');
     await user.click(screen.getByTestId('holding-buy-submit'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({ id: 'h1' });
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-buy-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -319,11 +324,13 @@ describe('HoldingDetailPage', () => {
     await user.click(screen.getByTestId('holding-sell-submit'));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush(
-      {},
+      { id: 'h1' },
       { status: 200, statusText: 'OK' },
     );
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-sell-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(HoldingChanges).lastRemoved()).toBeNull();
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -339,6 +346,7 @@ describe('HoldingDetailPage', () => {
     });
 
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
+    expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
   });
 
   it('hides Buy and Sell for a cash line', async () => {

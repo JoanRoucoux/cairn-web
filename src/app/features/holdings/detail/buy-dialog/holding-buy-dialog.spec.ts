@@ -134,9 +134,9 @@ describe('HoldingBuyDialog', () => {
     await user.type(screen.getByTestId('holding-buy-price'), '29.1');
     await user.click(screen.getByTestId('holding-buy-submit'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({ id: 'h1' });
 
-    await vi.waitFor(() => expect(bought).toHaveBeenCalled());
+    await vi.waitFor(() => expect(bought).toHaveBeenCalledWith({ id: 'h1' }));
   });
 
   it('shows a refusal from the server', async () => {

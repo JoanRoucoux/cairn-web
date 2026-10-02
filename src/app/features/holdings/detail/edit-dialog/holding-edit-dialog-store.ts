@@ -26,20 +26,19 @@ export class HoldingEditDialogStore {
     this.#model.set(initialHoldingEditDraft(holding));
   }
 
-  async save(holdingId: string): Promise<boolean> {
+  async save(holdingId: string): Promise<HoldingResponse | null> {
     this.error.set(false);
-    let saved = false;
+    let saved: HoldingResponse | null = null;
 
     await submit(this.form, async () => {
       try {
         const model = this.#model();
-        await firstValueFrom(
+        saved = await firstValueFrom(
           this.#holdingsApiClient.updateHolding(holdingId, {
             quantity: model.quantity as number,
             averageCost: model.averageCost,
           }),
         );
-        saved = true;
       } catch {
         this.error.set(true);
       }
