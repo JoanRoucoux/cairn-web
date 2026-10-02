@@ -36,7 +36,8 @@
     "UNKNOWN_ACCOUNT_TYPE": "\"{{value}}\" n'est pas un type de compte connu.",
     "NOT_A_NUMBER": "\"{{value}}\" n'est pas un nombre.",
     "ZERO_QUANTITY": "Une quantité ne peut pas être nulle. Retirez plutôt la ligne.",
-    "UNRESOLVED_INSTRUMENT": "Aucune source de prix ne connaît \"{{value}}\"."
+    "UNRESOLVED_INSTRUMENT": "Aucune source de prix ne connaît \"{{value}}\".",
+    "SAVINGS_ACCOUNT_LINE": "Un compte épargne ne contient que son solde en euros : aucune ligne de titre n'y est acceptée."
   },
   "passkeys": "Clés d'accès",
   "addPasskey": "Ajouter une clé sur cet appareil",

@@ -36,7 +36,8 @@
     "UNKNOWN_ACCOUNT_TYPE": "\"{{value}}\" is not a known account type.",
     "NOT_A_NUMBER": "\"{{value}}\" is not a number.",
     "ZERO_QUANTITY": "A quantity cannot be zero. Remove the line instead.",
-    "UNRESOLVED_INSTRUMENT": "No price source knows \"{{value}}\"."
+    "UNRESOLVED_INSTRUMENT": "No price source knows \"{{value}}\".",
+    "SAVINGS_ACCOUNT_LINE": "A savings account only holds its balance in euros: no securities line is accepted."
   },
   "passkeys": "Passkeys",
   "addPasskey": "Add a passkey on this device",
