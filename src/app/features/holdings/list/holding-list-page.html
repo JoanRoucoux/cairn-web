@@ -54,10 +54,10 @@
     (valueChange)="onClassChange($event)"
   />
   @if (assetClass(); as selected) {
-    @if (state() === 'loading') {
+    @if (shown() === 'loading') {
       <ui-skeleton class="w-65 px-1 lg:hidden" data-testid="summary-skeleton" [height]="16" [lines]="2" />
       <ui-skeleton class="hidden w-65 lg:flex" data-testid="summary-skeleton" [height]="16" />
-    } @else if (state() === 'ready' && classSummary(); as summary) {
+    } @else if (shown() === 'ready' && classSummary(); as summary) {
       <app-holding-class-summary data-testid="class-summary" [assetClass]="selected" [summary]="summary" />
     }
   }
@@ -81,13 +81,19 @@
             <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
             <app-holding-list-skeleton />
           </div>
-          <div class="flex flex-col gap-4 lg:hidden">
-            @for (group of groups(); track group.accountId) {
-              <app-holding-account-card [group]="group" (editCash)="accountToEditCashFor.set($event)" />
+          <div class="flex flex-col gap-4 lg:hidden" uiFlipList>
+            @for (group of groups(); track group.key) {
+              <app-holding-account-card
+                uiFlipItem
+                [flash]="flash()"
+                [group]="group"
+                [highlight]="highlightFor(group.accountId)"
+                (editCash)="accountToEditCashFor.set($event)"
+              />
             }
           </div>
 
-          <table class="max-lg:hidden" row="60" uiTable [rule]="false">
+          <table class="max-lg:hidden" row="60" uiFlipList uiTable [rule]="false">
             <thead>
               <tr>
                 <th primary uiTh>{{ 'holdings.columns.line' | transloco }}</th>
@@ -103,11 +109,13 @@
                 <th numeric uiTh width="92px">{{ 'holdings.columns.day' | transloco }}</th>
               </tr>
             </thead>
-            @for (group of groups(); track group.accountId) {
+            @for (group of groups(); track group.key) {
               <tbody
                 app-holding-account-group
                 [compact]="compact()"
+                [flash]="flash()"
                 [group]="group"
+                [highlight]="highlightFor(group.accountId)"
                 [selectedHoldingId]="selectedHoldingId()"
                 (changeListing)="listingTarget.set($event)"
                 (editCash)="accountToEditCashFor.set($event)"
@@ -124,13 +132,18 @@
     </ui-card>
   </div>
 
-  <aside class="lg:sticky lg:top-6" [attr.aria-label]="'holdings.detail.panel' | transloco" [class.hidden]="!compact()">
+  <aside
+    class="not-has-[app-holding-detail-page]:hidden lg:sticky lg:top-6"
+    [attr.aria-label]="'holdings.detail.panel' | transloco"
+    [class]="compact() ? '' : 'lg:pointer-events-none lg:col-start-1 lg:row-start-1 lg:w-100 lg:justify-self-end'"
+  >
     <router-outlet />
   </aside>
 </div>
 
 @if (quoteTarget(); as target) {
   <app-manual-quote-dialog
+    [holdingId]="target.id"
     [instrumentId]="target.instrumentId"
     [instrumentName]="target.instrumentName"
     (dismissed)="quoteTarget.set(undefined)"

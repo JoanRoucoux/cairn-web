@@ -7,8 +7,11 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from './manual-quote-dialog';
 
 describe('ManualQuoteDialog', () => {
@@ -18,10 +21,11 @@ describe('ManualQuoteDialog', () => {
 
   const renderDialog = async (): Promise<void> => {
     await render(ManualQuoteDialog, {
-      inputs: { instrumentId: 'i1', instrumentName: 'BNP Paribas Easy S&P 500' },
+      inputs: { holdingId: 'h1', instrumentId: 'i1', instrumentName: 'BNP Paribas Easy S&P 500' },
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -54,10 +58,12 @@ describe('ManualQuoteDialog', () => {
   it('should emit dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('manual-quote-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('puts the initial focus on the first field, not on the close cross', async () => {
@@ -68,10 +74,12 @@ describe('ManualQuoteDialog', () => {
 
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('says which field is missing instead of refusing in silence', async () => {
@@ -96,12 +104,15 @@ describe('ManualQuoteDialog', () => {
   it('should emit saved once the quote is accepted', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.type(screen.getByTestId('manual-quote-price'), '33.3069');
     await user.click(screen.getByTestId('manual-quote-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('manual-quote-submit')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1/quotes').flush({}));
-    await vi.waitFor(() => expect(saved).toHaveBeenCalled());
+    await vi.waitFor(() => expect(saved).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('should stay open and show an error when the API refuses', async () => {

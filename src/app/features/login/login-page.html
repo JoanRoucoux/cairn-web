@@ -23,7 +23,7 @@
           <ui-alert data-testid="login-failed">{{ 'login.failed' | transloco }}</ui-alert>
         }
 
-        <ui-field [label]="'login.username' | transloco">
+        <ui-field animate.enter="ui-enter-fade-up" [label]="'login.username' | transloco">
           <input
             autocapitalize="none"
             autocomplete="username"
@@ -40,7 +40,7 @@
           />
         </ui-field>
 
-        <ui-field [label]="'login.password' | transloco">
+        <ui-field animate.enter="ui-enter-fade-up" [label]="'login.password' | transloco">
           <input
             autocomplete="current-password"
             class="h-12 pr-12 lg:h-11 lg:pr-11"
@@ -69,17 +69,15 @@
         </ui-field>
 
         <button
+          animate.enter="ui-enter-fade-up"
           class="mt-1 lg:h-11"
           data-testid="login-submit"
           size="xxl"
           type="submit"
           ui-button
-          [attr.aria-busy]="form().submitting() || null"
-          [attr.aria-disabled]="form().submitting() || null"
-          [class.opacity-70]="form().submitting()"
-          [class.pointer-events-none]="form().submitting()"
+          [loading]="form().submitting()"
         >
-          {{ (form().submitting() ? 'login.submitting' : 'login.submit') | transloco }}
+          {{ 'login.submit' | transloco }}
         </button>
 
         <button
@@ -113,21 +111,11 @@
           size="xxl"
           type="button"
           ui-button
-          [attr.aria-busy]="passkeySubmitting() || null"
-          [attr.aria-disabled]="passkeySubmitting() || null"
-          [class.opacity-70]="passkeySubmitting()"
-          [class.pointer-events-none]="passkeySubmitting()"
+          [loading]="passkeySubmitting()"
           (click)="onPasskeySignIn()"
         >
           <svg lucideKeyRound [size]="20" [strokeWidth]="1.75" />
-          {{
-            (passkeySubmitting()
-              ? 'login.passkeySubmitting'
-              : passkeyRefused() || passkeyFailed()
-                ? 'login.passkeyRetry'
-                : 'login.passkey'
-            ) | transloco
-          }}
+          {{ (passkeyRefused() || passkeyFailed() ? 'login.passkeyRetry' : 'login.passkey') | transloco }}
         </button>
 
         <span class="text-label text-center text-pretty text-(--subtle-foreground)" data-testid="login-passkey-hint">

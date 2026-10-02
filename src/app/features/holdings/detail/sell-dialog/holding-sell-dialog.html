@@ -2,10 +2,12 @@
   data-testid="holding-sell-dialog"
   truncateDescription
   width="528px"
+  [busy]="submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [description]="holding().instrumentName + ' · ' + holding().accountName"
   [heading]="'holdings.sell.title' | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <form class="flex flex-col gap-4 lg:gap-5" id="holding-sell-form" novalidate (submit)="onSubmit($event)">

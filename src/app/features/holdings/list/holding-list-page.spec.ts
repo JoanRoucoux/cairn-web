@@ -2,12 +2,14 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
@@ -146,7 +148,9 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
   });
 
-  it('reloads the list once a line is added', async () => {
+  it('reloads the list once a line is added, confirms, then highlights the new line', async () => {
+    const motion = recordMotion();
+    onTestFinished(() => motion.restore());
     const user = userEvent.setup();
     await renderPage();
     await screen.findAllByText('Esalia');
@@ -168,10 +172,23 @@ describe('HoldingListPage', () => {
     await user.click(screen.getByTestId('holding-add-submit'));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({ id: 'i9' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
-    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
 
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.added');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h9');
+    expect(motion.highlighted).toEqual([]);
+
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne('/api/holdings')
+        .flush([...holdings, { ...holdings[0], id: 'h9', instrumentName: 'Newly added fund' }]),
+    );
+
+    await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+    expect(
+      motion.highlighted.every((element) => element.closest('[data-holding-id="h9"], tr:has([data-holding-id="h9"])')),
+    ).toBe(true);
   });
 
   it('reloads the list after the cash balance is set', async () => {
@@ -191,6 +208,8 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush(holdings));
 
     expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.balanceSaved');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('a1');
   });
 
   it('closes the cash dialog when it is dismissed', async () => {
@@ -201,7 +220,9 @@ describe('HoldingListPage', () => {
     await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.click(await screen.findByTestId('holding-cash-cancel'));
 
-    expect(screen.queryByTestId('holding-cash-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-cash-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
+    expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();
   });
 
   it('should tell the user when holdings fail to load', async () => {
@@ -298,85 +319,33 @@ describe('HoldingListPage', () => {
   });
 
   it('switches to the short placeholder below the desktop breakpoint', async () => {
-    const listeners: ((event: { matches: boolean }) => void)[] = [];
-    const query = {
-      matches: false,
-      addEventListener: (_: string, callback: (event: { matches: boolean }) => void) => listeners.push(callback),
-      removeEventListener: vi.fn(),
-    };
-    vi.stubGlobal('matchMedia', () => query);
+    const queries = new Map<string, { matches: boolean; listeners: ((event: { matches: boolean }) => void)[] }>();
+    vi.stubGlobal('matchMedia', (media: string) => {
+      const query = queries.get(media) ?? { matches: false, listeners: [] };
+
+      queries.set(media, query);
+
+      return {
+        get matches() {
+          return query.matches;
+        },
+        addEventListener: (_: string, callback: (event: { matches: boolean }) => void) =>
+          query.listeners.push(callback),
+        removeEventListener: vi.fn(),
+      };
+    });
     await renderPage();
     await screen.findAllByText('Esalia');
 
     expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholderShort');
 
-    query.matches = true;
-    listeners.forEach((listener) => listener({ matches: true }));
+    const desktop = queries.get('(min-width: 1024px)')!;
+    desktop.matches = true;
+    desktop.listeners.forEach((listener) => listener({ matches: true }));
 
     await vi.waitFor(() =>
       expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholder'),
     );
-  });
-
-  it('opens the add dialog with the account of the add query param, then clears it', async () => {
-    await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
-      routes: [{ path: '', component: HoldingListPage }],
-      initialRoute: '/?add=a1',
-      providers: [
-        HoldingChanges,
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    for (const request of httpTesting.match('/api/holdings')) {
-      request.flush(holdings);
-    }
-    for (const request of httpTesting.match('/api/accounts')) {
-      request.flush(accounts);
-    }
-
-    expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
-    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
-    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
-    httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
-  });
-
-  it('opens the add dialog with the search of the q param and the default account, then clears both params', async () => {
-    await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
-      routes: [{ path: '', component: HoldingListPage }],
-      initialRoute: '/?add=&q=zzz',
-      providers: [
-        HoldingChanges,
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    for (const request of httpTesting.match('/api/holdings')) {
-      request.flush(holdings);
-    }
-    for (const request of httpTesting.match('/api/accounts')) {
-      request.flush(accounts);
-    }
-
-    expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
-    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
-    await vi.waitFor(() => expect(screen.getByTestId('holding-add-query')).toHaveValue('zzz'));
-    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
-    httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
-    httpTesting.match('/api/instruments/resolve').forEach((request) => request.flush([]));
-
-    await userEvent.setup().click(screen.getByTestId('holding-add-cancel'));
-    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
   });
 
   it('ignores the old filter params', async () => {

@@ -1,4 +1,4 @@
-import { Component, booleanAttribute, computed, input, output } from '@angular/core';
+import { Component, type Signal, booleanAttribute, computed, input, linkedSignal, output } from '@angular/core';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -26,13 +26,19 @@ import type { SellResult } from '../sell-dialog/holding-sell-dialog-store';
 export class HoldingDetailDialogs {
   readonly holding = input.required<HoldingResponse>();
 
-  protected readonly listingQuery = computed(() => listingQueryOf(this.holding()));
   readonly pricingInstrument = input<{ id: string; name: string }>();
   readonly buyOpen = input(false, { transform: booleanAttribute });
   readonly sellOpen = input(false, { transform: booleanAttribute });
   readonly editOpen = input(false, { transform: booleanAttribute });
   readonly deleteOpen = input(false, { transform: booleanAttribute });
   readonly listingOpen = input(false, { transform: booleanAttribute });
+
+  protected readonly buyHolding = this.#heldWhile(this.buyOpen);
+  protected readonly sellHolding = this.#heldWhile(this.sellOpen);
+  protected readonly editHolding = this.#heldWhile(this.editOpen);
+  protected readonly deleteHolding = this.#heldWhile(this.deleteOpen);
+  protected readonly listingHolding = this.#heldWhile(this.listingOpen);
+  protected readonly listingQuery = computed(() => listingQueryOf(this.listingHolding()));
 
   readonly quoteSaved = output<void>();
   readonly quoteDismissed = output<void>();
@@ -46,4 +52,11 @@ export class HoldingDetailDialogs {
   readonly deleteDismissed = output<void>();
   readonly listingChanged = output<void>();
   readonly listingDismissed = output<void>();
+
+  #heldWhile(open: Signal<boolean>): Signal<HoldingResponse> {
+    return linkedSignal<{ open: boolean; holding: HoldingResponse }, HoldingResponse>({
+      source: () => ({ open: open(), holding: this.holding() }),
+      computation: (source, previous) => (source.open && previous ? previous.value : source.holding),
+    });
+  }
 }

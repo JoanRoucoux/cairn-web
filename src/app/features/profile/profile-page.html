@@ -3,7 +3,7 @@
     <a data-testid="back-link" routerLink="/" ui-back-link>{{ 'profile.back' | transloco }}</a>
   </div>
 
-  @switch (identityState()) {
+  @switch (identityShown()) {
     @case ('ready') {
       <div class="flex items-center gap-3.5 px-5 pt-1 lg:gap-4 lg:px-1 lg:pt-1" data-testid="identity">
         <ui-avatar
@@ -102,7 +102,7 @@
           size="xl"
           type="button"
           ui-row
-          [disabled]="importing()"
+          [busy]="importing()"
           (click)="fileInput.click()"
         >
           <span uiRowTile>
@@ -153,12 +153,6 @@
           (change)="onFileSelected($event)"
         />
 
-        @if (report(); as summary) {
-          <p class="text-label mt-2 text-(--positive)" data-testid="import-report" role="status">
-            {{ 'profile.importDone' | transloco: summary }}
-          </p>
-        }
-
         @if (failed()) {
           <ui-alert class="mt-2" data-testid="import-failed">
             {{ 'profile.importFailed' | transloco }}
@@ -195,6 +189,7 @@
   </ui-card>
 
   <app-profile-passkey-list
+    [added]="addedPasskeyIds()"
     [passkeys]="passkeys()"
     [state]="passkeysState()"
     (add)="passkeyDialogOpen.set(true)"

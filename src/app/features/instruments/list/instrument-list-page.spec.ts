@@ -4,6 +4,7 @@ import { type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -216,7 +217,8 @@ describe('InstrumentListPage', () => {
     await user.click(screen.getByTestId('instrument-menu-delete'));
     await user.click(screen.getByTestId('instrument-delete-cancel'));
 
-    expect(screen.queryByTestId('instrument-delete-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('instrument-delete-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('reloads the list once an instrument is deleted', async () => {
@@ -234,6 +236,7 @@ describe('InstrumentListPage', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush([]));
 
     expect(await screen.findByText('instruments.empty')).toBeInTheDocument();
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('instruments.toasts.deleted');
   });
 
   it('shows the back link to the profile and the instrument count, and a dash for a missing ISIN', async () => {
@@ -251,7 +254,8 @@ describe('InstrumentListPage', () => {
   it('shows a count skeleton while loading', async () => {
     await renderPage();
 
-    expect(screen.getByTestId('instruments-count-skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('instruments-count-skeleton')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('instruments-count-skeleton')).toBeInTheDocument();
 
     await flushOne([]);
   });

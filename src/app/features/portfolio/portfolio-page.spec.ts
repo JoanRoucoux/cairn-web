@@ -155,6 +155,7 @@ describe('PortfolioPage', () => {
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent('portfolio.pageError');
+    expect(screen.getByRole('alert').closest('ui-alert')).not.toHaveClass('ui-enter-fade');
   });
 
   it('should recover a failed block once its retry is pressed', async () => {

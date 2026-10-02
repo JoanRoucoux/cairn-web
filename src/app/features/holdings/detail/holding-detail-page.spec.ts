@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router, RouterOutlet } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -181,7 +182,8 @@ describe('HoldingDetailPage', () => {
     expect(screen.getByTestId('manual-quote-dialog')).toBeInTheDocument();
 
     await user.click(screen.getByTestId('manual-quote-cancel'));
-    expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('should reload the holding once a manual quote is saved', async () => {
@@ -197,6 +199,7 @@ describe('HoldingDetailPage', () => {
 
     await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.quoteSaved');
     httpTesting.expectOne('/api/holdings').flush([manualHolding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -235,6 +238,7 @@ describe('HoldingDetailPage', () => {
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-edit-dialog')).not.toBeInTheDocument());
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.edited');
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -256,6 +260,7 @@ describe('HoldingDetailPage', () => {
 
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
     expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.deleted');
   });
 
   it('opens the buy dialog and reloads once a purchase is saved', async () => {
@@ -273,6 +278,7 @@ describe('HoldingDetailPage', () => {
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-buy-dialog')).not.toBeInTheDocument());
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.bought');
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -302,7 +308,8 @@ describe('HoldingDetailPage', () => {
     await user.click(screen.getByTestId('holding-edit'));
     await user.click(screen.getByTestId('holding-edit-cancel'));
 
-    expect(screen.queryByTestId('holding-edit-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-edit-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('closes the delete dialog without deleting when dismissed', async () => {
@@ -313,7 +320,8 @@ describe('HoldingDetailPage', () => {
     await user.click(screen.getByTestId('holding-delete'));
     await user.click(screen.getByTestId('holding-delete-cancel'));
 
-    expect(screen.queryByTestId('holding-delete-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-delete-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('reloads after a partial sale, and returns to the list once the holding closes', async () => {
@@ -332,6 +340,8 @@ describe('HoldingDetailPage', () => {
     await vi.waitFor(() => expect(screen.queryByTestId('holding-sell-dialog')).not.toBeInTheDocument());
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
     expect(TestBed.inject(HoldingChanges).lastRemoved()).toBeNull();
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.sold');
+    TestBed.inject(UiToasts).dismiss();
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
@@ -348,6 +358,7 @@ describe('HoldingDetailPage', () => {
 
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
     expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.deleted');
   });
 
   it('hides Buy and Sell for a cash line', async () => {

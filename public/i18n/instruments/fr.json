@@ -57,5 +57,10 @@
   "errorTitle": "Le catalogue n'a pas pu être chargé",
   "errorMessage": "Le serveur n'a pas répondu.",
   "retry": "Réessayer",
-  "manualCaption": "Aucune cotation automatique"
+  "manualCaption": "Aucune cotation automatique",
+  "toasts": {
+    "created": "Instrument créé",
+    "updated": "Instrument modifié",
+    "deleted": "Instrument supprimé"
+  }
 }

@@ -2,9 +2,11 @@
   data-testid="account-form-dialog"
   layout="form"
   width="528px"
+  [busy]="form().submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [heading]="(account() ? 'accounts.form.editTitle' : 'accounts.form.createTitle') | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <ui-field
@@ -70,6 +72,7 @@
     type="button"
     ui-button
     [disabled]="form().submitting() || form().invalid()"
+    [loading]="form().submitting()"
     (click)="confirm()"
   >
     {{ (account() ? 'accounts.form.submit' : 'accounts.form.create') | transloco }}

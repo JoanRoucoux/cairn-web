@@ -213,5 +213,14 @@
     "duplicate": "This account already holds this listing.",
     "notFound": "No euro listing found for \"{{query}}\"."
   },
-  "foreignQuote": "Quoted in {{currency}}, not counted"
+  "foreignQuote": "Quoted in {{currency}}, not counted",
+  "toasts": {
+    "bought": "Purchase saved",
+    "sold": "Sale saved",
+    "edited": "Holding updated",
+    "deleted": "Holding deleted",
+    "added": "Holding added",
+    "balanceSaved": "Balance updated",
+    "quoteSaved": "Price saved"
+  }
 }

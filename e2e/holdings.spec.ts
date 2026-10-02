@@ -161,7 +161,7 @@ test.describe('holding detail', () => {
     await boursorama.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
-    await expect(page.getByRole('columnheader')).toHaveCount(3);
+    await expect(page.getByTestId('holdings-list').getByRole('columnheader')).toHaveCount(3);
   });
 
   test('keeps the search text when closing the detail', async ({ page }) => {

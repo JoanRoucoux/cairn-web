@@ -7,6 +7,8 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import type { PasskeyView } from '../profile-store';
@@ -56,6 +58,7 @@ describe('ProfilePasskeyDeleteDialog', () => {
   it('should emit dismissed on cancel and delete nothing', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('passkey-delete-cancel'));
 
@@ -68,20 +71,25 @@ describe('ProfilePasskeyDeleteDialog', () => {
 
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('alertdialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit deleted once the server confirms', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('passkey-delete-confirm'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('passkey-delete-confirm')));
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
 
-    await vi.waitFor(() => expect(deleted).toHaveBeenCalled());
+    await vi.waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('should stay open and say so when the server refuses', async () => {

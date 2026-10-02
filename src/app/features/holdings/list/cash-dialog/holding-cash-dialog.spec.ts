@@ -7,6 +7,8 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../../holding-changes';
@@ -42,18 +44,22 @@ describe('HoldingCashDialog', () => {
   it('should emit dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('holding-cash-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should prefill the amount field with the current balance', async () => {
@@ -120,16 +126,19 @@ describe('HoldingCashDialog', () => {
   it('should emit saved once the balance has been set', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.type(screen.getByTestId('holding-cash-amount'), '250');
     await user.click(screen.getByTestId('holding-cash-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('holding-cash-submit')));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/accounts/account-1/cash'))).flush(null, {
       status: 204,
       statusText: 'No Content',
     });
 
-    await vi.waitFor(() => expect(saved).toHaveBeenCalled());
+    await vi.waitFor(() => expect(saved).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('should show a generic error when the API refuses', async () => {

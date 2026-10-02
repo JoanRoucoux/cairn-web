@@ -1,13 +1,13 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { Location, NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import {
   type AsyncState,
   type ChartPoint,
   type SegmentedOption,
   UI_AMOUNT_MASKED,
-  UiAlert,
   UiAmount,
   UiAsync,
   UiBackLink,
@@ -19,12 +19,10 @@ import {
   UiMenuItem,
   UiMenuTrigger,
   UiSegmented,
-  UiSkeleton,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideRefreshCw, LucideTrash, LucideX } from '@lucide/angular';
 
-import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
@@ -32,9 +30,9 @@ import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
+import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { foreignCurrencyOf } from '../foreign-currency';
-import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailActions } from './actions/holding-detail-actions';
 import { HoldingDetailBar } from './bar/holding-detail-bar';
 import { HoldingDetailDescription } from './description/holding-detail-description';
@@ -42,6 +40,7 @@ import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
 import { HoldingDetailFacts } from './facts/holding-detail-facts';
 import { HoldingDetailFigures } from './figures/holding-detail-figures';
 import { HoldingDetailStore } from './holding-detail-store';
+import { HoldingDetailMissing } from './missing/holding-detail-missing';
 import { HoldingDetailQuoteAction } from './quote-action/holding-detail-quote-action';
 import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
 
@@ -56,6 +55,7 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     HoldingDetailDialogs,
     HoldingDetailFacts,
     HoldingDetailFigures,
+    HoldingDetailMissing,
     HoldingDetailQuoteAction,
     LucideEllipsis,
     LucidePencil,
@@ -66,7 +66,6 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     RatioPipe,
     RouterLink,
     TranslocoPipe,
-    UiAlert,
     UiAmount,
     UiAsync,
     UiBackLink,
@@ -78,24 +77,41 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     UiMenuItem,
     UiMenuTrigger,
     UiSegmented,
-    UiSkeleton,
   ],
   templateUrl: './holding-detail-page.html',
   providers: [HoldingDetailStore],
+  host: {
+    class: 'block',
+    '[animate.enter]': 'panelEnter()',
+    '[animate.leave]': 'panelLeave()',
+  },
 })
 export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
   #router = inject(Router);
-  #changes = inject(HoldingChanges);
+  #location = inject(Location);
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
 
+  readonly #desktop = injectDesktop();
+  readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
+
+  protected readonly panelEnter = computed(() => (this.#desktop() ? 'ui-enter-panel' : null));
+  protected readonly panelLeave = computed(() => (this.#desktop() ? 'ui-leave-fade' : null));
+
+  protected readonly listHref = computed(() =>
+    this.#router.serializeUrl(this.#router.createUrlTree(['/holdings'], { queryParams: this.#queryParams() })),
+  );
+
   protected readonly menu = viewChild.required<UiMenu>('menu');
 
   protected readonly holding = this.#store.holding;
   protected readonly holdings = this.#store.holdings;
+  protected readonly missingState = computed<AsyncState>(() =>
+    this.holdings.error() ? 'error' : this.holdings.isLoading() ? 'loading' : 'empty',
+  );
   protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
@@ -182,44 +198,25 @@ export class HoldingDetailPage {
     }
   }
 
-  protected onQuoteSaved(holdingId: string): void {
+  protected onQuoteSaved(): void {
     this.pricingInstrument.set(undefined);
-    this.#changes.touched(holdingId);
-    this.#store.reload();
   }
 
   protected onQuoteDismissed(): void {
     this.pricingInstrument.set(undefined);
   }
 
-  protected onBought(holding: HoldingResponse): void {
-    this.buyOpen.set(false);
-    this.#changes.touched(holding.id);
-    this.#store.reload();
-  }
-
-  protected onSold(result: SellResult, holdingId: string): void {
+  protected onSold(result: SellResult): void {
     this.sellOpen.set(false);
 
     if (result.outcome === 'closed') {
-      this.#changes.removed(holdingId);
-      this.backToList();
-    } else {
-      this.#changes.touched(holdingId);
-      this.#store.reload();
+      this.leaveIfStillOn(result.holdingId);
     }
-  }
-
-  protected onEdited(holding: HoldingResponse): void {
-    this.editOpen.set(false);
-    this.#changes.touched(holding.id);
-    this.#store.reload();
   }
 
   protected onDeleted(holdingId: string): void {
     this.deleteOpen.set(false);
-    this.#changes.removed(holdingId);
-    this.backToList();
+    this.leaveIfStillOn(holdingId);
   }
 
   protected openEdit(): void {
@@ -232,18 +229,37 @@ export class HoldingDetailPage {
     this.listingOpen.set(true);
   }
 
-  protected onListingChanged(holdingId: string): void {
-    this.listingOpen.set(false);
-    this.#changes.touched(holdingId);
-    this.#store.reload();
-  }
-
   protected openDelete(): void {
     this.menu().close();
     this.deleteOpen.set(true);
   }
 
+  protected onBack(event: MouseEvent): void {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    event.preventDefault();
+    this.backToList();
+  }
+
+  private leaveIfStillOn(holdingId: string): void {
+    if (this.#store.holdingId() === holdingId) {
+      this.backToList();
+    }
+  }
+
   private backToList(): void {
-    void this.#router.navigate(['/holdings'], { queryParamsHandling: 'preserve' });
+    if (this.listIsPreviousEntry()) {
+      this.#location.back();
+    } else {
+      void this.#router.navigate(['/holdings'], { queryParamsHandling: 'preserve' });
+    }
+  }
+
+  private listIsPreviousEntry(): boolean {
+    const previous = this.#router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl;
+
+    return previous !== undefined && this.#router.serializeUrl(previous).split(/[?#]/)[0] === '/holdings';
   }
 }

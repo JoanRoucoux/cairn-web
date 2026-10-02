@@ -29,7 +29,13 @@ export class ThemeStore {
   set(preference: ThemePreference): void {
     this.#preference.set(preference);
     localStorage.setItem(STORAGE_KEY, preference);
+
+    const root = this.#document.documentElement;
+    root.setAttribute('data-theme-switching', '');
     this.#apply(preference);
+    // Layout forces a full style recalc while the attribute is set; getComputedStyle only recalculates the root, and without either every colour transition runs.
+    root.getBoundingClientRect();
+    requestAnimationFrame(() => root.removeAttribute('data-theme-switching'));
   }
 
   #followDevice(): void {

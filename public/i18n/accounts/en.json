@@ -57,5 +57,10 @@
   "rowEmptyCompact": "No holdings. Add a holding or import a CSV.",
   "rowEmptyImport": "Import a CSV",
   "nameLabel": "Account name",
-  "optional": "(optional)"
+  "optional": "(optional)",
+  "toasts": {
+    "created": "Account created",
+    "updated": "Account updated",
+    "deleted": "Account deleted"
+  }
 }

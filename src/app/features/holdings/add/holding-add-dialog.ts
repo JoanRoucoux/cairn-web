@@ -8,7 +8,6 @@ import {
   inject,
   input,
   output,
-  signal,
   untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -23,8 +22,11 @@ import {
   type InstrumentResponse,
 } from '@core/api-client/cairnAPI.schemas';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
+import { injectToast } from '@shared/feedback/toast';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 
+import { type HoldingChange, HoldingChanges } from '../holding-changes';
 import { HoldingAddDialogStore, type PickedInstrument } from './holding-add-dialog-store';
 import { isinOf } from './isin';
 import { HoldingAddPicked } from './picked/holding-add-picked';
@@ -47,7 +49,14 @@ export class HoldingAddDialog {
   readonly saved = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  #changes = inject(HoldingChanges);
+  readonly #outcome = injectDialogOutcome<{ holding: HoldingResponse; change: HoldingChange }>(({ change }) => {
+    this.#toast('holdings.toasts.added');
+    this.#changes.reveal(change);
+  });
+
+  protected readonly open = this.#outcome.open;
 
   protected readonly accounts = this.#store.accounts;
   protected readonly accountId = this.#store.accountId;
@@ -160,6 +169,12 @@ export class HoldingAddDialog {
         this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();
       }
     });
+
+    afterRenderEffect(() => {
+      if (this.picked()) {
+        this.#host.nativeElement.querySelector<HTMLInputElement>('[data-testid="holding-add-quantity"]')?.focus();
+      }
+    });
   }
 
   protected onQueryInput(event: Event): void {
@@ -225,8 +240,17 @@ export class HoldingAddDialog {
   }
 
   protected dismiss(): void {
-    this.open.set(false);
-    this.dismissed.emit();
+    this.#outcome.dismiss();
+  }
+
+  protected onClosed(): void {
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.saved.emit(result.value.holding);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected onSubmit(event: Event): void {
@@ -241,8 +265,7 @@ export class HoldingAddDialog {
     const moved = await this.#store.replaceWith(picked);
 
     if (moved) {
-      this.open.set(false);
-      this.saved.emit(moved);
+      this.#outcome.succeed({ holding: moved, change: this.#changes.touched(moved.id) });
     }
   }
 
@@ -250,8 +273,7 @@ export class HoldingAddDialog {
     const saved = await this.#store.save();
 
     if (saved) {
-      this.open.set(false);
-      this.saved.emit(saved);
+      this.#outcome.succeed({ holding: saved, change: this.#changes.touched(saved.id) });
     }
   }
 }

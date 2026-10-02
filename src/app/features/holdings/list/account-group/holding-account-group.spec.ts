@@ -6,6 +6,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import type { HoldingChange } from '../../holding-changes';
 import type { AccountGroup } from '../holding-list-store';
 import { HoldingAccountGroup } from './holding-account-group';
 
@@ -16,6 +17,7 @@ import { HoldingAccountGroup } from './holding-account-group';
     <tbody
       app-holding-account-group
       [compact]="compact()"
+      [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
       (changeListing)="changeListing.emit($event)"
@@ -27,6 +29,7 @@ import { HoldingAccountGroup } from './holding-account-group';
 class TestHost {
   readonly group = input.required<AccountGroup>();
   readonly compact = input(false);
+  readonly flash = input<HoldingChange | null>(null);
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
@@ -66,9 +69,10 @@ const renderGroup = (
   overrides: Partial<AccountGroup> = {},
   compact = false,
   selectedHoldingId: string | undefined = undefined,
+  flash: HoldingChange | null = null,
 ): ReturnType<typeof render<TestHost>> =>
   render(TestHost, {
-    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId },
+    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId, flash },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });

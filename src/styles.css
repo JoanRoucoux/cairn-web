@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@joanroucoux/cairn-ui/styles/tokens.css';
 @import '@joanroucoux/cairn-ui/styles/theme.css';
+@import '@joanroucoux/cairn-ui/styles/motion.css';
 
 /* Tailwind does not scan node_modules: without this, the classes used inside cairn-ui templates
    are never generated. */

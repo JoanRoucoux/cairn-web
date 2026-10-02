@@ -96,19 +96,20 @@ describe('PortfolioCurve', () => {
     await renderCurve({ state: 'loading', blocking: false });
 
     expect(await screen.findAllByRole('radio')).toHaveLength(6);
-    expect(screen.getByTestId('curve-range-loading')).toBeInTheDocument();
+    expect(await screen.findByTestId('curve-range-loading')).toBeInTheDocument();
   });
 
   it('should replace the range change line with a skeleton while loading, and drop it on error', async () => {
     const { fixture } = await renderCurve({ state: 'loading' });
 
-    expect(screen.getByTestId('curve-range-loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('curve-range-loading')).toBeInTheDocument();
     expect(screen.queryByText('portfolio.curve.period.1m')).not.toBeInTheDocument();
 
     fixture.componentRef.setInput('state', 'error');
     fixture.detectChanges();
 
-    expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument());
     expect(screen.queryByText('portfolio.curve.period.1m')).not.toBeInTheDocument();
   });
 
@@ -148,13 +149,14 @@ describe('PortfolioCurve', () => {
     expect(container.querySelector('ui-line-chart')).toBeInTheDocument();
     expect(screen.queryByTestId('curve-loading')).not.toBeInTheDocument();
     expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
-    expect(screen.getByText('portfolio.curve.period.1m')).toBeInTheDocument();
+    expect(await screen.findByText('portfolio.curve.period.1m')).toBeInTheDocument();
+    expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
   });
 
   it('should label the variation with the range of the series shown, not the one picked', async () => {
     await renderCurve({ state: 'loading', chartReloading: true, range: '1y', shownRange: '1m' });
 
-    expect(screen.getByText('portfolio.curve.period.1m')).toBeInTheDocument();
+    expect(await screen.findByText('portfolio.curve.period.1m')).toBeInTheDocument();
     expect(screen.queryByText('portfolio.curve.period.1y')).not.toBeInTheDocument();
   });
 

@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { UiAvatar, UiAvatarLink, UiBackLink, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
+import { UiAvatar, UiAvatarLink, UiBackLink, UiNavItem, UiTab, UiTabBar, UiToaster } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 
@@ -41,6 +41,7 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
     UiNavItem,
     UiTab,
     UiTabBar,
+    UiToaster,
   ],
   templateUrl: './app-shell.html',
 })

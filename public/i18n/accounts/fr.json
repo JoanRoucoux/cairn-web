@@ -57,5 +57,10 @@
   "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
   "rowEmptyImport": "Importer un CSV",
   "nameLabel": "Nom du compte",
-  "optional": "(facultatif)"
+  "optional": "(facultatif)",
+  "toasts": {
+    "created": "Compte créé",
+    "updated": "Compte modifié",
+    "deleted": "Compte supprimé"
+  }
 }

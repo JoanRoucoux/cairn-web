@@ -213,5 +213,14 @@
     "duplicate": "Ce compte détient déjà cette cotation.",
     "notFound": "Aucune cotation en euros trouvée pour « {{query}} »."
   },
-  "foreignQuote": "Coté en {{currency}}, non compté"
+  "foreignQuote": "Coté en {{currency}}, non compté",
+  "toasts": {
+    "bought": "Achat enregistré",
+    "sold": "Vente enregistrée",
+    "edited": "Ligne modifiée",
+    "deleted": "Ligne supprimée",
+    "added": "Ligne ajoutée",
+    "balanceSaved": "Solde modifié",
+    "quoteSaved": "Cours enregistré"
+  }
 }

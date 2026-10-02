@@ -9,9 +9,10 @@ import { HoldingService } from '@core/api-client/holding/holding.service';
 import { excludedCounts } from '@shared/format/excluded-lines';
 import { normalizeSearch } from '@shared/format/normalize-search';
 
-import { HoldingChanges } from '../holding-changes';
+import { type HoldingChange, HoldingChanges } from '../holding-changes';
 
 export type AccountGroup = {
+  key: string;
   accountId: string;
   accountName: string;
   accountType: string;
@@ -84,18 +85,45 @@ export class HoldingListStore {
     defaultValue: [],
   });
 
+  readonly filterKey = computed(() => `${this.search()}|${this.assetClass() ?? ''}`);
+
+  readonly #flash = linkedSignal<string, HoldingChange | null>({ source: this.filterKey, computation: () => null });
+  readonly flash = this.#flash.asReadonly();
+  readonly #pendingFlash = signal<HoldingChange | null>(null);
+
   #changesSeen = false;
+  #seenTouched: HoldingChange | null = null;
 
   constructor() {
     effect(() => {
-      this.#changes.lastTouched();
+      const touched = this.#changes.lastTouched();
       this.#changes.lastRemoved();
 
       if (this.#changesSeen) {
-        untracked(() => this.holdings.reload());
+        untracked(() => {
+          if (touched !== this.#seenTouched) {
+            this.#pendingFlash.set(touched);
+          }
+          this.holdings.reload();
+        });
       }
 
+      this.#seenTouched = touched;
       this.#changesSeen = true;
+    });
+
+    effect(() => {
+      const pending = this.#pendingFlash();
+      const status = this.holdings.status();
+
+      if (pending && status === 'error') {
+        untracked(() => this.#pendingFlash.set(null));
+      } else if (pending && status === 'resolved' && this.#changes.lastRevealed() === pending) {
+        untracked(() => {
+          this.#flash.set(pending);
+          this.#pendingFlash.set(null);
+        });
+      }
     });
   }
 
@@ -130,6 +158,7 @@ export class HoldingListStore {
     const byAccount = new Map<string, AccountGroup>();
     const cashByAccount = this.#cashByAccount();
     const newGroup = (accountId: string, accountName: string, accountType: string): AccountGroup => ({
+      key: accountId,
       accountId,
       accountName,
       accountType,
@@ -196,7 +225,8 @@ export class HoldingListStore {
   readonly groups = computed<AccountGroup[]>(() => {
     const search = normalizeSearch(this.search().trim());
     const assetClass = this.assetClass();
-    const all = this.#allGroups();
+    const filterKey = this.filterKey();
+    const all = this.#allGroups().map((group) => ({ ...group, key: `${group.accountId}|${filterKey}` }));
 
     if (search === '' && assetClass === null) {
       return all;

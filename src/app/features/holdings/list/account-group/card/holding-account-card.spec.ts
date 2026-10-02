@@ -4,8 +4,10 @@ import { provideRouter } from '@angular/router';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { type MotionRecord, recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import type { HoldingChange } from '../../../holding-changes';
 import type { AccountGroup } from '../../holding-list-store';
 import { HoldingAccountCard } from './holding-account-card';
 
@@ -33,9 +35,12 @@ const group = {
   holdings: [holding],
 } as unknown as AccountGroup;
 
-const renderCard = (input: Partial<AccountGroup> = {}): ReturnType<typeof render<HoldingAccountCard>> =>
+const renderCard = (
+  input: Partial<AccountGroup> = {},
+  flash: HoldingChange | null = null,
+): ReturnType<typeof render<HoldingAccountCard>> =>
   render(HoldingAccountCard, {
-    inputs: { group: { ...group, ...input } },
+    inputs: { group: { ...group, ...input }, flash },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
@@ -176,6 +181,33 @@ describe('HoldingAccountCard', () => {
 
       expect(balance).toHaveTextContent('holdings.balance.line');
       expect(balance).not.toHaveTextContent('holdings.balance.entered');
+    });
+  });
+
+  describe('after a change', () => {
+    let motion: MotionRecord;
+
+    beforeEach(() => (motion = recordMotion()));
+
+    afterEach(() => motion.restore());
+
+    it('should highlight the line that just changed', async () => {
+      await renderCard({}, { id: 'h3', at: 1 });
+
+      await vi.waitFor(() => expect(motion.highlighted).toEqual([screen.getByTestId('holding-row-mobile')]));
+    });
+
+    it('should highlight the cash line when its account balance just changed', async () => {
+      await renderCard({}, { id: 'a1', at: 1 });
+
+      await vi.waitFor(() => expect(motion.highlighted).toEqual([screen.getByTestId('edit-cash-mobile')]));
+    });
+
+    it('should highlight nothing when no line of the account changed', async () => {
+      await renderCard({}, { id: 'elsewhere', at: 1 });
+
+      expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+      expect(motion.highlighted).toEqual([]);
     });
   });
 });

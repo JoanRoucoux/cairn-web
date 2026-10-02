@@ -14,7 +14,7 @@ import { UpperFirstPipe } from '@shared/format/upper-first-pipe';
   host: { class: 'flex min-w-0 flex-1 flex-col pl-1 lg:pl-0' },
 })
 export class AccountSummary {
-  readonly state = input.required<AsyncState>();
+  readonly state = input.required<AsyncState | null>();
   readonly count = input.required<number>();
   readonly totalEur = input.required<number | null>();
   readonly excluded = input.required<ReturnType<typeof excludedTotal>>();

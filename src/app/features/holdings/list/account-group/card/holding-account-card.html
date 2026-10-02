@@ -1,5 +1,5 @@
 @let cash = cashRowKeys(group());
-<header class="flex items-end justify-between gap-3 px-1 pt-3">
+<header class="flex items-end justify-between gap-3 px-1 pt-3" [uiHighlight]="highlight()">
   <div class="flex min-w-0 flex-col">
     <h2 class="text-title m-0 font-semibold outline-none" data-group-heading tabindex="-1">
       {{ group().accountName }}
@@ -15,13 +15,17 @@
     @for (holding of group().holdings; track holding.id) {
       @let foreign = foreignCurrency(holding);
       <a
+        animate.leave="ui-leave-fade"
+        class="scroll-mb-(--tab-bar-height)"
         data-testid="holding-row-mobile"
         padding="sm"
         queryParamsHandling="preserve"
         size="card"
         ui-row
+        uiFlipItem
         [attr.data-holding-id]="holding.id"
         [routerLink]="['/holdings', holding.id]"
+        [uiHighlight]="flash()?.id === holding.id ? flash() : null"
       >
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
@@ -67,12 +71,15 @@
     }
     @if (group().showCash) {
       <button
+        class="scroll-mb-(--tab-bar-height)"
         data-testid="edit-cash-mobile"
         padding="sm"
         size="card"
         type="button"
         ui-row
+        uiFlipItem
         [attr.aria-label]="cash.editRow | transloco: { name: group().accountName }"
+        [uiHighlight]="flash()?.id === group().accountId ? flash() : null"
         (click)="editCash.emit(group().accountId)"
       >
         <div class="flex min-w-0 flex-1 flex-col">

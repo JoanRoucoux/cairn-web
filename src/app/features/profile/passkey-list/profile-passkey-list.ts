@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 
 import {
@@ -6,6 +7,8 @@ import {
   UiBadge,
   UiButton,
   UiCard,
+  UiFlipList,
+  UiHighlight,
   UiListRow,
   UiRowTile,
   UiSkeleton,
@@ -21,11 +24,14 @@ import type { PasskeyView } from '../profile-store';
     LucideKeyRound,
     LucidePlus,
     LucideTrash,
+    NgTemplateOutlet,
     TranslocoPipe,
     UiAsync,
     UiBadge,
     UiButton,
     UiCard,
+    UiFlipList,
+    UiHighlight,
     UiListRow,
     UiRowTile,
     UiSkeleton,
@@ -36,6 +42,7 @@ import type { PasskeyView } from '../profile-store';
 export class ProfilePasskeyList {
   readonly state = input.required<AsyncState>();
   readonly passkeys = input.required<PasskeyView[]>();
+  readonly added = input<ReadonlySet<string>>(new Set());
 
   readonly add = output<void>();
   readonly remove = output<PasskeyView>();

@@ -78,6 +78,7 @@
     type="button"
     ui-button
     [disabled]="form().submitting()"
+    [loading]="form().submitting()"
     (click)="onSave()"
   >
     {{ 'instruments.save' | transloco }}

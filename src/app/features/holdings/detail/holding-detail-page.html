@@ -1,11 +1,11 @@
 <ng-template #back>
-  <a data-testid="holding-detail-back" queryParamsHandling="preserve" routerLink="/holdings" size="header" ui-back-link>
+  <a data-testid="holding-detail-back" size="header" ui-back-link [href]="listHref()" (click)="onBack($event)">
     {{ 'holdings.detail.back' | transloco }}
   </a>
 </ng-template>
 
 <article
-  class="fixed inset-x-0 top-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
+  class="fixed inset-x-0 top-0 bottom-(--tab-bar-height) z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
   [class.pb-25]="holding()"
 >
   @if (holding(); as holding) {
@@ -167,31 +167,23 @@
       [listingOpen]="listingOpen()"
       [pricingInstrument]="pricingInstrument()"
       [sellOpen]="sellOpen()"
-      (bought)="onBought($event)"
+      (bought)="buyOpen.set(false)"
       (buyDismissed)="buyOpen.set(false)"
       (deleteDismissed)="deleteOpen.set(false)"
       (deleted)="onDeleted($event)"
       (editDismissed)="editOpen.set(false)"
-      (edited)="onEdited($event)"
-      (listingChanged)="onListingChanged(holding.id)"
+      (edited)="editOpen.set(false)"
+      (listingChanged)="listingOpen.set(false)"
       (listingDismissed)="listingOpen.set(false)"
       (quoteDismissed)="onQuoteDismissed()"
-      (quoteSaved)="onQuoteSaved(holding.id)"
+      (quoteSaved)="onQuoteSaved()"
       (sellDismissed)="sellOpen.set(false)"
-      (sold)="onSold($event, holding.id)"
+      (sold)="onSold($event)"
     />
   } @else {
     <div class="-mx-2 flex h-(--header-height) shrink-0 items-center lg:hidden">
       <ng-container [ngTemplateOutlet]="back" />
     </div>
-    @if (holdings.error()) {
-      <ui-alert [fadeIn]="false">{{ 'holdings.error' | transloco }}</ui-alert>
-    } @else if (holdings.isLoading()) {
-      <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
-      <ui-skeleton class="max-w-56" [height]="30" [lines]="2" />
-      <ui-skeleton class="mt-6" [height]="168" />
-    } @else {
-      <ui-alert [fadeIn]="false">{{ 'holdings.notFound' | transloco }}</ui-alert>
-    }
+    <app-holding-detail-missing [state]="missingState()" />
   }
 </article>

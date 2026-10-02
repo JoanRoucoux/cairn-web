@@ -4,9 +4,9 @@
   </div>
   <div class="flex items-baseline justify-between gap-3 pb-2">
     <h1 class="text-heading font-semibold">{{ 'pageTitle.instruments' | transloco }}</h1>
-    @if (state() === 'loading') {
+    @if (shown() === 'loading') {
       <span class="block w-24" data-testid="instruments-count-skeleton"><ui-skeleton [height]="14" /></span>
-    } @else if (state() === 'ready' || state() === 'empty') {
+    } @else if (shown() === 'ready' || shown() === 'empty') {
       <span class="text-label whitespace-nowrap text-(--muted-foreground)">{{ countLabel() }}</span>
     }
   </div>
@@ -27,9 +27,9 @@
   </ui-field>
 
   <div class="flex flex-none items-center gap-4">
-    @if (state() === 'loading') {
+    @if (shown() === 'loading') {
       <span class="block w-24 max-lg:hidden"><ui-skeleton [height]="14" /></span>
-    } @else if (state() === 'ready' || state() === 'empty') {
+    } @else if (shown() === 'ready' || shown() === 'empty') {
       <span class="text-label whitespace-nowrap text-(--muted-foreground) max-lg:hidden">{{ countLabel() }}</span>
     }
     <a

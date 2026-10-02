@@ -10,9 +10,21 @@ describe('HoldingChanges', () => {
     changes = TestBed.inject(HoldingChanges);
   });
 
-  it('starts with nothing touched or removed', () => {
+  it('starts with nothing touched, removed or revealed', () => {
     expect(changes.lastTouched()).toBeNull();
     expect(changes.lastRemoved()).toBeNull();
+    expect(changes.lastRevealed()).toBeNull();
+  });
+
+  it('hands back the touched change, and reveals it once asked', () => {
+    const change = changes.touched('a');
+
+    expect(change).toBe(changes.lastTouched());
+    expect(changes.lastRevealed()).toBeNull();
+
+    changes.reveal(change);
+
+    expect(changes.lastRevealed()).toBe(change);
   });
 
   it('records the touched id with a timestamp', () => {

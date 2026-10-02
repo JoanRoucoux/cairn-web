@@ -4,14 +4,18 @@ import { LOCALE_ID, type Provider, provideZonelessChangeDetection, signal } from
 import { TestBed } from '@angular/core/testing';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingSellDialog } from './holding-sell-dialog';
 
 const holding = {
@@ -38,6 +42,7 @@ describe('HoldingSellDialog', () => {
       on: { sold, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -171,7 +176,9 @@ describe('HoldingSellDialog', () => {
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({ id: 'h1' });
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
+    await vi.waitFor(() =>
+      expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holdingId: 'h1', holding: { id: 'h1' } }),
+    );
   });
 
   it('does not submit with Enter when the quantity is over what is held', async () => {
@@ -201,13 +208,20 @@ describe('HoldingSellDialog', () => {
 
     await user.type(screen.getByTestId('holding-sell-quantity'), '100');
     await user.click(screen.getByTestId('holding-sell-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('holding-sell-submit')));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush(
       { id: 'h1' },
       { status: 200, statusText: 'OK' },
     );
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
+    await vi.waitFor(() =>
+      expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holdingId: 'h1', holding: { id: 'h1' } }),
+    );
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.sold');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(HoldingChanges).lastRevealed()).toBe(TestBed.inject(HoldingChanges).lastTouched());
+    expect(TestBed.inject(HoldingChanges).lastRemoved()).toBeNull();
   });
 
   it('emits sold with closed after selling everything', async () => {
@@ -222,7 +236,10 @@ describe('HoldingSellDialog', () => {
       statusText: 'No Content',
     });
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'closed', holding: null }));
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'closed', holdingId: 'h1', holding: null }));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.deleted');
+    expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
+    expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();
   });
 
   it('shows a refusal from the server', async () => {
@@ -260,21 +277,43 @@ describe('HoldingSellDialog', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 
-  it('emits dismissed when Annuler is clicked', async () => {
+  it('emits sold once, only after the exit has played', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    const dialog = slowDialogExit();
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '100');
+    await user.click(screen.getByTestId('holding-sell-submit'));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({ id: 'h1' });
+
+    await vi.waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    expect(sold).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
+  });
+
+  it('emits dismissed once, after the exit, when Annuler is clicked', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    const dialog = slowDialogExit();
 
     await user.click(screen.getByTestId('holding-sell-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    await vi.waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
+    expect(sold).not.toHaveBeenCalled();
   });
 
-  it('emits dismissed on cancel via the native dialog close', async () => {
+  it('emits dismissed once, after the exit, when the reader closes the dialog', async () => {
     await renderDialog();
+    const dialog = slowDialogExit();
 
-    (screen.getByRole('dialog') as HTMLDialogElement).close();
+    dialog.close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
+    expect(sold).not.toHaveBeenCalled();
   });
 
   it('never calls the server when confirm is invoked while invalid', async () => {
@@ -283,6 +322,7 @@ describe('HoldingSellDialog', () => {
       on: { sold, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

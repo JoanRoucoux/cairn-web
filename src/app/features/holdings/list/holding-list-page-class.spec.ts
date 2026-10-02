@@ -1,14 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
+import { ApplicationRef, Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, RouterOutlet } from '@angular/router';
+import { type Event, NavigationEnd, Router, RouterOutlet, Scroll } from '@angular/router';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
 import { TRANSLOCO_LOADER, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
-import { map, timer } from 'rxjs';
+import { type Subject, map, timer } from 'rxjs';
 
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -239,7 +239,7 @@ describe('HoldingListPage class filter', () => {
 
     expect(screen.queryByTestId('class-summary')).not.toBeInTheDocument();
     expect(await screen.findByTestId('holdings-loading-rows')).toBeInTheDocument();
-    const [phone, desktop] = screen.getAllByTestId('summary-skeleton');
+    const [phone, desktop] = await screen.findAllByTestId('summary-skeleton');
     expect(phone!.querySelectorAll('span')).toHaveLength(2);
     expect(desktop!.querySelectorAll('span')).toHaveLength(1);
 
@@ -278,20 +278,106 @@ describe('HoldingListPage class filter', () => {
     expect(await screen.findByText('Nothing matches "zzz"')).toBeInTheDocument();
   });
 
-  it('should land on the group of ?compte= and focus its heading, without filtering', async () => {
-    vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get').mockReturnValue(document.body);
-    await open('/?compte=a2');
-    const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
+  const routerScrolls = (): void =>
+    (TestBed.inject(Router).events as Subject<Event>).next(new Scroll(new NavigationEnd(1, '/', '/'), null, null));
 
-    await vi.waitFor(() => expect(headings).toContain(document.activeElement));
-    expect(screen.getAllByRole('heading', { name: 'Saxo Investor' }).length).toBeGreaterThan(0);
-    expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
-  });
+  describe('arriving on ?compte=', () => {
+    const scrolled: Element[] = [];
+    const animated: Element[] = [];
+    const order: string[] = [];
+    const animate = Object.getOwnPropertyDescriptor(Element.prototype, 'animate')!;
 
-  it('should ignore a ?compte= that matches no account', async () => {
-    await open('/?compte=nope');
+    beforeEach(() => {
+      scrolled.length = 0;
+      animated.length = 0;
+      order.length = 0;
+      vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get').mockReturnValue(document.body);
+      Object.defineProperty(Element.prototype, 'scrollIntoView', {
+        configurable: true,
+        value: vi.fn(function (this: Element) {
+          scrolled.push(this);
+          order.push('scroll');
+        }),
+      });
+      Object.defineProperty(Element.prototype, 'animate', {
+        configurable: true,
+        value: vi.fn(function (this: Element) {
+          animated.push(this);
+          order.push('highlight');
 
-    expect((await screen.findAllByRole('heading', { name: 'Esalia' })).length).toBeGreaterThan(0);
-    expect(within(document.body).queryByRole('alert')).not.toBeInTheDocument();
+          return { cancel: vi.fn() };
+        }),
+      });
+    });
+
+    afterEach(() => {
+      Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+      Object.defineProperty(Element.prototype, 'animate', animate);
+    });
+
+    it('should wait for the router to place the page before landing', async () => {
+      await open('/?compte=a2');
+      await screen.findAllByRole('heading', { name: 'Esalia' });
+
+      expect(scrolled).toHaveLength(0);
+      expect(animated).toHaveLength(0);
+    });
+
+    it('should place the group at once, focus its heading without scrolling, then highlight its header', async () => {
+      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+      const scrollTo = vi.spyOn(window, 'scrollTo');
+      await open('/?compte=a2');
+      const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
+
+      routerScrolls();
+
+      await vi.waitFor(() => expect(headings).toContain(document.activeElement));
+      expect(scrolled).toHaveLength(1);
+      expect((scrolled[0] as HTMLElement).dataset['accountId']).toBe('a2');
+      expect(scrollIntoViewArgs()).toEqual({ block: 'start', behavior: 'auto' });
+      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+      await vi.waitFor(() => expect(animated.length).toBeGreaterThan(0));
+      expect(order[0]).toBe('scroll');
+      expect(
+        animated.every((element) => element.closest('[data-account-id]')?.getAttribute('data-account-id') === 'a2'),
+      ).toBe(true);
+      expect(scrollTo).not.toHaveBeenCalled();
+      expect(screen.getAllByRole('heading', { name: 'Saxo Investor' }).length).toBeGreaterThan(0);
+      expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('should not highlight the header again when a filter rebuilds the groups', async () => {
+      const user = userEvent.setup();
+      await open('/?compte=a2');
+      await screen.findAllByRole('heading', { name: 'Esalia' });
+      routerScrolls();
+      await vi.waitFor(() => expect(animated.length).toBeGreaterThan(0));
+      const played = animated.length;
+
+      await user.click(chip(/^Funds/));
+      await screen.findAllByRole('heading', { name: 'Esalia' });
+      await user.click(chip(/^All/));
+      await screen.findAllByRole('heading', { name: 'Saxo Investor' });
+
+      expect(animated).toHaveLength(played);
+    });
+
+    it('should ignore a ?compte= that matches no account: no scroll, no focus, no highlight', async () => {
+      await open('/?compte=nope');
+      await screen.findAllByRole('heading', { name: 'Esalia' });
+      routerScrolls();
+      TestBed.tick();
+      await TestBed.inject(ApplicationRef).whenStable();
+
+      expect(screen.getAllByRole('heading', { name: 'Esalia' }).length).toBeGreaterThan(0);
+      expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
+      expect(scrolled).toEqual([]);
+      expect(animated).toEqual([]);
+      expect(document.activeElement).toBe(document.body);
+      expect(within(document.body).queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    const scrollIntoViewArgs = (): unknown =>
+      (Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
   });
 });
