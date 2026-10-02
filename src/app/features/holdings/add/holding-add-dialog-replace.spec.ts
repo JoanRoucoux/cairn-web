@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -196,6 +197,21 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
       expect(move.request.body).toEqual({ instrumentId: 'i1' });
       move.flush({ id: 'h1' });
       await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h1' }));
+    });
+
+    it('confirms the change of listing once the dialog has closed, and reveals the moved line', async () => {
+      const user = userEvent.setup();
+      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'amundi' });
+      await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+      const changes = TestBed.inject(HoldingChanges);
+
+      await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
+      (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/instrument'))).flush({ id: 'h1' });
+
+      await vi.waitFor(() => expect(changes.lastTouched()?.id).toBe('h1'));
+      await vi.waitFor(() => expect(saved).toHaveBeenCalled());
+      expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.listingChanged');
+      expect(changes.lastRevealed()).toBe(changes.lastTouched());
     });
 
     it('says the account already holds the listing on a 422 and stays open', async () => {

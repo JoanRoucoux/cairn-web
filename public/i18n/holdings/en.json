@@ -221,6 +221,7 @@
     "deleted": "Holding deleted",
     "added": "Holding added",
     "balanceSaved": "Balance updated",
-    "quoteSaved": "Price saved"
+    "quoteSaved": "Price saved",
+    "listingChanged": "Listing changed"
   }
 }

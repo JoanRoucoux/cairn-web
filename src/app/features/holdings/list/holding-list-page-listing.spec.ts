@@ -4,10 +4,12 @@ import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/c
 import { TestBed } from '@angular/core/testing';
 import { RouterOutlet } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
@@ -88,7 +90,9 @@ describe('HoldingListPage change of listing', () => {
     expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();
   });
 
-  it('marks the line as touched and reloads the list once it moved', async () => {
+  it('marks the line as touched, reloads the list, confirms and highlights the moved line', async () => {
+    const motion = recordMotion();
+    onTestFinished(() => motion.restore());
     const user = userEvent.setup();
     await renderPage();
     await openSearch();
@@ -110,11 +114,16 @@ describe('HoldingListPage change of listing', () => {
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.listingChanged');
     await vi.waitFor(() =>
       httpTesting
         .expectOne((request) => request.url === '/api/holdings' && request.method === 'GET')
         .flush([{ ...usdHolding, priceCurrency: 'EUR', marketValueEur: 1123.6 }]),
     );
     await vi.waitFor(() => expect(screen.queryByTestId('change-listing')).not.toBeInTheDocument());
+    await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+    expect(
+      motion.highlighted.every((element) => element.closest('[data-holding-id="h1"], tr:has([data-holding-id="h1"])')),
+    ).toBe(true);
   });
 });

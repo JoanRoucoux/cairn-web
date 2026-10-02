@@ -51,10 +51,12 @@ export class HoldingAddDialog {
 
   #toast = injectToast();
   #changes = inject(HoldingChanges);
-  readonly #outcome = injectDialogOutcome<{ holding: HoldingResponse; change: HoldingChange }>(({ change }) => {
-    this.#toast('holdings.toasts.added');
-    this.#changes.reveal(change);
-  });
+  readonly #outcome = injectDialogOutcome<{ holding: HoldingResponse; change: HoldingChange; toast: string }>(
+    ({ change, toast }) => {
+      this.#toast(toast);
+      this.#changes.reveal(change);
+    },
+  );
 
   protected readonly open = this.#outcome.open;
 
@@ -265,7 +267,11 @@ export class HoldingAddDialog {
     const moved = await this.#store.replaceWith(picked);
 
     if (moved) {
-      this.#outcome.succeed({ holding: moved, change: this.#changes.touched(moved.id) });
+      this.#outcome.succeed({
+        holding: moved,
+        change: this.#changes.touched(moved.id),
+        toast: 'holdings.toasts.listingChanged',
+      });
     }
   }
 
@@ -273,7 +279,11 @@ export class HoldingAddDialog {
     const saved = await this.#store.save();
 
     if (saved) {
-      this.#outcome.succeed({ holding: saved, change: this.#changes.touched(saved.id) });
+      this.#outcome.succeed({
+        holding: saved,
+        change: this.#changes.touched(saved.id),
+        toast: 'holdings.toasts.added',
+      });
     }
   }
 }

@@ -221,6 +221,7 @@
     "deleted": "Ligne supprimée",
     "added": "Ligne ajoutée",
     "balanceSaved": "Solde modifié",
-    "quoteSaved": "Cours enregistré"
+    "quoteSaved": "Cours enregistré",
+    "listingChanged": "Cotation changée"
   }
 }
