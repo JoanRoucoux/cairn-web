@@ -5,6 +5,7 @@
   [description]="'profile.addPasskeyDescription' | transloco"
   [heading]="'profile.addPasskeyTitle' | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <!-- novalidate: the native required/maxlength validation would block submit() from ever running. -->

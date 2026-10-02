@@ -4,7 +4,8 @@
   width="488px"
   [heading]="'profile.delete.title' | transloco: { label: passkey().label }"
   [open]="open()"
-  (dismissed)="dismissed.emit()"
+  (closed)="onClosed()"
+  (dismissed)="dismiss()"
 >
   <p class="text-body text-(--muted-foreground)">{{ 'profile.delete.description' | transloco }}</p>
 
@@ -22,7 +23,7 @@
     ui-button
     variant="outline"
     [disabled]="deleting()"
-    (click)="cancel()"
+    (click)="dismiss()"
   >
     {{ 'profile.delete.cancel' | transloco }}
   </button>

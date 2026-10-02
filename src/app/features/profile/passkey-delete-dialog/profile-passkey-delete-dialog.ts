@@ -1,4 +1,4 @@
-import { Component, Injector, afterNextRender, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 
 import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -14,7 +14,6 @@ import { ProfilePasskeyDeleteStore } from './profile-passkey-delete-store';
 })
 export class ProfilePasskeyDeleteDialog {
   #store = inject(ProfilePasskeyDeleteStore);
-  #injector = inject(Injector);
 
   readonly passkey = input.required<PasskeyView>();
   readonly deleted = output<void>();
@@ -25,15 +24,24 @@ export class ProfilePasskeyDeleteDialog {
   protected readonly refused = this.#store.refused;
   protected readonly failed = this.#store.failed;
 
-  protected cancel(): void {
+  #done = false;
+
+  protected dismiss(): void {
     this.open.set(false);
-    afterNextRender(() => this.dismissed.emit(), { injector: this.#injector });
+  }
+
+  protected onClosed(): void {
+    if (this.#done) {
+      this.deleted.emit();
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     if (await this.#store.remove(this.passkey().credentialId)) {
+      this.#done = true;
       this.open.set(false);
-      this.deleted.emit();
     }
   }
 }

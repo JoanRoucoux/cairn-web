@@ -4,6 +4,7 @@
   width="488px"
   [heading]="'accounts.delete.title' | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <p class="text-body text-(--muted-foreground)">{{ 'accounts.delete.description' | transloco }}</p>

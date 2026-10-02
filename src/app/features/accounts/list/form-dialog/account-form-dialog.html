@@ -5,6 +5,7 @@
   [closeLabel]="'dialog.close' | transloco"
   [heading]="(account() ? 'accounts.form.editTitle' : 'accounts.form.createTitle') | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <ui-field

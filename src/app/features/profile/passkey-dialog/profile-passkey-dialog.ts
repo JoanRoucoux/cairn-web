@@ -37,17 +37,26 @@ export class ProfilePasskeyDialog {
     });
   }
 
+  #done = false;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#done) {
+      this.registered.emit();
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async onSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
 
     if (await this.#store.register()) {
+      this.#done = true;
       this.open.set(false);
-      this.registered.emit();
     }
   }
 }

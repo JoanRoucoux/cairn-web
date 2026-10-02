@@ -38,15 +38,24 @@ export class InstrumentDeleteDialog {
     });
   }
 
+  #done = false;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#done) {
+      this.deleted.emit();
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     if (await this.#store.remove(this.instrument().id)) {
+      this.#done = true;
       this.open.set(false);
-      this.deleted.emit();
     }
   }
 }

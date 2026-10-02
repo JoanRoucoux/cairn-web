@@ -7,6 +7,7 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { type DeletableInstrument, InstrumentDeleteDialog } from './instrument-delete-dialog';
@@ -48,28 +49,34 @@ describe('InstrumentDeleteDialog', () => {
   it('should emit dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('instrument-delete-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('alertdialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit deleted once the instrument is removed', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('instrument-delete-confirm'));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1').flush(null));
-    await vi.waitFor(() => expect(deleted).toHaveBeenCalled());
+    await vi.waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('should stay open and show an error when the API refuses', async () => {
