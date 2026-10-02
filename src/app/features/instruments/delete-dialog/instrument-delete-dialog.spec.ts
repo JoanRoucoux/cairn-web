@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { type DeletableInstrument, InstrumentDeleteDialog } from './instrument-delete-dialog';
@@ -73,6 +74,7 @@ describe('InstrumentDeleteDialog', () => {
     slowDialogExit();
 
     await user.click(screen.getByTestId('instrument-delete-confirm'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('instrument-delete-confirm')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1').flush(null));
     await vi.waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));

@@ -11,6 +11,7 @@ import { userEvent } from '@testing-library/user-event';
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../../holding-changes';
@@ -147,6 +148,7 @@ describe('HoldingBuyDialog', () => {
     await user.type(screen.getByTestId('holding-buy-quantity'), '40');
     await user.type(screen.getByTestId('holding-buy-price'), '29.1');
     await user.click(screen.getByTestId('holding-buy-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('holding-buy-submit')));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({ id: 'h1' });
 

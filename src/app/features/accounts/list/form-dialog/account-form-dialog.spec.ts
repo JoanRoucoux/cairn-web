@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { AccountFormDialog, type AccountFormTarget } from './account-form-dialog';
@@ -151,6 +152,7 @@ describe('AccountFormDialog', () => {
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('account-form-submit')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({}));
     await vi.waitFor(() => expect(savedForm).toHaveBeenCalledTimes(1));

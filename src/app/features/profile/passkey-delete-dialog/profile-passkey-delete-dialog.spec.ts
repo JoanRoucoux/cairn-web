@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import type { PasskeyView } from '../profile-store';
@@ -84,6 +85,7 @@ describe('ProfilePasskeyDeleteDialog', () => {
     slowDialogExit();
 
     await user.click(screen.getByTestId('passkey-delete-confirm'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('passkey-delete-confirm')));
     (await vi.waitFor(() => httpTesting.expectOne('/api/session/passkeys/bWFj'))).flush(null);
 
     await vi.waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));

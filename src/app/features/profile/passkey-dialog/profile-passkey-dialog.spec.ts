@@ -7,6 +7,7 @@ import { userEvent } from '@testing-library/user-event';
 import { PasskeyCeremony, type PasskeyOutcome } from '@core/webauthn/passkey-ceremony';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { ProfilePasskeyDialog } from './profile-passkey-dialog';
@@ -148,7 +149,7 @@ describe('ProfilePasskeyDialog', () => {
     expect(await screen.findByTestId('passkey-failed')).toBeInTheDocument();
   });
 
-  it('should disable the register button while the ceremony is running', async () => {
+  it('should spin the register button and keep the dialog busy while the ceremony is running', async () => {
     const user = userEvent.setup();
     await renderDialog();
     let resolveRegister!: (outcome: PasskeyOutcome) => void;
@@ -158,6 +159,7 @@ describe('ProfilePasskeyDialog', () => {
     await user.click(screen.getByTestId('passkey-register'));
 
     expect(await screen.findByTestId('passkey-register')).toBeDisabled();
+    expectSubmitting(screen.getByTestId('passkey-register'));
 
     resolveRegister('ok');
     await vi.waitFor(() => expect(registered).toHaveBeenCalled());

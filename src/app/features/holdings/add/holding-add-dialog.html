@@ -2,6 +2,7 @@
   data-testid="holding-add-dialog"
   layout="list"
   width="560px"
+  [busy]="submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.add.title' | transloco"
   [open]="open()"

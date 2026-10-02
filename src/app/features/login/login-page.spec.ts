@@ -264,7 +264,7 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('login-password')).toHaveAttribute('aria-invalid', 'true');
   });
 
-  it('should dim the passkey button and say what to do while the key is awaited', async () => {
+  it('should spin the passkey button and say what to do while the key is awaited', async () => {
     const user = userEvent.setup();
     authenticate.mockReturnValue(new Promise(() => undefined));
     await renderPage();
@@ -272,12 +272,13 @@ describe('LoginPage', () => {
     await user.click(screen.getByTestId('login-passkey'));
 
     const button = await screen.findByTestId('login-passkey');
-    expect(button).toHaveTextContent('login.passkeySubmitting');
+    expect(button).toHaveTextContent('login.passkey');
     expect(button).toHaveAttribute('aria-busy', 'true');
+    expect(button.querySelector('.animate-cairn-spin')).not.toBeNull();
     expect(screen.getByTestId('login-passkey-hint')).toHaveTextContent('login.passkeyWaitingHint');
   });
 
-  it('should dim the submit button without a spinner and send once while signing in', async () => {
+  it('should spin the submit button and send once while signing in', async () => {
     const user = userEvent.setup();
     await renderPage();
 
@@ -285,8 +286,8 @@ describe('LoginPage', () => {
 
     const submit = await screen.findByTestId('login-submit');
     expect(submit).toHaveAttribute('aria-busy', 'true');
-    expect(submit).toHaveTextContent('login.submitting');
-    expect(submit.querySelector('.animate-spin')).toBeNull();
+    expect(submit).toHaveTextContent('login.submit');
+    expect(submit.querySelector('.animate-cairn-spin')).not.toBeNull();
 
     submit.closest('form')?.requestSubmit();
 

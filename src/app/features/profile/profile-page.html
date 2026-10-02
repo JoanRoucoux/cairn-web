@@ -102,7 +102,7 @@
           size="xl"
           type="button"
           ui-row
-          [disabled]="importing()"
+          [busy]="importing()"
           (click)="fileInput.click()"
         >
           <span uiRowTile>

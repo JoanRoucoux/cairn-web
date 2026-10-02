@@ -2,6 +2,7 @@
   data-testid="holding-edit-dialog"
   truncateDescription
   width="md"
+  [busy]="form().submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [description]="holding().instrumentName + ' · ' + holding().accountName"
   [heading]="'holdings.edit.title' | transloco"
@@ -41,6 +42,7 @@
     type="button"
     ui-button
     [disabled]="form().submitting()"
+    [loading]="form().submitting()"
     (click)="confirm()"
   >
     {{ 'holdings.edit.submit' | transloco }}

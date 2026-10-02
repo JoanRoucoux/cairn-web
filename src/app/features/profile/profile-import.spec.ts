@@ -95,6 +95,26 @@ describe('ProfilePage import and export', () => {
     },
   );
 
+  it('should spin the import row while the file is being sent, then release it', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const row = screen.getByTestId('import-csv');
+
+    await user.upload(screen.getByTestId('import-file'), csvFile());
+
+    await vi.waitFor(() => expect(row).toHaveAttribute('aria-busy', 'true'));
+    expect(row.querySelector('.animate-cairn-spin')).not.toBeNull();
+
+    httpTesting.expectOne('/api/portfolio/import').flush({
+      accountsCreated: 0,
+      instrumentsCreated: 0,
+      holdingsCreated: 1,
+      holdingsUpdated: 0,
+    });
+
+    await vi.waitFor(() => expect(row).not.toHaveAttribute('aria-busy'));
+  });
+
   it('should list every refused line so the file can be fixed in one pass', async () => {
     const user = userEvent.setup();
     await renderPage();

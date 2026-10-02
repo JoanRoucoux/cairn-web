@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
@@ -107,6 +108,7 @@ describe('ManualQuoteDialog', () => {
 
     await user.type(screen.getByTestId('manual-quote-price'), '33.3069');
     await user.click(screen.getByTestId('manual-quote-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('manual-quote-submit')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/i1/quotes').flush({}));
     await vi.waitFor(() => expect(saved).toHaveBeenCalledTimes(1));

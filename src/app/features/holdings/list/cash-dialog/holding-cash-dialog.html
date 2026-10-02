@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="holding-cash-dialog"
   width="md"
+  [busy]="form().submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.cash.title' | transloco: { name: accountName() }"
   [open]="open()"
@@ -37,6 +38,7 @@
     type="button"
     ui-button
     [disabled]="form().submitting()"
+    [loading]="form().submitting()"
     (click)="confirm()"
   >
     {{ 'holdings.cash.submit' | transloco }}

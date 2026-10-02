@@ -2,6 +2,7 @@
   data-testid="profile-passkey-delete-dialog"
   layout="confirm"
   width="488px"
+  [busy]="deleting()"
   [heading]="'profile.delete.title' | transloco: { label: passkey().label }"
   [open]="open()"
   (closed)="onClosed()"
@@ -34,6 +35,7 @@
     ui-button
     variant="destructive"
     [disabled]="deleting()"
+    [loading]="deleting()"
     (click)="confirm()"
   >
     {{ 'profile.delete.submit' | transloco }}

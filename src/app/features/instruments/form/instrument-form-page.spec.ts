@@ -82,6 +82,8 @@ describe('InstrumentFormPage', () => {
     await user.type(screen.getByTestId('instrument-name'), 'BNP Paribas Easy S&P 500');
     await user.click(screen.getByTestId('instrument-save'));
 
+    await vi.waitFor(() => expect(screen.getByTestId('instrument-save')).toHaveAttribute('aria-busy', 'true'));
+    expect(screen.getByTestId('instrument-save').querySelector('.animate-cairn-spin')).not.toBeNull();
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({});
 
     await vi.waitFor(() => expect(navigateByUrl).toHaveBeenCalledWith('/instruments'));

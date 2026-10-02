@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
@@ -186,6 +187,7 @@ describe('HoldingAddDialog', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
     await user.type(screen.getByTestId('holding-add-quantity'), '10');
     await user.click(screen.getByTestId('holding-add-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('holding-add-submit')));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 

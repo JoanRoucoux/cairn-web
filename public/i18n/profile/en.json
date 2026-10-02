@@ -44,7 +44,6 @@
   "addPasskeyLabel": "Device name",
   "addPasskeyCancel": "Cancel",
   "addPasskeySubmit": "Add",
-  "addPasskeySubmitting": "Adding...",
   "addPasskeyUnsupported": "This browser cannot create a passkey.",
   "addPasskeyFailed": "The passkey could not be added. Try again.",
   "onlyKey": "This is your only key: it cannot be deleted. Add a key on another device to keep a backup way in.",

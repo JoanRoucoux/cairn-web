@@ -1,6 +1,7 @@
 <ui-dialog
   data-testid="profile-passkey-dialog"
   width="md"
+  [busy]="submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [description]="'profile.addPasskeyDescription' | transloco"
   [heading]="'profile.addPasskeyTitle' | transloco"
@@ -42,7 +43,8 @@
     type="submit"
     ui-button
     [disabled]="submitting()"
+    [loading]="submitting()"
   >
-    {{ (submitting() ? 'profile.addPasskeySubmitting' : 'profile.addPasskeySubmit') | transloco }}
+    {{ 'profile.addPasskeySubmit' | transloco }}
   </button>
 </ui-dialog>

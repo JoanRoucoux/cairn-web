@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import type { AccountView } from '../account-list-store';
@@ -82,6 +83,7 @@ describe('AccountDeleteDialog', () => {
     slowDialogExit();
 
     await user.click(screen.getByTestId('account-delete-confirm'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('account-delete-confirm')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1').flush(null));
     await vi.waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));

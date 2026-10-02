@@ -2,6 +2,7 @@
   data-testid="instrument-delete-dialog"
   layout="confirm"
   width="488px"
+  [busy]="deleting()"
   [heading]="'instruments.delete.title' | transloco"
   [open]="open()"
   (closed)="onClosed()"
@@ -33,6 +34,7 @@
     ui-button
     variant="destructive"
     [disabled]="deleting()"
+    [loading]="deleting()"
     (click)="confirm()"
   >
     {{ 'instruments.delete.submit' | transloco }}

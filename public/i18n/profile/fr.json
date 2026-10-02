@@ -44,7 +44,6 @@
   "addPasskeyLabel": "Nom de l'appareil",
   "addPasskeyCancel": "Annuler",
   "addPasskeySubmit": "Ajouter",
-  "addPasskeySubmitting": "Ajout en cours...",
   "addPasskeyUnsupported": "Ce navigateur ne peut pas créer de passkey.",
   "addPasskeyFailed": "La passkey n'a pas pu être ajoutée. Réessayez.",
   "onlyKey": "C'est votre seule clé : elle ne peut pas être supprimée. Ajoutez une clé sur un autre appareil pour garder un accès de secours.",

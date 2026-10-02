@@ -2,6 +2,7 @@
   data-testid="holding-sell-dialog"
   truncateDescription
   width="528px"
+  [busy]="submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [description]="holding().instrumentName + ' · ' + holding().accountName"
   [heading]="'holdings.sell.title' | transloco"

@@ -19,3 +19,7 @@ globalThis.ResizeObserver ??= class {
 Element.prototype.animate ??= function (): Animation {
   return { cancel: (): undefined => undefined } as unknown as Animation;
 };
+
+// Angular turns animate.enter and animate.leave on when the root element has getAnimations: keep it off there.
+Element.prototype.getAnimations ??= (): Animation[] => [];
+Object.defineProperty(document.documentElement, 'getAnimations', { value: undefined, configurable: true });
