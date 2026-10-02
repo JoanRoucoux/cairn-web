@@ -34,6 +34,33 @@ test.describe('lines quoted in another currency', () => {
     await expect(moved.getByTestId('change-listing')).toHaveCount(0);
   });
 
+  test('does not list the line itself in the catalogue of its change-of-listing dialog', async ({ page }) => {
+    await page.route('**/api/instruments', async (route) => {
+      if (route.request().method() !== 'GET') {
+        return route.fallback();
+      }
+
+      return route.fulfill({
+        json: [
+          {
+            id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+            name: 'Nasdaq 100 ETF',
+            isin: USD_HOLDING_ISIN,
+            currency: 'EUR',
+            assetClass: 'ETF',
+            priceSource: 'YAHOO',
+          },
+        ],
+      });
+    });
+    await page.goto('/holdings');
+
+    await page.getByTestId('holding-row').filter({ hasText: 'Nasdaq 100 ETF' }).getByTestId('change-listing').click();
+    await expect(page.getByTestId('holding-add-online-candidate')).toHaveCount(2);
+
+    await expect(page.getByTestId('holding-add-catalog-candidate')).toHaveCount(0);
+  });
+
   test('cannot pick a candidate quoted in another currency when adding a line', async ({ page }) => {
     await page.goto('/holdings');
     await page.getByTestId('add-holding-desktop').click();

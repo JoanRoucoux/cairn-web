@@ -26,6 +26,7 @@
             type="button"
             ui-row
             [busy]="busy()"
+            [unavailable]="result.foreignCurrency !== undefined"
             (click)="pickedCatalog.emit(result.instrument)"
           >
             <span class="flex min-w-0 flex-1 flex-col">
@@ -36,8 +37,17 @@
                 }
                 {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
               </span>
+              @if (result.foreignCurrency; as currency) {
+                <span class="text-caption text-pretty text-(--subtle-foreground)">{{
+                  'holdings.add.unavailableSub' | transloco: { currency }
+                }}</span>
+              }
             </span>
-            @if (result.lineCount !== null) {
+            @if (result.foreignCurrency) {
+              <span class="text-caption flex-none text-(--subtle-foreground)">{{
+                'holdings.add.unavailable' | transloco
+              }}</span>
+            } @else if (result.lineCount !== null) {
               <span class="text-caption flex-none text-(--muted-foreground)">
                 {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
               </span>

@@ -73,6 +73,12 @@ export class HoldingAddDialogStore {
   #created: { picked: PickedInstrument; id: string } | undefined;
   #debounceHandle: ReturnType<typeof setTimeout> | undefined;
 
+  readonly #knownHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
+
+  readonly #ownInstrumentId = computed(
+    () => this.#knownHoldings().find((holding) => holding.id === this.replaceHoldingId())?.instrumentId,
+  );
+
   readonly #lineCounts = computed(() => {
     const counts = new Map<string, number>();
 
@@ -82,6 +88,13 @@ export class HoldingAddDialogStore {
 
     return counts;
   });
+
+  foreignCurrencyOf(instrument: InstrumentResponse): string | undefined {
+    const quoted = this.#knownHoldings().find((holding) => holding.instrumentId === instrument.id)?.priceCurrency;
+    const currency = quoted ?? instrument.currency;
+
+    return this.replaceHoldingId() !== null && currency !== 'EUR' ? currency : undefined;
+  }
 
   lineCountOf(instrumentId: string): number | null {
     const status = this.holdings.status();
@@ -98,11 +111,11 @@ export class HoldingAddDialogStore {
       return [];
     }
 
-    const replacing = this.replaceHoldingId() !== null;
+    const own = this.#ownInstrumentId();
 
     return this.instruments
       .value()
-      .filter((instrument) => !replacing || instrument.currency === 'EUR')
+      .filter((instrument) => instrument.id !== own)
       .filter((instrument) =>
         normalizeSearch(`${instrument.name} ${instrument.isin ?? ''} ${instrument.symbol ?? ''}`).includes(query),
       );

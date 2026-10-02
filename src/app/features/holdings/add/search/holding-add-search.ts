@@ -21,7 +21,11 @@ import { pluralKey } from '@shared/format/plural-key';
 import { isinOf } from '../isin';
 import { HoldingAddCandidate } from './candidate/holding-add-candidate';
 
-export type CatalogResult = { instrument: InstrumentResponse; lineCount: number | null };
+export type CatalogResult = {
+  instrument: InstrumentResponse;
+  lineCount: number | null;
+  foreignCurrency?: string;
+};
 
 @Component({
   selector: 'app-holding-add-search',

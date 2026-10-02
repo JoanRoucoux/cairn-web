@@ -24,11 +24,11 @@ describe('HoldingAddDialogStore replace mode', () => {
   let store: HoldingAddDialogStore;
   let httpTesting: HttpTestingController;
 
-  const load = async (): Promise<void> => {
+  const load = async (holdings: unknown[] = []): Promise<void> => {
     TestBed.tick();
     httpTesting.expectOne('/api/accounts').flush([]);
     httpTesting.expectOne('/api/instruments').flush(instruments);
-    httpTesting.expectOne('/api/holdings').flush([]);
+    httpTesting.expectOne('/api/holdings').flush(holdings);
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
@@ -195,12 +195,25 @@ describe('HoldingAddDialogStore replace mode', () => {
     httpTesting.expectNone('/api/instruments/resolve');
   });
 
-  it('only offers the euro instruments of the catalogue while replacing', async () => {
-    await load();
+  it('never offers the instrument of the line being replaced', async () => {
+    await load([{ id: 'h1', instrumentId: 'i2', priceCurrency: 'USD' }]);
     store.replaceHoldingId.set('h1');
     store.query.set('msci');
 
     expect(store.filteredCatalog().map((instrument) => instrument.id)).toEqual(['i1']);
+  });
+
+  it('flags a catalogue instrument whose quote is not in euros, by holding quote then by instrument currency', async () => {
+    await load([{ id: 'h2', instrumentId: 'i1', priceCurrency: 'USD' }]);
+    const euro = instruments[0] as never;
+    const usd = instruments[1] as never;
+
+    expect(store.foreignCurrencyOf(euro)).toBeUndefined();
+    store.replaceHoldingId.set('h1');
+    expect(store.foreignCurrencyOf(euro)).toBe('USD');
+    expect(store.foreignCurrencyOf(usd)).toBe('USD');
+    store.holdings.set([]);
+    expect(store.foreignCurrencyOf(euro)).toBeUndefined();
   });
 
   it('creates an instrument with the currency the candidate carries, and falls back to euro when unknown', async () => {

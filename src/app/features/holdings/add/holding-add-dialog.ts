@@ -80,7 +80,11 @@ export class HoldingAddDialog {
     [...this.filteredCatalog()]
       .sort((a, b) => this.#collator.compare(a.name, b.name))
       .slice(0, CATALOG_RESULT_LIMIT)
-      .map((instrument) => ({ instrument, lineCount: this.#store.lineCountOf(instrument.id) })),
+      .map((instrument) => ({
+        instrument,
+        lineCount: this.#store.lineCountOf(instrument.id),
+        foreignCurrency: this.#store.foreignCurrencyOf(instrument),
+      })),
   );
 
   protected readonly accountOptions = computed(() => {

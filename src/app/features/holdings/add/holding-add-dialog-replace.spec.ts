@@ -15,6 +15,7 @@ const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: '
 const instruments = [
   { id: 'i1', name: 'Amundi MSCI World', isin: 'LU1681043599', currency: 'EUR', assetClass: 'ETF' },
   { id: 'i2', name: 'iShares MSCI World USD', isin: 'IE00B4L5Y983', currency: 'USD', assetClass: 'ETF' },
+  { id: 'i3', name: 'Lyxor MSCI USD Tracker', isin: 'LU0000000003', currency: 'EUR', assetClass: 'ETF' },
 ];
 
 const candidate = (overrides: Record<string, unknown>): Record<string, unknown> => ({
@@ -34,7 +35,7 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
   const saved = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (inputs: Record<string, unknown> = {}): Promise<void> => {
+  const renderDialog = async (inputs: Record<string, unknown> = {}, holdings: unknown[] = []): Promise<void> => {
     await render(HoldingAddDialog, {
       inputs,
       on: { saved, dismissed },
@@ -50,7 +51,7 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/accounts').flush(accounts);
     httpTesting.expectOne('/api/instruments').flush(instruments);
-    httpTesting.expectOne('/api/holdings').flush([]);
+    httpTesting.expectOne('/api/holdings').flush(holdings);
   };
 
   afterEach(() => {
@@ -138,8 +139,11 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
       expect(screen.queryByTestId('holding-add-submit')).not.toBeInTheDocument();
     });
 
-    it('lists the euro catalogue instruments only', async () => {
-      await renderReplace();
+    it('greys a catalogue instrument quoted in another currency and never lists the line itself', async () => {
+      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'IE00B4L5Y983' }, [
+        { id: 'h1', instrumentId: 'i2', priceCurrency: 'USD' },
+        { id: 'h2', instrumentId: 'i3', priceCurrency: 'USD' },
+      ]);
       await resolveWith([]);
 
       const user = userEvent.setup();
@@ -147,8 +151,13 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
       await user.type(screen.getByTestId('holding-add-query'), 'msci');
 
       const rows = await screen.findAllByTestId('holding-add-catalog-candidate');
-      expect(rows).toHaveLength(1);
+      expect(rows).toHaveLength(2);
       expect(rows[0]).toHaveTextContent('Amundi MSCI World');
+      expect(rows[0]).not.toHaveAttribute('aria-disabled');
+      expect(rows[1]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows[1]).toHaveTextContent('holdings.add.unavailableSub');
+      expect(rows[1]).toHaveTextContent('holdings.add.unavailable');
+      expect(screen.queryByText('iShares MSCI World USD')).not.toBeInTheDocument();
 
       await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
     });
@@ -176,7 +185,7 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
 
     it('moves the line to a catalogue instrument', async () => {
       const user = userEvent.setup();
-      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'msci' });
+      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'amundi' });
       await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
 
       await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
@@ -189,7 +198,7 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
 
     it('says the account already holds the listing on a 422 and stays open', async () => {
       const user = userEvent.setup();
-      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'msci' });
+      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'amundi' });
       await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
 
       await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
@@ -204,7 +213,7 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
 
     it('shows the generic error on any other failure', async () => {
       const user = userEvent.setup();
-      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'msci' });
+      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'amundi' });
       await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
 
       await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
@@ -218,7 +227,9 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
     });
 
     it('offers no manual instrument when no euro listing is found', async () => {
-      await renderReplace();
+      await renderDialog({ replaceHoldingId: 'h1', initialQuery: 'IE00B4L5Y983' }, [
+        { id: 'h1', instrumentId: 'i2', priceCurrency: 'USD' },
+      ]);
       await resolveWith([]);
 
       expect(await screen.findByText('holdings.replace.notFound')).toBeInTheDocument();
