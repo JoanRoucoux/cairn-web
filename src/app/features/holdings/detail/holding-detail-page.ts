@@ -21,6 +21,7 @@ import {
   UiMenuTrigger,
   UiSegmented,
   UiSkeleton,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideTrash, LucideX } from '@lucide/angular';
@@ -105,6 +106,9 @@ export class HoldingDetailPage {
 
   protected readonly holding = this.#store.holding;
   protected readonly holdings = this.#store.holdings;
+  protected readonly loadingShown = delayedState(
+    computed<AsyncState>(() => (this.holdings.isLoading() ? 'loading' : 'ready')),
+  );
   protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;

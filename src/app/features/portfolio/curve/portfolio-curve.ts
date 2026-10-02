@@ -10,6 +10,7 @@ import {
   UiLineChart,
   UiSegmented,
   UiSkeleton,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
@@ -37,6 +38,7 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 })
 export class PortfolioCurve {
   readonly state = input.required<AsyncState>();
+  protected readonly shown = delayedState(this.state);
   readonly blocking = input(false);
   readonly chartReloading = input(false);
   readonly points = input.required<ChartPoint[]>();

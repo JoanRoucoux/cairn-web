@@ -81,10 +81,6 @@ export class LoginPage {
   }
 
   protected async onPasskeySignIn(): Promise<void> {
-    if (this.passkeySubmitting()) {
-      return;
-    }
-
     if (!(await this.#store.signInWithPasskey())) {
       return;
     }

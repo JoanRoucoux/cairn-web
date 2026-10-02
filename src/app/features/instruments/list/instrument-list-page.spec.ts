@@ -210,7 +210,8 @@ describe('InstrumentListPage', () => {
   it('shows a count skeleton while loading', async () => {
     await renderPage();
 
-    expect(screen.getByTestId('instruments-count-skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('instruments-count-skeleton')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('instruments-count-skeleton')).toBeInTheDocument();
 
     await flushOne([]);
   });

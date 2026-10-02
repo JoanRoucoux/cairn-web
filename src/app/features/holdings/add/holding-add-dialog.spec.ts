@@ -86,6 +86,7 @@ describe('HoldingAddDialog', () => {
     await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
 
     expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-quantity')).toHaveFocus();
     expect(screen.queryByText('holdings.add.newBadge')).not.toBeInTheDocument();
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
@@ -141,6 +142,7 @@ describe('HoldingAddDialog', () => {
 
     await user.click(await screen.findByTestId('holding-add-create-manual'));
     expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-quantity')).toHaveFocus();
     expect(screen.getByText('holdings.add.newBadge')).toBeInTheDocument();
   });
 

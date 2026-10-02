@@ -16,6 +16,7 @@ import {
   UiTable,
   UiTd,
   UiTh,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import {
@@ -78,6 +79,7 @@ export class ProfilePage {
   #toast = injectToast();
 
   protected readonly identityState = this.#store.identityState;
+  protected readonly identityShown = delayedState(this.identityState);
   protected readonly passkeysState = this.#store.passkeysState;
   protected readonly owner = this.#store.owner;
   protected readonly username = this.#store.username;

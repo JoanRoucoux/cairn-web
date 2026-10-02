@@ -24,6 +24,7 @@ import {
   UiSkeleton,
   UiTable,
   UiTh,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
@@ -101,6 +102,8 @@ export class HoldingListPage {
 
     return this.holdings.error() ? 'error' : 'ready';
   });
+
+  protected readonly shown = delayedState(this.state);
 
   protected readonly chips = computed<FilterChipOption[]>(() => {
     this.#translocoEvents();

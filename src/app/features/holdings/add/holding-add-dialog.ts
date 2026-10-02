@@ -150,6 +150,12 @@ export class HoldingAddDialog implements OnInit {
         this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();
       }
     });
+
+    afterRenderEffect(() => {
+      if (this.picked()) {
+        this.#host.nativeElement.querySelector<HTMLInputElement>('[data-testid="holding-add-quantity"]')?.focus();
+      }
+    });
   }
 
   ngOnInit(): void {

@@ -239,7 +239,7 @@ describe('HoldingListPage class filter', () => {
 
     expect(screen.queryByTestId('class-summary')).not.toBeInTheDocument();
     expect(await screen.findByTestId('holdings-loading-rows')).toBeInTheDocument();
-    const [phone, desktop] = screen.getAllByTestId('summary-skeleton');
+    const [phone, desktop] = await screen.findAllByTestId('summary-skeleton');
     expect(phone!.querySelectorAll('span')).toHaveLength(2);
     expect(desktop!.querySelectorAll('span')).toHaveLength(1);
 

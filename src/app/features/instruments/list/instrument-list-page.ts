@@ -19,6 +19,7 @@ import {
   UiTd,
   UiTh,
   UiTr,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash } from '@lucide/angular';
@@ -70,6 +71,7 @@ export class InstrumentListPage {
   protected readonly filteredRows = this.#store.filteredRows;
   protected readonly search = this.#store.search;
   protected readonly state = this.#store.state;
+  protected readonly shown = delayedState(this.state);
   protected readonly skeletonWidths = [180, 140, 200, 160, 190, 150];
   protected readonly desktop = injectDesktop();
 

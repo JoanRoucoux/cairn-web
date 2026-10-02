@@ -77,6 +77,16 @@ describe('ProfilePage loading states', () => {
     expect(screen.queryByTestId('identity')).not.toBeInTheDocument();
   });
 
+  it('should show the identity placeholder only once the session has taken over 150 ms', async () => {
+    await renderPage();
+
+    expect(document.querySelector('ui-skeleton.w-14')).toBeNull();
+    await vi.waitFor(() => expect(document.querySelector('ui-skeleton.w-14')).not.toBeNull());
+
+    await settleProfile(httpTesting);
+    expect(await screen.findByTestId('identity')).toBeInTheDocument();
+  });
+
   it('should title the page while the session loads', async () => {
     await renderPage();
 

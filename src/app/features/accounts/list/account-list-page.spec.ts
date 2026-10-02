@@ -76,13 +76,14 @@ describe('AccountListPage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
 
-    expect(screen.getByTestId('accounts-summary-skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('accounts-summary-skeleton')).toBeInTheDocument();
 
     httpTesting.expectOne('/api/accounts').flush(null, { status: 500, statusText: 'Server Error' });
     httpTesting.expectOne('/api/portfolio').flush({ totalEur: 0, byAssetClass: [], byAccount: [], holdings: [] });
 
     await screen.findByRole('alert');
-    expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument());
     expect(screen.getByTestId('accounts-summary')).toHaveTextContent('');
   });
 

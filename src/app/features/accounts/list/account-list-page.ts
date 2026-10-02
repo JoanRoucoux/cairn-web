@@ -17,6 +17,7 @@ import {
   UiTd,
   UiTh,
   UiTr,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
@@ -70,6 +71,7 @@ export class AccountListPage {
   protected readonly linesLabel = linesLabel;
   protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
+  protected readonly shown = delayedState(this.state);
   protected readonly cardPadding = computed(
     () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
   );
