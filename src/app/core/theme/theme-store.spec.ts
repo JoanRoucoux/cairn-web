@@ -89,6 +89,20 @@ describe('ThemeStore', () => {
       expect(root.hasAttribute('data-theme-switching')).toBe(false);
     });
 
+    it('should flush layout while the attribute is set, so no transition is computed without it', () => {
+      const store = configure(null);
+      const seen: boolean[] = [];
+      vi.spyOn(root, 'getBoundingClientRect').mockImplementation(() => {
+        seen.push(root.hasAttribute('data-theme-switching') && root.getAttribute('data-theme') === 'dark');
+
+        return new DOMRect();
+      });
+
+      store.set('dark');
+
+      expect(seen).toEqual([true]);
+    });
+
     it('should not hold it when the store starts', () => {
       configure('dark');
 
