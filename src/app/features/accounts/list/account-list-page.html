@@ -1,22 +1,10 @@
 <div class="flex flex-wrap items-center justify-between gap-3">
-  <div class="flex min-w-0 flex-1 flex-col pl-1 lg:pl-0">
-    <p class="text-label lg:text-body min-h-6 text-(--muted-foreground) tabular-nums" data-testid="accounts-summary">
-      @if (state() === 'loading') {
-        <span class="block w-32 pt-1" data-testid="accounts-summary-skeleton"><ui-skeleton [height]="14" /></span>
-      } @else if (state() === 'ready' || state() === 'empty') {
-        {{ pluralKey('accounts.summary', accounts().length) | transloco: { count: accounts().length } }}
-        &middot; <ui-amount currency="EUR" [value]="totalEur()" />
-        @if (excludedTotal(); as total) {
-          <span class="max-lg:hidden" data-testid="accounts-summary-excluded"> {{ total.key | transloco: total }}</span>
-        }
-      }
-    </p>
-    @if ((state() === 'ready' || state() === 'empty') && excludedTotal(); as total) {
-      <span class="text-caption font-medium text-(--stale) lg:hidden" data-testid="accounts-summary-excluded-mobile">
-        {{ total.key | transloco: total | upperFirst }}
-      </span>
-    }
-  </div>
+  <app-account-summary
+    [count]="accounts().length"
+    [excluded]="excludedTotal()"
+    [state]="state()"
+    [totalEur]="totalEur()"
+  />
   <button data-testid="account-add" type="button" ui-button (click)="onAdd()">
     <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
     {{ 'accounts.add' | transloco }}
@@ -61,9 +49,11 @@
               </td>
               <td numeric uiTd>
                 <div class="flex flex-col items-end">
-                  <span class="text-label text-(--muted-foreground)">
-                    {{ linesLabel(account) | transloco: { count: account.lineCount } }}
-                  </span>
+                  @if (linesLabel(account); as lines) {
+                    <span class="text-label text-(--muted-foreground)" data-testid="account-lines">
+                      {{ lines.key | transloco: { count: lines.count, date: lines.date | shortDate } }}
+                    </span>
+                  }
                   <app-account-uncounted [account]="account" />
                 </div>
               </td>
@@ -93,6 +83,17 @@
                     <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
                   </button>
                   <ui-menu #menu [label]="'accounts.actions' | transloco: { name: account.name }" [width]="218">
+                    @if (account.type === 'SAVINGS') {
+                      <button
+                        data-testid="account-edit-balance"
+                        type="button"
+                        uiMenuItem
+                        (click)="onEditBalance(account)"
+                      >
+                        <svg lucideWallet [strokeWidth]="1.75" />
+                        {{ 'accounts.editBalance' | transloco }}
+                      </button>
+                    }
                     <button data-testid="account-edit" type="button" uiMenuItem (click)="onEdit(account)">
                       <svg lucidePencil [strokeWidth]="1.75" />
                       {{ 'accounts.edit' | transloco }}
@@ -111,7 +112,7 @@
                 </div>
               </td>
             </tr>
-            @if (account.lineCount === 0) {
+            @if (account.empty) {
               <tr data-testid="account-empty-hint">
                 <td class="px-2 pt-0 pb-2" colspan="7">
                   <ui-card class="flex items-center justify-between gap-4" padding="panel" variant="inset">
@@ -145,6 +146,7 @@
         class="lg:hidden"
         [accounts]="accounts()"
         (edit)="onEdit($event)"
+        (editBalance)="onEditBalance($event)"
         (remove)="accountToDelete.set($event)"
       />
     }

@@ -1,0 +1,16 @@
+<p class="text-label lg:text-body min-h-6 text-(--muted-foreground) tabular-nums" data-testid="accounts-summary">
+  @if (state() === 'loading') {
+    <span class="block w-32 pt-1" data-testid="accounts-summary-skeleton"><ui-skeleton [height]="14" /></span>
+  } @else if (shown()) {
+    {{ pluralKey('accounts.summary', count()) | transloco: { count: count() } }}
+    &middot; <ui-amount currency="EUR" [value]="totalEur()" />
+    @if (excluded(); as total) {
+      <span class="max-lg:hidden" data-testid="accounts-summary-excluded"> {{ total.key | transloco: total }}</span>
+    }
+  }
+</p>
+@if (shown() && excluded(); as total) {
+  <span class="text-caption font-medium text-(--stale) lg:hidden" data-testid="accounts-summary-excluded-mobile">
+    {{ total.key | transloco: total | upperFirst }}
+  </span>
+}

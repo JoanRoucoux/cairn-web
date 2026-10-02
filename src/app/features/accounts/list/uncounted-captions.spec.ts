@@ -12,6 +12,8 @@ const account: AccountView = {
   unvaluedCount: 0,
   nonEurCount: 0,
   excludedLineId: null,
+  balanceAt: null,
+  empty: false,
 };
 
 describe('uncounted captions', () => {

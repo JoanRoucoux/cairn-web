@@ -31,9 +31,11 @@
               [class.text-(--subtle-foreground)]="account.valueEur === 0"
               [value]="account.valueEur"
             />
-            <span class="text-label text-(--muted-foreground)">
-              {{ linesLabel(account) | transloco: { count: account.lineCount } }}
-            </span>
+            @if (linesLabel(account); as lines) {
+              <span class="text-label text-(--muted-foreground)" data-testid="account-lines-mobile">
+                {{ lines.key | transloco: { count: lines.count, date: lines.date | shortDate } }}
+              </span>
+            }
           </span>
         </a>
         <button
@@ -53,6 +55,17 @@
           [heading]="account.name"
           [label]="'accounts.actions' | transloco: { name: account.name }"
         >
+          @if (account.type === 'SAVINGS') {
+            <button
+              data-testid="account-edit-balance-mobile"
+              type="button"
+              uiMenuItem
+              (click)="editBalance.emit(account)"
+            >
+              <svg lucideWallet [strokeWidth]="1.75" />
+              {{ 'accounts.editBalance' | transloco }}
+            </button>
+          }
           <button data-testid="account-edit-mobile" type="button" uiMenuItem (click)="edit.emit(account)">
             <svg lucidePencil [strokeWidth]="1.75" />
             {{ 'accounts.edit' | transloco }}
@@ -69,7 +82,7 @@
           </button>
         </ui-menu>
       </div>
-      @if (account.lineCount === 0) {
+      @if (account.empty) {
         <ui-card
           class="mx-2 mb-2.5 flex items-center justify-between gap-3"
           data-testid="account-empty-hint-mobile"

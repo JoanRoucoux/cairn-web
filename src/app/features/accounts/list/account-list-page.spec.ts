@@ -160,15 +160,6 @@ describe('AccountListPage', () => {
     ]);
   });
 
-  it('should count the lines of a savings account as booklets', async () => {
-    await renderPage(
-      [livretA],
-      [{ accountId: 'a2', assetClass: 'CASH', priceSource: 'MANUAL', accountCash: false, marketValueEur: 500 }],
-    );
-
-    expect((await screen.findAllByText(/accounts.bookletCount_one/)).length).toBeGreaterThan(0);
-  });
-
   describe('with lines left out', () => {
     const priced = {
       id: 'h1',
@@ -241,10 +232,15 @@ describe('AccountListPage', () => {
     expect(screen.getAllByTestId('account-row')[0]).toHaveTextContent('accounts.noLine');
   });
 
-  it('should show the empty-account hint for an account with only its cash balance', async () => {
-    await renderPage();
+  it('should show no empty-account hint for a securities account holding its cash balance', async () => {
+    await renderPage(
+      [boursorama],
+      [{ accountId: 'a1', assetClass: 'CASH', priceSource: 'MANUAL', accountCash: true, marketValueEur: 50 }],
+    );
 
-    expect(await screen.findByText('accounts.rowEmpty')).toBeInTheDocument();
+    await screen.findByTestId('account-row');
+
+    expect(screen.queryByText('accounts.rowEmpty')).not.toBeInTheDocument();
   });
 
   it('should open the create dialog from the add button', async () => {

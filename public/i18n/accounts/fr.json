@@ -51,8 +51,8 @@
     "nonEur_other": "{{count}} lignes hors euro, non comptées"
   },
   "noLine": "Aucune ligne",
-  "bookletCount_one": "{{count}} livret",
-  "bookletCount_other": "{{count}} livrets",
+  "balanceAt": "Solde au {{date}}",
+  "editBalance": "Modifier le solde",
   "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
   "rowEmptyImport": "Importer un CSV",
   "nameLabel": "Nom du compte",

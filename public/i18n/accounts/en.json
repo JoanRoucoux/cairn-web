@@ -51,8 +51,8 @@
     "nonEur_other": "{{count}} lines outside the euro, not counted"
   },
   "noLine": "No holdings",
-  "bookletCount_one": "{{count}} booklet",
-  "bookletCount_other": "{{count}} booklets",
+  "balanceAt": "Balance as of {{date}}",
+  "editBalance": "Edit the balance",
   "rowEmptyCompact": "No holdings. Add a holding or import a CSV.",
   "rowEmptyImport": "Import a CSV",
   "nameLabel": "Account name",

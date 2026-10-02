@@ -94,6 +94,8 @@ describe('AccountListStore', () => {
         unvaluedCount: 0,
         nonEurCount: 0,
         excludedLineId: null,
+        balanceAt: null,
+        empty: false,
       },
     ]);
   });
@@ -113,14 +115,52 @@ describe('AccountListStore', () => {
         unvaluedCount: 0,
         nonEurCount: 0,
         excludedLineId: null,
+        balanceAt: null,
+        empty: false,
       },
     ]);
   });
 
-  it('should count a savings booklet as a line, although it is cash in euros too', async () => {
-    await flush([cashHolding({ id: 'h-livret', accountCash: false, marketValueEur: 20000 })]);
+  describe('a savings account', () => {
+    const savings = { id: 'a1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
 
-    expect(store.accounts()[0]!.lineCount).toBe(1);
+    it('should carry the date its balance was written, from the cash line', async () => {
+      await flush([cashHolding({ updatedAt: '2026-09-12T08:00:00Z' })], [savings]);
+
+      expect(store.accounts()[0]).toMatchObject({ balanceAt: '2026-09-12T08:00:00Z', empty: false });
+    });
+
+    it('should carry no date and stay non-empty while its balance was never set', async () => {
+      await flush([], [savings], 0);
+
+      expect(store.accounts()[0]).toMatchObject({ valueEur: 0, balanceAt: null, empty: false });
+    });
+
+    it('should keep its zero balance as a dated line', async () => {
+      await flush([cashHolding({ marketValueEur: 0, updatedAt: '2026-09-03T08:00:00Z' })], [savings]);
+
+      expect(store.accounts()[0]).toMatchObject({ valueEur: 0, balanceAt: '2026-09-03T08:00:00Z', empty: false });
+    });
+  });
+
+  describe('a securities account', () => {
+    it('should be empty with no line and no cash', async () => {
+      await flush([]);
+
+      expect(store.accounts()[0]!.empty).toBe(true);
+    });
+
+    it('should not be empty with only its cash', async () => {
+      await flush([cashHolding()]);
+
+      expect(store.accounts()[0]!.empty).toBe(false);
+    });
+
+    it('should not be empty with a line and no cash', async () => {
+      await flush([holding()]);
+
+      expect(store.accounts()[0]!.empty).toBe(false);
+    });
   });
 
   it('should sum the lines that have a EUR value and count the unpriced one it leaves out', async () => {

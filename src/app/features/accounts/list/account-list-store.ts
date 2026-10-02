@@ -18,6 +18,8 @@ export type AccountView = ExcludedCounts & {
   share: number | null;
   lineCount: number;
   excludedLineId: string | null;
+  balanceAt: string | null;
+  empty: boolean;
 };
 
 @Injectable()
@@ -62,6 +64,7 @@ export class AccountListStore {
       const own = holdings.filter((holding) => holding.accountId === account.id);
       const lineCount = own.filter((holding) => !holding.accountCash).length;
       const excluded = own.filter((holding) => !holding.accountCash && isExcluded(holding));
+      const cash = own.find((holding) => holding.accountCash);
       const valueEur = own.reduce((sum, holding) => sum + (holding.marketValueEur ?? 0), 0);
 
       return {
@@ -74,6 +77,8 @@ export class AccountListStore {
         lineCount,
         ...excludedCounts(excluded),
         excludedLineId: excluded.length === 1 ? excluded[0]!.id : null,
+        balanceAt: cash?.updatedAt ?? null,
+        empty: account.type !== 'SAVINGS' && lineCount === 0 && !cash,
       };
     });
 
