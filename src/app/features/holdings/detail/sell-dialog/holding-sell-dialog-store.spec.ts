@@ -43,7 +43,7 @@ describe('HoldingSellDialogStore', () => {
       { status: 200, statusText: 'OK' },
     );
 
-    await expect(saved).resolves.toEqual({ outcome: 'kept', holding: { id: 'h1' } });
+    await expect(saved).resolves.toEqual({ outcome: 'kept', holdingId: 'h1', holding: { id: 'h1' } });
   });
 
   it('reports selling the whole quantity as closed', async () => {
@@ -54,7 +54,7 @@ describe('HoldingSellDialogStore', () => {
       statusText: 'No Content',
     });
 
-    await expect(saved).resolves.toEqual({ outcome: 'closed', holding: null });
+    await expect(saved).resolves.toEqual({ outcome: 'closed', holdingId: 'h1', holding: null });
   });
 
   it('reports a refusal from the server', async () => {

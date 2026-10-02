@@ -9,7 +9,7 @@ import { parseDecimal } from '@shared/format/parse-decimal';
 
 export type SellOutcome = 'kept' | 'closed';
 
-export type SellResult = { outcome: SellOutcome; holding: HoldingResponse | null };
+export type SellResult = { outcome: SellOutcome; holdingId: string; holding: HoldingResponse | null };
 
 @Injectable()
 export class HoldingSellDialogStore {
@@ -37,8 +37,8 @@ export class HoldingSellDialogStore {
       );
 
       return response.status === 204
-        ? { outcome: 'closed', holding: null }
-        : { outcome: 'kept', holding: response.body as HoldingResponse | null };
+        ? { outcome: 'closed', holdingId, holding: null }
+        : { outcome: 'kept', holdingId, holding: response.body as HoldingResponse | null };
     } catch {
       this.error.set(true);
 

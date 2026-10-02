@@ -31,7 +31,7 @@
     @for (holding of group().holdings; track holding.id) {
       <a
         animate.leave="ui-leave-fade"
-        class="scroll-mb-[calc(52px+env(safe-area-inset-bottom))]"
+        class="scroll-mb-(--tab-bar-height)"
         data-testid="holding-row-mobile"
         padding="sm"
         queryParamsHandling="preserve"
@@ -86,7 +86,7 @@
     }
     @if (group().showCash) {
       <button
-        class="scroll-mb-[calc(52px+env(safe-area-inset-bottom))]"
+        class="scroll-mb-(--tab-bar-height)"
         data-testid="edit-cash-mobile"
         padding="sm"
         size="card"

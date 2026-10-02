@@ -185,13 +185,13 @@ export class HoldingDetailPage {
     this.sellOpen.set(false);
 
     if (result.outcome === 'closed') {
-      this.backToList();
+      this.leaveIfStillOn(result.holdingId);
     }
   }
 
-  protected onDeleted(): void {
+  protected onDeleted(holdingId: string): void {
     this.deleteOpen.set(false);
-    this.backToList();
+    this.leaveIfStillOn(holdingId);
   }
 
   protected openEdit(): void {
@@ -211,6 +211,12 @@ export class HoldingDetailPage {
 
     event.preventDefault();
     this.backToList();
+  }
+
+  private leaveIfStillOn(holdingId: string): void {
+    if (this.#store.holdingId() === holdingId) {
+      this.backToList();
+    }
   }
 
   private backToList(): void {

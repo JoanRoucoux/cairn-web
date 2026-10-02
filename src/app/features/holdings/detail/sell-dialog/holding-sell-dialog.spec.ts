@@ -176,7 +176,9 @@ describe('HoldingSellDialog', () => {
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({ id: 'h1' });
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
+    await vi.waitFor(() =>
+      expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holdingId: 'h1', holding: { id: 'h1' } }),
+    );
   });
 
   it('does not submit with Enter when the quantity is over what is held', async () => {
@@ -213,7 +215,9 @@ describe('HoldingSellDialog', () => {
       { status: 200, statusText: 'OK' },
     );
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
+    await vi.waitFor(() =>
+      expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holdingId: 'h1', holding: { id: 'h1' } }),
+    );
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.sold');
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
     expect(TestBed.inject(HoldingChanges).lastRevealed()).toBe(TestBed.inject(HoldingChanges).lastTouched());
@@ -232,7 +236,7 @@ describe('HoldingSellDialog', () => {
       statusText: 'No Content',
     });
 
-    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'closed', holding: null }));
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'closed', holdingId: 'h1', holding: null }));
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.deleted');
     expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
     expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();

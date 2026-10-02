@@ -117,7 +117,7 @@ describe('HoldingListStore after a change', () => {
     expect(store.flash()).toBeNull();
   });
 
-  it('should keep waiting through a failed reload and name the holding once a reload lands', async () => {
+  it('should drop the change when its reload fails, so a later Retry does not replay the highlight', async () => {
     await load();
 
     touchAndReveal('h1');
@@ -132,7 +132,7 @@ describe('HoldingListStore after a change', () => {
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await TestBed.inject(ApplicationRef).whenStable();
 
-    expect(store.flash()?.id).toBe('h1');
+    expect(store.flash()).toBeNull();
   });
 
   it('should key each group by its account and the filter, so a filter rebuilds the groups and a reload does not', async () => {
