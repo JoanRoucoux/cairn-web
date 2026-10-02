@@ -380,4 +380,18 @@ describe('HoldingAddDialogStore', () => {
 
     expect(store.filteredCatalog().map((instrument) => instrument.id)).toEqual(['i9']);
   });
+
+  it('filters an instrument with no ISIN on its symbol', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    httpTesting
+      .expectOne('/api/instruments')
+      .flush([...instruments, { ...instruments[0], id: 'i9', name: 'Bitcoin', isin: null, symbol: 'BTC' }]);
+    httpTesting.expectOne('/api/holdings').flush([]);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    store.onQueryChange('btc');
+
+    expect(store.filteredCatalog().map((instrument) => instrument.id)).toEqual(['i9']);
+  });
 });

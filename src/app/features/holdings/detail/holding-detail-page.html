@@ -1,19 +1,18 @@
-@if (holding(); as holding) {
-  <article
-    class="fixed inset-x-0 top-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-30 overflow-y-auto bg-(--background) px-4 pb-25 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
-  >
+<ng-template #back>
+  <a data-testid="holding-detail-back" queryParamsHandling="preserve" routerLink="/holdings" size="header" ui-back-link>
+    {{ 'holdings.detail.back' | transloco }}
+  </a>
+</ng-template>
+
+<article
+  class="fixed inset-x-0 top-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
+  [class.pb-25]="holding()"
+>
+  @if (holding(); as holding) {
     <ui-card surface="lg">
       <div class="flex flex-col gap-4 lg:gap-6">
         <div class="-mx-2 -mb-3 flex h-(--header-height) shrink-0 items-center justify-between lg:hidden">
-          <a
-            data-testid="holding-detail-back"
-            queryParamsHandling="preserve"
-            routerLink="/holdings"
-            size="header"
-            ui-back-link
-          >
-            {{ 'holdings.detail.back' | transloco }}
-          </a>
+          <ng-container [ngTemplateOutlet]="back" />
           <button
             aria-label="{{ 'holdings.detail.menu' | transloco }}"
             data-testid="holding-menu-trigger-mobile"
@@ -181,21 +180,9 @@
       (sellDismissed)="sellOpen.set(false)"
       (sold)="onSold($event)"
     />
-  </article>
-} @else {
-  <article
-    class="fixed inset-x-0 top-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
-  >
+  } @else {
     <div class="-mx-2 flex h-(--header-height) shrink-0 items-center lg:hidden">
-      <a
-        data-testid="holding-detail-back"
-        queryParamsHandling="preserve"
-        routerLink="/holdings"
-        size="header"
-        ui-back-link
-      >
-        {{ 'holdings.detail.back' | transloco }}
-      </a>
+      <ng-container [ngTemplateOutlet]="back" />
     </div>
     @if (holdings.error()) {
       <ui-alert>{{ 'holdings.error' | transloco }}</ui-alert>
@@ -206,5 +193,5 @@
     } @else {
       <ui-alert>{{ 'holdings.notFound' | transloco }}</ui-alert>
     }
-  </article>
-}
+  }
+</article>

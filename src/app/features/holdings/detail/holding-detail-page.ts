@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
@@ -50,6 +51,7 @@ import { HoldingDetailStore } from './holding-detail-store';
     LucidePencil,
     LucideTrash,
     LucideX,
+    NgTemplateOutlet,
     RatioPipe,
     RouterLink,
     TranslocoPipe,
@@ -101,7 +103,14 @@ export class HoldingDetailPage {
     return this.#transloco.translate('chart.startLabel');
   });
 
-  protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
+  protected readonly chart = computed(() =>
+    chartFormats(
+      this.#locale,
+      this.#masked(),
+      this.range(),
+      this.points().map((point) => point.t),
+    ),
+  );
 
   protected readonly tooltipFormat = computed(() => {
     this.#language.activeLang();
