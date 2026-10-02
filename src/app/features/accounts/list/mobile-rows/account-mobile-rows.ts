@@ -7,6 +7,7 @@ import { LucideEllipsis, LucidePencil, LucideTrash } from '@lucide/angular';
 
 import type { AccountView } from '../account-list-store';
 import { linesLabel } from '../lines-label';
+import { uncountedCaptions } from '../uncounted-captions';
 
 @Component({
   selector: 'app-account-mobile-rows',
@@ -33,4 +34,5 @@ export class AccountMobileRows {
   readonly remove = output<AccountView>();
 
   protected readonly linesLabel = linesLabel;
+  protected readonly uncountedCaptions = uncountedCaptions;
 }

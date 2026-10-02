@@ -44,6 +44,12 @@
     "share": "Part",
     "actions": "Actions"
   },
+  "uncounted": {
+    "noQuote_one": "{{count}} ligne sans cours, non comptée",
+    "noQuote_other": "{{count}} lignes sans cours, non comptées",
+    "nonEur_one": "{{count}} ligne hors euro, non comptée",
+    "nonEur_other": "{{count}} lignes hors euro, non comptées"
+  },
   "noLine": "Aucune ligne",
   "bookletCount_one": "{{count}} livret",
   "bookletCount_other": "{{count}} livrets",

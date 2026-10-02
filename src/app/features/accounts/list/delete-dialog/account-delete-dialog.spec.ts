@@ -20,6 +20,9 @@ const account: AccountView = {
   valueEur: 1000,
   share: null,
   lineCount: 3,
+  unvaluedCount: 0,
+  nonEurCount: 0,
+  excludedLineId: null,
 };
 
 describe('AccountDeleteDialog', () => {

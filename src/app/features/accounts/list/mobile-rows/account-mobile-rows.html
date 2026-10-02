@@ -18,6 +18,11 @@
                 &middot; {{ account.institution }}
               }
             </span>
+            @for (caption of uncountedCaptions(account); track caption.key) {
+              <span class="text-caption truncate font-medium text-(--stale)" data-testid="account-uncounted-mobile">
+                {{ caption.key | transloco: caption }}
+              </span>
+            }
           </span>
           <span class="flex flex-none flex-col items-end whitespace-nowrap tabular-nums">
             <ui-amount

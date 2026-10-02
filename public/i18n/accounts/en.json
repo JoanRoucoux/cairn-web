@@ -44,6 +44,12 @@
     "share": "Share",
     "actions": "Actions"
   },
+  "uncounted": {
+    "noQuote_one": "{{count}} line with no quote, not counted",
+    "noQuote_other": "{{count}} lines with no quote, not counted",
+    "nonEur_one": "{{count}} line outside the euro, not counted",
+    "nonEur_other": "{{count}} lines outside the euro, not counted"
+  },
   "noLine": "No holdings",
   "bookletCount_one": "{{count}} booklet",
   "bookletCount_other": "{{count}} booklets",

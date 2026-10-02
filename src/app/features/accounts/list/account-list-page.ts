@@ -21,14 +21,17 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
+import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
+import { UpperFirstPipe } from '@shared/format/upper-first-pipe';
 
 import { AccountListStore, type AccountView } from './account-list-store';
 import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
 import { AccountFormDialog, type AccountFormTarget } from './form-dialog/account-form-dialog';
 import { linesLabel } from './lines-label';
 import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
+import { uncountedCaptions, uncountedLink } from './uncounted-captions';
 
 @Component({
   selector: 'app-account-list-page',
@@ -58,6 +61,7 @@ import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
     UiTd,
     UiTh,
     UiTr,
+    UpperFirstPipe,
   ],
   templateUrl: './account-list-page.html',
   providers: [AccountListStore],
@@ -67,7 +71,10 @@ export class AccountListPage {
 
   protected readonly accounts = this.#store.accounts;
   protected readonly totalEur = this.#store.totalEur;
+  protected readonly excludedTotal = computed(() => excludedTotal(this.#store.excluded()));
   protected readonly linesLabel = linesLabel;
+  protected readonly uncountedCaptions = uncountedCaptions;
+  protected readonly uncountedLink = uncountedLink;
   protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
   protected readonly cardPadding = computed(

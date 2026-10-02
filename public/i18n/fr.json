@@ -18,6 +18,12 @@
     "home": "Revenir au portefeuille",
     "error404": "Erreur 404"
   },
+  "excluded": {
+    "noQuote_one": "hors {{count}} ligne sans cours",
+    "noQuote_other": "hors {{count}} lignes sans cours",
+    "lines_one": "hors {{count}} ligne",
+    "lines_other": "hors {{count}} lignes"
+  },
   "chart": {
     "rangeLabel": "Plage de temps",
     "range": { "1d": "1J", "7d": "7J", "1m": "1M", "1y": "1A", "5y": "5A", "max": "Max" },
