@@ -37,7 +37,11 @@ import { HoldingAccountGroupRow } from './row/holding-account-group-row';
   ],
   templateUrl: './holding-account-group.html',
   hostDirectives: [UiGroup, UiFlipList],
-  host: { class: 'scroll-mt-4', 'data-testid': 'account-group', '[attr.data-account-id]': 'group().accountId' },
+  host: {
+    class: 'relative scroll-mt-4',
+    'data-testid': 'account-group',
+    '[attr.data-account-id]': 'group().accountId',
+  },
 })
 export class HoldingAccountGroup {
   readonly group = input.required<AccountGroup>();

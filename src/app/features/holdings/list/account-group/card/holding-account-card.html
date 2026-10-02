@@ -27,7 +27,7 @@
   </span>
 </header>
 <ui-card clip padding="none">
-  <div class="flex flex-col px-2 py-1.5" uiFlipList>
+  <div class="relative flex flex-col px-2 py-1.5" uiFlipList>
     @for (holding of group().holdings; track holding.id) {
       <a
         animate.leave="ui-leave-fade"

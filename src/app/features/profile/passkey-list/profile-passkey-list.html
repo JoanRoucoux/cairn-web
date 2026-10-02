@@ -59,7 +59,7 @@
           }
         </div>
 
-        <ul class="flex flex-col" uiFlipList>
+        <ul class="relative flex flex-col" uiFlipList>
           @for (passkey of passkeys(); track passkey.credentialId) {
             @if (passkey.credentialId === added()) {
               <li animate.leave="ui-leave-fade" data-testid="added-passkey" [uiHighlight]="passkey.credentialId">

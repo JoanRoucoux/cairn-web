@@ -4,7 +4,15 @@ import { mockApi } from './fixtures/api';
 
 const AMUNDI_ID = '11111111-1111-1111-1111-111111111111';
 
-type Motion = { kind: 'css' | 'waapi'; name: string; tag: string; testId: string; text: string; at: number };
+type Motion = {
+  kind: 'css' | 'waapi';
+  name: string;
+  from: string;
+  tag: string;
+  testId: string;
+  text: string;
+  at: number;
+};
 type MotionWindow = Window & { motion: Motion[] };
 
 const recordMotion = (page: Page): Promise<void> =>
@@ -24,6 +32,7 @@ const recordMotion = (page: Page): Promise<void> =>
         log.push({
           kind: 'css',
           name: event.animationName,
+          from: '',
           at: performance.now(),
           ...describe(event.target as Element),
         }),
@@ -33,7 +42,13 @@ const recordMotion = (page: Page): Promise<void> =>
       const first = (Array.isArray(keyframes) ? keyframes[0] : keyframes) ?? {};
       const name = Object.keys(first).find((key) => key !== 'offset' && key !== 'easing') ?? '';
 
-      log.push({ kind: 'waapi', name, at: performance.now(), ...describe(this) });
+      log.push({
+        kind: 'waapi',
+        name,
+        from: String(first[name as keyof typeof first]),
+        at: performance.now(),
+        ...describe(this),
+      });
 
       return animate.call(this, keyframes, options);
     };
@@ -107,6 +122,7 @@ test.describe('after a change on desktop', () => {
     expect(slides.length).toBeGreaterThan(0);
     expect(slides.every((slide) => slide.at >= fade!.at)).toBe(true);
     expect(slides.some((slide) => slide.text.includes('Bitcoin'))).toBe(true);
+    expect(slides.map((slide) => slide.from)).toEqual(slides.map(() => 'translateY(60px)'));
   });
 
   test('filters the list on each keystroke with no animation', async ({ page }) => {
