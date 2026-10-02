@@ -11,7 +11,7 @@
 
     <nav class="flex flex-col gap-0.5" [attr.aria-label]="'shell.primary' | transloco">
       @for (destination of destinations; track destination.path) {
-        <a class="leading-[normal]" ui-nav-item [active]="isActive(destination.path)" [routerLink]="destination.path">
+        <a ui-nav-item [active]="isActive(destination.path)" [routerLink]="destination.path">
           <app-shell-destination-icon navIcon [icon]="destination.icon" [size]="20" />
           {{ destination.labelKey | transloco }}
         </a>
