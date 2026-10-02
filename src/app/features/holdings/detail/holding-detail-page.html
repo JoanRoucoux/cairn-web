@@ -193,13 +193,13 @@
       <ng-container [ngTemplateOutlet]="back" />
     </div>
     @if (holdings.error()) {
-      <ui-alert>{{ 'holdings.error' | transloco }}</ui-alert>
+      <ui-alert [fadeIn]="false">{{ 'holdings.error' | transloco }}</ui-alert>
     } @else if (holdings.isLoading()) {
       <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
       <ui-skeleton class="max-w-56" [height]="30" [lines]="2" />
       <ui-skeleton class="mt-6" [height]="168" />
     } @else {
-      <ui-alert>{{ 'holdings.notFound' | transloco }}</ui-alert>
+      <ui-alert [fadeIn]="false">{{ 'holdings.notFound' | transloco }}</ui-alert>
     }
   }
 </article>
