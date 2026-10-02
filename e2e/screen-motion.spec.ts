@@ -36,8 +36,9 @@ test.describe('login motion', () => {
     await login.passwordToggle.click();
 
     await expect(login.username).toBeFocused();
-    const names = await started(page);
-    expect(names.filter((name) => name.startsWith('cairn-fade-up-in'))).toHaveLength(3);
+    await expect
+      .poll(async () => (await started(page)).filter((name) => name.startsWith('cairn-fade-up-in')))
+      .toHaveLength(3);
   });
 
   test('spins the passkey button, keeping its width, while the system sheet is open', async ({ page }) => {
@@ -74,7 +75,7 @@ test.describe('add a line motion', () => {
     await page.getByTestId('holding-add-catalog-candidate').click();
 
     await expect(page.getByTestId('holding-add-quantity')).toBeFocused();
-    expect(await started(page)).toContain('cairn-fade-in@holding-add-fields');
+    await expect.poll(() => started(page)).toContain('cairn-fade-in@holding-add-fields');
   });
 });
 
