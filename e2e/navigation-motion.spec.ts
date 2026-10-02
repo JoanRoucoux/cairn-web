@@ -62,6 +62,15 @@ test.describe('navigation motion', () => {
     expect(await playedTransitions(page)).toBe(0);
   });
 
+  for (const path of ['/profile', '/instruments', `/holdings/${FIRST_HOLDING}`, '/nowhere']) {
+    test(`starts no view transition on a direct load of ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await page.waitForLoadState('networkidle');
+
+      expect(await playedTransitions(page)).toBe(0);
+    });
+  }
+
   test.describe('on an iPhone viewport', () => {
     test.use({ viewport: { width: 390, height: 500 }, hasTouch: true });
 
@@ -114,6 +123,7 @@ test.describe('navigation motion', () => {
     await page.getByRole('link', { name: /Fermer|Close/ }).click();
 
     await expect(panel).toHaveClass(/ui-leave-fade/);
+    await expect(panel.getByRole('heading')).toBeVisible();
     await expect(panel).toHaveCount(0);
     expect(await playedTransitions(page)).toBe(0);
   });
@@ -144,7 +154,10 @@ test.describe('navigation motion', () => {
 
     const highlighted = await page.evaluate(
       () =>
-        document.getAnimations().filter((animation) => animation.effect?.target?.closest('[data-account-id]')).length,
+        document
+          .getAnimations()
+          .filter((animation) => (animation.effect as KeyframeEffect | null)?.target?.closest('[data-account-id]'))
+          .length,
     );
 
     expect(highlighted).toBe(0);
