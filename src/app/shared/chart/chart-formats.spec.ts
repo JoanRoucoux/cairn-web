@@ -27,21 +27,22 @@ describe('chartFormats', () => {
     expect(delta(-240.72)).not.toMatch(/\d/);
   });
 
-  it('should show an hour for the one-day range', () => {
-    const { axis } = chartFormats('en-GB', false, '1d');
+  const at = Date.UTC(2026, 8, 25, 7, 0);
 
-    expect(axis(Date.UTC(2026, 7, 25, 9, 0))).toMatch(/^\d{1,2}/);
-  });
-
-  it('should show a bare hour in French, which already carries its own unit', () => {
-    const { axis } = chartFormats('fr-FR', false, '1d');
-
-    expect(axis(Date.UTC(2026, 7, 25, 9, 0))).toMatch(/^\d{1,2}\s?h$/);
-  });
-
-  it('should show a day and a month for a range beyond one day', () => {
-    const { axis } = chartFormats('en-GB', false, '1m');
-
-    expect(axis(Date.UTC(2026, 7, 25, 9, 0))).toMatch(/[A-Za-z]/);
+  it.each([
+    ['fr-FR', '1d', '09:00'],
+    ['fr-FR', '7d', 'ven. 25'],
+    ['fr-FR', '1m', '25 sept.'],
+    ['fr-FR', '1y', 'sept.'],
+    ['fr-FR', '5y', '2026'],
+    ['fr-FR', 'max', '2026'],
+    ['en-GB', '1d', '09:00'],
+    ['en-GB', '7d', 'Fri 25'],
+    ['en-GB', '1m', '25 Sept'],
+    ['en-GB', '1y', 'Sept'],
+    ['en-GB', '5y', '2026'],
+    ['en-GB', 'max', '2026'],
+  ] as const)('should label the %s %s axis like the mockup', (locale, range, expected) => {
+    expect(chartFormats(locale, false, range).axis(at)).toBe(expected);
   });
 });

@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { UiAmount, UiButton, UiCard, UiMenu, UiMenuItem, UiMenuTrigger, UiRow, UiRowItem } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucideTrash2 } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideTrash } from '@lucide/angular';
 
 import type { AccountView } from '../account-list-store';
 import { linesLabel } from '../lines-label';
@@ -13,7 +13,7 @@ import { linesLabel } from '../lines-label';
   imports: [
     LucideEllipsis,
     LucidePencil,
-    LucideTrash2,
+    LucideTrash,
     RouterLink,
     TranslocoPipe,
     UiAmount,

@@ -30,7 +30,9 @@
             <span class="flex min-w-0 flex-1 flex-col">
               <span class="text-body truncate font-medium">{{ result.instrument.name }}</span>
               <span class="text-caption text-(--subtle-foreground)">
-                {{ result.instrument.isin }} &middot;
+                @if (result.instrument.isin || result.instrument.symbol; as reference) {
+                  {{ reference }} &middot;
+                }
                 {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
               </span>
             </span>

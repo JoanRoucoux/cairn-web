@@ -5,7 +5,6 @@ import { form, submit } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
-import type { AccountType } from '@core/api-client/cairnAPI.schemas';
 
 import { formMessages } from '@shared/forms/form-messages';
 
@@ -36,7 +35,7 @@ export class AccountFormDialogStore {
     await submit(this.form, async () => {
       try {
         const model = this.#model();
-        const payload = { name: model.name, type: model.type as AccountType, institution: model.institution.trim() };
+        const payload = { name: model.name, type: model.type, institution: model.institution.trim() };
         await firstValueFrom(
           accountId
             ? this.#accountsApiClient.updateAccount(accountId, payload)

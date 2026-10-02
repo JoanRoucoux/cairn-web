@@ -104,21 +104,16 @@ describe('AccountFormDialog', () => {
     expect(screen.getByRole('radio', { name: 'enums.accountType.PEA_PME' })).toBeChecked();
   });
 
-  it('shows the envelope error once the chips lose focus unanswered, and clears it on a pick', async () => {
+  it('opens with PEA selected and enables creation as soon as a name is typed', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
-    screen.getAllByRole('radio')[0]!.focus();
-    await user.tab();
+    expect(screen.getByRole('radio', { name: 'enums.accountType.PEA' })).toBeChecked();
+    expect(screen.getByTestId('account-form-submit')).toBeDisabled();
 
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
-    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    await user.type(screen.getByTestId('account-form-name'), 'Boursorama');
 
-    await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
-
-    expect(screen.getByRole('radio', { name: 'enums.accountType.CTO' })).toBeChecked();
-    await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+    expect(screen.getByTestId('account-form-submit')).toBeEnabled();
   });
 
   it('creates without an institution, and labels the actions for each mode', async () => {

@@ -89,7 +89,9 @@ export class HoldingAddDialogStore {
 
     return this.instruments
       .value()
-      .filter((instrument) => normalizeSearch(`${instrument.name} ${instrument.isin ?? ''}`).includes(query));
+      .filter((instrument) =>
+        normalizeSearch(`${instrument.name} ${instrument.isin ?? ''} ${instrument.symbol ?? ''}`).includes(query),
+      );
   });
 
   readonly quantity = computed(() => parseDecimal(this.quantityText()));

@@ -58,6 +58,22 @@ describe('PortfolioTotal', () => {
     expect(await screen.findByText('+0,30 %', { exact: false })).toBeInTheDocument();
   });
 
+  it('should separate each amount from its ratio while amounts are visible', async () => {
+    await renderComponent({ portfolio });
+
+    expect(await screen.findByTestId('total-value')).toHaveTextContent(/412,56 €\s*·\s*\+0,30 %/);
+    expect(screen.getByTestId('total-value')).toHaveTextContent(/21 846,90 €\s*·\s*\+15,34 %/);
+  });
+
+  it('should drop the separators with the amounts when they are masked', async () => {
+    await renderComponent({ portfolio, masked: true });
+
+    const total = await screen.findByTestId('total-value');
+
+    expect(total).toHaveTextContent('+0,30 %');
+    expect(total).not.toHaveTextContent('·');
+  });
+
   it('should show the unrealized gain and its ratio', async () => {
     await renderComponent({ portfolio });
 

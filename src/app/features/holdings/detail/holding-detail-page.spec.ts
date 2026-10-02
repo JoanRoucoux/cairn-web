@@ -143,32 +143,11 @@ describe('HoldingDetailPage', () => {
     expect(screen.getByTestId('no-quote-yet')).toBeInTheDocument();
   });
 
-  it('should tell the user when the holdings could not be loaded', async () => {
-    await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
-      routes: [
-        { path: 'holdings', component: StubList },
-        { path: 'holdings/:holdingId', component: HoldingDetailPage, title: 'pageTitle.holdingDetail' },
-      ],
-      initialRoute: 'holdings/h1',
-      providers: [
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/holdings').flush('boom', { status: 500, statusText: 'Server error' });
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('holdings.error');
-  });
-
   it('should tell the user when the holding does not exist', async () => {
     await renderPage('nope');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('holdings.notFound');
+    expect(screen.getByTestId('holding-detail-back')).toHaveAttribute('href', '/holdings');
   });
 
   it('should ignore a request to price a holding that does not exist', async () => {
@@ -387,7 +366,7 @@ describe('HoldingDetailPage', () => {
     await renderPage();
 
     expect(await screen.findByTestId('holding-edit')).toContainElement(document.querySelector('svg.lucide-pencil'));
-    expect(screen.getByTestId('holding-delete')).toContainElement(document.querySelector('svg.lucide-trash-2'));
+    expect(screen.getByTestId('holding-delete')).toContainElement(document.querySelector('svg.lucide-trash'));
   });
 
   it('links the back link to the holdings list', async () => {

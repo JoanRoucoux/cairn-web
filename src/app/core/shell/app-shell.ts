@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { UiAvatar, UiAvatarLink, UiBackLink, UiNavItem, UiTab, UiTabBar } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -31,6 +31,7 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
     CairnLogo,
     OfflineBanner,
     RouterLink,
+    RouterLinkActive,
     RouterOutlet,
     ShellDestinationIcon,
     TranslocoPipe,

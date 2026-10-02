@@ -61,7 +61,7 @@
     "title": "Modifier la ligne",
     "quantity": "Quantité",
     "averageCost": "PRU",
-    "averageCostHint": "Laissez vide si vous ne le connaissez pas - Cairn affichera un tiret plutôt qu'un zéro.",
+    "averageCostHint": "Laissez vide si vous ne le connaissez pas : Cairn affichera un tiret plutôt qu'un zéro.",
     "cancel": "Annuler",
     "submit": "Enregistrer",
     "error": "Cette ligne a été refusée. Vérifiez la quantité."

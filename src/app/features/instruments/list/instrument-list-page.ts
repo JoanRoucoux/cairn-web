@@ -21,7 +21,7 @@ import {
   UiTr,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash2 } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash } from '@lucide/angular';
 
 import { pluralKey } from '@shared/format/plural-key';
 import { injectDesktop } from '@shared/layout/desktop-media';
@@ -38,7 +38,7 @@ import { InstrumentListStore, type InstrumentRow } from './instrument-list-store
     LucidePencil,
     LucidePlus,
     LucideSearch,
-    LucideTrash2,
+    LucideTrash,
     RouterLink,
     TranslocoPipe,
     UiAsync,
@@ -70,7 +70,7 @@ export class InstrumentListPage {
   protected readonly filteredRows = this.#store.filteredRows;
   protected readonly search = this.#store.search;
   protected readonly state = this.#store.state;
-  protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
+  protected readonly skeletonWidths = [180, 140, 200, 160, 190, 150];
   protected readonly desktop = injectDesktop();
 
   protected readonly cardPadding = computed(

@@ -30,7 +30,7 @@
         @if (rangeChangeEur() !== undefined) {
           <ui-delta size="inherit" [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
             <ui-amount currency="EUR" signed whenMasked="hide" [value]="rangeChangeEur()" />
-            <span aria-hidden="true"> &middot; </span>
+            <app-amount-separator />
             {{ rangeChangeRatio() | ratio: { signed: true, decimals: 2 } }}
           </ui-delta>
         } @else {
@@ -58,12 +58,12 @@
         (retry)="retry.emit()"
       >
         <div asyncLoading class="flex flex-1 flex-col" data-testid="curve-loading">
-          <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-101" shape="chart" />
+          <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-60" shape="chart" />
         </div>
 
         <p asyncEmpty class="text-label text-(--muted-foreground)">{{ 'portfolio.curve.empty' | transloco }}</p>
 
-        <div class="flex min-h-[205px] flex-1 flex-col lg:min-h-101">
+        <div class="flex min-h-[205px] flex-1 flex-col lg:min-h-79">
           <ui-line-chart
             axisGap="auto"
             class="block flex-1"

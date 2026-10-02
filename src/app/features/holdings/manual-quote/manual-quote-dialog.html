@@ -10,8 +10,15 @@
     <input data-testid="manual-quote-as-of" type="date" uiInput [formField]="form.asOf" />
   </ui-field>
 
-  <ui-field [label]="'holdings.manualQuote.price' | transloco">
-    <input data-testid="manual-quote-price" step="0.0001" type="number" uiInput [formField]="form.price" />
+  <ui-field unit="€" [label]="'holdings.manualQuote.price' | transloco">
+    <input
+      data-testid="manual-quote-price"
+      inputmode="decimal"
+      step="0.0001"
+      type="number"
+      uiInput
+      [formField]="form.price"
+    />
   </ui-field>
 
   @if (error()) {

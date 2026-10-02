@@ -23,6 +23,7 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
   const renderDialog = async (
     holdings: unknown[] | 'fail',
     accountList: unknown[] | 'fail' = accounts,
+    catalog: unknown[] = instruments,
   ): Promise<void> => {
     await render(HoldingAddDialog, {
       imports: [getTranslocoTestingModule()],
@@ -44,15 +45,15 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
       }
     };
     flush('/api/accounts', accountList);
-    flush('/api/instruments', instruments);
+    flush('/api/instruments', catalog);
     flush('/api/holdings', holdings);
   };
 
   afterEach(() => httpTesting.verify());
 
-  const search = async (): Promise<void> => {
+  const search = async (query = 'msci'): Promise<void> => {
     const user = userEvent.setup();
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
+    await user.type(screen.getByTestId('holding-add-query'), query);
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
   };
 
@@ -64,6 +65,18 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
 
     expect(row).not.toHaveTextContent('holdings.add.noLine');
     expect(row).not.toHaveTextContent('holdings.add.lineCount');
+  });
+
+  it('shows the symbol of an instrument that has no ISIN', async () => {
+    await renderDialog([], accounts, [
+      { id: 'i9', name: 'Bitcoin', isin: null, symbol: 'BTC', assetClass: 'CRYPTO', priceSource: 'COINGECKO' },
+    ]);
+    await search('btc');
+
+    const row = await screen.findByTestId('holding-add-catalog-candidate');
+
+    expect(row).toHaveTextContent('Bitcoin');
+    expect(row).toHaveTextContent('BTC · enums.assetClass.CRYPTO');
   });
 
   it('shows the plural line count of an instrument that has holdings', async () => {

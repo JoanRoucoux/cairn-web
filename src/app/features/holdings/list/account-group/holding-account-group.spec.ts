@@ -100,6 +100,12 @@ describe('HoldingAccountGroup', () => {
     expect(await screen.findByText(/QS0009119224/)).toHaveTextContent('QS0009119224 · enums.assetClass.FUND');
   });
 
+  it('should show the symbol of a line without ISIN', async () => {
+    await renderGroup({ holdings: [{ ...holding, isin: null, symbol: 'ETH', assetClass: 'CRYPTO' } as never] });
+
+    expect(await screen.findByText(/ETH/)).toHaveTextContent('ETH · enums.assetClass.CRYPTO');
+  });
+
   it('should show the quantity, the average cost and the quote without a euro sign', async () => {
     await renderGroup({ holdings: [{ ...holding, averageCost: 250.5, stale: false } as never] });
     const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');

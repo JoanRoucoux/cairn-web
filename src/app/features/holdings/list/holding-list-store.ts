@@ -41,7 +41,8 @@ const CLASS_BY_SLUG = new Map<string, AssetClass>(
 );
 
 const matches = (holding: HoldingResponse, search: string): boolean =>
-  holding.assetClass !== 'CASH' && normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''}`).includes(search);
+  holding.assetClass !== 'CASH' &&
+  normalizeSearch(`${holding.instrumentName} ${holding.isin ?? ''} ${holding.symbol ?? ''}`).includes(search);
 
 const round = (value: number): number => Number(value.toFixed(2));
 

@@ -19,7 +19,7 @@ import {
   UiTr,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash2 } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
@@ -39,7 +39,7 @@ import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
     LucideEllipsis,
     LucidePencil,
     LucidePlus,
-    LucideTrash2,
+    LucideTrash,
     RatioPipe,
     RouterLink,
     TranslocoPipe,

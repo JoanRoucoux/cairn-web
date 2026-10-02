@@ -6,7 +6,7 @@ import type { FormMessages } from '@shared/forms/form-messages';
 
 export type AccountDraft = {
   name: string;
-  type: AccountType | '';
+  type: AccountType;
   institution: string;
 };
 
@@ -14,12 +14,11 @@ export type AccountDraftSource = { name: string; type: AccountType; institution:
 
 export const initialAccountDraft = (account?: AccountDraftSource): AccountDraft => ({
   name: account?.name ?? '',
-  type: account?.type ?? '',
+  type: account?.type ?? 'PEA',
   institution: account?.institution ?? '',
 });
 
 export const accountDraftSchema = (messages: FormMessages): Schema<AccountDraft> =>
   schema((account) => {
     required(account.name, { message: () => messages.required() });
-    required(account.type, { message: () => messages.required() });
   });

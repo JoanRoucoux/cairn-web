@@ -6,11 +6,12 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import type { EnvelopePerformanceResponse } from '@core/api-client/cairnAPI.schemas';
 
 import type { ChartRange } from '@shared/chart/chart-range';
+import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 @Component({
   selector: 'app-portfolio-envelopes',
-  imports: [RatioPipe, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiMeter, UiSkeleton],
+  imports: [AmountSeparator, RatioPipe, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiMeter, UiSkeleton],
   templateUrl: './portfolio-envelopes.html',
 })
 export class PortfolioEnvelopes {

@@ -28,7 +28,7 @@
             <span class="flex gap-1.5">
               <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.dayChangeEur">
                 <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.dayChangeEur" />
-                <span aria-hidden="true"> &middot; </span>
+                <app-amount-separator />
                 {{ portfolio.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
               </ui-delta>
               <span class="text-(--muted-foreground)">{{ 'portfolio.total.today' | transloco }}</span>
@@ -39,7 +39,7 @@
               <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.unrealizedGainEur">
                 <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.unrealizedGainEur" />
                 @if (portfolio.unrealizedGainRatio !== null && portfolio.unrealizedGainRatio !== undefined) {
-                  <span aria-hidden="true"> &middot; </span>
+                  <app-amount-separator />
                   {{ portfolio.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
                 }
               </ui-delta>
