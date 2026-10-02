@@ -110,7 +110,7 @@ export class HoldingListStore {
     effect(() => {
       const pending = this.#pendingFlash();
 
-      if (pending && this.holdings.status() === 'resolved') {
+      if (pending && this.holdings.status() === 'resolved' && this.#changes.lastRevealed() === pending) {
         untracked(() => {
           this.#flash.set(pending);
           this.#pendingFlash.set(null);

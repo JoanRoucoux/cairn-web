@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from './manual-quote-dialog';
 
 describe('ManualQuoteDialog', () => {
@@ -19,10 +20,11 @@ describe('ManualQuoteDialog', () => {
 
   const renderDialog = async (): Promise<void> => {
     await render(ManualQuoteDialog, {
-      inputs: { instrumentId: 'i1', instrumentName: 'BNP Paribas Easy S&P 500' },
+      inputs: { holdingId: 'h1', instrumentId: 'i1', instrumentName: 'BNP Paribas Easy S&P 500' },
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

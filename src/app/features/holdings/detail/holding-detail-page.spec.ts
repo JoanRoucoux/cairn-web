@@ -358,7 +358,7 @@ describe('HoldingDetailPage', () => {
 
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
     expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
-    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.sold');
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.deleted');
   });
 
   it('hides Buy and Sell for a cash line', async () => {

@@ -12,6 +12,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingDeleteDialog } from './holding-delete-dialog';
 
 const holding = { id: 'h1', instrumentName: 'BNP Paribas Easy S&P 500' } as unknown as HoldingResponse;
@@ -27,6 +28,7 @@ describe('HoldingDeleteDialog', () => {
       on: { deleted, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

@@ -63,10 +63,33 @@ describe('HoldingListStore after a change', () => {
 
   afterEach(() => httpTesting.verify());
 
+  const touchAndReveal = (id: string): void => {
+    const changes = TestBed.inject(HoldingChanges);
+
+    changes.reveal(changes.touched(id));
+  };
+
+  it('should wait for the dialog to reveal the change before naming it, even once the reload has landed', async () => {
+    await load();
+    const changes = TestBed.inject(HoldingChanges);
+
+    const change = changes.touched('h1');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.flash()).toBeNull();
+
+    changes.reveal(change);
+    TestBed.tick();
+
+    expect(store.flash()).toBe(change);
+  });
+
   it('should name the touched holding once its reload has landed, not before', async () => {
     await load();
 
-    TestBed.inject(HoldingChanges).touched('h1');
+    touchAndReveal('h1');
     TestBed.tick();
 
     expect(store.flash()).toBeNull();
@@ -88,7 +111,7 @@ describe('HoldingListStore after a change', () => {
   });
 
   it('should not name a holding touched before the list opened', async () => {
-    TestBed.inject(HoldingChanges).touched('h1');
+    touchAndReveal('h1');
     await load();
 
     expect(store.flash()).toBeNull();
@@ -97,7 +120,7 @@ describe('HoldingListStore after a change', () => {
   it('should keep waiting through a failed reload and name the holding once a reload lands', async () => {
     await load();
 
-    TestBed.inject(HoldingChanges).touched('h1');
+    touchAndReveal('h1');
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(null, { status: 500, statusText: 'Server Error' });
     await TestBed.inject(ApplicationRef).whenStable();
@@ -116,7 +139,7 @@ describe('HoldingListStore after a change', () => {
     await load();
     const keys = store.groups().map((group) => group.key);
 
-    TestBed.inject(HoldingChanges).touched('h1');
+    touchAndReveal('h1');
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await TestBed.inject(ApplicationRef).whenStable();
@@ -135,7 +158,7 @@ describe('HoldingListStore after a change', () => {
 
   it('should forget the named holding once the search or the class changes', async () => {
     await load();
-    TestBed.inject(HoldingChanges).touched('h1');
+    touchAndReveal('h1');
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await TestBed.inject(ApplicationRef).whenStable();

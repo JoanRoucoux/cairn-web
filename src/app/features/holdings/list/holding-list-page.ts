@@ -31,11 +31,9 @@ import { filter, map, startWith } from 'rxjs';
 
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { injectToast } from '@shared/feedback/toast';
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
-import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
@@ -80,8 +78,6 @@ export class HoldingListPage {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
-  #changes = inject(HoldingChanges);
-  #toast = injectToast();
 
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
@@ -237,11 +233,9 @@ export class HoldingListPage {
     });
   }
 
-  protected onAddSaved(holding: HoldingResponse): void {
+  protected onAddSaved(): void {
     this.addOpen.set(false);
     this.presetAccountId.set(null);
-    this.#toast('holdings.toasts.added');
-    this.#changes.touched(holding.id);
   }
 
   protected onAddDismissed(): void {
@@ -249,15 +243,11 @@ export class HoldingListPage {
     this.presetAccountId.set(null);
   }
 
-  protected onQuoteSaved(holding: HoldingResponse): void {
+  protected onQuoteSaved(): void {
     this.quoteTarget.set(undefined);
-    this.#toast('holdings.toasts.quoteSaved');
-    this.#changes.touched(holding.id);
   }
 
-  protected onCashSaved(accountId: string): void {
+  protected onCashSaved(): void {
     this.accountToEditCashFor.set(undefined);
-    this.#toast('holdings.toasts.balanceSaved');
-    this.#changes.touched(accountId);
   }
 }

@@ -1,10 +1,14 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 
 import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
+import { injectToast } from '@shared/feedback/toast';
+
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingDeleteStore } from './holding-delete-store';
 
 @Component({
@@ -21,8 +25,12 @@ export class HoldingDeleteDialog {
   readonly deleted = output<string>();
   readonly dismissed = output<void>();
 
+  #toast = injectToast();
+  #changes = inject(HoldingChanges);
+  readonly #outcome = injectDialogOutcome<string>(() => this.#toast('holdings.toasts.deleted'));
+
   // The parent creates this component to open the dialog: it is open from its first render.
-  protected readonly open = signal(true);
+  protected readonly open = this.#outcome.open;
   protected readonly deleting = this.#store.deleting;
   protected readonly error = this.#store.error;
 
@@ -31,15 +39,15 @@ export class HoldingDeleteDialog {
     return this.#transloco.translate('holdings.delete.description', { name: this.holding().instrumentName });
   }
 
-  #result: string | null = null;
-
   protected dismiss(): void {
-    this.open.set(false);
+    this.#outcome.dismiss();
   }
 
   protected onClosed(): void {
-    if (this.#result !== null) {
-      this.deleted.emit(this.#result);
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.deleted.emit(result.value);
     } else {
       this.dismissed.emit();
     }
@@ -47,8 +55,8 @@ export class HoldingDeleteDialog {
 
   protected async confirm(): Promise<void> {
     if (await this.#store.remove(this.holding().id)) {
-      this.#result = this.holding().id;
-      this.open.set(false);
+      this.#changes.removed(this.holding().id);
+      this.#outcome.succeed(this.holding().id);
     }
   }
 }

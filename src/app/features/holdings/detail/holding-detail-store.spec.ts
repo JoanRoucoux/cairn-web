@@ -6,6 +6,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { BehaviorSubject, of } from 'rxjs';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailStore } from './holding-detail-store';
 
 const holdings = [
@@ -24,6 +25,7 @@ describe('HoldingDetailStore', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap(holdingId ? { holdingId } : {})) } },
+        HoldingChanges,
         HoldingDetailStore,
       ],
     });
@@ -171,6 +173,26 @@ describe('HoldingDetailStore', () => {
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
   });
 
+  it('should reload the holdings and the quotes when a holding is touched, and not when one is removed', async () => {
+    configure('h1');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await settle();
+    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    await settle();
+
+    TestBed.inject(HoldingChanges).removed('h1');
+    await settle();
+    httpTesting.expectNone('/api/holdings');
+
+    TestBed.inject(HoldingChanges).touched('h1');
+    await settle();
+
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+  });
+
   const loadWithQuotes = async (holdingId: string): Promise<void> => {
     configure(holdingId);
     TestBed.tick();
@@ -284,6 +306,7 @@ describe('HoldingDetailStore', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: ActivatedRoute, useValue: route },
+        HoldingChanges,
         HoldingDetailStore,
       ],
     });

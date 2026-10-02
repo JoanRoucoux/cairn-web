@@ -141,19 +141,16 @@
 
 @if (quoteTarget(); as target) {
   <app-manual-quote-dialog
+    [holdingId]="target.id"
     [instrumentId]="target.instrumentId"
     [instrumentName]="target.instrumentName"
     (dismissed)="quoteTarget.set(undefined)"
-    (saved)="onQuoteSaved(target)"
+    (saved)="onQuoteSaved()"
   />
 }
 
 @if (addOpen()) {
-  <app-holding-add-dialog
-    [presetAccountId]="presetAccountId()"
-    (dismissed)="onAddDismissed()"
-    (saved)="onAddSaved($event)"
-  />
+  <app-holding-add-dialog [presetAccountId]="presetAccountId()" (dismissed)="onAddDismissed()" (saved)="onAddSaved()" />
 }
 
 @if (groupToEditCashFor(); as group) {
@@ -162,6 +159,6 @@
     [accountName]="group.accountName"
     [balance]="group.cashEur"
     (dismissed)="accountToEditCashFor.set(undefined)"
-    (saved)="onCashSaved(group.accountId)"
+    (saved)="onCashSaved()"
   />
 }

@@ -3,8 +3,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { LOCALE_ID, type Provider, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
-import { fireEvent, render, screen } from '@testing-library/angular';
+import { type RenderResult, fireEvent, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -12,6 +13,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingBuyDialog } from './holding-buy-dialog';
 
 const holding = {
@@ -28,12 +30,16 @@ describe('HoldingBuyDialog', () => {
   const bought = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (input: HoldingResponse = holding, extraProviders: Provider[] = []): Promise<void> => {
-    await render(HoldingBuyDialog, {
+  const renderDialog = async (
+    input: HoldingResponse = holding,
+    extraProviders: Provider[] = [],
+  ): Promise<RenderResult<HoldingBuyDialog>> => {
+    const result = await render(HoldingBuyDialog, {
       inputs: { holding: input },
       on: { bought, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -43,6 +49,8 @@ describe('HoldingBuyDialog', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
+
+    return result;
   };
 
   afterEach(() => {
@@ -145,6 +153,52 @@ describe('HoldingBuyDialog', () => {
     await vi.waitFor(() => expect(bought).toHaveBeenCalledWith({ id: 'h1' }));
     expect(bought).toHaveBeenCalledTimes(1);
     expect(dismissed).not.toHaveBeenCalled();
+  });
+
+  const buy = async (): Promise<void> => {
+    const user = userEvent.setup();
+
+    await user.type(screen.getByTestId('holding-buy-quantity'), '40');
+    await user.type(screen.getByTestId('holding-buy-price'), '29.1');
+    await user.click(screen.getByTestId('holding-buy-submit'));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({ id: 'h1' });
+  };
+
+  it('reports the purchase at once, then confirms and reveals it once the exit has played', async () => {
+    await renderDialog();
+    slowDialogExit();
+    const changes = TestBed.inject(HoldingChanges);
+    const touched = vi.spyOn(changes, 'touched');
+    const show = vi.spyOn(TestBed.inject(UiToasts), 'show');
+
+    await buy();
+
+    await vi.waitFor(() => expect(touched).toHaveBeenCalledExactlyOnceWith('h1'));
+    expect(show).not.toHaveBeenCalled();
+    expect(changes.lastRevealed()).toBeNull();
+
+    await vi.waitFor(() => expect(bought).toHaveBeenCalledOnce());
+    expect(show).toHaveBeenCalledExactlyOnceWith('holdings.toasts.bought');
+    expect(changes.lastRevealed()).toBe(changes.lastTouched());
+  });
+
+  it('still confirms a purchase, once, when the dialog is destroyed before its exit ends', async () => {
+    const { fixture } = await renderDialog();
+    slowDialogExit();
+    const changes = TestBed.inject(HoldingChanges);
+    const touched = vi.spyOn(changes, 'touched');
+    const show = vi.spyOn(TestBed.inject(UiToasts), 'show');
+
+    await buy();
+    await vi.waitFor(() => expect(touched).toHaveBeenCalledOnce());
+    fixture.destroy();
+
+    expect(show).toHaveBeenCalledExactlyOnceWith('holdings.toasts.bought');
+    expect(changes.lastRevealed()).toBe(changes.lastTouched());
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(touched).toHaveBeenCalledOnce();
+    expect(show).toHaveBeenCalledOnce();
+    expect(bought).not.toHaveBeenCalled();
   });
 
   it('shows a refusal from the server', async () => {

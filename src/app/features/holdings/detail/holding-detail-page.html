@@ -177,16 +177,16 @@
       [holding]="holding"
       [pricingInstrument]="pricingInstrument()"
       [sellOpen]="sellOpen()"
-      (bought)="onBought($event)"
+      (bought)="buyOpen.set(false)"
       (buyDismissed)="buyOpen.set(false)"
       (deleteDismissed)="deleteOpen.set(false)"
-      (deleted)="onDeleted($event)"
+      (deleted)="onDeleted()"
       (editDismissed)="editOpen.set(false)"
-      (edited)="onEdited($event)"
+      (edited)="editOpen.set(false)"
       (quoteDismissed)="onQuoteDismissed()"
-      (quoteSaved)="onQuoteSaved(holding.id)"
+      (quoteSaved)="onQuoteSaved()"
       (sellDismissed)="sellOpen.set(false)"
-      (sold)="onSold($event, holding.id)"
+      (sold)="onSold($event)"
     />
   } @else {
     <div class="-mx-2 flex h-(--header-height) shrink-0 items-center lg:hidden">

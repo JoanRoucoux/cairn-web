@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingCashDialog } from './holding-cash-dialog';
 
 describe('HoldingCashDialog', () => {
@@ -23,6 +24,7 @@ describe('HoldingCashDialog', () => {
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

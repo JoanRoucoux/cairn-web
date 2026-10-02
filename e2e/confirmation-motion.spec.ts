@@ -113,7 +113,7 @@ test.describe('after a change on desktop', () => {
     await page.getByTestId('holding-sell-submit').click();
 
     await expect(row(page, AMUNDI_ID)).toHaveCount(0);
-    await expect(toast(page)).toHaveText('Sale saved');
+    await expect(toast(page)).toHaveText('Holding deleted');
     const entries = await motion(page);
     const fade = entries.find((entry) => entry.name === 'cairn-fade-out' && entry.text.includes('Amundi MSCI World'));
     const slides = entries.filter((entry) => entry.name === 'transform' && entry.tag === 'TR');
@@ -123,6 +123,22 @@ test.describe('after a change on desktop', () => {
     expect(slides.every((slide) => slide.at >= fade!.at)).toBe(true);
     expect(slides.some((slide) => slide.text.includes('Bitcoin'))).toBe(true);
     expect(slides.map((slide) => slide.from)).toEqual(slides.map(() => 'translateY(60px)'));
+  });
+
+  test('keeps a purchase and confirms it when the detail closes while the dialog is still leaving', async ({
+    page,
+  }) => {
+    await page.getByTestId('holding-buy').click();
+    await page.getByTestId('holding-buy-quantity').fill('10');
+    await page.getByTestId('holding-buy-price').fill('400');
+    const saved = page.waitForResponse((response) => response.url().endsWith('/buy'));
+    await page.getByTestId('holding-buy-submit').click();
+    await saved;
+    await page.getByRole('link', { name: 'Close the detail' }).click();
+
+    await expect(page).toHaveURL(/\/holdings$/);
+    await expect(toast(page)).toHaveText('Purchase saved');
+    await expect(row(page, AMUNDI_ID)).toContainText('87,372.60');
   });
 
   test('filters the list on each keystroke with no animation', async ({ page }) => {

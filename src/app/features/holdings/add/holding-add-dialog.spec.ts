@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
 const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
@@ -38,6 +39,7 @@ describe('HoldingAddDialog', () => {
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -226,6 +228,7 @@ describe('HoldingAddDialog', () => {
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

@@ -1,5 +1,6 @@
 @if (pricingInstrument(); as pricing) {
   <app-manual-quote-dialog
+    [holdingId]="holding().id"
     [instrumentId]="pricing.id"
     [instrumentName]="pricing.name"
     (dismissed)="quoteDismissed.emit()"

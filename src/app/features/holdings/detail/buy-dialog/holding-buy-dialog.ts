@@ -1,14 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  LOCALE_ID,
-  afterRenderEffect,
-  computed,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, ElementRef, LOCALE_ID, afterRenderEffect, computed, inject, input, output } from '@angular/core';
 
 import {
   UiAlert,
@@ -26,11 +16,14 @@ import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
+import { injectToast } from '@shared/feedback/toast';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 import { pluralKey } from '@shared/format/plural-key';
 
+import { type HoldingChange, HoldingChanges } from '../../holding-changes';
 import { buyPreview } from '../trade-preview';
 import { HoldingBuyDialogStore } from './holding-buy-dialog-store';
 
@@ -48,7 +41,14 @@ export class HoldingBuyDialog {
   readonly bought = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  #changes = inject(HoldingChanges);
+  readonly #outcome = injectDialogOutcome<{ holding: HoldingResponse; change: HoldingChange }>(({ change }) => {
+    this.#toast('holdings.toasts.bought');
+    this.#changes.reveal(change);
+  });
+
+  protected readonly open = this.#outcome.open;
   protected readonly quantityText = this.#store.quantityText;
   protected readonly priceText = this.#store.priceText;
   protected readonly submitting = this.#store.submitting;
@@ -101,15 +101,15 @@ export class HoldingBuyDialog {
     this.priceText.set(filterDecimalInput((event.target as HTMLInputElement).value));
   }
 
-  #result: HoldingResponse | null = null;
-
   protected dismiss(): void {
-    this.open.set(false);
+    this.#outcome.dismiss();
   }
 
   protected onClosed(): void {
-    if (this.#result !== null) {
-      this.bought.emit(this.#result);
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.bought.emit(result.value.holding);
     } else {
       this.dismissed.emit();
     }
@@ -124,8 +124,7 @@ export class HoldingBuyDialog {
     const bought = await this.#store.save(this.holding().id);
 
     if (bought) {
-      this.#result = bought;
-      this.open.set(false);
+      this.#outcome.succeed({ holding: bought, change: this.#changes.touched(bought.id) });
     }
   }
 }

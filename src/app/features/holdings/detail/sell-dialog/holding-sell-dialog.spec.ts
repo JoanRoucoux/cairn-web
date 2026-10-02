@@ -4,6 +4,7 @@ import { LOCALE_ID, type Provider, provideZonelessChangeDetection, signal } from
 import { TestBed } from '@angular/core/testing';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -13,6 +14,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingSellDialog } from './holding-sell-dialog';
 
 const holding = {
@@ -39,6 +41,7 @@ describe('HoldingSellDialog', () => {
       on: { sold, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -209,6 +212,10 @@ describe('HoldingSellDialog', () => {
     );
 
     await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'kept', holding: { id: 'h1' } }));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.sold');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
+    expect(TestBed.inject(HoldingChanges).lastRevealed()).toBe(TestBed.inject(HoldingChanges).lastTouched());
+    expect(TestBed.inject(HoldingChanges).lastRemoved()).toBeNull();
   });
 
   it('emits sold with closed after selling everything', async () => {
@@ -224,6 +231,9 @@ describe('HoldingSellDialog', () => {
     });
 
     await vi.waitFor(() => expect(sold).toHaveBeenCalledWith({ outcome: 'closed', holding: null }));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.deleted');
+    expect(TestBed.inject(HoldingChanges).lastRemoved()?.id).toBe('h1');
+    expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();
   });
 
   it('shows a refusal from the server', async () => {
@@ -306,6 +316,7 @@ describe('HoldingSellDialog', () => {
       on: { sold, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

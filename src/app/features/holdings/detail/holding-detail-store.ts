@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, linkedSignal, signal, untracked } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
@@ -12,6 +12,8 @@ import { QuoteService } from '@core/api-client/quote/quote.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
 
+import { HoldingChanges } from '../holding-changes';
+
 const EPOCH = '1900-01-01';
 
 const isoToday = (): string => new Date().toISOString().slice(0, 10);
@@ -22,6 +24,7 @@ export class HoldingDetailStore {
   #instrumentsApiClient = inject(InstrumentService);
   #quotesApiClient = inject(QuoteService);
   #route = inject(ActivatedRoute);
+  #changes = inject(HoldingChanges);
 
   readonly holdingId = toSignal(this.#route.paramMap.pipe(map((params) => params.get('holdingId') ?? undefined)));
 
@@ -99,6 +102,20 @@ export class HoldingDetailStore {
 
     return { amount, ratio: first.v === 0 ? null : amount / first.v };
   });
+
+  #changesSeen = false;
+
+  constructor() {
+    effect(() => {
+      this.#changes.lastTouched();
+
+      if (this.#changesSeen) {
+        untracked(() => this.reload());
+      }
+
+      this.#changesSeen = true;
+    });
+  }
 
   retryQuotes(): void {
     this.quotes.reload();

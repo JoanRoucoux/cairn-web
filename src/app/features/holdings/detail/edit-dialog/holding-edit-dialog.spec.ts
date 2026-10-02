@@ -12,6 +12,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingEditDialog } from './holding-edit-dialog';
 
 const holding = {
@@ -33,6 +34,7 @@ describe('HoldingEditDialog', () => {
       on: { savedForm, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

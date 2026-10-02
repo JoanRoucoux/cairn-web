@@ -9,6 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
 const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
@@ -28,6 +29,7 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     await render(HoldingAddDialog, {
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

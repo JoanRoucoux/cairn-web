@@ -1,11 +1,14 @@
-import { Component, ElementRef, afterRenderEffect, effect, inject, input, output, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, effect, inject, input, output } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { UiAlert, UiButton, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
+import { injectToast } from '@shared/feedback/toast';
 
+import { type HoldingChange, HoldingChanges } from '../../holding-changes';
 import { HoldingCashStore } from './holding-cash-store';
 
 @Component({
@@ -23,8 +26,15 @@ export class HoldingCashDialog {
   readonly saved = output<void>();
   readonly dismissed = output<void>();
 
+  #toast = injectToast();
+  #changes = inject(HoldingChanges);
+  readonly #outcome = injectDialogOutcome<HoldingChange>((change) => {
+    this.#toast('holdings.toasts.balanceSaved');
+    this.#changes.reveal(change);
+  });
+
   // The parent creates this component to open the dialog: it is open from its first render.
-  protected readonly open = signal(true);
+  protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
 
@@ -42,14 +52,14 @@ export class HoldingCashDialog {
     });
   }
 
-  #done = false;
-
   protected dismiss(): void {
-    this.open.set(false);
+    this.#outcome.dismiss();
   }
 
   protected onClosed(): void {
-    if (this.#done) {
+    const result = this.#outcome.settle();
+
+    if (result) {
       this.saved.emit();
     } else {
       this.dismissed.emit();
@@ -58,8 +68,7 @@ export class HoldingCashDialog {
 
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.accountId())) {
-      this.#done = true;
-      this.open.set(false);
+      this.#outcome.succeed(this.#changes.touched(this.accountId()));
     }
   }
 }

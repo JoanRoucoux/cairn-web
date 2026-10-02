@@ -9,7 +9,6 @@ import {
   inject,
   input,
   output,
-  signal,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -23,8 +22,11 @@ import {
   type InstrumentResponse,
 } from '@core/api-client/cairnAPI.schemas';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
+import { injectToast } from '@shared/feedback/toast';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 
+import { type HoldingChange, HoldingChanges } from '../holding-changes';
 import { HoldingAddDialogStore, type PickedInstrument } from './holding-add-dialog-store';
 import { isinOf } from './isin';
 import { HoldingAddPicked } from './picked/holding-add-picked';
@@ -45,7 +47,14 @@ export class HoldingAddDialog implements OnInit {
   readonly saved = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  #changes = inject(HoldingChanges);
+  readonly #outcome = injectDialogOutcome<{ holding: HoldingResponse; change: HoldingChange }>(({ change }) => {
+    this.#toast('holdings.toasts.added');
+    this.#changes.reveal(change);
+  });
+
+  protected readonly open = this.#outcome.open;
 
   protected readonly accounts = this.#store.accounts;
   protected readonly accountId = this.#store.accountId;
@@ -204,15 +213,15 @@ export class HoldingAddDialog implements OnInit {
     void this.#store.searchOnline();
   }
 
-  #result: HoldingResponse | null = null;
-
   protected dismiss(): void {
-    this.open.set(false);
+    this.#outcome.dismiss();
   }
 
   protected onClosed(): void {
-    if (this.#result !== null) {
-      this.saved.emit(this.#result);
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.saved.emit(result.value.holding);
     } else {
       this.dismissed.emit();
     }
@@ -230,8 +239,7 @@ export class HoldingAddDialog implements OnInit {
     const saved = await this.#store.save();
 
     if (saved) {
-      this.#result = saved;
-      this.open.set(false);
+      this.#outcome.succeed({ holding: saved, change: this.#changes.touched(saved.id) });
     }
   }
 }
