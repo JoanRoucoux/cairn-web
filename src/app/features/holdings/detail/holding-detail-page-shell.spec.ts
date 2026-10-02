@@ -47,9 +47,8 @@ describe('HoldingDetailPage shell', () => {
     await renderPage();
 
     expect(screen.getByTestId('holding-detail-back')).toHaveAttribute('href', '/holdings');
-    expect(document.querySelector('ui-skeleton')).toBeNull();
     expect(await screen.findByRole('status')).toHaveTextContent('holdings.loading');
-    expect(document.querySelector('ui-skeleton')).not.toBeNull();
+    await vi.waitFor(() => expect(document.querySelector('ui-skeleton')).not.toBeNull());
     httpTesting.expectOne('/api/holdings').flush([]);
   });
 

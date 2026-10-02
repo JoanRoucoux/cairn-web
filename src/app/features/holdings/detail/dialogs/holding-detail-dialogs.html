@@ -9,20 +9,24 @@
 }
 
 @if (buyOpen()) {
-  <app-holding-buy-dialog [holding]="holding()" (bought)="bought.emit($event)" (dismissed)="buyDismissed.emit()" />
+  <app-holding-buy-dialog [holding]="buyHolding()" (bought)="bought.emit($event)" (dismissed)="buyDismissed.emit()" />
 }
 
 @if (sellOpen()) {
-  <app-holding-sell-dialog [holding]="holding()" (dismissed)="sellDismissed.emit()" (sold)="sold.emit($event)" />
+  <app-holding-sell-dialog [holding]="sellHolding()" (dismissed)="sellDismissed.emit()" (sold)="sold.emit($event)" />
 }
 
 @if (editOpen()) {
-  <app-holding-edit-dialog [holding]="holding()" (dismissed)="editDismissed.emit()" (savedForm)="edited.emit($event)" />
+  <app-holding-edit-dialog
+    [holding]="editHolding()"
+    (dismissed)="editDismissed.emit()"
+    (savedForm)="edited.emit($event)"
+  />
 }
 
 @if (deleteOpen()) {
   <app-holding-delete-dialog
-    [holding]="holding()"
+    [holding]="deleteHolding()"
     (deleted)="deleted.emit($event)"
     (dismissed)="deleteDismissed.emit()"
   />

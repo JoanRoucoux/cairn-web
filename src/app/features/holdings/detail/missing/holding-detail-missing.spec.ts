@@ -16,14 +16,13 @@ describe('HoldingDetailMissing', () => {
       providers: [provideZonelessChangeDetection(), provideTranslocoScope('holdings')],
     });
 
-  it('shows the placeholders and the loading status only after 150 ms', async () => {
+  it('announces the load at once and shows the placeholders only after 150 ms', async () => {
     await renderMissing('loading');
 
     expect(document.querySelector('ui-skeleton')).toBeNull();
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('holdings.loading');
 
-    expect(await screen.findByRole('status')).toHaveTextContent('holdings.loading');
-    expect(document.querySelectorAll('ui-skeleton')).toHaveLength(2);
+    await vi.waitFor(() => expect(document.querySelectorAll('ui-skeleton')).toHaveLength(2));
   });
 
   it('says the load failed', async () => {

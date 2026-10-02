@@ -74,7 +74,7 @@ test.describe('add a line motion', () => {
     await page.getByTestId('holding-add-catalog-candidate').click();
 
     await expect(page.getByTestId('holding-add-quantity')).toBeFocused();
-    expect(await started(page)).toContain('cairn-fade-in@DIV');
+    expect(await started(page)).toContain('cairn-fade-in@holding-add-fields');
   });
 });
 
@@ -82,6 +82,8 @@ test.describe('theme switch', () => {
   test('holds data-theme-switching around the change and releases it on the next frame', async ({ page }) => {
     await mockApi(page);
     await page.goto('/profile');
+    await expect(page.getByTestId('account-link').first()).toHaveAttribute('aria-current', 'page');
+    await page.waitForTimeout(500);
     await page.evaluate(() => {
       const log: string[] = [];
       (window as unknown as { themeLog: string[] }).themeLog = log;
@@ -91,14 +93,31 @@ test.describe('theme switch', () => {
           log.push(`${record.attributeName}:${root.hasAttribute('data-theme-switching')}`);
         }
       }).observe(document.documentElement, { attributes: true });
+      (window as unknown as { colourRuns: string[] }).colourRuns = [];
+      document.addEventListener(
+        'transitionrun',
+        (event) => {
+          const target = event.target as Element;
+          if (
+            (event.propertyName === 'color' || event.propertyName === 'background-color') &&
+            !target.closest('[role="radio"]')
+          ) {
+            (window as unknown as { colourRuns: string[] }).colourRuns.push(`${event.propertyName}@${target.tagName}`);
+          }
+        },
+        true,
+      );
     });
 
-    await page.getByRole('radio', { name: 'Dark' }).click();
+    await page.getByRole('radio', { name: 'Dark' }).focus();
+    await page.keyboard.press('Space');
 
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page.locator('html')).not.toHaveAttribute('data-theme-switching');
     const log = await page.evaluate(() => (window as unknown as { themeLog: string[] }).themeLog);
     expect(log).toContain('data-theme:true');
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => (window as unknown as { colourRuns: string[] }).colourRuns)).toEqual([]);
   });
 });
 

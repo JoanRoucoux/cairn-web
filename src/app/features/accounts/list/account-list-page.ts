@@ -73,7 +73,7 @@ export class AccountListPage {
   protected readonly state = this.#store.state;
   protected readonly shown = delayedState(this.state);
   protected readonly cardPadding = computed(
-    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
+    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.shown() ?? 'empty'],
   );
   protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
 

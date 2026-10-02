@@ -76,7 +76,7 @@ export class InstrumentListPage {
   protected readonly desktop = injectDesktop();
 
   protected readonly cardPadding = computed(
-    () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
+    () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.shown() ?? 'empty'],
   );
 
   protected readonly countLabel = translateSignal(

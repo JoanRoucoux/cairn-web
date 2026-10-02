@@ -1,4 +1,4 @@
-import { Component, booleanAttribute, input, output } from '@angular/core';
+import { Component, type Signal, booleanAttribute, input, linkedSignal, output } from '@angular/core';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
@@ -22,6 +22,11 @@ export class HoldingDetailDialogs {
   readonly editOpen = input(false, { transform: booleanAttribute });
   readonly deleteOpen = input(false, { transform: booleanAttribute });
 
+  protected readonly buyHolding = this.#heldWhile(this.buyOpen);
+  protected readonly sellHolding = this.#heldWhile(this.sellOpen);
+  protected readonly editHolding = this.#heldWhile(this.editOpen);
+  protected readonly deleteHolding = this.#heldWhile(this.deleteOpen);
+
   readonly quoteSaved = output<void>();
   readonly quoteDismissed = output<void>();
   readonly bought = output<HoldingResponse>();
@@ -32,4 +37,11 @@ export class HoldingDetailDialogs {
   readonly editDismissed = output<void>();
   readonly deleted = output<string>();
   readonly deleteDismissed = output<void>();
+
+  #heldWhile(open: Signal<boolean>): Signal<HoldingResponse> {
+    return linkedSignal<{ open: boolean; holding: HoldingResponse }, HoldingResponse>({
+      source: () => ({ open: open(), holding: this.holding() }),
+      computation: (source, previous) => (source.open && previous ? previous.value : source.holding),
+    });
+  }
 }
