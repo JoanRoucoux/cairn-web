@@ -124,6 +124,7 @@ test.describe('accounts', () => {
     await expect(page.getByText('0 removes the line.')).toHaveCount(0);
     await page.getByTestId('holding-cash-submit').click();
 
+    await expect(page.locator('ui-toaster > div')).toHaveText('Balance updated');
     const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
     await expect(livretA.getByTestId('cash-row')).toContainText('0.00');
     await expect(livretA.getByTestId('cash-row')).toContainText('Entered on');

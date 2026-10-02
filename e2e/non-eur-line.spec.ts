@@ -28,6 +28,7 @@ test.describe('lines quoted in another currency', () => {
     await candidates.nth(0).click();
 
     await expect(dialog).toHaveCount(0);
+    await expect(page.locator('ui-toaster > div')).toHaveText('Listing changed');
     await expect(row).toHaveCount(0);
     const moved = page.getByTestId('holding-row').filter({ hasText: 'Nasdaq 100 UCITS ETF' });
     await expect(moved).not.toContainText('not counted');
