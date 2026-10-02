@@ -32,3 +32,23 @@ export const cashRowKeys = (group: AccountGroup): CashRowKeys =>
         entered: group.balanceAt ? 'holdings.balance.entered' : null,
       }
     : { line: 'holdings.cash.line', editRow: 'holdings.cash.editRow', entered: 'holdings.cash.entered' };
+
+export type MetaPart = { key: string; count: number; date: string | null };
+
+export type MetaParts = { count?: MetaPart; balance?: MetaPart; unvalued?: MetaPart; nonEur?: MetaPart };
+
+export const metaParts = (group: AccountGroup): MetaParts => {
+  const count = groupCount(group);
+  const unvalued = unvaluedMeta(group);
+  const nonEur = nonEurMeta(group);
+
+  return {
+    count: count && { ...count, date: null },
+    balance:
+      isSavings(group) && group.balanceAt
+        ? { key: 'holdings.balanceMeta', count: 0, date: group.balanceAt }
+        : undefined,
+    unvalued: unvalued && { ...unvalued, date: null },
+    nonEur: nonEur && { ...nonEur, date: null },
+  };
+};

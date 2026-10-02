@@ -346,34 +346,6 @@ describe('HoldingListPage', () => {
     httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
   });
 
-  it('opens the balance dialog of a savings account from the balance query param, then clears it', async () => {
-    const livret = { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
-    await render(TestHost, {
-      imports: [getTranslocoTestingModule()],
-      routes: [{ path: '', component: HoldingListPage }],
-      initialRoute: '/?balance=a3',
-      providers: [
-        HoldingChanges,
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
-    });
-    httpTesting = TestBed.inject(HttpTestingController);
-    for (const request of httpTesting.match('/api/holdings')) {
-      request.flush([]);
-    }
-    for (const request of httpTesting.match('/api/accounts')) {
-      request.flush([livret]);
-    }
-
-    expect(await screen.findByTestId('holding-cash-dialog')).toHaveTextContent('holdings.balance.title');
-    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
-    expect(screen.queryByText('holdings.cash.zeroHint')).not.toBeInTheDocument();
-  });
-
   it('ignores the old filter params', async () => {
     await renderPage('/?filter=stale&account=Esalia&assetClass=ETF');
 

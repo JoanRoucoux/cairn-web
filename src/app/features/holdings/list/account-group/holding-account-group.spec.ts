@@ -118,7 +118,7 @@ describe('HoldingAccountGroup', () => {
     it('should say neither a date nor a count while the balance was never set', async () => {
       await renderGroup({ ...savings, institution: '' });
 
-      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(/^s*enums.accountType.SAVINGSs*$/);
+      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent('enums.accountType.SAVINGS');
     });
 
     it('should show one balance row dated by the entry, editable like the cash row', async () => {

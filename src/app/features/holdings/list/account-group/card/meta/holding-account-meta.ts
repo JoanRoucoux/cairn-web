@@ -6,7 +6,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 import type { AccountGroup } from '../../../holding-list-store';
-import { filteredCount, groupCount, isSavings, nonEurMeta, unvaluedMeta } from '../../group-count';
+import { filteredCount, metaParts } from '../../group-count';
 
 @Component({
   selector: 'app-holding-account-meta',
@@ -21,10 +21,7 @@ export class HoldingAccountMeta {
   readonly #masked = inject(UI_AMOUNT_MASKED);
 
   protected readonly filteredCount = filteredCount;
-  protected readonly groupCount = groupCount;
-  protected readonly nonEurMeta = nonEurMeta;
-  protected readonly unvaluedMeta = unvaluedMeta;
-  protected readonly savingsDate = computed(() => (isSavings(this.group()) ? this.group().balanceAt : null));
+  protected readonly metaParts = metaParts;
   protected readonly accountTotal = computed(() =>
     formatAmount(this.group().filtered?.accountValueEur, { locale: this.#locale, currency: 'EUR' }, this.#masked()),
   );

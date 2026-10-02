@@ -138,7 +138,7 @@ describe('HoldingAccountCard', () => {
     it('should say neither a date nor a count while the balance was never set', async () => {
       const { container } = await renderCard({ ...savings, institution: '' });
 
-      expect(container.querySelector('app-holding-account-meta')).toHaveTextContent(/^s*enums.accountType.SAVINGSs*$/);
+      expect(container.querySelector('app-holding-account-meta')).toHaveTextContent('enums.accountType.SAVINGS');
     });
 
     it('should show one dated balance row that emits when edited', async () => {

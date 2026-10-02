@@ -166,6 +166,22 @@ describe('AccountFormDialog', () => {
     expect(savedForm).not.toHaveBeenCalled();
   });
 
+  it('should show a field error on the envelope, not a generic failure, on a 422', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
+    await user.click(screen.getByTestId('account-form-submit'));
+
+    await vi.waitFor(() =>
+      httpTesting.expectOne('/api/accounts').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
+    );
+
+    expect(await screen.findByText('accounts.form.savingsConflict')).toBeInTheDocument();
+    expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
+  });
+
   it('should clear the name conflict once the name is edited again', async () => {
     const user = userEvent.setup();
     await renderDialog();

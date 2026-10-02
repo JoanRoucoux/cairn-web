@@ -51,6 +51,7 @@ export class AccountFormDialog {
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
   protected readonly nameConflict = this.#store.nameConflict;
+  protected readonly savingsConflict = this.#store.savingsConflict;
   readonly #transloco = inject(TranslocoService);
   readonly #language = inject(LanguageStore);
 

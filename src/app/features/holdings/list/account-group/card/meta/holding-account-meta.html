@@ -1,6 +1,4 @@
-@let unvalued = unvaluedMeta(group());
-@let nonEur = nonEurMeta(group());
-@let count = groupCount(group());
+@let parts = metaParts(group());
 @if (group().filtered; as filtered) {
   {{
     'holdings.filteredMeta'
@@ -15,16 +13,9 @@
   @if (group().institution) {
     &middot; {{ group().institution }}
   }
-  @if (count) {
-    &middot; {{ count.key | transloco: { count: count.count } }}
-  }
-  @if (savingsDate()) {
-    &middot; {{ 'holdings.balanceMeta' | transloco: { date: savingsDate() | shortDate } }}
-  }
-  @if (unvalued) {
-    &middot; {{ unvalued.key | transloco: unvalued }}
-  }
-  @if (nonEur) {
-    &middot; {{ nonEur.key | transloco: nonEur }}
+  @for (part of [parts.count, parts.balance, parts.unvalued, parts.nonEur]; track $index) {
+    @if (part) {
+      &middot; {{ part.key | transloco: { count: part.count, date: part.date | shortDate } }}
+    }
   }
 }

@@ -2,7 +2,6 @@ import {
   Component,
   ElementRef,
   LOCALE_ID,
-  type OnInit,
   afterRenderEffect,
   computed,
   effect,
@@ -38,7 +37,7 @@ const CATALOG_RESULT_LIMIT = 4;
   templateUrl: './holding-add-dialog.html',
   providers: [HoldingAddDialogStore],
 })
-export class HoldingAddDialog implements OnInit {
+export class HoldingAddDialog {
   #store = inject(HoldingAddDialogStore);
 
   readonly presetAccountId = input<string | null>(null);
@@ -129,10 +128,11 @@ export class HoldingAddDialog implements OnInit {
 
   constructor() {
     effect(() => {
-      const first = this.accounts.value()[0];
+      const list = this.accounts.value();
+      const chosen = list.find((account) => account.id === this.presetAccountId()) ?? list[0];
 
-      if (first && this.accountId() === '') {
-        this.accountId.set(first.id);
+      if (chosen && this.accountId() === '') {
+        this.accountId.set(chosen.id);
       }
     });
 
@@ -141,13 +141,6 @@ export class HoldingAddDialog implements OnInit {
         this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();
       }
     });
-  }
-
-  ngOnInit(): void {
-    const preset = this.presetAccountId();
-    if (preset) {
-      this.accountId.set(preset);
-    }
   }
 
   protected onQueryInput(event: Event): void {

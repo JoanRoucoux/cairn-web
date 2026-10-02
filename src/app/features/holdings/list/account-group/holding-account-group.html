@@ -1,7 +1,4 @@
-@let unvalued = unvaluedMeta(group());
-@let nonEur = nonEurMeta(group());
-@let count = groupCount(group());
-@let savings = isSavings(group());
+@let parts = metaParts(group());
 @let cash = cashRowKeys(group());
 <tr group uiTr>
   <td
@@ -19,12 +16,20 @@
               })
         : ('enums.accountType.' + group().accountType | transloco) +
           (group().institution ? ' · ' + group().institution : '') +
-          (count ? ' · ' + (count.key | transloco: { count: count.count }) : '') +
-          (savings && group().balanceAt
-            ? ' · ' + ('holdings.balanceMeta' | transloco: { date: group().balanceAt | shortDate })
+          (parts.count
+            ? ' · ' + (parts.count.key | transloco: { count: parts.count.count, date: parts.count.date | shortDate })
             : '') +
-          (unvalued ? ' · ' + (unvalued.key | transloco: unvalued) : '') +
-          (nonEur ? ' · ' + (nonEur.key | transloco: nonEur) : '')
+          (parts.balance
+            ? ' · ' +
+              (parts.balance.key | transloco: { count: parts.balance.count, date: parts.balance.date | shortDate })
+            : '') +
+          (parts.unvalued
+            ? ' · ' +
+              (parts.unvalued.key | transloco: { count: parts.unvalued.count, date: parts.unvalued.date | shortDate })
+            : '') +
+          (parts.nonEur
+            ? ' · ' + (parts.nonEur.key | transloco: { count: parts.nonEur.count, date: parts.nonEur.date | shortDate })
+            : '')
     "
     [name]="group().accountName"
   >

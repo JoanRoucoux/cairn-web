@@ -97,6 +97,27 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     expect((screen.getByTestId('holding-add-account') as HTMLSelectElement).value).toBe('a1');
   });
 
+  it('ignores a preset savings account and falls back to the first securities account', async () => {
+    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    await render(HoldingAddDialog, {
+      inputs: { presetAccountId: 's1' },
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/accounts').flush([livret, ...accounts]);
+    httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/holdings').flush([]);
+
+    await vi.waitFor(() => expect((screen.getByTestId('holding-add-account') as HTMLSelectElement).value).toBe('a1'));
+  });
+
   it('preselects no account when there is none to choose', async () => {
     await renderDialog([], []);
 

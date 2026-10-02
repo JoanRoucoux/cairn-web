@@ -22,7 +22,11 @@
     />
   </ui-field>
 
-  <ui-field labelHidden [label]="'accounts.type' | transloco">
+  <ui-field
+    labelHidden
+    [error]="savingsConflict() ? ('accounts.form.savingsConflict' | transloco) : undefined"
+    [label]="'accounts.type' | transloco"
+  >
     <ui-choice-chips
       data-testid="account-form-type"
       [formField]="form.type"

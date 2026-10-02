@@ -19,6 +19,7 @@
     "submit": "Save",
     "error": "That account was refused.",
     "nameConflict": "An account already has this name.",
+    "savingsConflict": "This account has holdings: it cannot become a savings account.",
     "namePlaceholder": "For example Boursorama PEA",
     "institutionPlaceholder": "For example Boursorama",
     "create": "Create the account"

@@ -22,6 +22,7 @@ export class AccountFormDialogStore {
 
   readonly error = signal(false);
   readonly nameConflict = signal(false);
+  readonly savingsConflict = signal(false);
 
   prefill(account: AccountDraftSource | undefined): void {
     this.#model.set(initialAccountDraft(account));
@@ -30,6 +31,7 @@ export class AccountFormDialogStore {
   async save(accountId?: string): Promise<boolean> {
     this.error.set(false);
     this.nameConflict.set(false);
+    this.savingsConflict.set(false);
     let saved = false;
 
     await submit(this.form, async () => {
@@ -45,6 +47,8 @@ export class AccountFormDialogStore {
       } catch (err) {
         if (err instanceof HttpErrorResponse && err.status === 409) {
           this.nameConflict.set(true);
+        } else if (err instanceof HttpErrorResponse && err.status === 422) {
+          this.savingsConflict.set(true);
         } else {
           this.error.set(true);
         }
