@@ -11,7 +11,7 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 import { isMissing } from '../../../is-missing';
-import { type AccountGroup } from '../../holding-list-store';
+import type { AccountGroup } from '../../holding-list-store';
 import { cashRowKeys } from '../group-count';
 import { HoldingAccountMeta } from './meta/holding-account-meta';
 
