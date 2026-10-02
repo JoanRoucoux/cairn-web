@@ -1,7 +1,7 @@
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { type AsyncState, UiAmount, UiAsync, UiDelta, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { type AsyncState, UiAmount, UiAsync, UiDelta, UiSkeleton, UiStaleLink } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
@@ -23,6 +23,7 @@ import { UpperFirstPipe } from '@shared/format/upper-first-pipe';
     UiAsync,
     UiDelta,
     UiSkeleton,
+    UiStaleLink,
     UpperFirstPipe,
   ],
   templateUrl: './portfolio-total.html',

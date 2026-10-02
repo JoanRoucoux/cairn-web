@@ -55,25 +55,8 @@
           @if (portfolio.staleCount > 0 || excluded()) {
             <div class="max-lg:contents lg:flex lg:items-center lg:gap-x-6">
               @if (portfolio.staleCount > 0) {
-                <a
-                  class="-mb-3 flex min-h-11 items-center gap-1 self-start rounded-sm font-medium text-(--stale) hover:underline hover:underline-offset-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) max-lg:mt-0.5 lg:mb-0 lg:min-h-0 lg:gap-0.5"
-                  data-testid="stale-link"
-                  routerLink="/holdings"
-                >
+                <a chevron data-testid="stale-link" routerLink="/holdings" uiStaleLink>
                   {{ staleKey() | transloco: { count: portfolio.staleCount } }}
-                  <svg
-                    aria-hidden="true"
-                    fill="none"
-                    height="16"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.75"
-                    viewBox="0 0 24 24"
-                    width="16"
-                  >
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
                 </a>
               }
               @if (excluded(); as excluded) {
