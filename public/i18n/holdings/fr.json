@@ -36,7 +36,7 @@
   "retry": "Réessayer",
   "notFound": "Cette ligne n'existe plus.",
   "chartErrorTitle": "Le graphique n'a pas pu être chargé",
-  "chartErrorMessage": "Le serveur n'a pas répondu. Vérifiez votre connexion, puis réessayez.",
+  "chartErrorMessage": "Le serveur n'a pas répondu.",
   "chartLabel": "Valeur sur la plage sélectionnée",
   "externalLink": "Fiche sur {{domain}}",
   "columns": {

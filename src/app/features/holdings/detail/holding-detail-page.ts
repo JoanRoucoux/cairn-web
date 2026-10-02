@@ -94,7 +94,9 @@ export class HoldingDetailPage {
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
   protected readonly rangeChange = computed(() => (this.#store.quotesFailed() ? undefined : this.#store.rangeChange()));
-  protected readonly chartState = computed<AsyncState>(() => (this.#store.quotesFailed() ? 'error' : 'ready'));
+  protected readonly chartState = computed<AsyncState>(() =>
+    this.#store.quotesRetrying() ? 'loading' : this.#store.quotesFailed() ? 'error' : 'ready',
+  );
   protected readonly shownRange = this.#store.shownRange;
   protected readonly quotesFailed = this.#store.quotesFailed;
   protected readonly instrumentDetail = computed(() =>

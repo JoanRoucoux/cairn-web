@@ -227,12 +227,14 @@ describe('HoldingDetailStore', () => {
 
     store.retryQuotes();
     await settle();
+    expect(store.quotesRetrying()).toBe(true);
     httpTesting
       .match((request) => request.url.includes('/quotes'))
       .forEach((request) => request.flush([{ asOf: '2026-01-01', price: 10 }]));
     await settle();
 
     expect(store.quotesFailed()).toBe(false);
+    expect(store.quotesRetrying()).toBe(false);
     expect(store.shownRange()).toBe('1y');
   });
 

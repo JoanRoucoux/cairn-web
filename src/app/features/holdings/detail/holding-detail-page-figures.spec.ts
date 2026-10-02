@@ -196,6 +196,8 @@ describe('HoldingDetailPage figures', () => {
 
       return requests[0];
     });
+    expect(document.querySelector('ui-line-chart')).toBeNull();
+    expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
     retried?.flush([{ asOf: '2026-08-21', price: 30 }]);
 
     await vi.waitFor(() => expect(document.querySelector('ui-line-chart')).not.toBeNull());

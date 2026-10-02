@@ -36,7 +36,7 @@
   "retry": "Retry",
   "notFound": "This holding no longer exists.",
   "chartErrorTitle": "The chart could not be loaded",
-  "chartErrorMessage": "The server did not answer. Check your connection, then try again.",
+  "chartErrorMessage": "The server did not answer.",
   "chartLabel": "Value over the selected range",
   "externalLink": "Page on {{domain}}",
   "columns": {

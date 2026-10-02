@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Injectable, type ResourceStatus, computed, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
@@ -80,6 +80,14 @@ export class HoldingDetailStore {
 
   readonly quotesFailed = computed(() => this.quotes.status() === 'error');
 
+  readonly #retrying = linkedSignal<ResourceStatus, boolean>({
+    source: () => this.quotes.status(),
+    computation: (status, previous) =>
+      status === 'resolved' || status === 'error' ? false : (previous?.value ?? false),
+  });
+
+  readonly quotesRetrying = this.#retrying.asReadonly();
+
   readonly points = computed<ChartPoint[]>(() => {
     const quantity = this.holding()?.quantity ?? 0;
 
@@ -101,6 +109,7 @@ export class HoldingDetailStore {
   });
 
   retryQuotes(): void {
+    this.#retrying.set(true);
     this.quotes.reload();
   }
 
