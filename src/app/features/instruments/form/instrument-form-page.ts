@@ -69,7 +69,6 @@ export class InstrumentFormPage {
 
   protected async onDeleted(): Promise<void> {
     this.deleteOpen.set(false);
-    this.#toast('instruments.toasts.deleted');
     await this.#router.navigateByUrl('/instruments');
   }
 }

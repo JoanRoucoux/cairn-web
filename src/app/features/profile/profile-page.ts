@@ -83,7 +83,7 @@ export class ProfilePage {
   protected readonly username = this.#store.username;
   protected readonly signInMethod = this.#store.signInMethod;
   protected readonly passkeys = this.#store.passkeys;
-  protected readonly addedPasskeyId = this.#store.addedPasskeyId;
+  protected readonly addedPasskeyIds = this.#store.addedPasskeyIds;
   protected readonly theme = this.#store.theme;
   protected readonly systemScheme = this.#store.systemScheme;
   protected readonly language = this.#store.language;
@@ -145,13 +145,11 @@ export class ProfilePage {
 
   protected onPasskeyRegistered(): void {
     this.passkeyDialogOpen.set(false);
-    this.#toast('profile.toasts.passkeyAdded');
     this.#store.passkeyAdded();
   }
 
   protected onPasskeyDeleted(): void {
     this.passkeyToDelete.set(undefined);
-    this.#toast('profile.toasts.passkeyDeleted');
     this.#store.reloadPasskeys();
     afterNextRender(
       () => this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="manage-passkeys"]')?.focus(),

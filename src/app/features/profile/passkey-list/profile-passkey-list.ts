@@ -42,7 +42,7 @@ import type { PasskeyView } from '../profile-store';
 export class ProfilePasskeyList {
   readonly state = input.required<AsyncState>();
   readonly passkeys = input.required<PasskeyView[]>();
-  readonly added = input<string | null>(null);
+  readonly added = input<ReadonlySet<string>>(new Set());
 
   readonly add = output<void>();
   readonly remove = output<PasskeyView>();

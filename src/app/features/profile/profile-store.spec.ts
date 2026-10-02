@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { ProfileStore } from './profile-store';
-import { flushCall, settleProfile } from './profile-testing';
+import { flushCall, session, settleProfile } from './profile-testing';
 
 const passkeys = [
   {
@@ -153,36 +153,51 @@ describe('ProfileStore', () => {
     expect(store.passkeys()).toEqual([]);
   });
 
+  const newKey = (credentialId: string): object => ({
+    credentialId,
+    label: credentialId,
+    createdAt: '2026-09-25T15:00:00Z',
+    lastUsedAt: null,
+    current: false,
+  });
+
   it('should name no added passkey before one is added', async () => {
     await settle();
 
-    expect(store.addedPasskeyId()).toBeNull();
+    expect([...store.addedPasskeyIds()]).toEqual([]);
   });
 
   it('should name the passkey that appears once an added one is reloaded, and keep it', async () => {
-    const added = {
-      credentialId: 'bmV3',
-      label: 'iPad',
-      createdAt: '2026-09-25T15:00:00Z',
-      lastUsedAt: null,
-      current: false,
-    };
     await settle();
 
     store.passkeyAdded();
     TestBed.tick();
 
-    expect(store.addedPasskeyId()).toBeNull();
+    expect([...store.addedPasskeyIds()]).toEqual([]);
 
-    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, added]);
-    expect(store.addedPasskeyId()).toBe('bmV3');
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('bmV3')]);
+    expect([...store.addedPasskeyIds()]).toEqual(['bmV3']);
 
     store.reloadPasskeys();
     TestBed.tick();
-    expect(store.addedPasskeyId()).toBe('bmV3');
+    expect([...store.addedPasskeyIds()]).toEqual(['bmV3']);
 
-    await flushCall(httpTesting, '/api/session/passkeys', [added]);
-    expect(store.addedPasskeyId()).toBe('bmV3');
+    await flushCall(httpTesting, '/api/session/passkeys', [newKey('bmV3')]);
+    expect([...store.addedPasskeyIds()]).toEqual(['bmV3']);
+  });
+
+  it('should keep the first added passkey while a second one is added', async () => {
+    await settle();
+    store.passkeyAdded();
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('Zmlyc3Q')]);
+
+    store.passkeyAdded();
+    TestBed.tick();
+
+    expect([...store.addedPasskeyIds()]).toEqual(['Zmlyc3Q']);
+
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('Zmlyc3Q'), newKey('c2Vjb25k')]);
+    expect([...store.addedPasskeyIds()]).toEqual(['Zmlyc3Q', 'c2Vjb25k']);
   });
 
   it('should name no passkey when the reload after an add brings nothing new', async () => {
@@ -191,7 +206,33 @@ describe('ProfileStore', () => {
     store.passkeyAdded();
     await flushCall(httpTesting, '/api/session/passkeys', passkeys);
 
-    expect(store.addedPasskeyId()).toBeNull();
+    expect([...store.addedPasskeyIds()]).toEqual([]);
+  });
+
+  it('should name no passkey when one is added while the list is still loading', async () => {
+    await flushCall(httpTesting, '/api/session', session);
+    TestBed.tick();
+
+    store.passkeyAdded();
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('bmV3')]);
+    await flushCall(httpTesting, '/api/instruments', []);
+
+    expect(store.passkeys()).toHaveLength(passkeys.length + 1);
+    expect([...store.addedPasskeyIds()]).toEqual([]);
+  });
+
+  it('should name no passkey when one is added while the list is in error', async () => {
+    await flushCall(httpTesting, '/api/session', session);
+    await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
+    await flushCall(httpTesting, '/api/instruments', []);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    store.passkeyAdded();
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('bmV3')]);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.passkeysState()).toBe('ready');
+    expect([...store.addedPasskeyIds()]).toEqual([]);
   });
 
   it('should keep the identity ready while the passkeys load', async () => {

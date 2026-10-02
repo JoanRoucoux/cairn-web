@@ -1,14 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  afterRenderEffect,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, effect, inject, input, output } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { UiAlert, UiButton, UiChoiceChips, UiDialog, UiField, UiInput } from '@joanroucoux/cairn-ui';
@@ -17,7 +7,9 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AccountType } from '@core/api-client/cairnAPI.schemas';
 import { LanguageStore } from '@core/i18n/language-store';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
+import { injectToast } from '@shared/feedback/toast';
 
 import { type AccountDraftSource } from './account-form';
 import { AccountFormDialogStore } from './account-form-dialog-store';
@@ -47,7 +39,12 @@ export class AccountFormDialog {
   readonly savedForm = output<void>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  readonly #outcome = injectDialogOutcome<void>(() =>
+    this.#toast(this.account() ? 'accounts.toasts.updated' : 'accounts.toasts.created'),
+  );
+
+  protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
   protected readonly nameConflict = this.#store.nameConflict;
@@ -77,14 +74,14 @@ export class AccountFormDialog {
     this.#store.nameConflict.set(false);
   }
 
-  #done = false;
-
   protected dismiss(): void {
-    this.open.set(false);
+    this.#outcome.dismiss();
   }
 
   protected onClosed(): void {
-    if (this.#done) {
+    const result = this.#outcome.settle();
+
+    if (result) {
       this.savedForm.emit();
     } else {
       this.dismissed.emit();
@@ -93,8 +90,7 @@ export class AccountFormDialog {
 
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.account()?.id)) {
-      this.#done = true;
-      this.open.set(false);
+      this.#outcome.succeed();
     }
   }
 }

@@ -54,7 +54,7 @@ describe('ProfilePasskeyList', () => {
   const retry = vi.fn();
 
   const renderList = (
-    inputs: { state: 'loading' | 'error' | 'ready'; passkeys: PasskeyView[]; added?: string | null } = {
+    inputs: { state: 'loading' | 'error' | 'ready'; passkeys: PasskeyView[]; added?: ReadonlySet<string> } = {
       state: 'ready',
       passkeys,
     },
@@ -138,7 +138,7 @@ describe('ProfilePasskeyList', () => {
     afterEach(() => motion.restore());
 
     it('should highlight the key just added, and only that one', async () => {
-      await renderList({ state: 'ready', passkeys, added: 'c' });
+      await renderList({ state: 'ready', passkeys, added: new Set(['c']) });
 
       await vi.waitFor(() => expect(motion.highlighted).toHaveLength(1));
       expect(motion.highlighted[0]).toHaveTextContent('YubiKey 5C');

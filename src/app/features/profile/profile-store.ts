@@ -105,11 +105,17 @@ export class ProfileStore {
   }
 
   readonly #knownBeforeAdd = signal<ReadonlySet<string> | null>(null);
+  readonly #addedBefore = signal<ReadonlySet<string>>(new Set());
 
-  readonly addedPasskeyId = computed(() => {
+  readonly addedPasskeyIds = computed<ReadonlySet<string>>(() => {
     const known = this.#knownBeforeAdd();
+    const fresh = known
+      ? this.passkeys()
+          .map((passkey) => passkey.credentialId)
+          .filter((id) => !known.has(id))
+      : [];
 
-    return known ? (this.passkeys().find((passkey) => !known.has(passkey.credentialId))?.credentialId ?? null) : null;
+    return new Set([...this.#addedBefore(), ...fresh]);
   });
 
   reloadPasskeys(): void {
@@ -117,7 +123,10 @@ export class ProfileStore {
   }
 
   passkeyAdded(): void {
-    this.#knownBeforeAdd.set(new Set(this.passkeys().map((passkey) => passkey.credentialId)));
+    this.#addedBefore.set(this.addedPasskeyIds());
+    this.#knownBeforeAdd.set(
+      this.#passkeys.hasValue() ? new Set(this.passkeys().map((passkey) => passkey.credentialId)) : null,
+    );
     this.#passkeys.reload();
   }
 

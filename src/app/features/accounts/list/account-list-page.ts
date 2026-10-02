@@ -21,7 +21,6 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
-import { injectToast } from '@shared/feedback/toast';
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
@@ -65,7 +64,6 @@ import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
 })
 export class AccountListPage {
   #store = inject(AccountListStore);
-  #toast = injectToast();
 
   protected readonly accounts = this.#store.accounts;
   protected readonly totalEur = this.#store.totalEur;
@@ -93,7 +91,6 @@ export class AccountListPage {
 
   protected onFormSaved(): void {
     this.formOpen.set(false);
-    this.#toast(this.accountToEdit() ? 'accounts.toasts.updated' : 'accounts.toasts.created');
     this.#store.retry();
   }
 
@@ -103,7 +100,6 @@ export class AccountListPage {
 
   protected onDeleted(): void {
     this.accountToDelete.set(undefined);
-    this.#toast('accounts.toasts.deleted');
     this.#store.retry();
   }
 
