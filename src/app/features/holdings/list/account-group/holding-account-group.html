@@ -25,6 +25,7 @@
 </tr>
 @for (holding of group().holdings; track holding.id) {
   <tr
+    animate.leave="ui-leave-fade"
     app-holding-account-group-row
     interactive
     uiTr
@@ -32,11 +33,12 @@
     [holding]="holding"
     [open]="holding.id === selectedHoldingId()"
     [selected]="holding.id === selectedHoldingId()"
+    [uiHighlight]="flash()?.id === holding.id ? flash() : null"
     (enterQuote)="enterQuote.emit($event)"
   ></tr>
 }
 @if (group().showCash) {
-  <tr data-testid="cash-row" interactive uiTr>
+  <tr data-testid="cash-row" interactive uiTr [uiHighlight]="flash()?.id === group().accountId ? flash() : null">
     <td primary uiTd>
       <button
         data-testid="edit-cash"

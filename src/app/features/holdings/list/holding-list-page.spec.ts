@@ -4,10 +4,12 @@ import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/c
 import { TestBed } from '@angular/core/testing';
 import { Router, RouterOutlet } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
@@ -146,7 +148,9 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
   });
 
-  it('reloads the list once a line is added', async () => {
+  it('reloads the list once a line is added, confirms, then highlights the new line', async () => {
+    const motion = recordMotion();
+    onTestFinished(() => motion.restore());
     const user = userEvent.setup();
     await renderPage();
     await screen.findAllByText('Esalia');
@@ -168,10 +172,23 @@ describe('HoldingListPage', () => {
     await user.click(screen.getByTestId('holding-add-submit'));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({ id: 'i9' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
-    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush(holdings));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
 
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.added');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h9');
+    expect(motion.highlighted).toEqual([]);
+
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne('/api/holdings')
+        .flush([...holdings, { ...holdings[0], id: 'h9', instrumentName: 'Newly added fund' }]),
+    );
+
+    await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+    expect(
+      motion.highlighted.every((element) => element.closest('[data-holding-id="h9"], tr:has([data-holding-id="h9"])')),
+    ).toBe(true);
   });
 
   it('reloads the list after the cash balance is set', async () => {
@@ -191,6 +208,8 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush(holdings));
 
     expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.balanceSaved');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('a1');
   });
 
   it('closes the cash dialog when it is dismissed', async () => {
@@ -201,7 +220,9 @@ describe('HoldingListPage', () => {
     await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.click(await screen.findByTestId('holding-cash-cancel'));
 
-    expect(screen.queryByTestId('holding-cash-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-cash-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
+    expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();
   });
 
   it('should tell the user when holdings fail to load', async () => {

@@ -4,8 +4,10 @@ import { provideRouter } from '@angular/router';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { type MotionRecord, recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import type { HoldingChange } from '../../holding-changes';
 import type { AccountGroup } from '../holding-list-store';
 import { HoldingAccountGroup } from './holding-account-group';
 
@@ -16,6 +18,7 @@ import { HoldingAccountGroup } from './holding-account-group';
     <tbody
       app-holding-account-group
       [compact]="compact()"
+      [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
       (editCash)="editCash.emit($event)"
@@ -26,6 +29,7 @@ import { HoldingAccountGroup } from './holding-account-group';
 class TestHost {
   readonly group = input.required<AccountGroup>();
   readonly compact = input(false);
+  readonly flash = input<HoldingChange | null>(null);
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
@@ -64,9 +68,10 @@ const renderGroup = (
   overrides: Partial<AccountGroup> = {},
   compact = false,
   selectedHoldingId: string | undefined = undefined,
+  flash: HoldingChange | null = null,
 ): ReturnType<typeof render<TestHost>> =>
   render(TestHost, {
-    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId },
+    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId, flash },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
@@ -274,5 +279,38 @@ describe('HoldingAccountGroup under a class filter', () => {
     await renderGroup();
 
     expect(document.querySelector('tbody')).toHaveAttribute('data-account-id', 'a1');
+  });
+
+  describe('after a change', () => {
+    let motion: MotionRecord;
+
+    beforeEach(() => (motion = recordMotion()));
+
+    afterEach(() => motion.restore());
+
+    it('should highlight the cells of the line that just changed, and nothing else', async () => {
+      await renderGroup({}, false, undefined, { id: 'h3', at: 1 });
+
+      await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+      expect(motion.highlighted.every((cell) => cell.closest('tr')?.querySelector('[data-holding-id="h3"]'))).toBe(
+        true,
+      );
+    });
+
+    it('should highlight the cash line when its account balance just changed', async () => {
+      await renderGroup({}, false, undefined, { id: 'a1', at: 1 });
+
+      await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+      expect(motion.highlighted.every((cell) => cell.closest('tr')?.getAttribute('data-testid') === 'cash-row')).toBe(
+        true,
+      );
+    });
+
+    it('should highlight nothing when no line of the account changed', async () => {
+      await renderGroup({}, false, undefined, { id: 'elsewhere', at: 1 });
+
+      expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+      expect(motion.highlighted).toEqual([]);
+    });
   });
 });

@@ -27,9 +27,11 @@
   </span>
 </header>
 <ui-card clip padding="none">
-  <div class="flex flex-col px-2 py-1.5">
+  <div class="flex flex-col px-2 py-1.5" uiFlipList>
     @for (holding of group().holdings; track holding.id) {
       <a
+        animate.leave="ui-leave-fade"
+        class="scroll-mb-[calc(52px+env(safe-area-inset-bottom))]"
         data-testid="holding-row-mobile"
         padding="sm"
         queryParamsHandling="preserve"
@@ -37,6 +39,7 @@
         ui-row
         [attr.data-holding-id]="holding.id"
         [routerLink]="['/holdings', holding.id]"
+        [uiHighlight]="flash()?.id === holding.id ? flash() : null"
       >
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
@@ -82,12 +85,14 @@
     }
     @if (group().showCash) {
       <button
+        class="scroll-mb-[calc(52px+env(safe-area-inset-bottom))]"
         data-testid="edit-cash-mobile"
         padding="sm"
         size="card"
         type="button"
         ui-row
         [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        [uiHighlight]="flash()?.id === group().accountId ? flash() : null"
         (click)="editCash.emit(group().accountId)"
       >
         <div class="flex min-w-0 flex-1 flex-col">

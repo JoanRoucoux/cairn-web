@@ -9,3 +9,9 @@ HTMLDialogElement.prototype.close = function (this: HTMLDialogElement): void {
   this.removeAttribute('open');
   this.dispatchEvent(new Event('close'));
 };
+
+globalThis.ResizeObserver ??= class {
+  observe = (): undefined => undefined;
+  unobserve = (): undefined => undefined;
+  disconnect = (): undefined => undefined;
+};

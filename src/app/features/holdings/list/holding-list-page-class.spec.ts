@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
+import { ApplicationRef, Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { type Event, NavigationEnd, Router, RouterOutlet, Scroll } from '@angular/router';
 
@@ -345,17 +345,37 @@ describe('HoldingListPage class filter', () => {
       expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
     });
 
+    it('should not highlight the header again when a filter rebuilds the groups', async () => {
+      const user = userEvent.setup();
+      await open('/?compte=a2');
+      await screen.findAllByRole('heading', { name: 'Esalia' });
+      routerScrolls();
+      await vi.waitFor(() => expect(animated.length).toBeGreaterThan(0));
+      const played = animated.length;
+
+      await user.click(chip(/^Funds/));
+      await screen.findAllByRole('heading', { name: 'Esalia' });
+      await user.click(chip(/^All/));
+      await screen.findAllByRole('heading', { name: 'Saxo Investor' });
+
+      expect(animated).toHaveLength(played);
+    });
+
+    it('should ignore a ?compte= that matches no account: no scroll, no focus, no highlight', async () => {
+      await open('/?compte=nope');
+      const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
+      routerScrolls();
+      TestBed.tick();
+      await TestBed.inject(ApplicationRef).whenStable();
+
+      expect(headings.length).toBeGreaterThan(0);
+      expect(scrolled).toEqual([]);
+      expect(animated).toEqual([]);
+      expect(document.activeElement).toBe(document.body);
+      expect(within(document.body).queryByRole('alert')).not.toBeInTheDocument();
+    });
+
     const scrollIntoViewArgs = (): unknown =>
       (Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
-  });
-
-  it('should ignore a ?compte= that matches no account', async () => {
-    await open('/?compte=nope');
-    const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
-    routerScrolls();
-    TestBed.tick();
-
-    expect(headings.length).toBeGreaterThan(0);
-    expect(within(document.body).queryByRole('alert')).not.toBeInTheDocument();
   });
 });

@@ -82,8 +82,9 @@
             <app-holding-list-skeleton />
           </div>
           <div class="flex flex-col gap-4 lg:hidden">
-            @for (group of groups(); track group.accountId) {
+            @for (group of groups(); track group.key) {
               <app-holding-account-card
+                [flash]="flash()"
                 [group]="group"
                 [highlight]="highlightFor(group.accountId)"
                 (editCash)="accountToEditCashFor.set($event)"
@@ -107,10 +108,11 @@
                 <th numeric uiTh width="92px">{{ 'holdings.columns.day' | transloco }}</th>
               </tr>
             </thead>
-            @for (group of groups(); track group.accountId) {
+            @for (group of groups(); track group.key) {
               <tbody
                 app-holding-account-group
                 [compact]="compact()"
+                [flash]="flash()"
                 [group]="group"
                 [highlight]="highlightFor(group.accountId)"
                 [selectedHoldingId]="selectedHoldingId()"
@@ -142,12 +144,16 @@
     [instrumentId]="target.instrumentId"
     [instrumentName]="target.instrumentName"
     (dismissed)="quoteTarget.set(undefined)"
-    (saved)="onQuoteSaved()"
+    (saved)="onQuoteSaved(target)"
   />
 }
 
 @if (addOpen()) {
-  <app-holding-add-dialog [presetAccountId]="presetAccountId()" (dismissed)="onAddDismissed()" (saved)="onAddSaved()" />
+  <app-holding-add-dialog
+    [presetAccountId]="presetAccountId()"
+    (dismissed)="onAddDismissed()"
+    (saved)="onAddSaved($event)"
+  />
 }
 
 @if (groupToEditCashFor(); as group) {
@@ -156,6 +162,6 @@
     [accountName]="group.accountName"
     [balance]="group.cashEur"
     (dismissed)="accountToEditCashFor.set(undefined)"
-    (saved)="onCashSaved()"
+    (saved)="onCashSaved(group.accountId)"
   />
 }

@@ -1,4 +1,13 @@
-import { Component, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router, RouterOutlet, Scroll } from '@angular/router';
 
@@ -22,9 +31,11 @@ import { filter, map, startWith } from 'rxjs';
 
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { injectToast } from '@shared/feedback/toast';
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
@@ -69,6 +80,8 @@ export class HoldingListPage {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  #changes = inject(HoldingChanges);
+  #toast = injectToast();
 
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
@@ -80,6 +93,7 @@ export class HoldingListPage {
   protected readonly search = this.#store.search;
   protected readonly assetClass = this.#store.assetClass;
   protected readonly classSummary = this.#store.classSummary;
+  protected readonly flash = this.#store.flash;
 
   protected readonly desktop = injectDesktop();
   protected readonly state = computed<AsyncState>(() => {
@@ -131,7 +145,10 @@ export class HoldingListPage {
   #lastSelected: string | undefined;
   #landedOn: string | undefined;
 
-  protected readonly arrival = signal<{ accountId: string } | null>(null);
+  protected readonly arrival = linkedSignal<string, { accountId: string } | null>({
+    source: this.#store.filterKey,
+    computation: () => null,
+  });
   readonly #routerScrolled = signal(false);
 
   constructor() {
@@ -220,10 +237,11 @@ export class HoldingListPage {
     });
   }
 
-  protected onAddSaved(): void {
+  protected onAddSaved(holding: HoldingResponse): void {
     this.addOpen.set(false);
     this.presetAccountId.set(null);
-    this.holdings.reload();
+    this.#toast('holdings.toasts.added');
+    this.#changes.touched(holding.id);
   }
 
   protected onAddDismissed(): void {
@@ -231,13 +249,15 @@ export class HoldingListPage {
     this.presetAccountId.set(null);
   }
 
-  protected onQuoteSaved(): void {
+  protected onQuoteSaved(holding: HoldingResponse): void {
     this.quoteTarget.set(undefined);
-    this.holdings.reload();
+    this.#toast('holdings.toasts.quoteSaved');
+    this.#changes.touched(holding.id);
   }
 
-  protected onCashSaved(): void {
+  protected onCashSaved(accountId: string): void {
     this.accountToEditCashFor.set(undefined);
-    this.holdings.reload();
+    this.#toast('holdings.toasts.balanceSaved');
+    this.#changes.touched(accountId);
   }
 }

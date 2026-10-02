@@ -4,6 +4,7 @@ import {
   UI_AMOUNT_MASKED,
   UiAmount,
   UiCellSub,
+  UiFlipList,
   UiGroup,
   UiGroupCell,
   UiHighlight,
@@ -16,6 +17,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import type { HoldingChange } from '../../holding-changes';
 import type { AccountGroup } from '../holding-list-store';
 import { filteredCount, groupCount } from './group-count';
 import { HoldingAccountGroupRow } from './row/holding-account-group-row';
@@ -34,7 +36,7 @@ import { HoldingAccountGroupRow } from './row/holding-account-group-row';
     UiTr,
   ],
   templateUrl: './holding-account-group.html',
-  hostDirectives: [UiGroup],
+  hostDirectives: [UiGroup, UiFlipList],
   host: { class: 'scroll-mt-4', 'data-testid': 'account-group', '[attr.data-account-id]': 'group().accountId' },
 })
 export class HoldingAccountGroup {
@@ -42,6 +44,7 @@ export class HoldingAccountGroup {
   readonly compact = input(false, { transform: booleanAttribute });
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly highlight = input<object | null>(null);
+  readonly flash = input<HoldingChange | null>(null);
 
   readonly editCash = output<string>();
   readonly enterQuote = output<HoldingResponse>();

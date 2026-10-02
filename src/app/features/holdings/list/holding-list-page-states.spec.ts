@@ -4,6 +4,7 @@ import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/c
 import { TestBed } from '@angular/core/testing';
 import { RouterOutlet } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -133,6 +134,8 @@ describe('HoldingListPage states', () => {
     await vi.waitFor(() => httpTesting.expectOne((request) => request.method === 'POST').flush({}));
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush([unpriced]));
     await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.quoteSaved');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h9');
   });
 
   it('closes the manual quote dialog when it is dismissed', async () => {
@@ -144,6 +147,7 @@ describe('HoldingListPage states', () => {
     await user.click(await screen.findByTestId('enter-quote'));
     await user.click(await screen.findByTestId('manual-quote-cancel'));
 
-    expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 });
