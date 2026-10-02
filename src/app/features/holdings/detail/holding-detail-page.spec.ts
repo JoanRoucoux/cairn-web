@@ -285,12 +285,12 @@ describe('HoldingDetailPage', () => {
 
     await user.click(screen.getByTestId('holding-buy'));
     expect(screen.getByTestId('holding-buy-dialog')).toBeInTheDocument();
-    screen.getByTestId('holding-buy-dialog').querySelector('dialog')?.dispatchEvent(new Event('close'));
+    screen.getByTestId('holding-buy-dialog').querySelector('dialog')?.close();
     await vi.waitFor(() => expect(screen.queryByTestId('holding-buy-dialog')).not.toBeInTheDocument());
 
     await user.click(screen.getByTestId('holding-sell'));
     expect(screen.getByTestId('holding-sell-dialog')).toBeInTheDocument();
-    screen.getByTestId('holding-sell-dialog').querySelector('dialog')?.dispatchEvent(new Event('close'));
+    screen.getByTestId('holding-sell-dialog').querySelector('dialog')?.close();
     await vi.waitFor(() => expect(screen.queryByTestId('holding-sell-dialog')).not.toBeInTheDocument());
   });
 

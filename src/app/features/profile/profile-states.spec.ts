@@ -44,7 +44,7 @@ describe('ProfilePage loading states', () => {
 
     expect(await screen.findByTestId('identity')).toBeInTheDocument();
     expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
-    expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0);
+    await vi.waitFor(() => expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0));
 
     await flushCall(httpTesting, '/api/session/passkeys', passkeys);
   });

@@ -51,7 +51,7 @@ describe('HoldingCashDialog', () => {
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
 
-    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('dialog') as HTMLDialogElement).close();
 
     expect(dismissed).toHaveBeenCalled();
   });

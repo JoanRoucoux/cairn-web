@@ -123,7 +123,7 @@ describe('ProfilePasskeyList', () => {
     await renderList({ state: 'loading', passkeys: [] });
 
     expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
-    expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0);
+    await vi.waitFor(() => expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0));
   });
 
   it('should offer a retry when the keys could not be loaded', async () => {

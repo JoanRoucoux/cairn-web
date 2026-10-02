@@ -57,7 +57,7 @@ describe('HoldingListPage states', () => {
   it('shows a skeleton shaped like the list while loading', async () => {
     await renderPage();
 
-    expect(screen.getByTestId('holdings-loading')).toBeInTheDocument();
+    expect(await screen.findByTestId('holdings-loading')).toBeInTheDocument();
     expect(screen.getByTestId('holdings-loading-rows').children).toHaveLength(8);
     expect(screen.getByTestId('holdings-loading-cards').children).toHaveLength(2);
     httpTesting.expectOne('/api/holdings').flush([]);
@@ -93,8 +93,8 @@ describe('HoldingListPage states', () => {
     await user.click(screen.getByRole('button', { name: 'holdings.retry' }));
 
     const retried = await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }));
+    expect(await screen.findByTestId('holdings-loading')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.getByTestId('holdings-loading')).toBeInTheDocument();
     retried.flush([unpriced]);
     expect((await screen.findAllByText('Newly listed fund')).length).toBeGreaterThan(0);
   });
