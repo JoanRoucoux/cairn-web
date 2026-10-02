@@ -42,17 +42,26 @@ export class HoldingEditDialog {
     });
   }
 
+  #result: HoldingResponse | null = null;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#result !== null) {
+      this.savedForm.emit(this.#result);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     const saved = await this.#store.save(this.holding().id);
 
     if (saved) {
+      this.#result = saved;
       this.open.set(false);
-      this.savedForm.emit(saved);
     }
   }
 }

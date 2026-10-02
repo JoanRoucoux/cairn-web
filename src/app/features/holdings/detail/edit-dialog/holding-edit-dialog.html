@@ -6,6 +6,7 @@
   [description]="holding().instrumentName + ' · ' + holding().accountName"
   [heading]="'holdings.edit.title' | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.edit.quantity' | transloco">

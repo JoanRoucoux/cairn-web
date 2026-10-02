@@ -31,15 +31,24 @@ export class HoldingDeleteDialog {
     return this.#transloco.translate('holdings.delete.description', { name: this.holding().instrumentName });
   }
 
+  #result: string | null = null;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#result !== null) {
+      this.deleted.emit(this.#result);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     if (await this.#store.remove(this.holding().id)) {
+      this.#result = this.holding().id;
       this.open.set(false);
-      this.deleted.emit(this.holding().id);
     }
   }
 }

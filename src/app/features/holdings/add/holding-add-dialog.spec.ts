@@ -7,6 +7,7 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingAddDialog } from './holding-add-dialog';
@@ -174,6 +175,7 @@ describe('HoldingAddDialog', () => {
   it('emits saved once the holding has been created', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
     await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
@@ -186,14 +188,18 @@ describe('HoldingAddDialog', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 
     await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h9' }));
+    expect(saved).toHaveBeenCalledTimes(1);
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('emits dismissed on the native dialog close', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('reads an optional average cost', async () => {
@@ -242,10 +248,12 @@ describe('HoldingAddDialog', () => {
   it('dismisses from the Cancel button', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('holding-add-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('preselects the first account when none is given', async () => {

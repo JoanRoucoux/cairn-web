@@ -9,6 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingEditDialog } from './holding-edit-dialog';
@@ -57,15 +58,18 @@ describe('HoldingEditDialog', () => {
   it('emits dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('holding-edit-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('saves the change and emits savedForm', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.clear(screen.getByTestId('holding-edit-quantity'));
     await user.type(screen.getByTestId('holding-edit-quantity'), '700');
@@ -74,14 +78,18 @@ describe('HoldingEditDialog', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush({ id: 'h1' });
 
     await vi.waitFor(() => expect(savedForm).toHaveBeenCalledWith({ id: 'h1' }));
+    expect(savedForm).toHaveBeenCalledTimes(1);
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('emits dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('refuses an empty quantity before it ever reaches the API', async () => {

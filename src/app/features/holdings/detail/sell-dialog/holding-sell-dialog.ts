@@ -126,9 +126,18 @@ export class HoldingSellDialog {
     focusInitial(this.#host.nativeElement, 'holding-sell-quantity');
   }
 
+  #result: SellResult | null = null;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#result) {
+      this.sold.emit(this.#result);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected onSubmit(event: Event): void {
@@ -146,8 +155,8 @@ export class HoldingSellDialog {
     const result = await this.#store.save(this.holding().id, quantity);
 
     if (result) {
+      this.#result = result;
       this.open.set(false);
-      this.sold.emit(result);
     }
   }
 }

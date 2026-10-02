@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingSellDialog } from './holding-sell-dialog';
@@ -260,21 +261,43 @@ describe('HoldingSellDialog', () => {
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
   });
 
-  it('emits dismissed when Annuler is clicked', async () => {
+  it('emits sold once, only after the exit has played', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    const dialog = slowDialogExit();
+
+    await user.type(screen.getByTestId('holding-sell-quantity'), '100');
+    await user.click(screen.getByTestId('holding-sell-submit'));
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/sell'))).flush({ id: 'h1' });
+
+    await vi.waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    expect(sold).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(sold).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
+  });
+
+  it('emits dismissed once, after the exit, when Annuler is clicked', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    const dialog = slowDialogExit();
 
     await user.click(screen.getByTestId('holding-sell-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    await vi.waitFor(() => expect(dialog).not.toHaveAttribute('open'));
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
+    expect(sold).not.toHaveBeenCalled();
   });
 
-  it('emits dismissed on cancel via the native dialog close', async () => {
+  it('emits dismissed once, after the exit, when the reader closes the dialog', async () => {
     await renderDialog();
+    const dialog = slowDialogExit();
 
-    (screen.getByRole('dialog') as HTMLDialogElement).close();
+    dialog.close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
+    expect(sold).not.toHaveBeenCalled();
   });
 
   it('never calls the server when confirm is invoked while invalid', async () => {

@@ -42,15 +42,24 @@ export class HoldingCashDialog {
     });
   }
 
+  #done = false;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#done) {
+      this.saved.emit();
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.accountId())) {
+      this.#done = true;
       this.open.set(false);
-      this.saved.emit();
     }
   }
 }

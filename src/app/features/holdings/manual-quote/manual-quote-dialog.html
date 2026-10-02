@@ -4,6 +4,7 @@
   [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.manualQuote.title' | transloco: { name: instrumentName() }"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.manualQuote.asOf' | transloco">

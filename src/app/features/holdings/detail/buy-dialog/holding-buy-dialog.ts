@@ -101,9 +101,18 @@ export class HoldingBuyDialog {
     this.priceText.set(filterDecimalInput((event.target as HTMLInputElement).value));
   }
 
+  #result: HoldingResponse | null = null;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#result !== null) {
+      this.bought.emit(this.#result);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected onSubmit(event: Event): void {
@@ -115,8 +124,8 @@ export class HoldingBuyDialog {
     const bought = await this.#store.save(this.holding().id);
 
     if (bought) {
+      this.#result = bought;
       this.open.set(false);
-      this.bought.emit(bought);
     }
   }
 }

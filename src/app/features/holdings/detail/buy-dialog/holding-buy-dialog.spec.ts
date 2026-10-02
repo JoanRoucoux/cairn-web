@@ -9,6 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { delayedScopeLoader, getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingBuyDialog } from './holding-buy-dialog';
@@ -112,23 +113,28 @@ describe('HoldingBuyDialog', () => {
   it('emits dismissed when Annuler is clicked', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('holding-buy-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('emits dismissed on cancel via the native dialog close', async () => {
     await renderDialog();
+    slowDialogExit();
 
     (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('emits bought once the purchase is saved', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.type(screen.getByTestId('holding-buy-quantity'), '40');
     await user.type(screen.getByTestId('holding-buy-price'), '29.1');
@@ -137,6 +143,8 @@ describe('HoldingBuyDialog', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/buy'))).flush({ id: 'h1' });
 
     await vi.waitFor(() => expect(bought).toHaveBeenCalledWith({ id: 'h1' }));
+    expect(bought).toHaveBeenCalledTimes(1);
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('shows a refusal from the server', async () => {

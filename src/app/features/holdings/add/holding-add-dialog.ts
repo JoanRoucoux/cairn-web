@@ -204,9 +204,18 @@ export class HoldingAddDialog implements OnInit {
     void this.#store.searchOnline();
   }
 
+  #result: HoldingResponse | null = null;
+
   protected dismiss(): void {
     this.open.set(false);
-    this.dismissed.emit();
+  }
+
+  protected onClosed(): void {
+    if (this.#result !== null) {
+      this.saved.emit(this.#result);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected onSubmit(event: Event): void {
@@ -221,8 +230,8 @@ export class HoldingAddDialog implements OnInit {
     const saved = await this.#store.save();
 
     if (saved) {
+      this.#result = saved;
       this.open.set(false);
-      this.saved.emit(saved);
     }
   }
 }

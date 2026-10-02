@@ -4,6 +4,7 @@
   [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.cash.title' | transloco: { name: accountName() }"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <ui-field

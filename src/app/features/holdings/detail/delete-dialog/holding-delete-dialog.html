@@ -4,6 +4,7 @@
   width="488px"
   [heading]="'holdings.delete.title' | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <p class="text-body text-(--muted-foreground)">{{ description() }}</p>
