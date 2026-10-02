@@ -31,12 +31,13 @@ import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
 import { AccountFormDialog, type AccountFormTarget } from './form-dialog/account-form-dialog';
 import { linesLabel } from './lines-label';
 import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
-import { uncountedCaptions, uncountedLink } from './uncounted-captions';
+import { AccountUncounted } from './uncounted/account-uncounted';
 
 @Component({
   selector: 'app-account-list-page',
   imports: [
     AccountDeleteDialog,
+    AccountUncounted,
     AccountMobileRows,
     AccountFormDialog,
     LucideEllipsis,
@@ -73,8 +74,6 @@ export class AccountListPage {
   protected readonly totalEur = this.#store.totalEur;
   protected readonly excludedTotal = computed(() => excludedTotal(this.#store.excluded()));
   protected readonly linesLabel = linesLabel;
-  protected readonly uncountedCaptions = uncountedCaptions;
-  protected readonly uncountedLink = uncountedLink;
   protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
   protected readonly cardPadding = computed(

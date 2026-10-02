@@ -64,20 +64,7 @@
                   <span class="text-label text-(--muted-foreground)">
                     {{ linesLabel(account) | transloco: { count: account.lineCount } }}
                   </span>
-                  @let captions = uncountedCaptions(account);
-                  @if (captions.length > 0) {
-                    @let link = uncountedLink(account);
-                    <a
-                      class="text-caption flex flex-col rounded-sm text-right font-medium text-(--stale) hover:underline hover:underline-offset-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring)"
-                      data-testid="account-uncounted"
-                      [queryParams]="link.queryParams"
-                      [routerLink]="link.commands"
-                    >
-                      @for (caption of captions; track caption.key) {
-                        <span>{{ caption.key | transloco: caption }}</span>
-                      }
-                    </a>
-                  }
+                  <app-account-uncounted [account]="account" />
                 </div>
               </td>
               <td numeric uiTd>
