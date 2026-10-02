@@ -15,3 +15,7 @@ globalThis.ResizeObserver ??= class {
   unobserve = (): undefined => undefined;
   disconnect = (): undefined => undefined;
 };
+
+Element.prototype.animate ??= function (): Animation {
+  return { cancel: (): undefined => undefined } as unknown as Animation;
+};

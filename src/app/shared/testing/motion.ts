@@ -6,15 +6,18 @@ export type MotionRecord = {
 };
 
 export const recordMotion = (): MotionRecord => {
+  const original = Object.getOwnPropertyDescriptor(Element.prototype, 'animate')!;
   const record: MotionRecord = {
     highlighted: [],
-    restore: () => Reflect.deleteProperty(Element.prototype, 'animate'),
+    restore: () => Object.defineProperty(Element.prototype, 'animate', original),
   };
 
   Object.defineProperty(Element.prototype, 'animate', {
     configurable: true,
-    value: vi.fn(function (this: Element) {
-      record.highlighted.push(this);
+    value: vi.fn(function (this: Element, keyframes: Keyframe[]) {
+      if (keyframes.some((keyframe) => 'backgroundColor' in keyframe)) {
+        record.highlighted.push(this);
+      }
 
       return { cancel: vi.fn() };
     }),

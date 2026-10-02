@@ -319,20 +319,29 @@ describe('HoldingListPage', () => {
   });
 
   it('switches to the short placeholder below the desktop breakpoint', async () => {
-    const listeners: ((event: { matches: boolean }) => void)[] = [];
-    const query = {
-      matches: false,
-      addEventListener: (_: string, callback: (event: { matches: boolean }) => void) => listeners.push(callback),
-      removeEventListener: vi.fn(),
-    };
-    vi.stubGlobal('matchMedia', () => query);
+    const queries = new Map<string, { matches: boolean; listeners: ((event: { matches: boolean }) => void)[] }>();
+    vi.stubGlobal('matchMedia', (media: string) => {
+      const query = queries.get(media) ?? { matches: false, listeners: [] };
+
+      queries.set(media, query);
+
+      return {
+        get matches() {
+          return query.matches;
+        },
+        addEventListener: (_: string, callback: (event: { matches: boolean }) => void) =>
+          query.listeners.push(callback),
+        removeEventListener: vi.fn(),
+      };
+    });
     await renderPage();
     await screen.findAllByText('Esalia');
 
     expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholderShort');
 
-    query.matches = true;
-    listeners.forEach((listener) => listener({ matches: true }));
+    const desktop = queries.get('(min-width: 1024px)')!;
+    desktop.matches = true;
+    desktop.listeners.forEach((listener) => listener({ matches: true }));
 
     await vi.waitFor(() =>
       expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholder'),

@@ -285,6 +285,7 @@ describe('HoldingListPage class filter', () => {
     const scrolled: Element[] = [];
     const animated: Element[] = [];
     const order: string[] = [];
+    const animate = Object.getOwnPropertyDescriptor(Element.prototype, 'animate')!;
 
     beforeEach(() => {
       scrolled.length = 0;
@@ -311,7 +312,7 @@ describe('HoldingListPage class filter', () => {
 
     afterEach(() => {
       Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
-      Reflect.deleteProperty(Element.prototype, 'animate');
+      Object.defineProperty(Element.prototype, 'animate', animate);
     });
 
     it('should wait for the router to place the page before landing', async () => {
@@ -363,12 +364,13 @@ describe('HoldingListPage class filter', () => {
 
     it('should ignore a ?compte= that matches no account: no scroll, no focus, no highlight', async () => {
       await open('/?compte=nope');
-      const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
+      await screen.findAllByRole('heading', { name: 'Esalia' });
       routerScrolls();
       TestBed.tick();
       await TestBed.inject(ApplicationRef).whenStable();
 
-      expect(headings.length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('heading', { name: 'Esalia' }).length).toBeGreaterThan(0);
+      expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
       expect(scrolled).toEqual([]);
       expect(animated).toEqual([]);
       expect(document.activeElement).toBe(document.body);
