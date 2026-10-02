@@ -25,7 +25,7 @@
             size="dense"
             type="button"
             ui-row
-            [busy]="busy()"
+            [busy]="busyKey() === result.instrument.id"
             [unavailable]="result.foreignCurrency !== undefined"
             (click)="pickedCatalog.emit(result.instrument)"
           >
@@ -86,7 +86,7 @@
           @if (candidates().length > 0) {
             @for (candidate of candidates(); track candidate.sourceRef) {
               <app-holding-add-candidate
-                [busy]="busy()"
+                [busy]="busyKey() === candidate.sourceRef"
                 [candidate]="candidate"
                 [sub]="candidateSub(candidate)"
                 (picked)="pickedOnline.emit($event)"

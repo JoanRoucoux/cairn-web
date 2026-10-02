@@ -8,6 +8,7 @@ import {
   inject,
   input,
   output,
+  signal,
   untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -81,6 +82,8 @@ export class HoldingAddDialog {
   protected readonly instrumentError = this.#store.instrumentError;
   protected readonly duplicate = this.#store.duplicate;
   protected readonly replacing = computed(() => this.replaceHoldingId() !== null);
+  readonly #replacedWith = signal<string | null>(null);
+  protected readonly replacingKey = computed(() => (this.submitting() ? this.#replacedWith() : null));
 
   readonly #collator = new Intl.Collator(inject(LOCALE_ID), { sensitivity: 'base', numeric: true });
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -205,6 +208,7 @@ export class HoldingAddDialog {
 
   protected pickCatalog(instrument: InstrumentResponse): void {
     if (this.replacing()) {
+      this.#replacedWith.set(instrument.id);
       void this.replace({ kind: 'catalog', instrument });
     } else {
       this.#store.pickCatalog(instrument);
@@ -213,6 +217,7 @@ export class HoldingAddDialog {
 
   protected pickOnline(candidate: InstrumentCandidateResponse): void {
     if (this.replacing()) {
+      this.#replacedWith.set(candidate.sourceRef);
       void this.replace({ kind: 'online', candidate });
     } else {
       this.#store.pickOnline(candidate);

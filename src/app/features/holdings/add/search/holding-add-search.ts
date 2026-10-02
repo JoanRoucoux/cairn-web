@@ -52,7 +52,7 @@ export class HoldingAddSearch {
   readonly onlineError = input.required<boolean>();
   readonly onlineSearched = input.required<boolean>();
   readonly replacing = input(false, { transform: booleanAttribute });
-  readonly busy = input(false, { transform: booleanAttribute });
+  readonly busyKey = input<string | null>(null);
 
   readonly queryInput = output<Event>();
   readonly pickedCatalog = output<InstrumentResponse>();

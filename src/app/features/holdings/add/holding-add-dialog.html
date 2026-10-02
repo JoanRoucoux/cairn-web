@@ -29,7 +29,7 @@
     <div class="flex flex-col gap-4">
       @if (!picked()) {
         <app-holding-add-search
-          [busy]="submitting()"
+          [busyKey]="replacingKey()"
           [candidates]="candidates()"
           [catalogResults]="catalogResults()"
           [onlineError]="onlineError()"

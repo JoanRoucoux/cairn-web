@@ -200,6 +200,8 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
       await user.click(rows[1]!);
 
       const create = await vi.waitFor(() => httpTesting.expectOne('/api/instruments'));
+      await vi.waitFor(() => expect(rows[1]).toHaveAttribute('aria-busy', 'true'));
+      expect(rows[0]).not.toHaveAttribute('aria-busy', 'true');
       expect(create.request.body).toMatchObject({ currency: 'EUR', sourceRef: 'IWDA.AS' });
       create.flush({ id: 'i9' });
       const move = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/instrument'));
@@ -217,6 +219,9 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
       await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
 
       const move = await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/instrument'));
+      await vi.waitFor(() =>
+        expect(screen.getByTestId('holding-add-catalog-candidate')).toHaveAttribute('aria-busy', 'true'),
+      );
       expect(move.request.body).toEqual({ instrumentId: 'i1' });
       move.flush({ id: 'h1' });
       await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h1' }));
