@@ -66,7 +66,7 @@ describe('AccountDeleteDialog', () => {
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
 
-    screen.getByRole('alertdialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('alertdialog') as HTMLDialogElement).close();
 
     expect(dismissed).toHaveBeenCalled();
   });

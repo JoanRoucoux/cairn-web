@@ -141,7 +141,7 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() =>
       httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
     );
-    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('dialog') as HTMLDialogElement).close();
 
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
   });
@@ -276,7 +276,7 @@ describe('HoldingListPage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
 
-    expect(fixture.nativeElement.querySelector('ui-skeleton')).toBeInTheDocument();
+    await vi.waitFor(() => expect(fixture.nativeElement.querySelector('ui-skeleton')).toBeInTheDocument());
     httpTesting.expectOne('/api/holdings').flush(holdings);
     httpTesting.expectOne('/api/accounts').flush(accounts);
   });
@@ -298,10 +298,10 @@ describe('HoldingListPage', () => {
   });
 
   it('switches to the short placeholder below the desktop breakpoint', async () => {
-    let listener: () => void = () => undefined;
+    const listeners: ((event: { matches: boolean }) => void)[] = [];
     const query = {
       matches: false,
-      addEventListener: (_: string, callback: () => void) => (listener = callback),
+      addEventListener: (_: string, callback: (event: { matches: boolean }) => void) => listeners.push(callback),
       removeEventListener: vi.fn(),
     };
     vi.stubGlobal('matchMedia', () => query);
@@ -311,7 +311,7 @@ describe('HoldingListPage', () => {
     expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholderShort');
 
     query.matches = true;
-    listener();
+    listeners.forEach((listener) => listener({ matches: true }));
 
     await vi.waitFor(() =>
       expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholder'),

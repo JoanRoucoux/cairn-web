@@ -272,7 +272,7 @@ describe('HoldingSellDialog', () => {
   it('emits dismissed on cancel via the native dialog close', async () => {
     await renderDialog();
 
-    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('dialog') as HTMLDialogElement).close();
 
     expect(dismissed).toHaveBeenCalled();
   });

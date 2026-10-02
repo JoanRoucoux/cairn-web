@@ -278,13 +278,13 @@ describe('HoldingListPage class filter', () => {
     expect(await screen.findByText('Nothing matches "zzz"')).toBeInTheDocument();
   });
 
+  const routerScrolls = (): void =>
+    (TestBed.inject(Router).events as Subject<Event>).next(new Scroll(new NavigationEnd(1, '/', '/'), null, null));
+
   describe('arriving on ?compte=', () => {
     const scrolled: Element[] = [];
     const animated: Element[] = [];
     const order: string[] = [];
-
-    const routerScrolls = (): void =>
-      (TestBed.inject(Router).events as Subject<Event>).next(new Scroll(new NavigationEnd(1, '/', '/'), null, null));
 
     beforeEach(() => {
       scrolled.length = 0;
@@ -351,8 +351,11 @@ describe('HoldingListPage class filter', () => {
 
   it('should ignore a ?compte= that matches no account', async () => {
     await open('/?compte=nope');
+    const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
+    routerScrolls();
+    TestBed.tick();
 
-    expect((await screen.findAllByRole('heading', { name: 'Esalia' })).length).toBeGreaterThan(0);
+    expect(headings.length).toBeGreaterThan(0);
     expect(within(document.body).queryByRole('alert')).not.toBeInTheDocument();
   });
 });
