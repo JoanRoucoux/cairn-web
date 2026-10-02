@@ -1,6 +1,8 @@
 import { Component, LOCALE_ID, input, output, provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
+import { UiFlipItem } from '@joanroucoux/cairn-ui';
 import { render, screen } from '@testing-library/angular';
 
 import { type MotionRecord, recordMotion } from '@shared/testing/motion';
@@ -65,6 +67,13 @@ const group = {
   holdings: [holding],
 } as unknown as AccountGroup;
 
+const savings: Partial<AccountGroup> = {
+  accountType: 'SAVINGS',
+  holdings: [],
+  lineCount: 0,
+  balanceAt: '2026-09-12T08:00:00Z',
+};
+
 const renderGroup = (
   overrides: Partial<AccountGroup> = {},
   compact = false,
@@ -105,5 +114,37 @@ describe('HoldingAccountGroup after a change', () => {
 
     expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
     expect(motion.highlighted).toEqual([]);
+  });
+
+  it('should highlight the balance row of a savings account whose balance just changed', async () => {
+    await renderGroup(savings, false, undefined, { id: 'a1', at: 1 });
+
+    await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+    expect(motion.highlighted.every((cell) => cell.closest('tr')?.getAttribute('data-testid') === 'cash-row')).toBe(
+      true,
+    );
+    expect(screen.getByTestId('cash-row')).toHaveTextContent('holdings.balance.line');
+  });
+});
+
+describe('HoldingAccountGroup in a sliding list', () => {
+  const flipItems = (fixture: Awaited<ReturnType<typeof renderGroup>>['fixture']): HTMLElement[] =>
+    fixture.debugElement.queryAll(By.directive(UiFlipItem)).map((item) => item.nativeElement as HTMLElement);
+
+  it('should let the band and the balance row of a savings account slide with the other groups', async () => {
+    const { fixture } = await renderGroup(savings);
+
+    expect(flipItems(fixture)).toEqual([
+      screen.getByRole('heading', { name: 'Esalia' }).closest('tr'),
+      screen.getByTestId('cash-row'),
+    ]);
+  });
+
+  it('should let a line quoted in another currency slide like the other lines', async () => {
+    const { fixture } = await renderGroup({
+      holdings: [{ ...holding, priceCurrency: 'USD', marketValueEur: null }] as AccountGroup['holdings'],
+    });
+
+    expect(flipItems(fixture)).toContain(screen.getByTestId('holding-row'));
   });
 });

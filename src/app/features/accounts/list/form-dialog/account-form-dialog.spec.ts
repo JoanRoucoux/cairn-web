@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -175,20 +176,23 @@ describe('AccountFormDialog', () => {
     expect(savedForm).not.toHaveBeenCalled();
   });
 
-  it('should show a field error on the envelope, not a generic failure, on a 422', async () => {
+  it('should keep the dialog open with a field error on the envelope, and no toast, on a 422', async () => {
     const user = userEvent.setup();
-    await renderDialog();
+    await renderDialog({ id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: '' });
 
-    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
-    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.SAVINGS' }));
     await user.click(screen.getByTestId('account-form-submit'));
 
     await vi.waitFor(() =>
-      httpTesting.expectOne('/api/accounts').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
+      httpTesting.expectOne('/api/accounts/a1').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
     );
 
     expect(await screen.findByText('accounts.form.savingsConflict')).toBeInTheDocument();
     expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveAttribute('open');
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
+    expect(savedForm).not.toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('should clear the envelope error once another type is chosen', async () => {

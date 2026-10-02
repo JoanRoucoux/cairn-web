@@ -1,6 +1,8 @@
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
+import { UiFlipItem } from '@joanroucoux/cairn-ui';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -208,6 +210,35 @@ describe('HoldingAccountCard', () => {
 
       expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
       expect(motion.highlighted).toEqual([]);
+    });
+
+    it('should highlight the balance row of a savings account whose balance just changed', async () => {
+      await renderCard(
+        { accountType: 'SAVINGS', holdings: [], lineCount: 0, balanceAt: '2026-09-12T08:00:00Z' },
+        { id: 'a1', at: 1 },
+      );
+
+      await vi.waitFor(() => expect(motion.highlighted).toEqual([screen.getByTestId('edit-cash-mobile')]));
+      expect(screen.getByTestId('edit-cash-mobile')).toHaveTextContent('holdings.balance.line');
+    });
+  });
+
+  describe('in a sliding list', () => {
+    const flipItems = (fixture: Awaited<ReturnType<typeof renderCard>>['fixture']): HTMLElement[] =>
+      fixture.debugElement.queryAll(By.directive(UiFlipItem)).map((item) => item.nativeElement as HTMLElement);
+
+    it('should let the balance row of a savings account slide', async () => {
+      const { fixture } = await renderCard({ accountType: 'SAVINGS', holdings: [], lineCount: 0 });
+
+      expect(flipItems(fixture)).toEqual([screen.getByTestId('edit-cash-mobile')]);
+    });
+
+    it('should let a line quoted in another currency slide like the other lines', async () => {
+      const { fixture } = await renderCard({
+        holdings: [{ ...holding, priceCurrency: 'USD', marketValueEur: null }] as AccountGroup['holdings'],
+      });
+
+      expect(flipItems(fixture)).toContain(screen.getByTestId('holding-row-mobile'));
     });
   });
 });
