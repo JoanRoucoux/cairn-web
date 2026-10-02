@@ -18,6 +18,41 @@ test.describe('accounts', () => {
     await expect(row).toContainText('holdings');
   });
 
+  test('values an account by its priced lines and names the lines it leaves out, linking to the account', async ({
+    page,
+  }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    const row = accounts.rowFor('PEA Boursorama');
+    await expect(row).not.toContainText('—');
+    const caption = row.getByTestId('account-uncounted');
+    await expect(caption).toContainText('1 line with no quote, not counted');
+    await expect(caption).toContainText('1 line outside the euro, not counted');
+    await expect(caption).toHaveAttribute('href', /\/holdings\?compte=/);
+    await expect(page.getByTestId('accounts-summary-excluded')).toHaveText(/excluding 2 lines/);
+    await expect(page.getByTestId('accounts-summary-excluded-mobile')).toBeHidden();
+  });
+
+  test('says what the total leaves out on its own line on iPhone, and names the lines in the row', async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await mockApi(page);
+    await page.goto('/accounts');
+
+    await expect(page.getByTestId('accounts-summary-excluded-mobile')).toHaveText('Excluding 2 lines');
+    await expect(page.getByTestId('accounts-summary-excluded')).toBeHidden();
+    const row = page.getByTestId('account-row-mobile').filter({ hasText: 'PEA Boursorama' });
+    await expect(row.getByTestId('account-uncounted-mobile')).toHaveText([
+      '1 line with no quote, not counted',
+      '1 line outside the euro, not counted',
+    ]);
+
+    await context.close();
+  });
+
   test('counts zero lines for an account holding only its EUR cash balance, while its value still shows it', async ({
     page,
   }) => {

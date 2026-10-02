@@ -19,6 +19,13 @@ test.describe('allocation', () => {
     await expect(allocation.donuts).toHaveCount(2);
   });
 
+  test('says under the total how many lines it leaves out', async ({ page }) => {
+    const allocation = new AllocationPageObject(page);
+    await allocation.goto();
+
+    await expect(page.getByTestId('allocation-excluded')).toHaveText('Excluding 2 lines');
+  });
+
   test('shows exactly six account rows with no Others slice', async ({ page }) => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();

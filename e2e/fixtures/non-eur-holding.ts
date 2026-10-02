@@ -1,0 +1,16 @@
+export const buildUsdHolding = <T extends object>(base: T): T & Record<string, unknown> => ({
+  ...base,
+  id: '99999999-9999-9999-9999-999999999999',
+  instrumentId: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+  instrumentName: 'Nasdaq 100 ETF',
+  isin: 'US46090E1038',
+  quantity: 10,
+  averageCost: 400,
+  price: 480.1,
+  priceCurrency: 'USD',
+  marketValueEur: null,
+  unrealizedGainEur: null,
+  unrealizedGainRatio: null,
+  dayChangeEur: null,
+  dayChangeRatio: null,
+});

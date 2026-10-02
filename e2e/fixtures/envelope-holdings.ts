@@ -6,6 +6,7 @@ const BASE = {
   accountCash: false,
   priceCurrency: 'EUR',
   priceAsOf: '2026-08-27T18:00:00Z',
+  updatedAt: '2026-08-27T18:00:00Z',
   priceSource: 'YAHOO',
   stale: false,
   assetClass: 'ETF',

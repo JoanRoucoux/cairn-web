@@ -4,6 +4,7 @@ import { buildAccountCrudHandlers } from './account-crud';
 import { buildAllocationFixtures } from './allocation';
 import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdings';
 import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstrument } from './instruments';
+import { buildUsdHolding } from './non-eur-holding';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
 import { buyHolding, resolveInstrument, sellHolding } from './trading';
@@ -29,6 +30,7 @@ const holding = {
   price: 410.2,
   priceCurrency: 'EUR',
   priceAsOf: '2026-08-27T18:00:00Z',
+  updatedAt: '2026-08-27T18:00:00Z',
   priceSource: 'YAHOO',
   stale: false,
   marketValueEur: 83_277.6,
@@ -89,7 +91,9 @@ const cashHolding = {
   dayChangeRatio: 0,
 };
 
-const holdings = [holding, staleHolding, unvaluedHolding, cashHolding, ...EXTRA_HOLDINGS];
+const usdHolding = buildUsdHolding(holding);
+
+const holdings = [holding, staleHolding, unvaluedHolding, usdHolding, cashHolding, ...EXTRA_HOLDINGS];
 
 const account = {
   id: holding.accountId,
@@ -122,6 +126,7 @@ const portfolio = {
   unrealizedGainRatio: unrealizedGainEur / (totalEur - unrealizedGainEur),
   staleCount: 1,
   unvaluedCount: 1,
+  nonEurCount: 1,
   generatedAt: '2026-08-27T18:00:00Z',
   byAssetClass: [
     { label: 'ETF', valueEur: etfEur, share: etfEur / totalEur },
