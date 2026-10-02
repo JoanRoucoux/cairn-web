@@ -1,0 +1,30 @@
+@let unvalued = unvaluedMeta(group());
+@let nonEur = nonEurMeta(group());
+@let count = groupCount(group());
+@if (group().filtered; as filtered) {
+  {{
+    'holdings.filteredMeta'
+      | transloco
+        : {
+            total: accountTotal(),
+            lines: filteredCount(filtered.rowCount).key | transloco: filteredCount(filtered.rowCount),
+          }
+  }}
+} @else {
+  {{ 'enums.accountType.' + group().accountType | transloco }}
+  @if (group().institution) {
+    &middot; {{ group().institution }}
+  }
+  @if (count) {
+    &middot; {{ count.key | transloco: { count: count.count } }}
+  }
+  @if (savingsDate()) {
+    &middot; {{ 'holdings.balanceMeta' | transloco: { date: savingsDate() | shortDate } }}
+  }
+  @if (unvalued) {
+    &middot; {{ unvalued.key | transloco: unvalued }}
+  }
+  @if (nonEur) {
+    &middot; {{ nonEur.key | transloco: nonEur }}
+  }
+}

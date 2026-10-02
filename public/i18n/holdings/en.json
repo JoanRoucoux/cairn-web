@@ -10,8 +10,13 @@
   "searchPlaceholderShort": "Search a holding",
   "lineCount_one": "{{count}} holding",
   "lineCount_other": "{{count}} holdings",
-  "bookletCount_one": "{{count}} savings book",
-  "bookletCount_other": "{{count}} savings books",
+  "balanceMeta": "balance as of {{date}}",
+  "balance": {
+    "line": "Balance",
+    "editRow": "Edit the balance of {{name}}",
+    "title": "Balance of {{name}}",
+    "entered": "Entered on {{date}}"
+  },
   "uncounted": {
     "noQuote_one": "{{count}} with no quote, not counted",
     "noQuote_other": "{{count}} with no quote, not counted",

@@ -20,7 +20,7 @@ export type AccountGroup = {
   cashEur: number;
   showCash: boolean;
   lineCount: number;
-  bookletCount: number;
+  balanceAt: string | null;
   unvaluedCount: number;
   nonEurCount: number;
   holdings: HoldingResponse[];
@@ -66,6 +66,8 @@ export class HoldingListStore {
 
   readonly addParam = computed(() => this.#queryParamMap()?.get('add') ?? null);
 
+  readonly balanceParam = computed(() => this.#queryParamMap()?.get('balance') ?? null);
+
   readonly accountParam = computed(() => this.#queryParamMap()?.get('compte') ?? null);
 
   readonly assetClass = linkedSignal<AssetClass | null>(
@@ -106,7 +108,7 @@ export class HoldingListStore {
   readonly #allHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
 
   readonly #cashByAccount = computed(() => {
-    const cash = new Map<string, { accountName: string; accountType: string; amount: number }>();
+    const cash = new Map<string, { accountName: string; accountType: string; amount: number; updatedAt: string }>();
 
     for (const holding of this.#allHoldings()) {
       if (holding.accountCash) {
@@ -114,6 +116,7 @@ export class HoldingListStore {
           accountName: holding.accountName,
           accountType: holding.accountType,
           amount: holding.quantity,
+          updatedAt: holding.updatedAt,
         });
       }
     }
@@ -133,9 +136,9 @@ export class HoldingListStore {
       institution: this.#institutionByAccount().get(accountId) ?? '',
       valueEur: cashByAccount.get(accountId)?.amount ?? 0,
       cashEur: cashByAccount.get(accountId)?.amount ?? 0,
-      showCash: accountType !== 'SAVINGS' || cashByAccount.has(accountId),
+      showCash: true,
+      balanceAt: cashByAccount.get(accountId)?.updatedAt ?? null,
       lineCount: 0,
-      bookletCount: 0,
       unvaluedCount: 0,
       nonEurCount: 0,
       holdings: [],
@@ -148,11 +151,7 @@ export class HoldingListStore {
 
       group.valueEur += holding.marketValueEur ?? 0;
 
-      if (isBooklet(holding)) {
-        group.bookletCount += 1;
-      } else {
-        group.lineCount += 1;
-      }
+      group.lineCount += 1;
 
       group.holdings.push(holding);
       byAccount.set(holding.accountId, group);
@@ -161,6 +160,12 @@ export class HoldingListStore {
     for (const [accountId, info] of cashByAccount) {
       if (!byAccount.has(accountId)) {
         byAccount.set(accountId, newGroup(accountId, info.accountName, info.accountType));
+      }
+    }
+
+    for (const account of this.#accountList()) {
+      if (account.type === 'SAVINGS' && !byAccount.has(account.id)) {
+        byAccount.set(account.id, newGroup(account.id, account.name, account.type));
       }
     }
 
@@ -177,10 +182,8 @@ export class HoldingListStore {
     let total = 0;
 
     for (const group of this.#allGroups()) {
-      const cashRow = group.showCash ? 1 : 0;
-
-      total += group.holdings.length + cashRow;
-      byClass.CASH += cashRow;
+      total += group.holdings.length + 1;
+      byClass.CASH += 1;
 
       for (const holding of group.holdings) {
         byClass[holding.assetClass] += 1;

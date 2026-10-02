@@ -56,7 +56,7 @@ const group = {
   cashEur: 0,
   showCash: true,
   lineCount: 1,
-  bookletCount: 0,
+  balanceAt: null,
   holdings: [holding],
 } as unknown as AccountGroup;
 
@@ -103,10 +103,51 @@ describe('HoldingAccountGroup', () => {
     expect(await screen.findByText(/enums.accountType.PEE/)).not.toHaveTextContent('uncounted');
   });
 
-  it('should count booklets, not lines, for a savings account', async () => {
-    await renderGroup({ accountType: 'SAVINGS', lineCount: 0, bookletCount: 2 });
+  describe('a savings account', () => {
+    const savings = { accountType: 'SAVINGS', institution: 'Fortuneo', lineCount: 0, holdings: [] };
 
-    expect(await screen.findByText(/holdings\.bookletCount_other/)).toBeInTheDocument();
+    it('should name its balance date in the meta, never a line count', async () => {
+      await renderGroup({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
+
+      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(
+        'enums.accountType.SAVINGS · Fortuneo · holdings.balanceMeta',
+      );
+      expect(screen.getByText(/enums.accountType.SAVINGS/)).not.toHaveTextContent('lineCount');
+    });
+
+    it('should say neither a date nor a count while the balance was never set', async () => {
+      await renderGroup({ ...savings, institution: '' });
+
+      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(/^s*enums.accountType.SAVINGSs*$/);
+    });
+
+    it('should show one balance row dated by the entry, editable like the cash row', async () => {
+      const user = userEvent.setup();
+      const { fixture } = await renderGroup({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
+      const emitted = vi.fn();
+      fixture.componentInstance.editCash.subscribe(emitted);
+
+      const row = await screen.findByTestId('cash-row');
+
+      expect(row).toHaveTextContent('holdings.balance.line');
+      expect(row).toHaveTextContent('holdings.balance.entered');
+      expect(row).not.toHaveTextContent('holdings.cash.entered');
+      expect(screen.queryAllByTestId('holding-row')).toHaveLength(0);
+
+      await user.click(screen.getByTestId('edit-cash'));
+
+      expect(emitted).toHaveBeenCalledWith('a1');
+    });
+
+    it('should show the balance row with no date while the balance was never set', async () => {
+      await renderGroup(savings);
+
+      const row = await screen.findByTestId('cash-row');
+
+      expect(row).toHaveTextContent('holdings.balance.line');
+      expect(row).not.toHaveTextContent('holdings.balance.entered');
+      expect(row).not.toHaveTextContent('holdings.cash.entered');
+    });
   });
 
   it('should show the account total in the band', async () => {

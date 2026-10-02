@@ -1,7 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
 import type {
@@ -33,7 +33,10 @@ export class HoldingAddDialogStore {
   #holdingsApiClient = inject(HoldingService);
 
   readonly accounts = rxResource({
-    stream: () => this.#accountsApiClient.listAccounts(),
+    stream: () =>
+      this.#accountsApiClient
+        .listAccounts()
+        .pipe(map((accounts) => accounts.filter((account) => account.type !== 'SAVINGS'))),
     defaultValue: [],
   });
 

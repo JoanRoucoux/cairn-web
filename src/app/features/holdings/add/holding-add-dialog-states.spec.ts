@@ -88,6 +88,15 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     );
   });
 
+  it('leaves savings accounts out of the accounts a line can be added to', async () => {
+    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    await renderDialog([], [livret, ...accounts]);
+
+    expect(await screen.findByRole('option', { name: /Saxo Investor/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Livret A/ })).not.toBeInTheDocument();
+    expect((screen.getByTestId('holding-add-account') as HTMLSelectElement).value).toBe('a1');
+  });
+
   it('preselects no account when there is none to choose', async () => {
     await renderDialog([], []);
 

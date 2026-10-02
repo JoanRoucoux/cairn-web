@@ -201,14 +201,14 @@ describe('HoldingListStore class filter', () => {
     expect(store.classSummary()).toEqual({ valueEur: 0, share: 0, accounts: 1 });
   });
 
-  it('should not count a cash row for a savings account that has no balance', async () => {
+  it('should still count the balance row of a savings account that has none set', async () => {
     await open(
       {},
       holdings.filter((holding) => holding.id !== 'cash-a3'),
     );
 
-    expect(store.classCounts().total).toBe(8);
-    expect(store.classCounts().byClass.CASH).toBe(3);
+    expect(store.classCounts().total).toBe(9);
+    expect(store.classCounts().byClass.CASH).toBe(4);
   });
 
   it('should give a share of zero when nothing is valued', async () => {

@@ -2,12 +2,12 @@
   data-testid="holding-cash-dialog"
   width="md"
   [closeLabel]="'dialog.close' | transloco"
-  [heading]="'holdings.cash.title' | transloco: { name: accountName() }"
+  [heading]="(savings() ? 'holdings.balance.title' : 'holdings.cash.title') | transloco: { name: accountName() }"
   [open]="open()"
   (dismissed)="dismiss()"
 >
   <ui-field
-    [hint]="form.amount().value() === 0 ? ('holdings.cash.zeroHint' | transloco) : ''"
+    [hint]="!savings() && form.amount().value() === 0 ? ('holdings.cash.zeroHint' | transloco) : ''"
     [label]="'holdings.cash.amount' | transloco"
   >
     <input data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />

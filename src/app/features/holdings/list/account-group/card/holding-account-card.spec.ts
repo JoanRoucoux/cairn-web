@@ -29,7 +29,7 @@ const group = {
   cashEur: 12,
   showCash: true,
   lineCount: 1,
-  bookletCount: 0,
+  balanceAt: null,
   holdings: [holding],
 } as unknown as AccountGroup;
 
@@ -121,5 +121,50 @@ describe('HoldingAccountCard', () => {
     await screen.findByTestId('holding-row-mobile');
 
     expect(screen.queryByTestId('edit-cash-mobile')).not.toBeInTheDocument();
+  });
+
+  describe('a savings account', () => {
+    const savings = { accountType: 'SAVINGS', institution: 'Fortuneo', lineCount: 0, holdings: [] };
+
+    it('should name its balance date in the meta, never a line count', async () => {
+      const { container } = await renderCard({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
+
+      expect(container.querySelector('header')).toHaveTextContent(
+        'enums.accountType.SAVINGS · Fortuneo · holdings.balanceMeta',
+      );
+      expect(container.querySelector('header')).not.toHaveTextContent('lineCount');
+    });
+
+    it('should say neither a date nor a count while the balance was never set', async () => {
+      const { container } = await renderCard({ ...savings, institution: '' });
+
+      expect(container.querySelector('app-holding-account-meta')).toHaveTextContent(/^s*enums.accountType.SAVINGSs*$/);
+    });
+
+    it('should show one dated balance row that emits when edited', async () => {
+      const user = userEvent.setup();
+      const { fixture } = await renderCard({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
+      const emitted = vi.fn();
+      fixture.componentInstance.editCash.subscribe(emitted);
+
+      const balance = await screen.findByTestId('edit-cash-mobile');
+
+      expect(balance).toHaveTextContent('holdings.balance.line');
+      expect(balance).toHaveTextContent('holdings.balance.entered');
+      expect(balance).not.toHaveTextContent('holdings.cash.entered');
+
+      await user.click(balance);
+
+      expect(emitted).toHaveBeenCalledWith('a1');
+    });
+
+    it('should show the balance row with no date while the balance was never set', async () => {
+      await renderCard(savings);
+
+      const balance = await screen.findByTestId('edit-cash-mobile');
+
+      expect(balance).toHaveTextContent('holdings.balance.line');
+      expect(balance).not.toHaveTextContent('holdings.balance.entered');
+    });
   });
 });

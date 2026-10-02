@@ -6,6 +6,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { focusInitial } from '@shared/dialog/focus-initial';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingCashStore } from './holding-cash-store';
 
 @Component({
@@ -16,10 +17,12 @@ import { HoldingCashStore } from './holding-cash-store';
 })
 export class HoldingCashDialog {
   #store = inject(HoldingCashStore);
+  #changes = inject(HoldingChanges);
 
   readonly accountId = input.required<string>();
   readonly accountName = input.required<string>();
   readonly balance = input.required<number>();
+  readonly savings = input(false);
   readonly saved = output<void>();
   readonly dismissed = output<void>();
 
@@ -50,6 +53,7 @@ export class HoldingCashDialog {
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.accountId())) {
       this.open.set(false);
+      this.#changes.touched(this.accountId());
       this.saved.emit();
     }
   }

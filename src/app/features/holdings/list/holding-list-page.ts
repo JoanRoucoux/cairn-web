@@ -166,6 +166,20 @@ export class HoldingListPage {
     });
 
     effect(() => {
+      const account = this.#store.balanceParam();
+
+      if (account) {
+        this.accountToEditCashFor.set(account);
+        void this.#router.navigate([], {
+          relativeTo: this.#route,
+          queryParams: { balance: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
+
+    effect(() => {
       const compact = this.compact();
       const selected = this.selectedHoldingId();
 
@@ -213,6 +227,5 @@ export class HoldingListPage {
 
   protected onCashSaved(): void {
     this.accountToEditCashFor.set(undefined);
-    this.holdings.reload();
   }
 }

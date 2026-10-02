@@ -237,28 +237,6 @@ describe('HoldingListStore', () => {
     expect(esalia?.cashEur).toBe(0);
   });
 
-  it('should not show a cash line for a savings account without a cash balance', async () => {
-    const booklet = {
-      ...holdings[0]!,
-      id: 'h8',
-      accountId: 'a4',
-      accountName: 'Fortuneo',
-      accountType: 'SAVINGS',
-      assetClass: 'CASH',
-      instrumentName: 'Livret A',
-    };
-    TestBed.tick();
-    httpTesting.expectOne('/api/holdings').flush([booklet]);
-    httpTesting
-      .expectOne('/api/accounts')
-      .flush([...accounts, { id: 'a4', name: 'Fortuneo', type: 'SAVINGS', institution: 'Fortuneo' }]);
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.groups()[0]!.showCash).toBe(false);
-    expect(store.groups()[0]!.bookletCount).toBe(1);
-    expect(store.groups()[0]!.lineCount).toBe(0);
-  });
-
   it('should leave unvalued lines out of the account subtotal', async () => {
     await load();
 
@@ -309,7 +287,7 @@ describe('HoldingListStore', () => {
     httpTesting.expectOne('/api/holdings').flush(holdings.slice(0, 2));
     await TestBed.inject(ApplicationRef).whenStable();
 
-    expect(store.groups()).toHaveLength(1);
+    expect(store.groups()).toHaveLength(2);
   });
 
   it('should reload the holdings when one is removed', async () => {
@@ -388,5 +366,6 @@ describe('HoldingListStore', () => {
     await load();
 
     expect(store.addParam()).toBeNull();
+    expect(store.balanceParam()).toBeNull();
   });
 });

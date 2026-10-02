@@ -146,6 +146,7 @@
     [accountId]="group.accountId"
     [accountName]="group.accountName"
     [balance]="group.cashEur"
+    [savings]="group.accountType === 'SAVINGS'"
     (dismissed)="accountToEditCashFor.set(undefined)"
     (saved)="onCashSaved()"
   />

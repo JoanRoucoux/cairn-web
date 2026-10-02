@@ -1,5 +1,8 @@
 @let unvalued = unvaluedMeta(group());
 @let nonEur = nonEurMeta(group());
+@let count = groupCount(group());
+@let savings = isSavings(group());
+@let cash = cashRowKeys(group());
 <tr group uiTr>
   <td
     size="lg"
@@ -15,9 +18,11 @@
                   filteredCount(group().filtered!.rowCount).key | transloco: filteredCount(group().filtered!.rowCount),
               })
         : ('enums.accountType.' + group().accountType | transloco) +
-          ' · ' +
-          (group().institution ? group().institution + ' · ' : '') +
-          (groupCount(group()).key | transloco: { count: groupCount(group()).count }) +
+          (group().institution ? ' · ' + group().institution : '') +
+          (count ? ' · ' + (count.key | transloco: { count: count.count }) : '') +
+          (savings && group().balanceAt
+            ? ' · ' + ('holdings.balanceMeta' | transloco: { date: group().balanceAt | shortDate })
+            : '') +
           (unvalued ? ' · ' + (unvalued.key | transloco: unvalued) : '') +
           (nonEur ? ' · ' + (nonEur.key | transloco: nonEur) : '')
     "
@@ -45,12 +50,14 @@
         data-testid="edit-cash"
         type="button"
         uiRowLink
-        [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        [attr.aria-label]="cash.editRow | transloco: { name: group().accountName }"
         (click)="editCash.emit(group().accountId)"
       >
-        {{ 'holdings.cash.line' | transloco }}
+        {{ cash.line | transloco }}
       </button>
-      <span uiCellSub>{{ 'holdings.cash.entered' | transloco }}</span>
+      @if (cash.entered; as entered) {
+        <span uiCellSub>{{ entered | transloco: { date: group().balanceAt | shortDate } }}</span>
+      }
     </td>
     @if (!compact()) {
       <td numeric secondary uiTd></td>

@@ -10,8 +10,13 @@
   "searchPlaceholderShort": "Rechercher une ligne",
   "lineCount_one": "{{count}} ligne",
   "lineCount_other": "{{count}} lignes",
-  "bookletCount_one": "{{count}} livret",
-  "bookletCount_other": "{{count}} livrets",
+  "balanceMeta": "solde au {{date}}",
+  "balance": {
+    "line": "Solde",
+    "editRow": "Modifier le solde de {{name}}",
+    "title": "Solde de {{name}}",
+    "entered": "Saisi le {{date}}"
+  },
   "uncounted": {
     "noQuote_one": "{{count}} sans cours, non comptée",
     "noQuote_other": "{{count}} sans cours, non comptées",

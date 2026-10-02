@@ -9,6 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../../holding-changes';
 import { HoldingCashDialog } from './holding-cash-dialog';
 
 describe('HoldingCashDialog', () => {
@@ -16,12 +17,13 @@ describe('HoldingCashDialog', () => {
   const saved = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (balance = 0): Promise<void> => {
+  const renderDialog = async (balance = 0, savings = false): Promise<void> => {
     await render(HoldingCashDialog, {
-      inputs: { accountId: 'account-1', accountName: 'Saxo Investor', balance },
+      inputs: { accountId: 'account-1', accountName: 'Saxo Investor', balance, savings },
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -80,6 +82,39 @@ describe('HoldingCashDialog', () => {
     await user.type(screen.getByTestId('holding-cash-amount'), '0');
 
     expect(await screen.findByText('holdings.cash.zeroHint')).toBeInTheDocument();
+  });
+
+  it('should title the dialog with the balance and drop the zero hint for a savings account', async () => {
+    const user = userEvent.setup();
+    await renderDialog(0, true);
+
+    await user.clear(screen.getByTestId('holding-cash-amount'));
+    await user.type(screen.getByTestId('holding-cash-amount'), '0');
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('holdings.balance.title');
+    expect(screen.queryByText('holdings.cash.zeroHint')).not.toBeInTheDocument();
+  });
+
+  it('should title the dialog with the cash of a securities account', async () => {
+    await renderDialog();
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('holdings.cash.title');
+  });
+
+  it('should report the change once the balance has been set', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    const changes = TestBed.inject(HoldingChanges);
+
+    await user.type(screen.getByTestId('holding-cash-amount'), '250');
+    await user.click(screen.getByTestId('holding-cash-submit'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/accounts/account-1/cash'))).flush(null, {
+      status: 204,
+      statusText: 'No Content',
+    });
+
+    await vi.waitFor(() => expect(changes.lastTouched()).toMatchObject({ id: 'account-1' }));
   });
 
   it('should emit saved once the balance has been set', async () => {
