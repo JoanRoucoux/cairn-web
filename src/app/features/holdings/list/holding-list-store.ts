@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, linkedSignal, signal, untracked } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
@@ -7,6 +7,8 @@ import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.sche
 import { HoldingService } from '@core/api-client/holding/holding.service';
 
 import { normalizeSearch } from '@shared/format/normalize-search';
+
+import { HoldingChanges } from '../holding-changes';
 
 export type AccountGroup = {
   accountId: string;
@@ -53,6 +55,7 @@ export class HoldingListStore {
   #holdingsApiClient = inject(HoldingService);
   #accountsApiClient = inject(AccountService);
   #route = inject(ActivatedRoute);
+  #changes = inject(HoldingChanges);
 
   readonly search = signal('');
 
@@ -75,6 +78,21 @@ export class HoldingListStore {
     stream: () => this.#accountsApiClient.listAccounts(),
     defaultValue: [],
   });
+
+  #changesSeen = false;
+
+  constructor() {
+    effect(() => {
+      this.#changes.lastTouched();
+      this.#changes.lastRemoved();
+
+      if (this.#changesSeen) {
+        untracked(() => this.holdings.reload());
+      }
+
+      this.#changesSeen = true;
+    });
+  }
 
   readonly #accountList = computed(() => (this.accounts.hasValue() ? this.accounts.value() : []));
 

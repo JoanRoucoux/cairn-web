@@ -183,9 +183,9 @@ describe('HoldingAddDialog', () => {
     await user.type(screen.getByTestId('holding-add-quantity'), '10');
     await user.click(screen.getByTestId('holding-add-submit'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 
-    await vi.waitFor(() => expect(saved).toHaveBeenCalled());
+    await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h9' }));
   });
 
   it('emits dismissed on the native dialog close', async () => {

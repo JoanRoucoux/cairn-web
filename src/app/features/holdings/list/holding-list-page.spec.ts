@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListPage } from './holding-list-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -56,6 +57,7 @@ describe('HoldingListPage', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute,
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -208,6 +210,7 @@ describe('HoldingListPage', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute: '/',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -263,6 +266,7 @@ describe('HoldingListPage', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute: '/',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -320,6 +324,7 @@ describe('HoldingListPage', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute: '/?add=a1',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

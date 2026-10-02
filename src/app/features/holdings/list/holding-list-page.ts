@@ -87,7 +87,7 @@ export class HoldingListPage {
       return 'error';
     }
 
-    return this.holdings.isLoading() ? 'loading' : 'ready';
+    return this.holdings.status() === 'loading' ? 'loading' : 'ready';
   });
 
   protected readonly chips = computed<FilterChipOption[]>(() => {

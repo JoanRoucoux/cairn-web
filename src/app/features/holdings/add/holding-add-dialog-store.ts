@@ -4,7 +4,12 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
-import type { AssetClass, InstrumentCandidateResponse, InstrumentResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  AssetClass,
+  HoldingResponse,
+  InstrumentCandidateResponse,
+  InstrumentResponse,
+} from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
@@ -191,9 +196,9 @@ export class HoldingAddDialogStore {
     this.#createdInstrumentId = undefined;
   }
 
-  async save(): Promise<boolean> {
+  async save(): Promise<HoldingResponse | null> {
     if (!this.valid()) {
-      return false;
+      return null;
     }
 
     const picked = this.picked() as PickedInstrument;
@@ -208,10 +213,10 @@ export class HoldingAddDialogStore {
       const instrumentId = await this.#instrumentIdFor(picked);
 
       if (instrumentId === undefined) {
-        return false;
+        return null;
       }
 
-      await firstValueFrom(
+      return await firstValueFrom(
         this.#holdingsApiClient.createHolding({
           accountId,
           instrumentId,
@@ -219,12 +224,10 @@ export class HoldingAddDialogStore {
           averageCost: this.averageCost(),
         }),
       );
-
-      return true;
     } catch {
       this.error.set(true);
 
-      return false;
+      return null;
     } finally {
       this.submitting.set(false);
     }

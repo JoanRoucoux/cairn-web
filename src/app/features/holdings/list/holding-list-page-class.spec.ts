@@ -13,6 +13,7 @@ import { map, timer } from 'rxjs';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListPage } from './holding-list-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -68,6 +69,7 @@ describe('HoldingListPage class filter', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute,
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

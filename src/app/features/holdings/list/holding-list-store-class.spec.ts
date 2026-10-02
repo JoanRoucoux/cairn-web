@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListStore } from './holding-list-store';
 
 const accountName: Record<string, string> = { a1: 'Saxo', a2: 'Esalia', a3: 'Livret A' };
@@ -57,6 +58,7 @@ describe('HoldingListStore class filter', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),

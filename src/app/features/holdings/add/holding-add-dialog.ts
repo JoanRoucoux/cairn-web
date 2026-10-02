@@ -18,6 +18,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import {
   AssetClass,
+  type HoldingResponse,
   type InstrumentCandidateResponse,
   type InstrumentResponse,
 } from '@core/api-client/cairnAPI.schemas';
@@ -41,7 +42,7 @@ export class HoldingAddDialog implements OnInit {
   #store = inject(HoldingAddDialogStore);
 
   readonly presetAccountId = input<string | null>(null);
-  readonly saved = output<void>();
+  readonly saved = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
   protected readonly open = signal(true);
@@ -217,9 +218,11 @@ export class HoldingAddDialog implements OnInit {
   }
 
   protected async confirm(): Promise<void> {
-    if (await this.#store.save()) {
+    const saved = await this.#store.save();
+
+    if (saved) {
       this.open.set(false);
-      this.saved.emit();
+      this.saved.emit(saved);
     }
   }
 }

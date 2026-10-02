@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListStore } from './holding-list-store';
 
 const holdings = [
@@ -105,6 +106,7 @@ describe('HoldingListStore', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -263,6 +265,36 @@ describe('HoldingListStore', () => {
     const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
 
     expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
+  });
+
+  it('should not reload on its own once loaded', async () => {
+    await load();
+    TestBed.tick();
+
+    httpTesting.expectNone('/api/holdings');
+  });
+
+  it('should reload the holdings when one is touched, keeping the groups meanwhile', async () => {
+    await load();
+
+    TestBed.inject(HoldingChanges).touched('h1');
+    TestBed.tick();
+
+    expect(store.holdings.status()).toBe('reloading');
+    expect(store.groups()).toHaveLength(3);
+    httpTesting.expectOne('/api/holdings').flush(holdings.slice(0, 2));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.groups()).toHaveLength(1);
+  });
+
+  it('should reload the holdings when one is removed', async () => {
+    await load();
+
+    TestBed.inject(HoldingChanges).removed('h1');
+    TestBed.tick();
+
+    httpTesting.expectOne('/api/holdings').flush(holdings);
   });
 
   it('should hold empty groups while loading', () => {

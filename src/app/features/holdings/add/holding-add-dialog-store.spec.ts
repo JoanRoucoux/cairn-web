@@ -128,7 +128,7 @@ describe('HoldingAddDialogStore', () => {
   it('never saves without a pick, an account and a positive quantity', async () => {
     await load();
 
-    await expect(store.save()).resolves.toBe(false);
+    await expect(store.save()).resolves.toBeNull();
     httpTesting.expectNone('/api/holdings');
   });
 
@@ -169,9 +169,9 @@ describe('HoldingAddDialogStore', () => {
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings'));
     expect(request.request.body).toEqual({ accountId: 'a1', instrumentId: 'i1', quantity: 10, averageCost: null });
-    request.flush({});
+    request.flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('creates the instrument then the holding for an online pick', async () => {
@@ -209,9 +209,9 @@ describe('HoldingAddDialogStore', () => {
       quantity: 10,
       averageCost: null,
     });
-    createHolding.flush({});
+    createHolding.flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('creates an online instrument with no ISIN when the title field was cleared', async () => {
@@ -233,9 +233,9 @@ describe('HoldingAddDialogStore', () => {
     const createInstrument = await vi.waitFor(() => httpTesting.expectOne('/api/instruments'));
     expect(createInstrument.request.body).toMatchObject({ isin: null });
     createInstrument.flush({ id: 'i9' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('creates a manually priced instrument when nothing was found', async () => {
@@ -258,9 +258,9 @@ describe('HoldingAddDialogStore', () => {
       sourceRef: null,
     });
     createInstrument.flush({ id: 'i10' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('retries only the holding when the instrument was already created', async () => {
@@ -278,12 +278,12 @@ describe('HoldingAddDialogStore', () => {
       status: 500,
       statusText: 'Server error',
     });
-    await expect(firstAttempt).resolves.toBe(false);
+    await expect(firstAttempt).resolves.toBeNull();
 
     const secondAttempt = store.save();
     httpTesting.expectNone('/api/instruments');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
-    await expect(secondAttempt).resolves.toBe(true);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
+    await expect(secondAttempt).resolves.toEqual({ id: 'h9' });
   });
 
   it('flags an instrument creation failure without ever calling the holding endpoint', async () => {
@@ -300,7 +300,7 @@ describe('HoldingAddDialogStore', () => {
       statusText: 'Server error',
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBeNull();
     expect(store.instrumentError()).toBe(true);
     httpTesting.expectNone('/api/holdings');
   });
@@ -315,7 +315,7 @@ describe('HoldingAddDialogStore', () => {
 
     const first = store.save();
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({ id: 'i10' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
     await first;
 
     store.unpick();
@@ -324,8 +324,8 @@ describe('HoldingAddDialogStore', () => {
 
     const second = store.save();
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush({ id: 'i11' }));
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
-    await expect(second).resolves.toBe(true);
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
+    await expect(second).resolves.toEqual({ id: 'h9' });
   });
 
   it('computes the value at the probe price', async () => {

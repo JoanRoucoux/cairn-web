@@ -10,6 +10,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListPage } from './holding-list-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -40,6 +41,7 @@ describe('HoldingListPage states', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute: '/',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -60,6 +62,23 @@ describe('HoldingListPage states', () => {
     expect(screen.getByTestId('holdings-loading-cards').children).toHaveLength(2);
     httpTesting.expectOne('/api/holdings').flush([]);
     httpTesting.expectOne('/api/accounts').flush(accounts);
+  });
+
+  it('keeps the rows on screen while a change reloads the list', async () => {
+    await renderPage();
+    httpTesting.expectOne('/api/holdings').flush([unpriced]);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await screen.findAllByText('Newly listed fund');
+
+    TestBed.inject(HoldingChanges).touched('h9');
+    TestBed.tick();
+    const reload = await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }));
+
+    expect(screen.queryByTestId('holdings-loading')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Newly listed fund').length).toBeGreaterThan(0);
+
+    reload.flush([{ ...unpriced, instrumentName: 'Renamed fund' }]);
+    expect((await screen.findAllByText('Renamed fund')).length).toBeGreaterThan(0);
   });
 
   it('shows the error block and retries only the holdings call', async () => {
