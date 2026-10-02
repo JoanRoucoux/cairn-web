@@ -17,6 +17,7 @@ import { PerformanceService } from '@core/api-client/performance/performance.ser
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
+import { isExcluded } from '@shared/format/excluded-lines';
 import { parisDateString } from '@shared/format/paris-date';
 
 type HistoryOrIntraday = HistoryResponse | IntradayHistoryResponse;
@@ -173,7 +174,10 @@ export class PortfolioStore {
   );
 
   readonly moversState = computed<AsyncState>(() =>
-    toAsyncState(this.holdings, (value) => !value.some((holding) => Boolean(holding.dayChangeRatio))),
+    toAsyncState(
+      this.holdings,
+      (value) => !value.some((holding) => Boolean(holding.dayChangeRatio) && !isExcluded(holding)),
+    ),
   );
 
   readonly allFailed = computed(
@@ -188,7 +192,7 @@ export class PortfolioStore {
     settledValue(this.holdings, [])
       .filter(
         (candidate): candidate is HoldingResponse & { dayChangeRatio: number } =>
-          candidate.dayChangeRatio !== null && candidate.dayChangeRatio !== undefined,
+          candidate.dayChangeRatio !== null && candidate.dayChangeRatio !== undefined && !isExcluded(candidate),
       )
       .sort((left, right) => Math.abs(right.dayChangeRatio) - Math.abs(left.dayChangeRatio))
       .slice(0, MOVER_COUNT),

@@ -23,32 +23,38 @@
           <ui-amount currency="EUR" numeric="proportional" [value]="portfolio.totalEur" />
         </span>
 
-        <div class="text-label mt-1 flex flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-6 lg:gap-y-1">
-          <div class="flex flex-col gap-0.5 lg:contents">
-            <span class="flex gap-1.5">
-              <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.dayChangeEur">
-                <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.dayChangeEur" />
-                <app-amount-separator />
-                {{ portfolio.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
-              </ui-delta>
-              <span class="text-(--muted-foreground)">{{ 'portfolio.total.today' | transloco }}</span>
-            </span>
+        <div
+          class="text-label mt-1 flex flex-col gap-0.5 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-6 lg:gap-y-1"
+        >
+          <span class="flex gap-1.5">
+            <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.dayChangeEur">
+              <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.dayChangeEur" />
+              <app-amount-separator />
+              {{ portfolio.dayChangeRatio | ratio: { signed: true, decimals: 2 } }}
+            </ui-delta>
+            <span class="text-(--muted-foreground)">{{ 'portfolio.total.today' | transloco }}</span>
+          </span>
 
-            <span class="flex gap-1.5">
-              <span class="text-(--muted-foreground)">{{ 'portfolio.total.unrealizedGain' | transloco }}</span>
-              <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.unrealizedGainEur">
-                <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.unrealizedGainEur" />
-                @if (portfolio.unrealizedGainRatio !== null && portfolio.unrealizedGainRatio !== undefined) {
-                  <app-amount-separator />
-                  {{ portfolio.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
-                }
-              </ui-delta>
+          @if (excluded(); as excluded) {
+            <span class="text-caption font-medium text-(--stale) lg:order-last" data-testid="total-excluded">
+              {{ excluded.key | transloco: excluded | upperFirst }}
             </span>
-          </div>
+          }
+
+          <span class="flex gap-1.5">
+            <span class="text-(--muted-foreground)">{{ 'portfolio.total.unrealizedGain' | transloco }}</span>
+            <ui-delta [unknownLabel]="'portfolio.unknown' | transloco" [value]="portfolio.unrealizedGainEur">
+              <ui-amount currency="EUR" signed whenMasked="hide" [value]="portfolio.unrealizedGainEur" />
+              @if (portfolio.unrealizedGainRatio !== null && portfolio.unrealizedGainRatio !== undefined) {
+                <app-amount-separator />
+                {{ portfolio.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}
+              }
+            </ui-delta>
+          </span>
 
           @if (portfolio.staleCount > 0) {
             <a
-              class="-mb-3 flex min-h-11 items-center gap-1 self-start rounded-sm font-medium text-(--stale) hover:underline hover:underline-offset-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) lg:mb-0 lg:min-h-0 lg:gap-0.5"
+              class="-mb-3 flex min-h-11 items-center gap-1 self-start rounded-sm font-medium text-(--stale) hover:underline hover:underline-offset-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--ring) max-lg:mt-0.5 lg:mb-0 lg:min-h-0 lg:gap-0.5"
               data-testid="stale-link"
               routerLink="/holdings"
             >

@@ -1,7 +1,14 @@
-@if (totalEur() !== undefined) {
-  <p class="text-label lg:text-body mb-4 px-1 text-(--muted-foreground) lg:px-0 lg:leading-[normal]">
-    {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="totalEur()!" />
-  </p>
+@if (summary(); as summary) {
+  <div class="mb-4 flex flex-col px-1 lg:px-0">
+    <p class="text-label lg:text-body text-(--muted-foreground) lg:leading-[normal]">
+      {{ 'portfolio.allocation.total' | transloco }} <ui-amount currency="EUR" [value]="summary.totalEur" />
+    </p>
+    @if (excludedTotal(summary); as excluded) {
+      <span class="text-caption font-medium text-(--stale)" data-testid="allocation-excluded">
+        {{ excluded.key | transloco: excluded | upperFirst }}
+      </span>
+    }
+  </div>
 }
 
 <div class="@container">
