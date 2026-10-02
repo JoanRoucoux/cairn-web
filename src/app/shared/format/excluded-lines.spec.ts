@@ -20,6 +20,17 @@ describe('excluded lines', () => {
     expect(isNonEur({ marketValueEur: 10, priceCurrency: 'USD' })).toBe(false);
   });
 
+  it('should follow the API: a line with no quote is unpriced whatever its instrument, only a non-EUR quote makes it non-EUR', () => {
+    expect(excludedCounts([{ marketValueEur: null, priceCurrency: null }])).toEqual({
+      unvaluedCount: 1,
+      nonEurCount: 0,
+    });
+    expect(excludedCounts([{ marketValueEur: null, priceCurrency: 'USD' }])).toEqual({
+      unvaluedCount: 0,
+      nonEurCount: 1,
+    });
+  });
+
   it('should count the unpriced and the non-EUR lines apart', () => {
     expect(
       excludedCounts([

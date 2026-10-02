@@ -100,12 +100,22 @@ describe('PortfolioTotal', () => {
     await screen.findByTestId('total-value');
 
     expect(screen.queryByTestId('total-excluded')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('total-excluded-mobile')).not.toBeInTheDocument();
   });
 
   it('should say how many unpriced lines the total leaves out', async () => {
     await renderComponent({ portfolio: { ...portfolio, unvaluedCount: 1, nonEurCount: 0 } });
 
-    expect(await screen.findByTestId('total-excluded')).toHaveTextContent('Excluded.noQuote_one');
+    expect(await screen.findByTestId('total-excluded-mobile')).toHaveTextContent('Excluded.noQuote_one');
+    expect(screen.getByTestId('total-excluded')).toHaveTextContent('Excluded.noQuote_one');
+  });
+
+  it('should keep the desktop caption beside the stale link', async () => {
+    await renderComponent({ portfolio: { ...portfolio, staleCount: 1, unvaluedCount: 1 } });
+
+    const link = await screen.findByTestId('stale-link');
+
+    expect(link.parentElement).toContainElement(screen.getByTestId('total-excluded'));
   });
 
   it('should say "hors N lignes" once a non-EUR line is among them, counting both', async () => {
