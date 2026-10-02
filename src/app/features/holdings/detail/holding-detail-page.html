@@ -1,5 +1,5 @@
 <ng-template #back>
-  <a data-testid="holding-detail-back" queryParamsHandling="preserve" routerLink="/holdings" size="header" ui-back-link>
+  <a data-testid="holding-detail-back" size="header" ui-back-link [href]="listHref()" (click)="onBack($event)">
     {{ 'holdings.detail.back' | transloco }}
   </a>
 </ng-template>

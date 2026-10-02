@@ -6,6 +6,7 @@ import {
   UiCellSub,
   UiGroup,
   UiGroupCell,
+  UiHighlight,
   UiRowLink,
   UiTd,
   UiTr,
@@ -21,15 +22,26 @@ import { HoldingAccountGroupRow } from './row/holding-account-group-row';
 
 @Component({
   selector: 'tbody[app-holding-account-group]',
-  imports: [HoldingAccountGroupRow, TranslocoPipe, UiAmount, UiCellSub, UiGroupCell, UiRowLink, UiTd, UiTr],
+  imports: [
+    HoldingAccountGroupRow,
+    TranslocoPipe,
+    UiAmount,
+    UiCellSub,
+    UiGroupCell,
+    UiHighlight,
+    UiRowLink,
+    UiTd,
+    UiTr,
+  ],
   templateUrl: './holding-account-group.html',
   hostDirectives: [UiGroup],
-  host: { 'data-testid': 'account-group', '[attr.data-account-id]': 'group().accountId' },
+  host: { class: 'scroll-mt-4', 'data-testid': 'account-group', '[attr.data-account-id]': 'group().accountId' },
 })
 export class HoldingAccountGroup {
   readonly group = input.required<AccountGroup>();
   readonly compact = input(false, { transform: booleanAttribute });
   readonly selectedHoldingId = input<string | undefined>(undefined);
+  readonly highlight = input<object | null>(null);
 
   readonly editCash = output<string>();
   readonly enterQuote = output<HoldingResponse>();

@@ -83,7 +83,11 @@
           </div>
           <div class="flex flex-col gap-4 lg:hidden">
             @for (group of groups(); track group.accountId) {
-              <app-holding-account-card [group]="group" (editCash)="accountToEditCashFor.set($event)" />
+              <app-holding-account-card
+                [group]="group"
+                [highlight]="highlightFor(group.accountId)"
+                (editCash)="accountToEditCashFor.set($event)"
+              />
             }
           </div>
 
@@ -108,6 +112,7 @@
                 app-holding-account-group
                 [compact]="compact()"
                 [group]="group"
+                [highlight]="highlightFor(group.accountId)"
                 [selectedHoldingId]="selectedHoldingId()"
                 (editCash)="accountToEditCashFor.set($event)"
                 (enterQuote)="quoteTarget.set($event)"
@@ -123,7 +128,11 @@
     </ui-card>
   </div>
 
-  <aside class="lg:sticky lg:top-6" [attr.aria-label]="'holdings.detail.panel' | transloco" [class.hidden]="!compact()">
+  <aside
+    class="not-has-[app-holding-detail-page]:hidden lg:sticky lg:top-6"
+    [attr.aria-label]="'holdings.detail.panel' | transloco"
+    [class]="compact() ? '' : 'lg:pointer-events-none lg:col-start-1 lg:row-start-1 lg:w-100 lg:justify-self-end'"
+  >
     <router-outlet />
   </aside>
 </div>

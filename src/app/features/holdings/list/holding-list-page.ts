@@ -1,6 +1,6 @@
 import { Component, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, NavigationEnd, NavigationStart, Router, RouterOutlet, Scroll } from '@angular/router';
 
 import {
   type AsyncState,
@@ -131,11 +131,28 @@ export class HoldingListPage {
   #lastSelected: string | undefined;
   #landedOn: string | undefined;
 
+  protected readonly arrival = signal<{ accountId: string } | null>(null);
+  readonly #routerScrolled = signal(false);
+
   constructor() {
+    let leftAt = 0;
+
+    this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+      if (event instanceof Scroll) {
+        this.#routerScrolled.set(true);
+      }
+
+      if (event instanceof NavigationStart) {
+        leftAt = window.scrollY;
+      } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith('/holdings')) {
+        window.scrollTo({ top: leftAt, behavior: 'instant' });
+      }
+    });
+
     afterRenderEffect(() => {
       const accountId = this.#store.accountParam();
 
-      if (!accountId || this.state() !== 'ready' || accountId === this.#landedOn) {
+      if (!accountId || !this.#routerScrolled() || this.state() !== 'ready' || accountId === this.#landedOn) {
         return;
       }
 
@@ -146,7 +163,9 @@ export class HoldingListPage {
 
       if (heading) {
         this.#landedOn = accountId;
-        heading.focus();
+        heading.closest('[data-account-id]')!.scrollIntoView({ block: 'start', behavior: 'auto' });
+        heading.focus({ preventScroll: true });
+        this.arrival.set({ accountId });
       }
     });
 
@@ -180,6 +199,12 @@ export class HoldingListPage {
       this.#wasCompact = compact;
       this.#lastSelected = selected ?? this.#lastSelected;
     });
+  }
+
+  protected highlightFor(accountId: string): object | null {
+    const arrival = this.arrival();
+
+    return arrival?.accountId === accountId ? arrival : null;
   }
 
   protected onSearchInput(event: Event): void {

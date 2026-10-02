@@ -1,6 +1,7 @@
-import { NgTemplateOutlet } from '@angular/common';
+import { Location, NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import {
   type AsyncState,
@@ -32,6 +33,7 @@ import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
+import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailBar } from './bar/holding-detail-bar';
@@ -76,15 +78,31 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
   ],
   templateUrl: './holding-detail-page.html',
   providers: [HoldingDetailStore],
+  host: {
+    class: 'block',
+    '[animate.enter]': 'panelEnter()',
+    '[animate.leave]': 'panelLeave()',
+  },
 })
 export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
   #router = inject(Router);
+  #location = inject(Location);
   #changes = inject(HoldingChanges);
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
+
+  readonly #desktop = injectDesktop();
+  readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
+
+  protected readonly panelEnter = computed(() => (this.#desktop() ? 'ui-enter-panel' : null));
+  protected readonly panelLeave = computed(() => (this.#desktop() ? 'ui-leave-fade' : null));
+
+  protected readonly listHref = computed(() =>
+    this.#router.serializeUrl(this.#router.createUrlTree(['/holdings'], { queryParams: this.#queryParams() })),
+  );
 
   protected readonly menu = viewChild.required<UiMenu>('menu');
 
@@ -207,7 +225,26 @@ export class HoldingDetailPage {
     this.deleteOpen.set(true);
   }
 
+  protected onBack(event: MouseEvent): void {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    event.preventDefault();
+    this.backToList();
+  }
+
   private backToList(): void {
-    void this.#router.navigate(['/holdings'], { queryParamsHandling: 'preserve' });
+    if (this.listIsPreviousEntry()) {
+      this.#location.back();
+    } else {
+      void this.#router.navigate(['/holdings'], { queryParamsHandling: 'preserve' });
+    }
+  }
+
+  private listIsPreviousEntry(): boolean {
+    const previous = this.#router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl;
+
+    return previous !== undefined && this.#router.serializeUrl(previous).split(/[?#]/)[0] === '/holdings';
   }
 }

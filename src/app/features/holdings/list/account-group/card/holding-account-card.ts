@@ -1,7 +1,7 @@
 import { Component, LOCALE_ID, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UI_AMOUNT_MASKED, UiAmount, UiCard, UiDelta, UiRow, formatAmount } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiAmount, UiCard, UiDelta, UiHighlight, UiRow, formatAmount } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -16,16 +16,17 @@ import { filteredCount, groupCount } from '../group-count';
 
 @Component({
   selector: 'app-holding-account-card',
-  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiDelta, UiRow],
+  imports: [RatioPipe, RouterLink, ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiDelta, UiHighlight, UiRow],
   templateUrl: './holding-account-card.html',
   host: {
-    class: 'flex flex-col gap-2',
+    class: 'flex scroll-mt-4 flex-col gap-2',
     'data-testid': 'account-card',
     '[attr.data-account-id]': 'group().accountId',
   },
 })
 export class HoldingAccountCard {
   readonly group = input.required<AccountGroup>();
+  readonly highlight = input<object | null>(null);
 
   readonly editCash = output<string>();
 

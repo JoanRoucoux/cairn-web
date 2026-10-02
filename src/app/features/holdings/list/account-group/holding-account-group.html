@@ -18,6 +18,7 @@
           (groupCount(group()).key | transloco: { count: groupCount(group()).count })
     "
     [name]="group().accountName"
+    [uiHighlight]="highlight()"
   >
     <ui-amount currency="EUR" [value]="group().valueEur" />
   </td>
