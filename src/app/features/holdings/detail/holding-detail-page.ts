@@ -103,14 +103,7 @@ export class HoldingDetailPage {
     return this.#transloco.translate('chart.startLabel');
   });
 
-  protected readonly chart = computed(() =>
-    chartFormats(
-      this.#locale,
-      this.#masked(),
-      this.range(),
-      this.points().map((point) => point.t),
-    ),
-  );
+  protected readonly chart = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
 
   protected readonly tooltipFormat = computed(() => {
     this.#language.activeLang();

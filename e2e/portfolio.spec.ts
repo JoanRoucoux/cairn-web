@@ -50,6 +50,21 @@ test.describe('portfolio', () => {
     expect(history.url()).toContain('/api/history?');
   });
 
+  for (const range of ['1Y', '5Y', 'Max']) {
+    test(`never repeats an axis label on the ${range} range of a short history`, async ({ page }) => {
+      const portfolio = new PortfolioPageObject(page);
+      await portfolio.goto();
+      await expect(portfolio.chart).toBeVisible();
+
+      await portfolio.pickRange(range);
+
+      const labels = portfolio.chart.locator('[data-chart-axis-tick]:visible');
+      await expect(labels.first()).toBeVisible();
+      const texts = (await labels.allTextContents()).map((text) => text.trim());
+      expect(new Set(texts).size).toBe(texts.length);
+    });
+  }
+
   test('shows a tooltip on the curve when hovering it', async ({ page }) => {
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();

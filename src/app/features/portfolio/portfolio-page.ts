@@ -50,14 +50,7 @@ export class PortfolioPage {
 
   protected readonly isEmpty = computed(() => this.totalState() === 'empty');
 
-  protected readonly chartFormats = computed(() =>
-    chartFormats(
-      this.#locale,
-      this.#masked(),
-      this.range(),
-      this.points().map((point) => point.t),
-    ),
-  );
+  protected readonly chartFormats = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
 
   protected setRange(value: ChartRange): void {
     this.#store.range.set(value);
