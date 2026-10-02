@@ -166,10 +166,12 @@ Conventions worth knowing before touching a screen:
 - **`null` is not `0`.** Twelve of the twenty-six holdings have no cost basis. `unrealizedGain*`,
   `dayChange*` and `averageCost` are nullable and the interface renders a dash - that is what
   `ui-delta` is for. A subtotal of unrealized gains containing one unknown line stays empty, never a partial sum.
-- **A value is the sum of the lines priced in EUR, and says what it leaves out.** An account, a group, an
-  envelope or a total adds only the lines with a `marketValueEur` and states how many it left out
-  ("hors N lignes sans cours", "hors N lignes" once one is quoted in another currency). A line without
-  a price, or quoted in another currency, renders a dash and is never summed.
+- **A value is the sum of the lines priced in EUR.** Every amount adds only the lines with a
+  `marketValueEur`. The Comptes, dashboard and Répartition totals say what they leave out ("hors N
+  lignes sans cours", "hors N lignes" once one is quoted in another currency), and so do an account
+  (its caption) and an unfiltered Lignes group (its meta). Envelopes, slices, the class summary and a
+  filtered group only sum. A line without a price, or quoted in another currency, renders a dash and
+  is never summed.
 - **Never rebuild a provider URL from `priceSource` and `sourceRef`.** The backend computes
   `externalUrl`; duplicating the rule here would make it live in two places.
 

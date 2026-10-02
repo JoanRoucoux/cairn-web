@@ -46,7 +46,6 @@ export class InstrumentFormPage {
 
   protected readonly assetClasses = Object.values(AssetClass);
   protected readonly priceSources = Object.values(PriceSource);
-  // Cairn values a portfolio in euros only: PortfolioService rejects any other currency outright.
   protected readonly currencies = ['EUR'];
 
   protected readonly deleteOpen = signal(false);
