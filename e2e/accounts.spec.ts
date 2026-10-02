@@ -53,20 +53,42 @@ test.describe('accounts', () => {
     await context.close();
   });
 
-  test('counts zero lines for an account holding only its EUR cash balance, while its value still shows it', async ({
+  test('shows the balance date of a savings account instead of a line count, and no empty panel', async ({ page }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    const row = accounts.rowFor('Livret A');
+    await expect(row.getByTestId('account-lines')).toContainText(/Balance as of \d\d\/\d\d/);
+    await expect(row).not.toContainText('holding');
+    await expect(row).toContainText('20,000');
+    await expect(page.getByTestId('account-empty-hint')).toHaveCount(0);
+  });
+
+  test('shows the empty panel for a securities account with no line and no cash, never for savings', async ({
     page,
   }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    const row = accounts.rowFor('Livret A');
-    await expect(row).toContainText('No holdings');
-    await expect(page.getByTestId('account-empty-hint').filter({ hasText: 'no holdings yet' })).toBeVisible();
+    await accounts.addButton.click();
+    await page.getByTestId('account-form-name').fill('Wise EUR');
+    await page.getByTestId('account-form-type').getByRole('radio', { name: 'CTO', exact: true }).click();
+    await page.getByTestId('account-form-submit').click();
+
+    await expect(accounts.rowFor('Wise EUR')).toBeVisible();
+    await expect(page.getByTestId('account-empty-hint')).toHaveCount(1);
+    await expect(page.getByTestId('account-empty-hint')).toContainText('no holdings yet');
   });
 
   test('sends the empty account to the add-a-line flow with itself preselected', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
+
+    await accounts.addButton.click();
+    await page.getByTestId('account-form-name').fill('Wise EUR');
+    await page.getByTestId('account-form-type').getByRole('radio', { name: 'CTO', exact: true }).click();
+    await page.getByTestId('account-form-submit').click();
+    await expect(accounts.rowFor('Wise EUR')).toBeVisible();
 
     const link = page.getByTestId('account-empty-add');
     const href = await link.getAttribute('href');
@@ -77,6 +99,45 @@ test.describe('accounts', () => {
     await expect(page).toHaveURL(/\/holdings$/);
     await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('holding-add-account')).toHaveValue(accountId);
+  });
+
+  test('offers the balance edit first in the menu of a savings account only, and opens its dialog in Lignes', async ({
+    page,
+  }) => {
+    const accounts = new AccountsPageObject(page);
+    await accounts.goto();
+
+    await accounts.openMenuFor('PEA Boursorama');
+    await expect(page.getByRole('menuitem', { name: 'Edit the balance' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+
+    await accounts.openMenuFor('Livret A');
+    await expect(page.getByRole('menuitem').first()).toHaveText('Edit the balance');
+    await page.getByTestId('account-edit-balance').click();
+
+    await expect(page).toHaveURL(/\/holdings$/);
+    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog')).toContainText('Balance of Livret A');
+    await expect(page.getByTestId('holding-cash-amount')).toHaveValue('20000');
+
+    await page.getByTestId('holding-cash-amount').fill('0');
+    await expect(page.getByText('0 removes the line.')).toHaveCount(0);
+    await page.getByTestId('holding-cash-submit').click();
+
+    const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
+    await expect(livretA.getByTestId('cash-row')).toContainText('0.00');
+    await expect(livretA.getByTestId('cash-row')).toContainText('Entered on');
+  });
+
+  test('keeps a savings account out of the add-a-line account picker', async ({ page }) => {
+    await page.goto('/holdings');
+
+    await page.getByTestId('add-holding-desktop').click();
+
+    await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'Livret A' })).toHaveCount(0);
+    await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'PEA Boursorama' })).toHaveCount(
+      1,
+    );
   });
 
   test('lands on the lines of the account with its group heading focused', async ({ page }) => {
