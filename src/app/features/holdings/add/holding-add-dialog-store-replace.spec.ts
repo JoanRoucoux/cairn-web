@@ -203,12 +203,13 @@ describe('HoldingAddDialogStore replace mode', () => {
     expect(store.filteredCatalog().map((instrument) => instrument.id)).toEqual(['i1']);
   });
 
-  it('flags a catalogue instrument whose quote is not in euros, by holding quote then by instrument currency', async () => {
+  it('flags a catalogue instrument whose quote is not in euros, by holding quote then by instrument currency, in both modes', async () => {
     await load([{ id: 'h2', instrumentId: 'i1', priceCurrency: 'USD' }]);
     const euro = instruments[0] as never;
     const usd = instruments[1] as never;
 
-    expect(store.foreignCurrencyOf(euro)).toBeUndefined();
+    expect(store.foreignCurrencyOf(euro)).toBe('USD');
+    expect(store.foreignCurrencyOf(usd)).toBe('USD');
     store.replaceHoldingId.set('h1');
     expect(store.foreignCurrencyOf(euro)).toBe('USD');
     expect(store.foreignCurrencyOf(usd)).toBe('USD');

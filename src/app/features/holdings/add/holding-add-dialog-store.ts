@@ -93,7 +93,7 @@ export class HoldingAddDialogStore {
     const quoted = this.#knownHoldings().find((holding) => holding.instrumentId === instrument.id)?.priceCurrency;
     const currency = quoted ?? instrument.currency;
 
-    return this.replaceHoldingId() !== null && currency !== 'EUR' ? currency : undefined;
+    return currency !== 'EUR' ? currency : undefined;
   }
 
   lineCountOf(instrumentId: string): number | null {

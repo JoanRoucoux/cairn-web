@@ -85,6 +85,29 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
       expect(screen.queryByTestId('holding-add-quantity')).not.toBeInTheDocument();
     });
 
+    it('greys a catalogue instrument quoted in another currency, lists it after the euro ones and never picks it', async () => {
+      const user = userEvent.setup();
+      await renderDialog({}, [{ id: 'h2', instrumentId: 'i1', priceCurrency: 'USD' }]);
+
+      await user.type(screen.getByTestId('holding-add-query'), 'msci');
+
+      const rows = await screen.findAllByTestId('holding-add-catalog-candidate');
+      expect(rows.map((row) => row.querySelector('.font-medium')?.textContent?.trim())).toEqual([
+        'Lyxor MSCI USD Tracker',
+        'Amundi MSCI World',
+        'iShares MSCI World USD',
+      ]);
+      expect(rows[0]).not.toHaveAttribute('aria-disabled');
+      expect(rows[1]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows[2]).toHaveAttribute('aria-disabled', 'true');
+      expect(rows[1]).toHaveTextContent('holdings.add.unavailable');
+
+      await user.click(rows[1]!);
+
+      expect(screen.queryByTestId('holding-add-quantity')).not.toBeInTheDocument();
+      await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+    });
+
     it('shows a dash when the greyed candidate names no exchange', async () => {
       const user = userEvent.setup();
       await renderDialog();

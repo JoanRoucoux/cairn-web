@@ -88,14 +88,18 @@ export class HoldingAddDialog {
   readonly #translocoEvents = toSignal(this.#transloco.events$);
 
   protected readonly catalogResults = computed<CatalogResult[]>(() =>
-    [...this.filteredCatalog()]
-      .sort((a, b) => this.#collator.compare(a.name, b.name))
-      .slice(0, CATALOG_RESULT_LIMIT)
+    this.filteredCatalog()
       .map((instrument) => ({
         instrument,
         lineCount: this.#store.lineCountOf(instrument.id),
         foreignCurrency: this.#store.foreignCurrencyOf(instrument),
-      })),
+      }))
+      .sort(
+        (a, b) =>
+          Number(a.foreignCurrency !== undefined) - Number(b.foreignCurrency !== undefined) ||
+          this.#collator.compare(a.instrument.name, b.instrument.name),
+      )
+      .slice(0, CATALOG_RESULT_LIMIT),
   );
 
   protected readonly accountOptions = computed(() => {
