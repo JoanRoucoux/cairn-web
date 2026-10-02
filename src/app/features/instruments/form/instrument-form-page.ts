@@ -7,6 +7,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import { AssetClass, type InstrumentCandidateResponse, PriceSource } from '@core/api-client/cairnAPI.schemas';
 
+import { injectToast } from '@shared/feedback/toast';
+
 import { InstrumentDeleteDialog } from '../delete-dialog/instrument-delete-dialog';
 import { InstrumentFormStore } from './instrument-form-store';
 import { IsinLookup } from './isin-lookup/isin-lookup';
@@ -32,6 +34,7 @@ import { IsinLookup } from './isin-lookup/isin-lookup';
 export class InstrumentFormPage {
   #store = inject(InstrumentFormStore);
   #router = inject(Router);
+  #toast = injectToast();
 
   protected readonly form = this.#store.form;
   protected readonly candidates = this.#store.candidates;
@@ -59,12 +62,14 @@ export class InstrumentFormPage {
 
   protected async onSave(): Promise<void> {
     if (await this.#store.save()) {
+      this.#toast(this.editing() ? 'instruments.toasts.updated' : 'instruments.toasts.created');
       await this.#router.navigateByUrl('/instruments');
     }
   }
 
   protected async onDeleted(): Promise<void> {
     this.deleteOpen.set(false);
+    this.#toast('instruments.toasts.deleted');
     await this.#router.navigateByUrl('/instruments');
   }
 }

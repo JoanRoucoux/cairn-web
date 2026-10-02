@@ -194,5 +194,14 @@
     "onlineSearching": "Searching online",
     "gainAtProbe": "unrealized gain",
     "cancel": "Cancel"
+  },
+  "toasts": {
+    "bought": "Purchase saved",
+    "sold": "Sale saved",
+    "edited": "Holding updated",
+    "deleted": "Holding deleted",
+    "added": "Holding added",
+    "balanceSaved": "Balance updated",
+    "quoteSaved": "Price saved"
   }
 }

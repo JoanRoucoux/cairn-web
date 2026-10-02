@@ -194,5 +194,14 @@
     "onlineSearching": "Recherche en ligne",
     "gainAtProbe": "plus-value latente",
     "cancel": "Annuler"
+  },
+  "toasts": {
+    "bought": "Achat enregistré",
+    "sold": "Vente enregistrée",
+    "edited": "Ligne modifiée",
+    "deleted": "Ligne supprimée",
+    "added": "Ligne ajoutée",
+    "balanceSaved": "Solde modifié",
+    "quoteSaved": "Cours enregistré"
   }
 }

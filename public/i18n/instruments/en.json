@@ -52,5 +52,10 @@
   "errorTitle": "The catalogue could not be loaded",
   "errorMessage": "The server did not answer.",
   "retry": "Retry",
-  "manualCaption": "No automatic quote"
+  "manualCaption": "No automatic quote",
+  "toasts": {
+    "created": "Instrument created",
+    "updated": "Instrument updated",
+    "deleted": "Instrument deleted"
+  }
 }

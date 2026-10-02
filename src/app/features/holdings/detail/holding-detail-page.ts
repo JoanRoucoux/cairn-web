@@ -30,6 +30,7 @@ import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
+import { injectToast } from '@shared/feedback/toast';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
@@ -93,6 +94,7 @@ export class HoldingDetailPage {
   #language = inject(LanguageStore);
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
+  #toast = injectToast();
 
   readonly #desktop = injectDesktop();
   readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
@@ -177,6 +179,7 @@ export class HoldingDetailPage {
 
   protected onQuoteSaved(holdingId: string): void {
     this.pricingInstrument.set(undefined);
+    this.#toast('holdings.toasts.quoteSaved');
     this.#changes.touched(holdingId);
     this.#store.reload();
   }
@@ -187,12 +190,14 @@ export class HoldingDetailPage {
 
   protected onBought(holding: HoldingResponse): void {
     this.buyOpen.set(false);
+    this.#toast('holdings.toasts.bought');
     this.#changes.touched(holding.id);
     this.#store.reload();
   }
 
   protected onSold(result: SellResult, holdingId: string): void {
     this.sellOpen.set(false);
+    this.#toast('holdings.toasts.sold');
 
     if (result.outcome === 'closed') {
       this.#changes.removed(holdingId);
@@ -205,12 +210,14 @@ export class HoldingDetailPage {
 
   protected onEdited(holding: HoldingResponse): void {
     this.editOpen.set(false);
+    this.#toast('holdings.toasts.edited');
     this.#changes.touched(holding.id);
     this.#store.reload();
   }
 
   protected onDeleted(holdingId: string): void {
     this.deleteOpen.set(false);
+    this.#toast('holdings.toasts.deleted');
     this.#changes.removed(holdingId);
     this.backToList();
   }

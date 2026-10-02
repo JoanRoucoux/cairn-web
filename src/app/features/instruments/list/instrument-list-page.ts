@@ -23,6 +23,7 @@ import {
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash } from '@lucide/angular';
 
+import { injectToast } from '@shared/feedback/toast';
 import { pluralKey } from '@shared/format/plural-key';
 import { injectDesktop } from '@shared/layout/desktop-media';
 
@@ -65,6 +66,7 @@ import { InstrumentListStore, type InstrumentRow } from './instrument-list-store
 export class InstrumentListPage {
   #store = inject(InstrumentListStore);
   #router = inject(Router);
+  #toast = injectToast();
 
   protected readonly instruments = this.#store.instruments;
   protected readonly filteredRows = this.#store.filteredRows;
@@ -106,6 +108,7 @@ export class InstrumentListPage {
 
   protected onDeleted(): void {
     this.toDelete.set(undefined);
+    this.#toast('instruments.toasts.deleted');
     this.#store.retry();
   }
 }

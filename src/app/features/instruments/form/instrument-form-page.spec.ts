@@ -4,6 +4,7 @@ import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, RouterOutlet, provideRouter } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -84,6 +85,7 @@ describe('InstrumentFormPage', () => {
     (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({});
 
     await vi.waitFor(() => expect(navigateByUrl).toHaveBeenCalledWith('/instruments'));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('instruments.toasts.created');
   });
 
   it('should stay on the page and show an error when the API refuses', async () => {
@@ -180,6 +182,7 @@ describe('InstrumentFormPage in edit mode', () => {
     request.flush({ ...instrument });
 
     await vi.waitFor(() => expect(navigateByUrl).toHaveBeenCalledWith('/instruments'));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('instruments.toasts.updated');
   });
 
   it('should delete the instrument from the delete dialog and navigate back to the list', async () => {
@@ -194,6 +197,7 @@ describe('InstrumentFormPage in edit mode', () => {
 
     await vi.waitFor(() => httpTesting.expectOne(`/api/instruments/${instrument.id}`).flush(null));
     await vi.waitFor(() => expect(navigateByUrl).toHaveBeenCalledWith('/instruments'));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('instruments.toasts.deleted');
   });
 
   it('should dismiss the delete dialog without deleting anything', async () => {
