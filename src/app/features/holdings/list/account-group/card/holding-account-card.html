@@ -27,7 +27,7 @@
   </span>
 </header>
 <ui-card clip padding="none">
-  <div class="relative flex flex-col px-2 py-1.5" uiFlipList>
+  <div class="flex flex-col px-2 py-1.5">
     @for (holding of group().holdings; track holding.id) {
       <a
         animate.leave="ui-leave-fade"
@@ -37,6 +37,7 @@
         queryParamsHandling="preserve"
         size="card"
         ui-row
+        uiFlipItem
         [attr.data-holding-id]="holding.id"
         [routerLink]="['/holdings', holding.id]"
         [uiHighlight]="flash()?.id === holding.id ? flash() : null"
@@ -91,6 +92,7 @@
         size="card"
         type="button"
         ui-row
+        uiFlipItem
         [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
         [uiHighlight]="flash()?.id === group().accountId ? flash() : null"
         (click)="editCash.emit(group().accountId)"

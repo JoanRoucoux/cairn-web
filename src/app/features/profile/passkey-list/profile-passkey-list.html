@@ -59,13 +59,17 @@
           }
         </div>
 
-        <ul class="relative flex flex-col" uiFlipList>
+        <ul class="flex flex-col" uiFlipList>
           @for (passkey of passkeys(); track passkey.credentialId) {
             @if (added().has(passkey.credentialId)) {
-              <li animate.leave="ui-leave-fade" data-testid="added-passkey" [uiHighlight]="passkey.credentialId">
-                <div animate.enter="ui-enter-fade" uiListRow>
-                  <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: passkey }" />
-                </div>
+              <li
+                animate.enter="ui-enter-fade"
+                animate.leave="ui-leave-fade"
+                data-testid="added-passkey"
+                uiListRow
+                [uiHighlight]="passkey.credentialId"
+              >
+                <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: passkey }" />
               </li>
             } @else {
               <li animate.leave="ui-leave-fade" uiListRow>

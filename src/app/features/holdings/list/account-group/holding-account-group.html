@@ -1,4 +1,4 @@
-<tr group uiTr>
+<tr group uiFlipItem uiTr>
   <td
     size="lg"
     ui-group-cell
@@ -28,6 +28,7 @@
     animate.leave="ui-leave-fade"
     app-holding-account-group-row
     interactive
+    uiFlipItem
     uiTr
     [compact]="compact()"
     [holding]="holding"
@@ -38,7 +39,13 @@
   ></tr>
 }
 @if (group().showCash) {
-  <tr data-testid="cash-row" interactive uiTr [uiHighlight]="flash()?.id === group().accountId ? flash() : null">
+  <tr
+    data-testid="cash-row"
+    interactive
+    uiFlipItem
+    uiTr
+    [uiHighlight]="flash()?.id === group().accountId ? flash() : null"
+  >
     <td primary uiTd>
       <button
         data-testid="edit-cash"

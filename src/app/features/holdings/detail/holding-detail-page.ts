@@ -8,7 +8,6 @@ import {
   type ChartPoint,
   type SegmentedOption,
   UI_AMOUNT_MASKED,
-  UiAlert,
   UiAmount,
   UiAsync,
   UiBackLink,
@@ -20,8 +19,6 @@ import {
   UiMenuItem,
   UiMenuTrigger,
   UiSegmented,
-  UiSkeleton,
-  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideTrash, LucideX } from '@lucide/angular';
@@ -41,6 +38,7 @@ import { HoldingDetailDialogs } from './dialogs/holding-detail-dialogs';
 import { HoldingDetailFacts } from './facts/holding-detail-facts';
 import { HoldingDetailFigures } from './figures/holding-detail-figures';
 import { HoldingDetailStore } from './holding-detail-store';
+import { HoldingDetailMissing } from './missing/holding-detail-missing';
 import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
 
 @Component({
@@ -53,6 +51,7 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     HoldingDetailDialogs,
     HoldingDetailFacts,
     HoldingDetailFigures,
+    HoldingDetailMissing,
     LucideEllipsis,
     LucidePencil,
     LucideTrash,
@@ -61,7 +60,6 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     RatioPipe,
     RouterLink,
     TranslocoPipe,
-    UiAlert,
     UiAmount,
     UiAsync,
     UiBackLink,
@@ -73,7 +71,6 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     UiMenuItem,
     UiMenuTrigger,
     UiSegmented,
-    UiSkeleton,
   ],
   templateUrl: './holding-detail-page.html',
   providers: [HoldingDetailStore],
@@ -106,8 +103,8 @@ export class HoldingDetailPage {
 
   protected readonly holding = this.#store.holding;
   protected readonly holdings = this.#store.holdings;
-  protected readonly loadingShown = delayedState(
-    computed<AsyncState>(() => (this.holdings.isLoading() ? 'loading' : 'ready')),
+  protected readonly missingState = computed<AsyncState>(() =>
+    this.holdings.error() ? 'error' : this.holdings.isLoading() ? 'loading' : 'empty',
   );
   protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;

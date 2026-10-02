@@ -81,9 +81,10 @@
             <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
             <app-holding-list-skeleton />
           </div>
-          <div class="flex flex-col gap-4 lg:hidden">
+          <div class="flex flex-col gap-4 lg:hidden" uiFlipList>
             @for (group of groups(); track group.key) {
               <app-holding-account-card
+                uiFlipItem
                 [flash]="flash()"
                 [group]="group"
                 [highlight]="highlightFor(group.accountId)"
@@ -92,7 +93,7 @@
             }
           </div>
 
-          <table class="max-lg:hidden" row="60" uiTable [rule]="false">
+          <table class="max-lg:hidden" row="60" uiFlipList uiTable [rule]="false">
             <thead>
               <tr>
                 <th primary uiTh>{{ 'holdings.columns.line' | transloco }}</th>
