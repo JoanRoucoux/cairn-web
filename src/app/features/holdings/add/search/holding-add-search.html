@@ -25,6 +25,7 @@
             size="dense"
             type="button"
             ui-row
+            [busy]="busy()"
             (click)="pickedCatalog.emit(result.instrument)"
           >
             <span class="flex min-w-0 flex-1 flex-col">
@@ -74,24 +75,12 @@
           </div>
           @if (candidates().length > 0) {
             @for (candidate of candidates(); track candidate.sourceRef) {
-              <button
-                data-testid="holding-add-online-candidate"
-                size="dense"
-                type="button"
-                ui-row
-                (click)="pickedOnline.emit(candidate)"
-              >
-                <span class="flex min-w-0 flex-1 flex-col">
-                  <span class="text-body truncate font-medium">{{ candidate.name }}</span>
-                  <span class="text-caption truncate text-(--subtle-foreground)">{{ candidateSub(candidate) }}</span>
-                </span>
-                <span class="flex flex-none flex-col items-end">
-                  <ui-amount class="text-label font-medium" currency="EUR" [value]="candidate.probePrice" />
-                  <span class="text-caption text-(--subtle-foreground)">{{
-                    'holdings.add.trialPriceCaption' | transloco
-                  }}</span>
-                </span>
-              </button>
+              <app-holding-add-candidate
+                [busy]="busy()"
+                [candidate]="candidate"
+                [sub]="candidateSub(candidate)"
+                (picked)="pickedOnline.emit($event)"
+              />
             }
           } @else if (catalogResults().length > 0) {
             <div class="text-label px-2.5 pt-1.5 pb-2.5 text-(--muted-foreground)">
@@ -100,17 +89,19 @@
           } @else {
             <div class="flex flex-col items-start gap-2 px-2.5 pt-1.5 pb-2.5">
               <p class="text-label text-(--muted-foreground)">
-                {{ 'holdings.add.notFound' | transloco: { query: query() } }}
+                {{ notFoundKey() | transloco: { query: query() } }}
               </p>
-              <button
-                data-testid="holding-add-create-manual"
-                type="button"
-                ui-button
-                variant="outline"
-                (click)="pickedManual.emit()"
-              >
-                {{ 'holdings.add.createManual' | transloco }}
-              </button>
+              @if (!replacing()) {
+                <button
+                  data-testid="holding-add-create-manual"
+                  type="button"
+                  ui-button
+                  variant="outline"
+                  (click)="pickedManual.emit()"
+                >
+                  {{ 'holdings.add.createManual' | transloco }}
+                </button>
+              }
             </div>
           }
         </ui-async>

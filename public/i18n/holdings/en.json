@@ -203,6 +203,15 @@
     "noOtherOnline": "No other instrument found online.",
     "onlineSearching": "Searching online",
     "gainAtProbe": "unrealized gain",
-    "cancel": "Cancel"
-  }
+    "cancel": "Cancel",
+    "unavailableSub": "Quoted in {{currency}}. Cairn only tracks quotes in euros.",
+    "unavailable": "unavailable"
+  },
+  "replace": {
+    "open": "Change listing",
+    "title": "Change listing",
+    "duplicate": "This account already holds this listing.",
+    "notFound": "No euro listing found for \"{{query}}\"."
+  },
+  "foreignQuote": "Quoted in {{currency}}, not counted"
 }

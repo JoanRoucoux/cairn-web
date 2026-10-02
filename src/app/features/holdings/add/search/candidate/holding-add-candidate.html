@@ -1,0 +1,29 @@
+<button
+  data-testid="holding-add-online-candidate"
+  size="dense"
+  type="button"
+  ui-row
+  [busy]="busy()"
+  [unavailable]="foreign() !== undefined"
+  (click)="picked.emit(candidate())"
+>
+  <span class="flex min-w-0 flex-1 flex-col">
+    <span class="text-body truncate font-medium">{{ candidate().name }}</span>
+    <span class="text-caption text-pretty text-(--subtle-foreground)">
+      @if (foreign(); as currency) {
+        {{ 'holdings.add.unavailableSub' | transloco: { currency } }}
+      } @else {
+        {{ sub() }}
+      }
+    </span>
+  </span>
+  <span class="flex flex-none flex-col items-end">
+    @if (foreign()) {
+      <span class="text-label font-medium">{{ candidate().exchange ?? '—' }}</span>
+      <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.unavailable' | transloco }}</span>
+    } @else {
+      <ui-amount class="text-label font-medium" currency="EUR" [value]="candidate().probePrice" />
+      <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.trialPriceCaption' | transloco }}</span>
+    }
+  </span>
+</button>

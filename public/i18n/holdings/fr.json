@@ -203,6 +203,15 @@
     "noOtherOnline": "Aucun autre titre trouvé en ligne.",
     "onlineSearching": "Recherche en ligne",
     "gainAtProbe": "plus-value latente",
-    "cancel": "Annuler"
-  }
+    "cancel": "Annuler",
+    "unavailableSub": "Coté en {{currency}}. Cairn ne suit que les cotations en euros.",
+    "unavailable": "indisponible"
+  },
+  "replace": {
+    "open": "Changer de cotation",
+    "title": "Changer de cotation",
+    "duplicate": "Ce compte détient déjà cette cotation.",
+    "notFound": "Aucune cotation en euros trouvée pour « {{query}} »."
+  },
+  "foreignQuote": "Coté en {{currency}}, non compté"
 }

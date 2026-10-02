@@ -9,6 +9,7 @@ import {
   input,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -41,6 +42,8 @@ export class HoldingAddDialog {
   #store = inject(HoldingAddDialogStore);
 
   readonly presetAccountId = input<string | null>(null);
+  readonly replaceHoldingId = input<string | null>(null);
+  readonly initialQuery = input('');
   readonly saved = output<HoldingResponse>();
   readonly dismissed = output<void>();
 
@@ -65,6 +68,8 @@ export class HoldingAddDialog {
   protected readonly submitting = this.#store.submitting;
   protected readonly error = this.#store.error;
   protected readonly instrumentError = this.#store.instrumentError;
+  protected readonly duplicate = this.#store.duplicate;
+  protected readonly replacing = computed(() => this.replaceHoldingId() !== null);
 
   readonly #collator = new Intl.Collator(inject(LOCALE_ID), { sensitivity: 'base', numeric: true });
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -128,6 +133,16 @@ export class HoldingAddDialog {
 
   constructor() {
     effect(() => {
+      this.#store.replaceHoldingId.set(this.replaceHoldingId());
+
+      const initialQuery = this.initialQuery();
+
+      if (initialQuery) {
+        untracked(() => this.#store.start(initialQuery));
+      }
+    });
+
+    effect(() => {
       const list = this.accounts.value();
       const chosen = list.find((account) => account.id === this.presetAccountId()) ?? list[0];
 
@@ -164,11 +179,19 @@ export class HoldingAddDialog {
   }
 
   protected pickCatalog(instrument: InstrumentResponse): void {
-    this.#store.pickCatalog(instrument);
+    if (this.replacing()) {
+      void this.replace({ kind: 'catalog', instrument });
+    } else {
+      this.#store.pickCatalog(instrument);
+    }
   }
 
   protected pickOnline(candidate: InstrumentCandidateResponse): void {
-    this.#store.pickOnline(candidate);
+    if (this.replacing()) {
+      void this.replace({ kind: 'online', candidate });
+    } else {
+      this.#store.pickOnline(candidate);
+    }
   }
 
   protected pickManual(): void {
@@ -207,6 +230,15 @@ export class HoldingAddDialog {
 
     if (this.valid() && !this.submitting()) {
       void this.confirm();
+    }
+  }
+
+  protected async replace(picked: PickedInstrument): Promise<void> {
+    const moved = await this.#store.replaceWith(picked);
+
+    if (moved) {
+      this.open.set(false);
+      this.saved.emit(moved);
     }
   }
 

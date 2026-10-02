@@ -1,8 +1,7 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 
 import {
   type AsyncState,
-  UiAmount,
   UiAsync,
   UiButton,
   UiCard,
@@ -20,15 +19,16 @@ import type { InstrumentCandidateResponse, InstrumentResponse } from '@core/api-
 import { pluralKey } from '@shared/format/plural-key';
 
 import { isinOf } from '../isin';
+import { HoldingAddCandidate } from './candidate/holding-add-candidate';
 
 export type CatalogResult = { instrument: InstrumentResponse; lineCount: number | null };
 
 @Component({
   selector: 'app-holding-add-search',
   imports: [
+    HoldingAddCandidate,
     LucideSearch,
     TranslocoPipe,
-    UiAmount,
     UiAsync,
     UiCard,
     UiButton,
@@ -47,6 +47,8 @@ export class HoldingAddSearch {
   readonly searchingOnline = input.required<boolean>();
   readonly onlineError = input.required<boolean>();
   readonly onlineSearched = input.required<boolean>();
+  readonly replacing = input(false, { transform: booleanAttribute });
+  readonly busy = input(false, { transform: booleanAttribute });
 
   readonly queryInput = output<Event>();
   readonly pickedCatalog = output<InstrumentResponse>();
@@ -61,6 +63,9 @@ export class HoldingAddSearch {
   );
   protected readonly onlineState = computed<AsyncState>(() =>
     this.onlineLoading() ? 'loading' : this.onlineError() ? 'error' : 'ready',
+  );
+  protected readonly notFoundKey = computed(() =>
+    this.replacing() ? 'holdings.replace.notFound' : 'holdings.add.notFound',
   );
   protected readonly typedIsin = computed(() => isinOf(this.query()));
 
