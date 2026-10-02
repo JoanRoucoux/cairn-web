@@ -112,11 +112,55 @@ describe('InstrumentListPage', () => {
     expect(screen.getAllByText('Bitcoin').length).toBeGreaterThan(0);
   });
 
-  it('should show an empty state with no match', async () => {
+  it('shows one line, no hint and no button for an empty catalogue', async () => {
     await renderPage();
     await flushOne([]);
 
     expect(await screen.findByText('instruments.empty')).toBeInTheDocument();
+    expect(screen.queryByText('instruments.noMatchHint')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('instruments-add-line')).not.toBeInTheDocument();
+    expect(screen.getAllByText('instruments.count_other').length).toBeGreaterThan(0);
+  });
+
+  it('shows the empty state with the search, the hint and an add button when nothing matches', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await flushOne();
+
+    await user.type(screen.getByTestId('instruments-search'), ' zzz ');
+
+    expect(await screen.findByText('instruments.noMatch')).toBeInTheDocument();
+    expect(screen.getByText('instruments.noMatchHint')).toBeInTheDocument();
+    expect(screen.getAllByText('instruments.countOf_one').length).toBeGreaterThan(0);
+    expect(screen.queryByText('instruments.empty')).not.toBeInTheDocument();
+  });
+
+  it('opens the holdings add dialog with the search from the no-match button', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    await flushOne();
+
+    await user.type(screen.getByTestId('instruments-search'), 'zzz');
+    await user.click(await screen.findByTestId('instruments-add-line'));
+
+    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { add: '', q: 'zzz' } });
+  });
+
+  it('counts the shown rows against the whole catalogue while searching', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    await flushOne([
+      instrument,
+      { id: 'i2', name: 'Bitcoin', isin: null, assetClass: 'CRYPTO', priceSource: 'COINGECKO' },
+    ]);
+
+    expect((await screen.findAllByText('instruments.count_other')).length).toBeGreaterThan(0);
+
+    await user.type(screen.getByTestId('instruments-search'), 'bitcoin');
+
+    expect(screen.getAllByText('instruments.countOf_other').length).toBeGreaterThan(0);
+    expect(screen.queryByText('instruments.count_other')).not.toBeInTheDocument();
   });
 
   it('tells the reader what the search box searches', async () => {

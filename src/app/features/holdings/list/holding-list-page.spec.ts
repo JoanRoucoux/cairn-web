@@ -346,6 +346,39 @@ describe('HoldingListPage', () => {
     httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
   });
 
+  it('opens the add dialog with the search of the q param and the default account, then clears both params', async () => {
+    await render(TestHost, {
+      imports: [getTranslocoTestingModule()],
+      routes: [{ path: '', component: HoldingListPage }],
+      initialRoute: '/?add=&q=zzz',
+      providers: [
+        HoldingChanges,
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    for (const request of httpTesting.match('/api/holdings')) {
+      request.flush(holdings);
+    }
+    for (const request of httpTesting.match('/api/accounts')) {
+      request.flush(accounts);
+    }
+
+    expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
+    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-query')).toHaveValue('zzz'));
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
+    httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
+    httpTesting.match('/api/instruments/resolve').forEach((request) => request.flush([]));
+
+    await userEvent.setup().click(screen.getByTestId('holding-add-cancel'));
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
+  });
+
   it('ignores the old filter params', async () => {
     await renderPage('/?filter=stale&account=Esalia&assetClass=ETF');
 

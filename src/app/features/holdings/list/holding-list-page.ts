@@ -120,9 +120,10 @@ export class HoldingListPage {
   protected readonly listingQuery = computed(() => {
     const target = this.listingTarget();
 
-    return target ? listingQueryOf(target) : '';
+    return target ? listingQueryOf(target) : this.searchedQuery();
   });
   protected readonly presetAccountId = signal<string | null>(null);
+  protected readonly searchedQuery = signal('');
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
@@ -164,12 +165,13 @@ export class HoldingListPage {
     effect(() => {
       const account = this.#store.addParam();
 
-      if (account) {
-        this.presetAccountId.set(account);
+      if (account !== null) {
+        this.presetAccountId.set(account || null);
+        this.searchedQuery.set(this.#store.queryParam());
         this.addOpen.set(true);
         void this.#router.navigate([], {
           relativeTo: this.#route,
-          queryParams: { add: null },
+          queryParams: { add: null, q: null },
           queryParamsHandling: 'merge',
           replaceUrl: true,
         });
@@ -235,6 +237,7 @@ export class HoldingListPage {
   protected onAddDismissed(): void {
     this.addOpen.set(false);
     this.presetAccountId.set(null);
+    this.searchedQuery.set('');
     this.listingTarget.set(undefined);
   }
 

@@ -190,9 +190,27 @@
           </span>
         }
       </span>
-      <span asyncEmpty class="block p-4 text-(--muted-foreground)" role="status">{{
-        'instruments.empty' | transloco
-      }}</span>
+      <span asyncEmpty class="block">
+        @if (noMatch()) {
+          <ui-empty
+            [heading]="'instruments.noMatch' | transloco: { query: query() }"
+            [hint]="'instruments.noMatchHint' | transloco"
+          >
+            <button
+              data-testid="instruments-add-line"
+              size="md"
+              type="button"
+              ui-button
+              variant="outline"
+              (click)="addLine()"
+            >
+              {{ 'instruments.addLine' | transloco }}
+            </button>
+          </ui-empty>
+        } @else {
+          <span class="block p-4 text-(--muted-foreground)" role="status">{{ 'instruments.empty' | transloco }}</span>
+        }
+      </span>
     </ui-async>
   </div>
 </ui-card>

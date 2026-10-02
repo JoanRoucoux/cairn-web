@@ -1,7 +1,10 @@
 {
   "searchLabel": "Search instruments",
   "searchPlaceholder": "Name or ISIN",
-  "empty": "No instrument matches your search.",
+  "empty": "No instruments in the catalogue.",
+  "noMatch": "No instrument matches \"{{query}}\"",
+  "noMatchHint": "The search looks at the name and the ISIN.",
+  "addLine": "Add a holding",
   "add": "New instrument",
   "name": "Name",
   "isin": "ISIN",
@@ -38,6 +41,8 @@
   },
   "count_one": "{{count}} instrument",
   "count_other": "{{count}} instruments",
+  "countOf_one": "{{shown}} of {{count}} instrument",
+  "countOf_other": "{{shown}} of {{count}} instruments",
   "searchPlaceholderDesktop": "Search by name or ISIN",
   "columns": {
     "instrument": "Instrument",

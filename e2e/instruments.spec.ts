@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { type Locator, expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
 
@@ -72,6 +72,61 @@ test.describe('instruments', () => {
 
     await page.waitForURL('**/instruments');
     await expect(page.getByTestId('instrument-row')).toHaveCount(0);
+  });
+
+  test('counts the shown instruments against the catalogue, and offers to add a line when nothing matches', async ({
+    page,
+  }) => {
+    await page.route(
+      (url) => url.pathname === '/api/instruments',
+      (route) =>
+        route.fulfill({
+          json: [
+            {
+              id: 'i-btc',
+              name: 'Bitcoin',
+              isin: null,
+              currency: 'EUR',
+              assetClass: 'CRYPTO',
+              priceSource: 'COINGECKO',
+              sourceRef: 'bitcoin',
+              description: '',
+              externalUrl: null,
+              holdingCount: 0,
+            },
+            {
+              id: 'i-eth',
+              name: 'Ether',
+              isin: null,
+              currency: 'EUR',
+              assetClass: 'CRYPTO',
+              priceSource: 'COINGECKO',
+              sourceRef: 'ethereum',
+              description: '',
+              externalUrl: null,
+              holdingCount: 0,
+            },
+          ],
+        }),
+    );
+    await page.goto('/instruments');
+    const count = (text: string): Locator => page.getByText(text, { exact: true }).locator('visible=true');
+
+    await expect(count('2 instruments')).toBeVisible();
+
+    await page.getByTestId('instruments-search').fill('bitcoin');
+    await expect(count('1 of 2 instruments')).toBeVisible();
+
+    await page.getByTestId('instruments-search').fill('zzz');
+    await expect(count('0 of 2 instruments')).toBeVisible();
+    await expect(page.getByText('No instrument matches "zzz"')).toBeVisible();
+    await expect(page.getByText('The search looks at the name and the ISIN.')).toBeVisible();
+
+    await page.getByTestId('instruments-add-line').click();
+
+    await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByTestId('holding-add-query')).toHaveValue('zzz');
+    await expect(page).toHaveURL(/\/holdings$/);
   });
 
   test('shows one column per field', async ({ page }) => {

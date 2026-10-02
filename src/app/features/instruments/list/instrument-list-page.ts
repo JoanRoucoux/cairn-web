@@ -7,6 +7,7 @@ import {
   UiBadge,
   UiButton,
   UiCard,
+  UiEmpty,
   UiField,
   UiFieldLeading,
   UiInput,
@@ -46,6 +47,7 @@ import { InstrumentListStore, type InstrumentRow } from './instrument-list-store
     UiBadge,
     UiButton,
     UiCard,
+    UiEmpty,
     UiField,
     UiFieldLeading,
     UiInput,
@@ -77,9 +79,12 @@ export class InstrumentListPage {
     () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
   );
 
+  protected readonly query = this.#store.query;
+  protected readonly noMatch = computed(() => this.#store.total() > 0 && this.query() !== '');
+
   protected readonly countLabel = translateSignal(
-    computed(() => pluralKey('count', this.#store.rows().length)),
-    computed(() => ({ count: this.#store.rows().length })),
+    computed(() => pluralKey(this.query() ? 'countOf' : 'count', this.#store.total())),
+    computed(() => ({ count: this.#store.total(), shown: this.filteredRows().length })),
   );
 
   protected readonly toDelete = signal<DeletableInstrument | undefined>(undefined);
@@ -94,6 +99,10 @@ export class InstrumentListPage {
 
   protected onSearchInput(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
+  }
+
+  protected addLine(): void {
+    void this.#router.navigate(['/holdings'], { queryParams: { add: '', q: this.query() } });
   }
 
   protected editInstrument(id: string): void {
