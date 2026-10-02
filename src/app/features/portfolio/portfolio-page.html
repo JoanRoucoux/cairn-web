@@ -1,7 +1,7 @@
 @if (isEmpty()) {
   <app-portfolio-empty />
 } @else if (allFailed()) {
-  <ui-alert>{{ 'portfolio.pageError' | transloco }}</ui-alert>
+  <ui-alert [fadeIn]="false">{{ 'portfolio.pageError' | transloco }}</ui-alert>
 } @else {
   <div class="flex flex-col gap-(--stack-section)">
     <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_360px]">
