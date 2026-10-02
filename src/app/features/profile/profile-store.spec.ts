@@ -186,6 +186,20 @@ describe('ProfileStore', () => {
     expect([...store.addedPasskeyIds()]).toEqual(['bmV3']);
   });
 
+  it('should forget an added passkey once a later reload fails, so Retry does not replay its highlight', async () => {
+    await settle();
+    store.passkeyAdded();
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('bmV3')]);
+
+    store.reloadPasskeys();
+    await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
+    await TestBed.inject(ApplicationRef).whenStable();
+    store.reloadPasskeys();
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('bmV3')]);
+
+    expect([...store.addedPasskeyIds()]).toEqual([]);
+  });
+
   it('should keep the first added passkey while a second one is added', async () => {
     await settle();
     store.passkeyAdded();

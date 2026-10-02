@@ -135,6 +135,28 @@ describe('HoldingListStore after a change', () => {
     expect(store.flash()).toBeNull();
   });
 
+  it('should forget a played change once a later reload fails, so Retry does not replay its highlight', async () => {
+    await load();
+
+    touchAndReveal('h1');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(store.flash()?.id).toBe('h1');
+
+    TestBed.inject(HoldingChanges).removed('h2');
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(null, { status: 500, statusText: 'Server Error' });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    store.holdings.reload();
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush(holdings);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.flash()).toBeNull();
+  });
+
   it('should key each group by its account and the filter, so a filter rebuilds the groups and a reload does not', async () => {
     await load();
     const keys = store.groups().map((group) => group.key);

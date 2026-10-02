@@ -1,4 +1,4 @@
-import { Injectable, LOCALE_ID, computed, inject, signal } from '@angular/core';
+import { Injectable, LOCALE_ID, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { type AsyncState } from '@joanroucoux/cairn-ui';
@@ -117,6 +117,17 @@ export class ProfileStore {
 
     return new Set([...this.#addedBefore(), ...fresh]);
   });
+
+  constructor() {
+    effect(() => {
+      if (this.#passkeys.status() === 'error') {
+        untracked(() => {
+          this.#addedBefore.set(new Set());
+          this.#knownBeforeAdd.set(null);
+        });
+      }
+    });
+  }
 
   reloadPasskeys(): void {
     this.#passkeys.reload();

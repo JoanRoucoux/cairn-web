@@ -116,8 +116,11 @@ export class HoldingListStore {
       const pending = this.#pendingFlash();
       const status = this.holdings.status();
 
-      if (pending && status === 'error') {
-        untracked(() => this.#pendingFlash.set(null));
+      if (status === 'error') {
+        untracked(() => {
+          this.#pendingFlash.set(null);
+          this.#flash.set(null);
+        });
       } else if (pending && status === 'resolved' && this.#changes.lastRevealed() === pending) {
         untracked(() => {
           this.#flash.set(pending);
