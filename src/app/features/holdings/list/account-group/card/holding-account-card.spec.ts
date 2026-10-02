@@ -97,12 +97,6 @@ describe('HoldingAccountCard', () => {
     expect(row).toHaveAttribute('href', '/holdings/h3');
   });
 
-  it('should caption a booklet with Livret', async () => {
-    await renderCard({ holdings: [{ ...holding, assetClass: 'CASH' } as never] });
-
-    expect(await screen.findByText('holdings.booklet')).toBeInTheDocument();
-  });
-
   it('should end with the cash line and emit when it is edited', async () => {
     const user = userEvent.setup();
     const { fixture } = await renderCard();
@@ -138,7 +132,7 @@ describe('HoldingAccountCard', () => {
     it('should say neither a date nor a count while the balance was never set', async () => {
       const { container } = await renderCard({ ...savings, institution: '' });
 
-      expect(container.querySelector('app-holding-account-meta')).toHaveTextContent('enums.accountType.SAVINGS');
+      expect(container.querySelector('app-holding-account-meta')).toHaveTextContent(/^s*enums.accountType.SAVINGSs*$/);
     });
 
     it('should show one dated balance row that emits when edited', async () => {

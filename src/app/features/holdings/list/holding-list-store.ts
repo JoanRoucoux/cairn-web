@@ -51,8 +51,6 @@ const matches = (holding: HoldingResponse, search: string): boolean =>
 
 const round = (value: number): number => Number(value.toFixed(2));
 
-export const isBooklet = (holding: HoldingResponse): boolean => holding.assetClass === 'CASH';
-
 @Injectable()
 export class HoldingListStore {
   #holdingsApiClient = inject(HoldingService);

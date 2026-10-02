@@ -23,7 +23,6 @@
     "nonEur_one": "{{count}} hors euro, non comptée",
     "nonEur_other": "{{count}} hors euro, non comptées"
   },
-  "booklet": "Livret",
   "averageCostUnknownShort": "PRU inconnu",
   "loading": "Chargement de vos lignes",
   "empty": "Aucune ligne ne correspond à votre recherche.",

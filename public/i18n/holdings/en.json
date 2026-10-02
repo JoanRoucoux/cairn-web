@@ -23,7 +23,6 @@
     "nonEur_one": "{{count}} outside the euro, not counted",
     "nonEur_other": "{{count}} outside the euro, not counted"
   },
-  "booklet": "Savings book",
   "averageCostUnknownShort": "Cost unknown",
   "loading": "Loading your holdings",
   "empty": "No holding matches your search.",

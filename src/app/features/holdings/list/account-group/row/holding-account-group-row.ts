@@ -9,7 +9,6 @@ import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 import { isMissing } from '../../../is-missing';
-import { isBooklet } from '../../holding-list-store';
 import { HoldingEnterQuote } from './enter-quote/holding-enter-quote';
 import { HoldingLineCell } from './line-cell/holding-line-cell';
 import { HoldingQuoteCell } from './quote-cell/holding-quote-cell';
@@ -38,7 +37,6 @@ export class HoldingAccountGroupRow {
   readonly enterQuote = output<HoldingResponse>();
 
   protected readonly decimalPlaces = decimalPlaces;
-  protected readonly booklet = computed(() => isBooklet(this.holding()));
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
   protected readonly unknownDay = computed(() => isMissing(this.holding().dayChangeRatio));
   protected readonly hasGain = computed(() => !isMissing(this.holding().unrealizedGainEur));

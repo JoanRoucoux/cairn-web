@@ -7,9 +7,7 @@
 >
   {{ holding().instrumentName }}
 </a>
-@if (booklet()) {
-  <span uiCellSub>{{ 'holdings.booklet' | transloco }}</span>
-} @else if (compact()) {
+@if (compact()) {
   @if (holding().stale) {
     <span tone="stale" uiCellSub>{{
       'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }

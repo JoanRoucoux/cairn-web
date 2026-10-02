@@ -1,28 +1,22 @@
 <td app-holding-line-cell primary uiTd [compact]="compact()" [holding]="holding()" [open]="open()"></td>
 @if (!compact()) {
-  @if (booklet()) {
-    <td numeric secondary uiTd></td>
-    <td numeric secondary uiTd></td>
-    <td numeric secondary uiTd></td>
-  } @else {
-    <td numeric secondary uiTd>
-      <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
-    </td>
-    <td numeric secondary uiTd>
-      <ui-amount [value]="holding().averageCost" />
-    </td>
-    <td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
-  }
+  <td numeric secondary uiTd>
+    <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
+  </td>
+  <td numeric secondary uiTd>
+    <ui-amount [value]="holding().averageCost" />
+  </td>
+  <td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
 }
 <td class="font-medium" numeric uiTd>
   <ui-amount currency="EUR" [value]="holding().marketValueEur" />
-  @if (unpriced() && !booklet() && !compact()) {
+  @if (unpriced() && !compact()) {
     <app-holding-enter-quote narrow (entered)="enterQuote.emit(holding())" />
   }
 </td>
 @if (!compact()) {
   <td numeric uiTd>
-    @if (!booklet() && hasGain()) {
+    @if (hasGain()) {
       <div class="flex justify-end">
         <ui-delta
           size="inherit"
@@ -51,7 +45,7 @@
   </td>
 }
 <td numeric uiTd>
-  @if (!booklet() && !holding().stale && !unknownDay()) {
+  @if (!holding().stale && !unknownDay()) {
     <ui-delta
       size="inherit"
       weight="regular"

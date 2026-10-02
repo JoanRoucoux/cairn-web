@@ -118,7 +118,7 @@ describe('HoldingAccountGroup', () => {
     it('should say neither a date nor a count while the balance was never set', async () => {
       await renderGroup({ ...savings, institution: '' });
 
-      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent('enums.accountType.SAVINGS');
+      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(/^s*enums.accountType.SAVINGSs*$/);
     });
 
     it('should show one balance row dated by the entry, editable like the cash row', async () => {
@@ -276,18 +276,6 @@ describe('HoldingAccountGroup', () => {
 
     expect(await screen.findByTestId('holding-row')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('link', { name: 'FCPE Actions' })).toHaveAttribute('aria-current', 'true');
-  });
-
-  it('should list a booklet with the Livret subtitle and no quantity or quote', async () => {
-    await renderGroup({
-      accountType: 'SAVINGS',
-      holdings: [{ ...holding, instrumentName: 'Livret A', isin: null, assetClass: 'CASH', stale: false } as never],
-    });
-    const row = await screen.findByTestId('holding-row');
-
-    expect(row).toHaveTextContent('holdings.booklet');
-    expect(row.querySelectorAll('td')[1]).toBeEmptyDOMElement();
-    expect(row.querySelectorAll('td')[3]).toBeEmptyDOMElement();
   });
 
   it('should end with the cash line captioned as an entered balance, even at zero', async () => {

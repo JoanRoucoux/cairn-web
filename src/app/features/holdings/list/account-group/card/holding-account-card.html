@@ -28,9 +28,7 @@
             class="text-label truncate tabular-nums"
             [class]="holding.stale ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
           >
-            @if (isBooklet(holding)) {
-              {{ 'holdings.booklet' | transloco }}
-            } @else if (holding.stale) {
+            @if (holding.stale) {
               {{ 'holdings.staleLate' | transloco: { date: holding.priceAsOf | shortDate } }}
             } @else if (unpriced(holding)) {
               {{ 'holdings.noQuoteToEnter' | transloco }}
@@ -45,21 +43,19 @@
           <span class="text-body font-medium">
             <ui-amount currency="EUR" [value]="holding.marketValueEur" />
           </span>
-          @if (!isBooklet(holding)) {
-            @if (unpriced(holding)) {
-              <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
-            } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
-              <ui-delta
-                weight="regular"
-                [unknownLabel]="'holdings.unknown' | transloco"
-                [value]="holding.unrealizedGainRatio"
-                >{{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</ui-delta
-              >
-            } @else {
-              <span class="text-label text-(--muted-foreground)">{{
-                'holdings.averageCostUnknownShort' | transloco
-              }}</span>
-            }
+          @if (unpriced(holding)) {
+            <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
+          } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
+            <ui-delta
+              weight="regular"
+              [unknownLabel]="'holdings.unknown' | transloco"
+              [value]="holding.unrealizedGainRatio"
+              >{{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</ui-delta
+            >
+          } @else {
+            <span class="text-label text-(--muted-foreground)">{{
+              'holdings.averageCostUnknownShort' | transloco
+            }}</span>
           }
         </div>
       </a>
