@@ -69,7 +69,7 @@ export class HoldingCashDialog {
 
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.accountId())) {
-      this.#outcome.succeed(this.#changes.touched(this.accountId()));
+      this.#outcome.succeed(this.#changes.balanceSet(this.accountId()));
     }
   }
 }

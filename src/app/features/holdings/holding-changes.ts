@@ -20,6 +20,10 @@ export class HoldingChanges {
     return change;
   }
 
+  balanceSet(accountId: string): HoldingChange {
+    return this.touched(accountId);
+  }
+
   removed(id: string): void {
     this.#lastRemoved.set({ id, at: Date.now() });
   }

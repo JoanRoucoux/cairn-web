@@ -342,8 +342,8 @@ describe('HoldingListStore', () => {
     expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
   });
 
-  it('should not find a savings booklet by its name', async () => {
-    const booklet = {
+  it('should not find a savings balance by the name of its account', async () => {
+    const balance = {
       ...holdings[0]!,
       id: 'h8',
       accountId: 'a3',
@@ -353,7 +353,7 @@ describe('HoldingListStore', () => {
       instrumentName: 'Livret A',
     };
     TestBed.tick();
-    httpTesting.expectOne('/api/holdings').flush([booklet]);
+    httpTesting.expectOne('/api/holdings').flush([balance]);
     httpTesting.expectOne('/api/accounts').flush(accounts);
     await TestBed.inject(ApplicationRef).whenStable();
 

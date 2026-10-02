@@ -36,6 +36,13 @@ describe('HoldingChanges', () => {
     vi.useRealTimers();
   });
 
+  it('records a balance edit under the id of its account, the id its balance row answers to', () => {
+    const change = changes.balanceSet('a1');
+
+    expect(change).toBe(changes.lastTouched());
+    expect(change.id).toBe('a1');
+  });
+
   it('records the removed id with a timestamp', () => {
     vi.useFakeTimers({ now: 2000 });
     changes.removed('b');
