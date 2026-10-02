@@ -54,7 +54,7 @@
         [errorMessage]="'portfolio.error.message' | transloco"
         [errorTitle]="'portfolio.curve.error' | transloco"
         [retryLabel]="'portfolio.error.retry' | transloco"
-        [state]="state()"
+        [state]="chartReloading() ? 'ready' : state()"
         (retry)="retry.emit()"
       >
         <div asyncLoading class="flex flex-1 flex-col" data-testid="curve-loading">

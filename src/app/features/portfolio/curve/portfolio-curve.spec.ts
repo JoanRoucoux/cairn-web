@@ -19,6 +19,7 @@ const renderCurve = (
   overrides: Partial<{
     state: AsyncState;
     blocking: boolean;
+    chartReloading: boolean;
     points: ChartPoint[];
     range: ChartRange;
     rangeChangeEur: number | undefined;
@@ -138,6 +139,14 @@ describe('PortfolioCurve', () => {
     await renderCurve({ reconstructed: true });
 
     expect(await screen.findByTestId('reconstructed-note')).toBeInTheDocument();
+  });
+
+  it('should keep the chart mounted while a range reloads over a series already shown', async () => {
+    const { container } = await renderCurve({ state: 'loading', chartReloading: true });
+
+    expect(container.querySelector('ui-line-chart')).toBeInTheDocument();
+    expect(screen.queryByTestId('curve-loading')).not.toBeInTheDocument();
+    expect(screen.getByTestId('curve-range-loading')).toBeInTheDocument();
   });
 
   it('should show a skeleton while loading', async () => {

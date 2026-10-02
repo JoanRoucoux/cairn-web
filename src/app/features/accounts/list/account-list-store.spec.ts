@@ -56,6 +56,21 @@ describe('AccountListStore', () => {
     httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings: [] });
   });
 
+  it('should stay ready, keeping the accounts, while a retry reloads', async () => {
+    await flush([holding()]);
+
+    store.retry();
+    TestBed.tick();
+
+    expect(store.state()).toBe('ready');
+    expect(store.accounts()).toHaveLength(1);
+    httpTesting.expectOne('/api/accounts').flush([account]);
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 100, byAssetClass: [], byAccount: [], holdings: [holding()] });
+    await TestBed.inject(ApplicationRef).whenStable();
+  });
+
   it('should sum market values including cash and count lines excluding the EUR cash holding', async () => {
     await flush([holding(), holding({ id: 'h2', marketValueEur: 200 }), cashHolding()]);
 

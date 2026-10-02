@@ -7,9 +7,11 @@ import { RouterOutlet } from '@angular/router';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailPage } from './holding-detail-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -52,6 +54,7 @@ describe('HoldingDetailPage figures', () => {
       routes: [{ path: 'holdings/:holdingId', component: HoldingDetailPage }],
       initialRoute: 'holdings/h1',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -128,5 +131,19 @@ describe('HoldingDetailPage figures', () => {
     await renderPage({ ...holding, isin: null });
 
     expect((await screen.findByText('holdings.detail.isin')).parentElement).toHaveTextContent('—');
+  });
+
+  it('keeps the chart mounted while a new range loads', async () => {
+    const user = userEvent.setup();
+    await renderPage(holding, [{ asOf: '2026-08-21', price: 30 }]);
+    const chart = document.querySelector('ui-line-chart');
+
+    expect(chart).not.toBeNull();
+
+    await user.click(screen.getByRole('radio', { name: 'chart.range.1y' }));
+    TestBed.tick();
+
+    expect(document.querySelector('ui-line-chart')).toBe(chart);
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
   });
 });

@@ -84,7 +84,10 @@ export class PortfolioStore {
     defaultValue: EMPTY_HISTORY,
   });
 
-  readonly #historyValue = computed(() => settledValue(this.history, EMPTY_HISTORY));
+  readonly #historyValue = linkedSignal<HistoryOrIntraday | undefined, HistoryOrIntraday>({
+    source: () => settledValue<HistoryOrIntraday | undefined>(this.history, undefined),
+    computation: (settled, previous) => settled ?? previous?.value ?? EMPTY_HISTORY,
+  });
 
   readonly points = computed<ChartPoint[]>(() => {
     const value = this.#historyValue();
@@ -143,6 +146,10 @@ export class PortfolioStore {
 
     return (state === 'loading' || state === 'error') && !shown;
   });
+
+  readonly curveReloading = computed(
+    () => this.history.status() === 'loading' && this.#curveShown() && this.#historyValue().points.length > 0,
+  );
 
   readonly envelopesState = computed<AsyncState>(() =>
     toAsyncState(this.performance, (value) => value.byEnvelope.length === 0),

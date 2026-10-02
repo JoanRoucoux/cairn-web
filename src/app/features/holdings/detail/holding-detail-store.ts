@@ -1,10 +1,11 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
 import type { ChartPoint } from '@joanroucoux/cairn-ui';
 import { map } from 'rxjs';
 
+import type { QuoteResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 import { QuoteService } from '@core/api-client/quote/quote.service';
@@ -54,10 +55,22 @@ export class HoldingDetailStore {
     defaultValue: [],
   });
 
+  readonly #series = linkedSignal<
+    { instrumentId: string | undefined; quotes: QuoteResponse[] | undefined },
+    QuoteResponse[]
+  >({
+    source: () => ({
+      instrumentId: this.holding()?.instrumentId,
+      quotes: this.quotes.status() === 'loading' || this.quotes.status() === 'error' ? undefined : this.quotes.value(),
+    }),
+    computation: (source, previous) =>
+      source.quotes ?? (previous && previous.source.instrumentId === source.instrumentId ? previous.value : []),
+  });
+
   readonly points = computed<ChartPoint[]>(() => {
     const quantity = this.holding()?.quantity ?? 0;
 
-    return this.quotes.value().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
+    return this.#series().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
   });
 
   readonly rangeChange = computed(() => {

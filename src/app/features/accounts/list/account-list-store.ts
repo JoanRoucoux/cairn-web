@@ -35,7 +35,7 @@ export class AccountListStore {
     if (this.#accounts.error() || this.#portfolio.error()) {
       return 'error';
     }
-    if (this.#accounts.isLoading() || this.#portfolio.isLoading()) {
+    if (this.#accounts.status() === 'loading' || this.#portfolio.status() === 'loading') {
       return 'loading';
     }
 
