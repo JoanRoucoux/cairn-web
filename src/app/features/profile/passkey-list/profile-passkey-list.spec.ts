@@ -3,6 +3,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { type MotionRecord, recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import type { PasskeyView } from '../profile-store';
@@ -53,7 +54,10 @@ describe('ProfilePasskeyList', () => {
   const retry = vi.fn();
 
   const renderList = (
-    inputs: { state: 'loading' | 'error' | 'ready'; passkeys: PasskeyView[] } = { state: 'ready', passkeys },
+    inputs: { state: 'loading' | 'error' | 'ready'; passkeys: PasskeyView[]; added?: string | null } = {
+      state: 'ready',
+      passkeys,
+    },
   ): ReturnType<typeof render<ProfilePasskeyList>> =>
     render(ProfilePasskeyList, {
       inputs,
@@ -124,6 +128,29 @@ describe('ProfilePasskeyList', () => {
 
     expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
     await vi.waitFor(() => expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0));
+  });
+
+  describe('after a change', () => {
+    let motion: MotionRecord;
+
+    beforeEach(() => (motion = recordMotion()));
+
+    afterEach(() => motion.restore());
+
+    it('should highlight the key just added, and only that one', async () => {
+      await renderList({ state: 'ready', passkeys, added: 'c' });
+
+      await vi.waitFor(() => expect(motion.highlighted).toHaveLength(1));
+      expect(motion.highlighted[0]).toHaveTextContent('YubiKey 5C');
+      expect(motion.highlighted[0]!.tagName).toBe('LI');
+    });
+
+    it('should highlight nothing when no key was just added', async () => {
+      await renderList();
+
+      expect(screen.getAllByRole('listitem')).toHaveLength(4);
+      expect(motion.highlighted).toEqual([]);
+    });
   });
 
   it('should offer a retry when the keys could not be loaded', async () => {

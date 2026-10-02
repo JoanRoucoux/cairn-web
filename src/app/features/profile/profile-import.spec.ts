@@ -4,6 +4,7 @@ import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -68,22 +69,31 @@ describe('ProfilePage import and export', () => {
     expect(link).toHaveAttribute('download');
   });
 
-  it('should report what an accepted import changed', async () => {
-    const user = userEvent.setup();
-    await renderPage();
+  it.each([
+    [3, 4, 'profile.toasts.imported_other'],
+    [1, 0, 'profile.toasts.imported_one'],
+    [0, 1, 'profile.toasts.imported_one'],
+  ])(
+    'should confirm an accepted import of %i new and %i updated lines with a toast',
+    async (holdingsCreated, holdingsUpdated, message) => {
+      const user = userEvent.setup();
+      await renderPage();
+      const show = vi.spyOn(TestBed.inject(UiToasts), 'show');
 
-    await user.upload(screen.getByTestId('import-file'), csvFile());
+      await user.upload(screen.getByTestId('import-file'), csvFile());
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush({
-      accountsCreated: 1,
-      instrumentsCreated: 2,
-      holdingsCreated: 3,
-      holdingsUpdated: 4,
-    });
+      (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush({
+        accountsCreated: 1,
+        instrumentsCreated: 2,
+        holdingsCreated,
+        holdingsUpdated,
+      });
 
-    expect(await screen.findByTestId('import-report')).toBeInTheDocument();
-    expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
-  });
+      await vi.waitFor(() => expect(show).toHaveBeenCalledExactlyOnceWith(message));
+      expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('import-report')).not.toBeInTheDocument();
+    },
+  );
 
   it('should list every refused line so the file can be fixed in one pass', async () => {
     const user = userEvent.setup();
@@ -107,7 +117,7 @@ describe('ProfilePage import and export', () => {
     expect(rejections).toBeInTheDocument();
     expect(await within(rejections).findByText('2')).toBeInTheDocument();
     expect(within(rejections).getByText('5')).toBeInTheDocument();
-    expect(screen.queryByTestId('import-report')).not.toBeInTheDocument();
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('should open the file picker from the visible button, the input being hidden', async () => {

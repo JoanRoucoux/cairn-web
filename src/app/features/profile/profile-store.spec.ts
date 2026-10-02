@@ -153,6 +153,47 @@ describe('ProfileStore', () => {
     expect(store.passkeys()).toEqual([]);
   });
 
+  it('should name no added passkey before one is added', async () => {
+    await settle();
+
+    expect(store.addedPasskeyId()).toBeNull();
+  });
+
+  it('should name the passkey that appears once an added one is reloaded, and keep it', async () => {
+    const added = {
+      credentialId: 'bmV3',
+      label: 'iPad',
+      createdAt: '2026-09-25T15:00:00Z',
+      lastUsedAt: null,
+      current: false,
+    };
+    await settle();
+
+    store.passkeyAdded();
+    TestBed.tick();
+
+    expect(store.addedPasskeyId()).toBeNull();
+
+    await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, added]);
+    expect(store.addedPasskeyId()).toBe('bmV3');
+
+    store.reloadPasskeys();
+    TestBed.tick();
+    expect(store.addedPasskeyId()).toBe('bmV3');
+
+    await flushCall(httpTesting, '/api/session/passkeys', [added]);
+    expect(store.addedPasskeyId()).toBe('bmV3');
+  });
+
+  it('should name no passkey when the reload after an add brings nothing new', async () => {
+    await settle();
+
+    store.passkeyAdded();
+    await flushCall(httpTesting, '/api/session/passkeys', passkeys);
+
+    expect(store.addedPasskeyId()).toBeNull();
+  });
+
   it('should keep the identity ready while the passkeys load', async () => {
     await flushCall(httpTesting, '/api/session', {
       displayName: 'Joan',

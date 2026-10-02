@@ -4,6 +4,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { TRANSLOCO_LOADER, type TranslocoLoader, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -12,12 +13,13 @@ import { of } from 'rxjs';
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { PasskeyCeremony, type PasskeyOutcome } from '@core/webauthn/passkey-ceremony';
 
+import { recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
-import { flushCall, session, settleProfile } from './profile-testing';
+import { flushCall, passkeys, session, settleProfile } from './profile-testing';
 
 // Simulates the profile scope's real, asynchronous load: the plain TranslocoTestingModule loader
 // resolves scopes synchronously, which cannot reproduce the race between first render and the
@@ -131,17 +133,28 @@ describe('ProfilePage', () => {
     expect(screen.getByTestId('profile-passkey-dialog')).toBeInTheDocument();
   });
 
-  it('should reload the passkeys and close the dialog once a passkey is registered', async () => {
+  it('should close the dialog, confirm, then reload and highlight the passkey just registered', async () => {
+    const motion = recordMotion();
+    onTestFinished(() => motion.restore());
     const user = userEvent.setup();
     await renderPage();
     register.mockResolvedValue('ok');
+    const show = vi.spyOn(TestBed.inject(UiToasts), 'show');
 
     await user.click(screen.getByTestId('manage-passkeys'));
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.type(screen.getByTestId('passkey-label'), 'iPad');
     await user.click(screen.getByTestId('passkey-register'));
 
-    await flushCall(httpTesting, '/api/session/passkeys', []);
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument());
+    expect(show).toHaveBeenCalledExactlyOnceWith('profile.toasts.passkeyAdded');
+
+    await flushCall(httpTesting, '/api/session/passkeys', [
+      ...passkeys,
+      { credentialId: 'aVBhZA', label: 'iPad', createdAt: '2026-09-25T15:00:00Z', lastUsedAt: null, current: false },
+    ]);
+
+    expect(await screen.findByTestId('added-passkey')).toHaveTextContent('iPad');
+    await vi.waitFor(() => expect(motion.highlighted).toEqual([screen.getByTestId('added-passkey')]));
   });
 
   it('should close the passkey dialog when dismissed', async () => {
@@ -151,7 +164,8 @@ describe('ProfilePage', () => {
     await user.click(screen.getByTestId('manage-passkeys'));
     await user.click(screen.getByTestId('passkey-cancel'));
 
-    expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('should ask before deleting a device, and delete nothing on cancel', async () => {
@@ -184,6 +198,7 @@ describe('ProfilePage', () => {
 
     await vi.waitFor(() => expect(screen.queryByTestId('profile-passkey-delete-dialog')).not.toBeInTheDocument());
     await vi.waitFor(() => expect(screen.getByTestId('manage-passkeys')).toHaveFocus());
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('profile.toasts.passkeyDeleted');
   });
 
   it('should offer the three theme preferences', async () => {

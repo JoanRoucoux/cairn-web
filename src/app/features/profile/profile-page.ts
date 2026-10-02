@@ -30,6 +30,9 @@ import {
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
+import { injectToast } from '@shared/feedback/toast';
+import { pluralKey } from '@shared/format/plural-key';
+
 import { ProfilePasskeyDeleteDialog } from './passkey-delete-dialog/profile-passkey-delete-dialog';
 import { ProfilePasskeyDialog } from './passkey-dialog/profile-passkey-dialog';
 import { ProfilePasskeyList } from './passkey-list/profile-passkey-list';
@@ -72,6 +75,7 @@ export class ProfilePage {
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly #injector = inject(Injector);
   #signIn = inject(SignInRedirect);
+  #toast = injectToast();
 
   protected readonly identityState = this.#store.identityState;
   protected readonly passkeysState = this.#store.passkeysState;
@@ -79,6 +83,7 @@ export class ProfilePage {
   protected readonly username = this.#store.username;
   protected readonly signInMethod = this.#store.signInMethod;
   protected readonly passkeys = this.#store.passkeys;
+  protected readonly addedPasskeyId = this.#store.addedPasskeyId;
   protected readonly theme = this.#store.theme;
   protected readonly systemScheme = this.#store.systemScheme;
   protected readonly language = this.#store.language;
@@ -90,7 +95,6 @@ export class ProfilePage {
 
   #importStore = inject(PortfolioImportStore);
   protected readonly importing = this.#importStore.importing;
-  protected readonly report = this.#importStore.report;
   protected readonly rejections = this.#importStore.rejections;
   protected readonly failed = this.#importStore.failed;
 
@@ -126,18 +130,28 @@ export class ProfilePage {
     const file = input.files?.[0];
     input.value = '';
 
-    if (file) {
-      await this.#importStore.importFile(file);
+    if (!file) {
+      return;
+    }
+
+    const report = await this.#importStore.importFile(file);
+
+    if (report) {
+      const count = report.holdingsCreated + report.holdingsUpdated;
+
+      this.#toast(pluralKey('profile.toasts.imported', count), { count });
     }
   }
 
   protected onPasskeyRegistered(): void {
     this.passkeyDialogOpen.set(false);
-    this.#store.reloadPasskeys();
+    this.#toast('profile.toasts.passkeyAdded');
+    this.#store.passkeyAdded();
   }
 
   protected onPasskeyDeleted(): void {
     this.passkeyToDelete.set(undefined);
+    this.#toast('profile.toasts.passkeyDeleted');
     this.#store.reloadPasskeys();
     afterNextRender(
       () => this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="manage-passkeys"]')?.focus(),

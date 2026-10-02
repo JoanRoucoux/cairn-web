@@ -25,7 +25,6 @@
   "importTemplate": "Download the CSV template",
   "importTemplateHint": "The columns the import expects",
   "instrumentsHint": "The catalog of tracked instruments",
-  "importDone": "Done: {{accountsCreated}} accounts and {{instrumentsCreated}} instruments created, {{holdingsCreated}} positions added, {{holdingsUpdated}} updated.",
   "importFailed": "The import could not be sent. Try again.",
   "importRejected": "Nothing was imported. Fix these {{count}} line(s) and try again.",
   "importLine": "Line",
@@ -93,5 +92,11 @@
     "submit": "Delete the key",
     "refused": "This is your only passkey. Add another device before deleting it.",
     "error": "The key could not be deleted."
+  },
+  "toasts": {
+    "passkeyAdded": "Passkey added",
+    "passkeyDeleted": "Passkey deleted",
+    "imported_one": "{{count}} holding imported",
+    "imported_other": "{{count}} holdings imported"
   }
 }
