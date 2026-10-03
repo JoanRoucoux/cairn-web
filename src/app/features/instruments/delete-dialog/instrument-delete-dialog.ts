@@ -33,12 +33,10 @@ export class InstrumentDeleteDialog {
   #toast = injectToast();
   readonly #outcome = injectDialogOutcome<void>(() => this.#toast('instruments.toasts.deleted'));
 
-  // The parent creates this component to open the dialog: it is open from its first render.
   protected readonly open = this.#outcome.open;
   protected readonly deleting = this.#store.deleting;
   protected readonly error = this.#store.error;
 
-  // description is a plain string input, so the interpolation happens here rather than in the template.
   protected description(): string {
     return this.#transloco.translate('instruments.delete.description', {
       name: this.instrument().name,

@@ -60,7 +60,6 @@ describe('LoginPage', () => {
       statusText: 'No Content',
     });
 
-    // A router navigation would leave the application running without the session it just opened.
     await vi.waitFor(() => expect(load).toHaveBeenCalledWith('/'));
   });
 

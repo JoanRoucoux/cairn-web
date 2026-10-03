@@ -21,7 +21,6 @@ export const INSTRUMENTS_ROUTES: Routes = [
         },
       },
       {
-        // Declared before any :instrumentId route so 'new' is not matched as an identifier.
         path: 'new',
         component: InstrumentFormPage,
         title: 'pageTitle.instrumentCreate',

@@ -23,7 +23,6 @@ export class LoginStore {
 
   readonly form = form(this.#model, credentialsSchema(this.#messages));
 
-  /** The password was wrong. An outcome, not a breakdown, and the only one worth naming. */
   readonly refused = signal(false);
   readonly failed = signal(false);
 
@@ -36,11 +35,9 @@ export class LoginStore {
     this.#clearOutcomes();
     let signedIn = false;
 
-    // submit() marks every field as touched and skips the request while the form is invalid.
     await submit(this.form, async () => {
       const credentials = this.#model();
-      // Form encoding, not JSON: Spring's UsernamePasswordAuthenticationFilter reads request
-      // parameters, and would see an empty username in a JSON body.
+      // Form encoding, not JSON: Spring's login filter reads request parameters, not a JSON body.
       const body = new URLSearchParams({
         username: credentials.username,
         password: credentials.password,

@@ -13,9 +13,6 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { InstrumentFormPage } from './instrument-form-page';
 import { InstrumentFormStore } from './instrument-form-store';
 
-// Routed through a real `<router-outlet>`, exactly like the app: `InstrumentFormStore` is provided
-// by `InstrumentFormPage` itself, which only sits in the right injector - the one carrying the real
-// `ActivatedRoute` - when activated through an outlet.
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
 

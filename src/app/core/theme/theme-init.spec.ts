@@ -13,8 +13,6 @@ describe('provideThemeInit', () => {
     localStorage.setItem('cairn.theme', 'dark');
     TestBed.configureTestingModule({ providers: [provideZonelessChangeDetection(), provideThemeInit()] });
 
-    // Triggers Angular's environment initializers without injecting ThemeStore directly, unlike
-    // every screen that reaches it today (only `profile-store.ts` does).
     TestBed.inject(ApplicationRef);
 
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');

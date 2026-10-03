@@ -344,8 +344,6 @@ describe('PortfolioStore', () => {
     await flushPerformance();
     await settle();
 
-    // `HttpTestingController.match()` consumes whatever it finds, so each request is captured the
-    // moment it is first seen and acted on through that same reference - never re-queried by URL.
     const waitForPerformanceRequest = (range: string): Promise<TestRequest> =>
       vi.waitFor(() => {
         const [request] = httpTesting.match(
@@ -365,23 +363,18 @@ describe('PortfolioStore', () => {
     TestBed.tick();
     const oneYearRequest = await waitForPerformanceRequest('1y');
 
-    // The newer range resolves first...
     oneYearRequest.flush({ ...performance, range: '1y' });
     await vi.waitFor(() => expect(store.envelopesState()).toBe('ready'));
 
-    // ...and rxResource has already cancelled the older one by the time it would resolve late, out
-    // of order: it never gets the chance to win, since it cannot even be flushed any more.
     expect(() => sevenDayRequest.flush({ ...performance, range: '7d' })).toThrow('cancelled');
 
-    // The 7d /history request rxResource abandoned alongside its performance counterpart cannot be
-    // flushed either; only the 1y one (if still pending) needs draining for `verify()`.
     httpTesting
       .match((candidate) => candidate.url === '/api/history')
       .forEach((request) => {
         try {
           request.flush(history);
         } catch {
-          // Already cancelled: nothing to drain.
+          // Already cancelled.
         }
       });
   });

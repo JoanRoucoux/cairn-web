@@ -58,8 +58,6 @@ export class ThemeStore {
   #apply(preference: ThemePreference): void {
     const root = this.#document.documentElement;
 
-    // 'system' must leave the attribute off entirely: the token sheet resolves through
-    // light-dark(), which follows the OS only while nothing is stamped.
     if (preference === 'system') {
       root.removeAttribute('data-theme');
       return;

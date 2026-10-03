@@ -8,7 +8,6 @@ import { PortfolioPage } from './portfolio-page';
 export const PORTFOLIO_ROUTES: Routes = [
   {
     path: '',
-    // Load the feature translations (public/i18n/portfolio/) alongside the feature.
     providers: [provideTranslocoScope('portfolio')],
     children: [
       {

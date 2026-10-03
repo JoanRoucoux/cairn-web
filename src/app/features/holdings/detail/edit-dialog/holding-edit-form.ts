@@ -9,7 +9,6 @@ export type HoldingEditDraft = {
   averageCost: number | null;
 };
 
-// A factory so each dialog instance gets its own model object.
 export const initialHoldingEditDraft = (holding?: HoldingResponse): HoldingEditDraft => ({
   quantity: holding?.quantity ?? null,
   averageCost: holding?.averageCost ?? null,
@@ -21,8 +20,6 @@ export const holdingEditDraftSchema = (messages: FormMessages): Schema<HoldingEd
   return schema((holding) => {
     required(holding.quantity, { message: () => messages.required() });
     min(holding.quantity, 0, { message: () => belowMin() });
-    // averageCost stays optional on purpose: twelve of the twenty-six holdings have no cost basis,
-    // and forcing a number here would invent one.
     min(holding.averageCost, 0, { message: () => belowMin() });
   });
 };

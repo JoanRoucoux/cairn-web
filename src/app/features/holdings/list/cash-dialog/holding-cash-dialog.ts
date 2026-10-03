@@ -38,7 +38,6 @@ export class HoldingCashDialog {
     this.#changes.reveal(change);
   });
 
-  // The parent creates this component to open the dialog: it is open from its first render.
   protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
@@ -48,8 +47,6 @@ export class HoldingCashDialog {
   constructor() {
     effect(() => this.#store.prefill(this.balance()));
 
-    // showModal() focuses the first focusable descendant by default, which would be the amount
-    // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         focusInitial(this.#host.nativeElement, 'holding-cash-cancel', 'holding-cash-amount');

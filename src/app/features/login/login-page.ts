@@ -78,8 +78,7 @@ export class LoginPage {
       return;
     }
 
-    // A full page load, not a router navigation: the shell and the session store have to start
-    // against the session that now exists.
+    // A full page load, not a router navigation: the session store must start against the new session.
     this.#pageLoad.to('/');
   }
 

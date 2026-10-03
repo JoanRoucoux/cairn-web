@@ -38,13 +38,11 @@ export class ManualQuoteDialog {
     this.#changes.reveal(change);
   });
 
-  // The parent creates this component to open the dialog: it is open from its first render.
   protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
 
   constructor() {
-    // The close cross is the first focusable descendant: showModal() would focus it instead of the field.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         focusInitial(this.#host.nativeElement, 'manual-quote-as-of');
