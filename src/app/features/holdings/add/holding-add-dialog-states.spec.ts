@@ -72,7 +72,7 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     expect(await screen.findByText('holdings.add.catalogError')).toBeInTheDocument();
     expect(await screen.findByText('Xtrackers MSCI World')).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole('button', { name: 'holdings.add.onlineRetry' }).at(0) as HTMLElement);
+    await user.click(screen.getByRole('button', { name: 'holdings.add.catalogRetry' }));
     httpTesting.expectOne('/api/instruments').flush(instruments);
 
     expect(await screen.findByTestId('holding-add-catalog-candidate')).toHaveTextContent('Amundi MSCI World');

@@ -22,7 +22,7 @@
         <ui-async
           variant="inline"
           [errorMessage]="'holdings.add.catalogError' | transloco"
-          [retryLabel]="'holdings.add.onlineRetry' | transloco"
+          [retryLabel]="'holdings.add.catalogRetry' | transloco"
           [state]="catalogState()"
           (retry)="retriedCatalog.emit()"
         >

@@ -178,6 +178,7 @@
     "titlePlaceholder": "Nom ou ISIN",
     "catalogHeading": "Dans le catalogue",
     "catalogError": "Le catalogue n'a pas répondu.",
+    "catalogRetry": "Réessayer le catalogue",
     "catalogLoading": "Recherche dans le catalogue",
     "onlineHeading": "Nouveau titre, trouvé en ligne",
     "onlineError": "La recherche en ligne n'a pas répondu.",
