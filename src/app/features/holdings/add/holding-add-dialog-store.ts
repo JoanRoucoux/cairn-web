@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
+import { type AsyncState } from '@joanroucoux/cairn-ui';
 import { firstValueFrom, map } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
@@ -113,12 +114,17 @@ export class HoldingAddDialogStore {
 
     const own = this.#ownInstrumentId();
 
-    return this.instruments
-      .value()
+    return (this.instruments.hasValue() ? this.instruments.value() : [])
       .filter((instrument) => instrument.id !== own)
       .filter((instrument) =>
         normalizeSearch(`${instrument.name} ${instrument.isin ?? ''} ${instrument.symbol ?? ''}`).includes(query),
       );
+  });
+
+  readonly catalogState = computed<AsyncState>(() => {
+    const status = this.instruments.status();
+
+    return status === 'error' ? 'error' : status === 'loading' ? 'loading' : 'ready';
   });
 
   readonly quantity = computed(() => parseDecimal(this.quantityText()));
@@ -186,6 +192,10 @@ export class HoldingAddDialogStore {
     }
 
     this.#debounceHandle = setTimeout(() => void this.searchOnline(trimmed), SEARCH_DEBOUNCE_MS);
+  }
+
+  reloadCatalog(): void {
+    this.instruments.reload();
   }
 
   async searchOnline(query: string = this.query().trim()): Promise<void> {

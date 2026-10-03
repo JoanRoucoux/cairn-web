@@ -32,6 +32,7 @@
           [busyKey]="replacingKey()"
           [candidates]="candidates()"
           [catalogResults]="catalogResults()"
+          [catalogState]="catalogState()"
           [onlineError]="onlineError()"
           [onlineSearched]="onlineSearched()"
           [query]="query()"
@@ -42,6 +43,7 @@
           (pickedOnline)="pickOnline($event)"
           (queryInput)="onQueryInput($event)"
           (retried)="retryOnline()"
+          (retriedCatalog)="retryCatalog()"
         />
       } @else {
         <app-holding-add-picked
