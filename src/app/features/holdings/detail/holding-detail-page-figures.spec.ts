@@ -5,7 +5,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 
-import { UiLineChart } from '@joanroucoux/cairn-ui';
+import { UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';

@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { type AsyncState } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 import { firstValueFrom, map } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';

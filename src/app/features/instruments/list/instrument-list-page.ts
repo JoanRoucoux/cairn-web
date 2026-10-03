@@ -1,27 +1,18 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import {
-  UiAsync,
-  UiBackLink,
-  UiBadge,
-  UiButton,
-  UiCard,
-  UiEmpty,
-  UiField,
-  UiFieldLeading,
-  UiInput,
-  UiMenu,
-  UiMenuItem,
-  UiMenuTrigger,
-  UiRow,
-  UiSkeleton,
-  UiTable,
-  UiTd,
-  UiTh,
-  UiTr,
-  delayedState,
-} from '@joanroucoux/cairn-ui';
+import { UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
+import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
+import { UiBadge } from '@joanroucoux/cairn-ui/badge';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiEmpty } from '@joanroucoux/cairn-ui/empty';
+import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
+import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { UiRow } from '@joanroucoux/cairn-ui/row';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
+import { UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash } from '@lucide/angular';
 

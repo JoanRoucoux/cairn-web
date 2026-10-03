@@ -1,6 +1,7 @@
 import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 
-import { UiButton, UiMenu, UiMenuTrigger } from '@joanroucoux/cairn-ui';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiMenu, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis } from '@lucide/angular';
 

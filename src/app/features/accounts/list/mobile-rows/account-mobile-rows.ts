@@ -1,7 +1,11 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiAmount, UiButton, UiCard, UiMenu, UiMenuItem, UiMenuTrigger, UiRow, UiRowItem } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { UiRow, UiRowItem } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideTrash, LucideWallet } from '@lucide/angular';
 

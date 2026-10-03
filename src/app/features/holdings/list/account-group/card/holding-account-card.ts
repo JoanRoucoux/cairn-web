@@ -1,7 +1,11 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiAmount, UiCard, UiDelta, UiFlipItem, UiHighlight, UiRow } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { UiFlipItem, UiHighlight } from '@joanroucoux/cairn-ui/motion';
+import { UiRow } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

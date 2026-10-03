@@ -1,18 +1,13 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 
-import {
-  type AsyncState,
-  UiAsync,
-  UiBadge,
-  UiButton,
-  UiCard,
-  UiFlipList,
-  UiHighlight,
-  UiListRow,
-  UiRowTile,
-  UiSkeleton,
-} from '@joanroucoux/cairn-ui';
+import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { UiBadge } from '@joanroucoux/cairn-ui/badge';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiFlipList, UiHighlight } from '@joanroucoux/cairn-ui/motion';
+import { UiListRow, UiRowTile } from '@joanroucoux/cairn-ui/row';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideKeyRound, LucidePlus, LucideTrash } from '@lucide/angular';
 

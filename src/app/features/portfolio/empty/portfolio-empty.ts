@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiButton, UiCard } from '@joanroucoux/cairn-ui';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
 

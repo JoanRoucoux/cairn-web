@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
 import { type RenderResult, render } from '@testing-library/angular';
 
 import { AmountSeparator } from './amount-separator';

@@ -1,6 +1,7 @@
 import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 
-import { UiAmount, UiRow } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiRow } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';

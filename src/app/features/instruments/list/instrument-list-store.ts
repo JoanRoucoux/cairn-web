@@ -1,7 +1,7 @@
 import { Injectable, LOCALE_ID, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { type AsyncState } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 
 import type { InstrumentResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';

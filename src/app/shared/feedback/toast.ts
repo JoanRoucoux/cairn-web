@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 
-import { UiToasts } from '@joanroucoux/cairn-ui';
+import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 import { TranslocoService } from '@jsverse/transloco';
 
 export const injectToast = (): ((key: string, params?: Record<string, unknown>) => void) => {

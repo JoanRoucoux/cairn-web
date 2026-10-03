@@ -1,6 +1,7 @@
 import { Component, output } from '@angular/core';
 
-import { UiActionBar, UiButton } from '@joanroucoux/cairn-ui';
+import { UiActionBar } from '@joanroucoux/cairn-ui/action-bar';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({

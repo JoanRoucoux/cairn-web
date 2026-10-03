@@ -11,23 +11,15 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router, RouterOutlet, Scroll } from '@angular/router';
 
-import {
-  type AsyncState,
-  type FilterChipOption,
-  UiAsync,
-  UiButton,
-  UiCard,
-  UiField,
-  UiFieldLeading,
-  UiFilterChips,
-  UiFlipItem,
-  UiFlipList,
-  UiInput,
-  UiSkeleton,
-  UiTable,
-  UiTh,
-  delayedState,
-} from '@joanroucoux/cairn-ui';
+import { type AsyncState, UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
+import { type FilterChipOption, UiFilterChips } from '@joanroucoux/cairn-ui/filter-chips';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
+import { UiFlipItem, UiFlipList } from '@joanroucoux/cairn-ui/motion';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
+import { UiTable, UiTh } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';

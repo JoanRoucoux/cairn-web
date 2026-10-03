@@ -1,6 +1,7 @@
 import { Component, booleanAttribute, input, output } from '@angular/core';
 
-import { UiButton, UiRowAction } from '@joanroucoux/cairn-ui';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiRowAction } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({

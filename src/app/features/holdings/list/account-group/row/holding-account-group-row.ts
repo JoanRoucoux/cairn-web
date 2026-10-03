@@ -1,6 +1,8 @@
 import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 
-import { UiAmount, UiCellSub, UiDelta, UiTd } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { UiCellSub, UiTd } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

@@ -1,6 +1,6 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 
-import type { AsyncState } from '@joanroucoux/cairn-ui';
+import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 

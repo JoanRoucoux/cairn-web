@@ -1,6 +1,8 @@
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 
-import { UI_AMOUNT_MASKED, UiAlert, UiCard } from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { chartFormats } from '@shared/chart/chart-formats';

@@ -1,7 +1,8 @@
 import { Injectable, type Signal, computed, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { type AsyncState, type ChartPoint } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
+import { type ChartPoint } from '@joanroucoux/cairn-ui/line-chart';
 import type { Observable } from 'rxjs';
 
 import type {

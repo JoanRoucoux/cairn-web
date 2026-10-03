@@ -1,6 +1,8 @@
 import { Component, computed, input } from '@angular/core';
 
-import { type AsyncState, UiAmount, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { excludedTotal } from '@shared/format/excluded-lines';

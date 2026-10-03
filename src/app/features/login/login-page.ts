@@ -1,7 +1,10 @@
 import { Component, ElementRef, Injector, afterNextRender, afterRenderEffect, inject, signal } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
-import { UiAlert, UiButton, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiField } from '@joanroucoux/cairn-ui/field';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEye, LucideEyeOff, LucideKeyRound } from '@lucide/angular';
 

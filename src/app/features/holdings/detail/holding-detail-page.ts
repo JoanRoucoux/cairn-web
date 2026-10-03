@@ -3,23 +3,15 @@ import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angu
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import {
-  type AsyncState,
-  type ChartPoint,
-  type SegmentedOption,
-  UI_AMOUNT_MASKED,
-  UiAmount,
-  UiAsync,
-  UiBackLink,
-  UiButton,
-  UiCard,
-  UiDelta,
-  UiLineChart,
-  UiMenu,
-  UiMenuItem,
-  UiMenuTrigger,
-  UiSegmented,
-} from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
+import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideRefreshCw, LucideTrash, LucideX } from '@lucide/angular';
 

@@ -1,6 +1,8 @@
 import { Component, inject, input, output } from '@angular/core';
 
-import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiDialog } from '@joanroucoux/cairn-ui/dialog';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';

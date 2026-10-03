@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiButton } from '@joanroucoux/cairn-ui';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideHouse } from '@lucide/angular';
 

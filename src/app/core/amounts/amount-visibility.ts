@@ -1,6 +1,6 @@
 import { Injectable, type Provider, type Signal, inject, signal } from '@angular/core';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
 
 const STORAGE_KEY = 'cairn-hide-amounts';
 

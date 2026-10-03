@@ -1,7 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiStaleLink } from '@joanroucoux/cairn-ui';
+import { UiStaleLink } from '@joanroucoux/cairn-ui/stale-link';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { AccountView } from '../account-list-store';

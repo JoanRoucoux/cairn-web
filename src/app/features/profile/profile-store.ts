@@ -1,7 +1,7 @@
 import { Injectable, LOCALE_ID, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { type AsyncState } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 
 import { AmountVisibility } from '@core/amounts/amount-visibility';
 import type { PasskeyResponse } from '@core/api-client/cairnAPI.schemas';

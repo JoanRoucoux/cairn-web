@@ -2,7 +2,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
-import { UiFlipItem } from '@joanroucoux/cairn-ui';
+import { UiFlipItem } from '@joanroucoux/cairn-ui/motion';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 

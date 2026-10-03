@@ -2,7 +2,11 @@ import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { UiAvatar, UiAvatarLink, UiBackLink, UiNavItem, UiTab, UiTabBar, UiToaster } from '@joanroucoux/cairn-ui';
+import { UiAvatar, UiAvatarLink } from '@joanroucoux/cairn-ui/avatar';
+import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
+import { UiNavItem } from '@joanroucoux/cairn-ui/nav-item';
+import { UiTab, UiTabBar } from '@joanroucoux/cairn-ui/tab-bar';
+import { UiToaster } from '@joanroucoux/cairn-ui/toast';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { filter, map } from 'rxjs';
 
