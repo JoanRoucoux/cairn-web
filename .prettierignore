@@ -11,8 +11,5 @@ node_modules
 # Reformatting it here would only hide a drift the diff exists to catch.
 /openapi/openapi.yaml
 
-# Generator templates contain {{tokens}} and are not valid syntax
-/.generator/templates
-
 # Lockfile
 pnpm-lock.yaml
