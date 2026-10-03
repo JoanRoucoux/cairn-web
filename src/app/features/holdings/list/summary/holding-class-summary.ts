@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-import { UiAmount } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { AssetClass } from '@core/api-client/cairnAPI.schemas';

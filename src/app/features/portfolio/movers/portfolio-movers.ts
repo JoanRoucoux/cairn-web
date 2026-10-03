@@ -1,19 +1,12 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import {
-  type AsyncState,
-  UiAmount,
-  UiAsync,
-  UiDelta,
-  UiRow,
-  UiRowLink,
-  UiSkeleton,
-  UiTable,
-  UiTd,
-  UiTh,
-  UiTr,
-} from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { UiRow } from '@joanroucoux/cairn-ui/row';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
+import { UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

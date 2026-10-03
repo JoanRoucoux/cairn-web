@@ -1,17 +1,11 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 
-import {
-  type AsyncState,
-  type ChartPoint,
-  type SegmentedOption,
-  UiAmount,
-  UiAsync,
-  UiDelta,
-  UiLineChart,
-  UiSegmented,
-  UiSkeleton,
-  delayedState,
-} from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { type AsyncState, UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
+import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import { LanguageStore } from '@core/i18n/language-store';

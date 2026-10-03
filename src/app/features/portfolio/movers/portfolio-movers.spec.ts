@@ -1,7 +1,7 @@
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
-import type { AsyncState } from '@joanroucoux/cairn-ui';
+import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 

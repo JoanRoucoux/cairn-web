@@ -1,6 +1,10 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { type AsyncState, UiAmount, UiAsync, UiDelta, UiMeter, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { UiMeter } from '@joanroucoux/cairn-ui/meter';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { EnvelopePerformanceResponse } from '@core/api-client/cairnAPI.schemas';

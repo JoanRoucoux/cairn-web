@@ -3,17 +3,11 @@ import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
-import {
-  type AsyncState,
-  type DonutSlice,
-  UI_AMOUNT_MASKED,
-  UiAmount,
-  UiAsync,
-  UiCard,
-  UiDonut,
-  UiSkeleton,
-  formatAmount,
-} from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
+import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { type DonutSlice, UiDonut } from '@joanroucoux/cairn-ui/donut';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 
 import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';

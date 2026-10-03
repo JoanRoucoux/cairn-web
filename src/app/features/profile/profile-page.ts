@@ -1,23 +1,17 @@
 import { Component, ElementRef, Injector, afterNextRender, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import {
-  type SegmentedOption,
-  UiAlert,
-  UiAvatar,
-  UiBackLink,
-  UiButton,
-  UiCard,
-  UiRow,
-  UiRowTile,
-  UiSegmented,
-  UiSkeleton,
-  UiSwitch,
-  UiTable,
-  UiTd,
-  UiTh,
-  delayedState,
-} from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { delayedState } from '@joanroucoux/cairn-ui/async';
+import { UiAvatar } from '@joanroucoux/cairn-ui/avatar';
+import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiRow, UiRowTile } from '@joanroucoux/cairn-ui/row';
+import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
+import { UiSwitch } from '@joanroucoux/cairn-ui/switch';
+import { UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import {
   LucideBook,

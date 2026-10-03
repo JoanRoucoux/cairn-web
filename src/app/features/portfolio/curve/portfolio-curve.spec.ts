@@ -1,7 +1,8 @@
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { By } from '@angular/platform-browser';
 
-import { type AsyncState, type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
+import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
-import { UiCard, UiSkeleton } from '@joanroucoux/cairn-ui';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 
 @Component({
   selector: 'app-holding-list-skeleton',
