@@ -11,7 +11,7 @@ import { flushCall, session, settleProfile } from './profile-testing';
 const passkeys = [
   {
     credentialId: 'aXBob25l',
-    label: 'iPhone de Joan',
+    label: "iPhone d'Alex",
     createdAt: '2025-03-12T10:00:00Z',
     lastUsedAt: '2026-09-25T08:00:00Z',
     current: true,
@@ -67,8 +67,8 @@ describe('ProfileStore', () => {
     await settle();
 
     expect(store.identityState()).toBe('ready');
-    expect(store.owner().initials).toBe('JO');
-    expect(store.username()).toBe('joan');
+    expect(store.owner().initials).toBe('AL');
+    expect(store.username()).toBe('alex');
     expect(store.signInMethod()).toBe('PASSKEY');
     expect(store.theme()).toBe('system');
   });
@@ -93,7 +93,7 @@ describe('ProfileStore', () => {
     const [phone, macbook] = store.passkeys();
 
     expect(phone).toMatchObject({
-      label: 'iPhone de Joan',
+      label: "iPhone d'Alex",
       current: true,
       provider: 'ICLOUD_KEYCHAIN',
       created: '12/03/2025',
@@ -251,9 +251,9 @@ describe('ProfileStore', () => {
 
   it('should keep the identity ready while the passkeys load', async () => {
     await flushCall(httpTesting, '/api/session', {
-      displayName: 'Joan',
-      initials: 'JO',
-      username: 'joan',
+      displayName: 'Alex',
+      initials: 'AL',
+      username: 'alex',
       signInMethod: 'PASSKEY',
     });
     TestBed.tick();
@@ -267,9 +267,9 @@ describe('ProfileStore', () => {
 
   it('should keep the identity ready when the passkeys fail, then recover on reload', async () => {
     await flushCall(httpTesting, '/api/session', {
-      displayName: 'Joan',
-      initials: 'JO',
-      username: 'joan',
+      displayName: 'Alex',
+      initials: 'AL',
+      username: 'alex',
       signInMethod: 'PASSKEY',
     });
     await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });

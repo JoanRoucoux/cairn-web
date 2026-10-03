@@ -13,8 +13,8 @@ import type {
 import { PortfolioStore } from './portfolio-store';
 
 const portfolio = {
-  totalEur: 278146.45,
-  dayChangeEur: -712.98,
+  totalEur: 152318.64,
+  dayChangeEur: -396.07,
   dayChangeRatio: -0.0026,
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
@@ -41,14 +41,14 @@ const performance = {
   to: '2026-08-21',
   reconstructed: false,
   lastPriceAt: '2026-08-21T16:32:00Z',
-  total: { valueEur: 278146.45, changeEur: -712.98, changeRatio: -0.0026 },
-  byEnvelope: [{ accountType: 'PEA', valueEur: 278146.45, share: 1, changeEur: -712.98, changeRatio: -0.0026 }],
+  total: { valueEur: 152318.64, changeEur: -396.07, changeRatio: -0.0026 },
+  byEnvelope: [{ accountType: 'PEA', valueEur: 152318.64, share: 1, changeEur: -396.07, changeRatio: -0.0026 }],
 };
 
 const intraday: IntradayHistoryResponse = {
   points: [
     { at: '2026-08-21T08:00:00Z', totalEur: 278859.43 },
-    { at: '2026-08-21T16:00:00Z', totalEur: 278146.45 },
+    { at: '2026-08-21T16:00:00Z', totalEur: 152318.64 },
   ],
 };
 
@@ -57,7 +57,7 @@ const history: HistoryResponse = {
   reconstructed: false,
   points: [
     { date: '2026-08-20', totalEur: 278859.43 },
-    { date: '2026-08-21', totalEur: 278146.45 },
+    { date: '2026-08-21', totalEur: 152318.64 },
   ],
 };
 
@@ -279,7 +279,7 @@ describe('PortfolioStore', () => {
 
     expect(store.points()).toEqual([
       { t: Date.parse('2026-08-20'), v: 278859.43 },
-      { t: Date.parse('2026-08-21'), v: 278146.45 },
+      { t: Date.parse('2026-08-21'), v: 152318.64 },
     ]);
   });
 
@@ -297,7 +297,7 @@ describe('PortfolioStore', () => {
 
     expect(store.points()).toEqual([
       { t: Date.parse('2026-08-21T08:00:00Z'), v: 278859.43 },
-      { t: Date.parse('2026-08-21T16:00:00Z'), v: 278146.45 },
+      { t: Date.parse('2026-08-21T16:00:00Z'), v: 152318.64 },
     ]);
   });
 

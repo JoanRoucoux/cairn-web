@@ -12,7 +12,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { PortfolioTotal } from './portfolio-total';
 
 const portfolio = {
-  totalEur: 164294.28,
+  totalEur: 152318.64,
   dayChangeEur: 412.56,
   dayChangeRatio: 0.003,
   unrealizedGainEur: 21846.9,
@@ -41,7 +41,7 @@ describe('PortfolioTotal', () => {
   it('should show the total through ui-amount', async () => {
     await renderComponent({ portfolio });
 
-    expect(await screen.findByText('164 294,28 €')).toBeInTheDocument();
+    expect(await screen.findByText('152 318,64 €')).toBeInTheDocument();
   });
 
   it('should show the day change and its ratio together, with a separate label', async () => {

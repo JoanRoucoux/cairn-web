@@ -22,10 +22,10 @@ describe('AllocationStore', () => {
   it('should expose each breakdown from its own endpoint', async () => {
     TestBed.tick();
     httpTesting.expectOne('/api/portfolio/allocation/classes').flush({
-      totalEur: 128656,
-      items: [{ assetClass: 'ETF', valueEur: 128656, share: 1, lineCount: 2 }],
+      totalEur: 91392,
+      items: [{ assetClass: 'ETF', valueEur: 91392, share: 1, lineCount: 2 }],
     });
-    httpTesting.expectOne('/api/portfolio/allocation/accounts').flush({ totalEur: 128656, items: [] });
+    httpTesting.expectOne('/api/portfolio/allocation/accounts').flush({ totalEur: 91392, items: [] });
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.classes.value()?.items).toHaveLength(1);

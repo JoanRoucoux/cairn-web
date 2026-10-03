@@ -4,7 +4,7 @@ describe('chartFormats', () => {
   it('should format a value in euros with two decimals', () => {
     const { value } = chartFormats('fr-FR', false, '1m');
 
-    expect(value(164294.28)).toBe('164\u202f294,28\u00a0\u20ac');
+    expect(value(152318.64)).toBe('152\u202f318,64\u00a0\u20ac');
   });
 
   it('should format a signed delta with two decimals', () => {
@@ -16,8 +16,8 @@ describe('chartFormats', () => {
   it('should mask the value behind four bullets and no digit', () => {
     const { value } = chartFormats('fr-FR', true, '1m');
 
-    expect(value(164294.28)).toContain('••••');
-    expect(value(164294.28)).not.toMatch(/\d/);
+    expect(value(152318.64)).toContain('••••');
+    expect(value(152318.64)).not.toMatch(/\d/);
   });
 
   it('should mask the delta behind four bullets and no digit', () => {

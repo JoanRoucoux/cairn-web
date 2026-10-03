@@ -16,8 +16,8 @@ import { PortfolioPage } from './portfolio-page';
 import { PortfolioStore } from './portfolio-store';
 
 const portfolio = {
-  totalEur: 278146.45,
-  dayChangeEur: -712.98,
+  totalEur: 152318.64,
+  dayChangeEur: -396.07,
   dayChangeRatio: -0.0026,
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
@@ -45,8 +45,8 @@ const performance = {
   to: '2026-08-21',
   reconstructed: false,
   lastPriceAt: '2026-08-21T16:32:00Z',
-  total: { valueEur: 278146.45, changeEur: -712.98, changeRatio: -0.0026 },
-  byEnvelope: [{ accountType: 'PEA', valueEur: 278146.45, share: 1, changeEur: -712.98, changeRatio: -0.0026 }],
+  total: { valueEur: 152318.64, changeEur: -396.07, changeRatio: -0.0026 },
+  byEnvelope: [{ accountType: 'PEA', valueEur: 152318.64, share: 1, changeEur: -396.07, changeRatio: -0.0026 }],
 };
 
 const history: HistoryResponse = {
@@ -54,7 +54,7 @@ const history: HistoryResponse = {
   reconstructed: false,
   points: [
     { date: '2026-08-20', totalEur: 278859.43 },
-    { date: '2026-08-21', totalEur: 278146.45 },
+    { date: '2026-08-21', totalEur: 152318.64 },
   ],
 };
 const emptyHistory: HistoryResponse = { mode: 'constant-mix', reconstructed: false, points: [] };
@@ -98,7 +98,7 @@ describe('PortfolioPage', () => {
   it('should display the total portfolio value', async () => {
     await renderPage();
 
-    expect(await screen.findByTestId('total-value')).toHaveTextContent('€278,146.45');
+    expect(await screen.findByTestId('total-value')).toHaveTextContent('€152,318.64');
   });
 
   it('should display one envelope row per envelope', async () => {

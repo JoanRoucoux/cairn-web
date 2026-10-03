@@ -14,7 +14,7 @@ import { PortfolioCurve } from './portfolio-curve';
 
 const points: ChartPoint[] = [
   { t: Date.UTC(2026, 7, 25), v: 161389.51 },
-  { t: Date.UTC(2026, 8, 25), v: 164294.28 },
+  { t: Date.UTC(2026, 8, 25), v: 152318.64 },
 ];
 
 const renderCurve = (
