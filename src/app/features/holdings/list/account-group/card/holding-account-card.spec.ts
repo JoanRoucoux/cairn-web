@@ -113,6 +113,8 @@ describe('HoldingAccountCard', () => {
     expect(row).toHaveTextContent('holdings.foreignQuote');
     expect(row).toHaveTextContent('—');
     expect(row).toHaveTextContent('holdings.replace.open');
+    expect(screen.getByText('holdings.replace.open')).toHaveClass('font-medium');
+    expect(screen.getByText('holdings.replace.open')).not.toHaveClass('text-(--muted-foreground)');
     expect(row).not.toHaveTextContent('holdings.averageCostUnknownShort');
     expect(row).not.toHaveTextContent('412.5');
     expect(row.querySelectorAll('.text-body')[1]).toHaveClass('text-(--subtle-foreground)');

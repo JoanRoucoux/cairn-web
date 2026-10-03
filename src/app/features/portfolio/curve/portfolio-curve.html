@@ -72,6 +72,7 @@
             [deltaFormat]="formats().delta"
             [label]="chartLabelKey() | transloco: chartLabelParams()"
             [points]="points()"
+            [rangeKey]="shownRange() ?? range()"
             [startLabel]="startLabel()"
             [timeColumnLabel]="'chart.time' | transloco"
             [timeFormat]="formats().time"

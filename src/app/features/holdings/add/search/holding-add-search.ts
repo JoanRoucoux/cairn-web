@@ -47,6 +47,7 @@ export type CatalogResult = {
 export class HoldingAddSearch {
   readonly query = input.required<string>();
   readonly catalogResults = input.required<CatalogResult[]>();
+  readonly catalogState = input<AsyncState>('ready');
   readonly candidates = input.required<InstrumentCandidateResponse[]>();
   readonly searchingOnline = input.required<boolean>();
   readonly onlineError = input.required<boolean>();
@@ -59,6 +60,7 @@ export class HoldingAddSearch {
   readonly pickedOnline = output<InstrumentCandidateResponse>();
   readonly pickedManual = output<void>();
   readonly retried = output<void>();
+  readonly retriedCatalog = output<void>();
 
   protected readonly showResults = computed(() => this.query().trim().length >= 2);
   protected readonly showOnline = computed(() => this.query().trim().length >= 3);

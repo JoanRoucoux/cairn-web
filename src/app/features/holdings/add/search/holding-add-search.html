@@ -15,45 +15,65 @@
 
   @if (showResults()) {
     <ui-card border="hairline" class="mt-1 flex flex-col" padding="xs" variant="inset">
-      @if (catalogResults().length > 0) {
+      @if (catalogState() !== 'ready' || catalogResults().length > 0) {
         <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
           {{ 'holdings.add.catalogHeading' | transloco }}
         </div>
-        @for (result of catalogResults(); track result.instrument.id) {
-          <button
-            data-testid="holding-add-catalog-candidate"
-            size="dense"
-            type="button"
-            ui-row
-            [busy]="busyKey() === result.instrument.id"
-            [unavailable]="result.foreignCurrency !== undefined"
-            (click)="pickedCatalog.emit(result.instrument)"
+        <ui-async
+          variant="inline"
+          [errorMessage]="'holdings.add.catalogError' | transloco"
+          [retryLabel]="'holdings.add.catalogRetry' | transloco"
+          [state]="catalogState()"
+          (retry)="retriedCatalog.emit()"
+        >
+          <div
+            asyncLoading
+            class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
+            data-testid="holding-add-catalog-loading"
+            role="status"
           >
-            <span class="flex min-w-0 flex-1 flex-col">
-              <span class="text-body truncate font-medium">{{ result.instrument.name }}</span>
-              <span class="text-caption text-(--subtle-foreground)">
-                @if (result.instrument.isin || result.instrument.symbol; as reference) {
-                  {{ reference }} &middot;
+            <span class="sr-only">{{ 'holdings.add.catalogLoading' | transloco }}</span>
+            <div class="flex justify-between gap-3">
+              <span class="block w-55"><ui-skeleton [height]="16" /></span>
+              <span class="block w-16"><ui-skeleton [height]="16" /></span>
+            </div>
+          </div>
+          @for (result of catalogResults(); track result.instrument.id) {
+            <button
+              data-testid="holding-add-catalog-candidate"
+              size="dense"
+              type="button"
+              ui-row
+              [busy]="busyKey() === result.instrument.id"
+              [unavailable]="result.foreignCurrency !== undefined"
+              (click)="pickedCatalog.emit(result.instrument)"
+            >
+              <span class="flex min-w-0 flex-1 flex-col">
+                <span class="text-body truncate font-medium">{{ result.instrument.name }}</span>
+                <span class="text-caption text-(--subtle-foreground)">
+                  @if (result.instrument.isin || result.instrument.symbol; as reference) {
+                    {{ reference }} &middot;
+                  }
+                  {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
+                </span>
+                @if (result.foreignCurrency; as currency) {
+                  <span class="text-caption text-pretty text-(--subtle-foreground)">{{
+                    'holdings.add.unavailableSub' | transloco: { currency }
+                  }}</span>
                 }
-                {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
               </span>
-              @if (result.foreignCurrency; as currency) {
-                <span class="text-caption text-pretty text-(--subtle-foreground)">{{
-                  'holdings.add.unavailableSub' | transloco: { currency }
+              @if (result.foreignCurrency) {
+                <span class="text-caption flex-none text-(--subtle-foreground)">{{
+                  'holdings.add.unavailable' | transloco
                 }}</span>
+              } @else if (result.lineCount !== null) {
+                <span class="text-caption flex-none text-(--muted-foreground)">
+                  {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
+                </span>
               }
-            </span>
-            @if (result.foreignCurrency) {
-              <span class="text-caption flex-none text-(--subtle-foreground)">{{
-                'holdings.add.unavailable' | transloco
-              }}</span>
-            } @else if (result.lineCount !== null) {
-              <span class="text-caption flex-none text-(--muted-foreground)">
-                {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
-              </span>
-            }
-          </button>
-        }
+            </button>
+          }
+        </ui-async>
       }
 
       @if (showOnline()) {

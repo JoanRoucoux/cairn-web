@@ -1,10 +1,11 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 
+import { UiLineChart } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -40,6 +41,7 @@ const holding = {
 
 describe('HoldingDetailPage figures', () => {
   let httpTesting: HttpTestingController;
+  let rendered: ComponentFixture<unknown>;
 
   const renderPage = async (
     fixtureHolding: Record<string, unknown> = holding,
@@ -62,6 +64,7 @@ describe('HoldingDetailPage figures', () => {
         provideTranslocoScope('holdings'),
       ],
     });
+    rendered = fixture;
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/holdings').flush([fixtureHolding]);
     for (let i = 0; i < 10; i++) {
@@ -78,6 +81,29 @@ describe('HoldingDetailPage figures', () => {
   };
 
   afterEach(() => httpTesting.verify());
+
+  it('keeps the chart range key when a purchase reloads the series, so it redraws without interpolating', async () => {
+    const quotes = [
+      { asOf: '2026-08-21', price: 30 },
+      { asOf: '2026-09-21', price: 33 },
+    ];
+    await renderPage(holding, quotes);
+    const rangeKey = (): string | null =>
+      (rendered.debugElement.query(By.directive(UiLineChart)).componentInstance as UiLineChart).rangeKey();
+
+    await screen.findByTestId('range-change');
+    expect(rangeKey()).toBe('1m');
+
+    TestBed.inject(HoldingChanges).touched('h1');
+    await vi.waitFor(() => httpTesting.expectOne('/api/holdings').flush([holding]));
+    await vi.waitFor(() => {
+      const pending = httpTesting.match((request) => request.url.includes('/quotes'));
+      expect(pending).toHaveLength(1);
+      pending[0]?.flush([...quotes, { asOf: '2026-09-22', price: 34 }]);
+    });
+
+    await vi.waitFor(() => expect(rangeKey()).toBe('1m'));
+  });
 
   it('gives the chart tooltip the value and the unit price', async () => {
     const page = await renderPage();

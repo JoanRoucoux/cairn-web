@@ -1,6 +1,7 @@
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
+import { By } from '@angular/platform-browser';
 
-import type { AsyncState, ChartPoint } from '@joanroucoux/cairn-ui';
+import { type AsyncState, type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -45,6 +46,19 @@ const renderCurve = (
   });
 
 describe('PortfolioCurve', () => {
+  it('should key the chart on the shown range, and on the picked one until a series is shown', async () => {
+    const { fixture } = await renderCurve({ shownRange: '1y' });
+    const key = (): string | null =>
+      (fixture.debugElement.query(By.directive(UiLineChart)).componentInstance as UiLineChart).rangeKey();
+
+    expect(key()).toBe('1y');
+
+    fixture.componentRef.setInput('shownRange', undefined);
+    await fixture.whenStable();
+
+    expect(key()).toBe('1m');
+  });
+
   it('should show the range change, its ratio at two decimals, and the period label', async () => {
     await renderCurve();
 

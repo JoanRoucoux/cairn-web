@@ -65,6 +65,7 @@ export class HoldingAddDialog {
   protected readonly accountId = this.#store.accountId;
   protected readonly query = this.#store.query;
   protected readonly filteredCatalog = this.#store.filteredCatalog;
+  protected readonly catalogState = this.#store.catalogState;
   protected readonly candidates = this.#store.candidates;
   protected readonly searchingOnline = this.#store.searchingOnline;
   protected readonly onlineError = this.#store.onlineError;
@@ -244,6 +245,10 @@ export class HoldingAddDialog {
 
   protected isNew(): boolean {
     return this.picked()?.kind !== 'catalog' && this.picked() !== undefined;
+  }
+
+  protected retryCatalog(): void {
+    this.#store.reloadCatalog();
   }
 
   protected retryOnline(): void {

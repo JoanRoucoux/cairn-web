@@ -48,7 +48,7 @@
                 <span class="text-label text-(--muted-foreground)">{{ account.institution || '—' }}</span>
               </td>
               <td numeric uiTd>
-                <div class="flex flex-col items-end">
+                <div class="flex w-0 min-w-full flex-col items-end whitespace-normal">
                   @if (linesLabel(account); as lines) {
                     <span class="text-label text-(--muted-foreground)" data-testid="account-lines">
                       {{ lines.key | transloco: { count: lines.count, date: lines.date | shortDate } }}

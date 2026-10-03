@@ -19,7 +19,7 @@
               }
             </span>
             @for (caption of uncountedCaptions(account); track caption.key) {
-              <span class="text-caption truncate font-medium text-(--stale)" data-testid="account-uncounted-mobile">
+              <span class="text-caption font-medium text-(--stale)" data-testid="account-uncounted-mobile">
                 {{ caption.key | transloco: caption }}
               </span>
             }

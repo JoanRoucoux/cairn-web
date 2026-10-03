@@ -24,7 +24,7 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
   const renderDialog = async (
     holdings: unknown[] | 'fail',
     accountList: unknown[] | 'fail' = accounts,
-    catalog: unknown[] = instruments,
+    catalog: unknown[] | 'fail' = instruments,
   ): Promise<void> => {
     await render(HoldingAddDialog, {
       imports: [getTranslocoTestingModule()],
@@ -58,6 +58,49 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     await user.type(screen.getByTestId('holding-add-query'), query);
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
   };
+
+  it('keeps the online results and offers a retry when the catalogue call fails', async () => {
+    await renderDialog([], accounts, 'fail');
+    const user = userEvent.setup();
+    await user.type(screen.getByTestId('holding-add-query'), 'msci');
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne('/api/instruments/resolve')
+        .flush([{ name: 'Xtrackers MSCI World', source: 'YAHOO', sourceRef: 'XDWD.DE', exchange: 'Xetra' }]),
+    );
+
+    expect(await screen.findByText('holdings.add.catalogError')).toBeInTheDocument();
+    expect(await screen.findByText('Xtrackers MSCI World')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'holdings.add.catalogRetry' }));
+    httpTesting.expectOne('/api/instruments').flush(instruments);
+
+    expect(await screen.findByTestId('holding-add-catalog-candidate')).toHaveTextContent('Amundi MSCI World');
+    expect(screen.queryByText('holdings.add.catalogError')).not.toBeInTheDocument();
+  });
+
+  it('shows the catalogue skeleton while its call is pending', async () => {
+    await render(HoldingAddDialog, {
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        HoldingChanges,
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    httpTesting.expectOne('/api/holdings').flush([]);
+    await userEvent.setup().type(screen.getByTestId('holding-add-query'), 'msci');
+
+    expect(await screen.findByTestId('holding-add-catalog-loading')).toBeInTheDocument();
+
+    httpTesting.expectOne('/api/instruments').flush(instruments);
+    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+  });
 
   it('shows no line count when the holdings could not be read', async () => {
     await renderDialog('fail');
