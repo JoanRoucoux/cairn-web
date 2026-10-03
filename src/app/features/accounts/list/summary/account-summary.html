@@ -1,4 +1,4 @@
-<p class="text-label lg:text-body min-h-6 text-(--muted-foreground) tabular-nums" data-testid="accounts-summary">
+<p class="text-label lg:text-body text-(--muted-foreground) tabular-nums lg:min-h-6" data-testid="accounts-summary">
   @if (state() === 'loading') {
     <span class="block w-32 pt-1" data-testid="accounts-summary-skeleton"><ui-skeleton [height]="14" /></span>
   } @else if (shown()) {
