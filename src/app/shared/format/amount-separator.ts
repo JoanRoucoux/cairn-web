@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
 
 @Component({
   selector: 'app-amount-separator',

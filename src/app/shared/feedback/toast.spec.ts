@@ -1,7 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { UiToasts } from '@joanroucoux/cairn-ui';
+import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 

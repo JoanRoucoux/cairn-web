@@ -1,4 +1,4 @@
-import { formatAmount } from '@joanroucoux/cairn-ui';
+import { formatAmount } from '@joanroucoux/cairn-ui/amount';
 
 import type { ChartRange } from './chart-range';
 
