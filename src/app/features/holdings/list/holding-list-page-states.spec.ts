@@ -17,12 +17,12 @@ import { HoldingListPage } from './holding-list-page';
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 
 const unpriced = {
   id: 'h9',
   accountId: 'a1',
-  accountName: 'Saxo Investor',
+  accountName: 'Northwind PEA',
   accountType: 'PEA',
   instrumentId: 'i9',
   instrumentName: 'Newly listed fund',

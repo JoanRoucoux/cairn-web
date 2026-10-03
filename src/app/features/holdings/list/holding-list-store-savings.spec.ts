@@ -9,7 +9,13 @@ import { of } from 'rxjs';
 import { HoldingChanges } from '../holding-changes';
 import { HoldingListStore } from './holding-list-store';
 
-const saxoLine = { id: 'h1', accountId: 'a1', accountName: 'Saxo', accountType: 'PEA', marketValueEur: 100 };
+const northwindLine = {
+  id: 'h1',
+  accountId: 'a1',
+  accountName: 'Northwind PEA',
+  accountType: 'PEA',
+  marketValueEur: 100,
+};
 const livretCash = {
   id: 'h2',
   accountId: 'a3',
@@ -23,8 +29,8 @@ const livretCash = {
 };
 
 const accounts = [
-  { id: 'a1', name: 'Saxo', type: 'PEA', institution: 'Saxo' },
-  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' },
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' },
 ];
 
 describe('HoldingListStore savings accounts', () => {
@@ -53,7 +59,7 @@ describe('HoldingListStore savings accounts', () => {
   afterEach(() => httpTesting.verify());
 
   it('should carry the date of the balance on the group of an account with a cash line', async () => {
-    await load([livretCash, saxoLine]);
+    await load([livretCash, northwindLine]);
 
     const livretA = store.groups().find((group) => group.accountName === 'Livret A');
 
@@ -62,7 +68,7 @@ describe('HoldingListStore savings accounts', () => {
   });
 
   it('should show a savings account with no holding at all as a balance of zero, with no date', async () => {
-    await load([saxoLine]);
+    await load([northwindLine]);
 
     const livretA = store.groups().find((group) => group.accountName === 'Livret A');
 
@@ -71,9 +77,9 @@ describe('HoldingListStore savings accounts', () => {
       cashEur: 0,
       valueEur: 0,
       balanceAt: null,
-      institution: 'Fortuneo',
+      institution: 'Woodgrove Bank',
     });
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo', 'Livret A']);
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Northwind PEA', 'Livret A']);
   });
 
   it('should keep a securities account with no holding out of the list', async () => {

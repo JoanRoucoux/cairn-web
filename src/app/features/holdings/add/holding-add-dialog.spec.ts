@@ -14,7 +14,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 const instruments = [
   {
     id: 'i1',
@@ -63,7 +63,7 @@ describe('HoldingAddDialog', () => {
   it('preselects the account it is opened for', async () => {
     await renderDialog('a1');
 
-    expect(await screen.findByRole('option', { name: /Saxo Investor/ })).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: /Northwind PEA/ })).toBeInTheDocument();
     await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
   });
 
@@ -164,7 +164,7 @@ describe('HoldingAddDialog', () => {
     await renderDialog();
 
     expect(screen.getByTestId('holding-add-submit')).toBeDisabled();
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -181,7 +181,7 @@ describe('HoldingAddDialog', () => {
     const user = userEvent.setup();
     await renderDialog();
     slowDialogExit();
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -211,7 +211,7 @@ describe('HoldingAddDialog', () => {
   it('reads an optional average cost', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -326,7 +326,7 @@ describe('HoldingAddDialog', () => {
   it('shows a generic error when creating the holding itself fails', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
@@ -346,7 +346,7 @@ describe('HoldingAddDialog', () => {
   it('shows the instrument-specific error when creating the instrument fails', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');
@@ -367,7 +367,7 @@ describe('HoldingAddDialog', () => {
   it('requires an asset class for a manual creation, with no default, and sends it to the API', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');

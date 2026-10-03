@@ -19,17 +19,17 @@ const holding = {
   assetClass: 'FUND',
   quantity: 412.5,
   price: 289.11,
-  marketValueEur: 119258,
+  marketValueEur: 60926,
   unrealizedGainRatio: 0.084,
   averageCost: 250,
 };
 
 const group = {
   accountId: 'a1',
-  accountName: 'Esalia',
+  accountName: 'Woodgrove Savings Plan',
   accountType: 'PEE',
-  institution: 'Amundi ESR',
-  valueEur: 119258,
+  institution: 'Woodgrove Bank',
+  valueEur: 60926,
   cashEur: 12,
   showCash: true,
   lineCount: 1,
@@ -52,9 +52,9 @@ describe('HoldingAccountCard', () => {
     const { container } = await renderCard();
     const header = container.querySelector('header')!;
 
-    expect(header).toHaveTextContent('Esalia');
-    expect(header).toHaveTextContent('Amundi ESR');
-    expect(header).toHaveTextContent('€119,258.00');
+    expect(header).toHaveTextContent('Woodgrove Savings Plan');
+    expect(header).toHaveTextContent('Woodgrove Bank');
+    expect(header).toHaveTextContent('€60,926.00');
     expect(container.querySelector('ui-card')!.contains(header)).toBe(false);
   });
 
@@ -142,13 +142,13 @@ describe('HoldingAccountCard', () => {
   });
 
   describe('a savings account', () => {
-    const savings = { accountType: 'SAVINGS', institution: 'Fortuneo', lineCount: 0, holdings: [] };
+    const savings = { accountType: 'SAVINGS', institution: 'Woodgrove Bank', lineCount: 0, holdings: [] };
 
     it('should name its balance date in the meta, never a line count', async () => {
       const { container } = await renderCard({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
 
       expect(container.querySelector('header')).toHaveTextContent(
-        'enums.accountType.SAVINGS · Fortuneo · holdings.balanceMeta',
+        'enums.accountType.SAVINGS · Woodgrove Bank · holdings.balanceMeta',
       );
       expect(container.querySelector('header')).not.toHaveTextContent('lineCount');
     });
@@ -210,7 +210,7 @@ describe('HoldingAccountCard', () => {
     it('should highlight nothing when no line of the account changed', async () => {
       await renderCard({}, { id: 'elsewhere', at: 1 });
 
-      expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
       expect(motion.highlighted).toEqual([]);
     });
 

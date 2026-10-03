@@ -21,7 +21,7 @@ describe('HoldingCashDialog', () => {
 
   const renderDialog = async (balance = 0, savings = false): Promise<void> => {
     await render(HoldingCashDialog, {
-      inputs: { accountId: 'account-1', accountName: 'Saxo Investor', balance, savings },
+      inputs: { accountId: 'account-1', accountName: 'Northwind PEA', balance, savings },
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [

@@ -16,7 +16,7 @@ import { HoldingListPage } from './holding-list-page';
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 
 describe('HoldingListPage add query param', () => {
   let httpTesting: HttpTestingController;

@@ -20,14 +20,14 @@ import { HoldingListPage } from './holding-list-page';
 class TestHost {}
 
 const accounts = [
-  { id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' },
-  { id: 'a2', name: 'Esalia', type: 'PEE', institution: 'Amundi ESR' },
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a2', name: 'Woodgrove Savings Plan', type: 'PEE', institution: 'Woodgrove Bank' },
 ];
 
 const line = (id: string, accountId: string, assetClass: string, name: string, value: number): unknown => ({
   id,
   accountId,
-  accountName: accountId === 'a1' ? 'Saxo Investor' : 'Esalia',
+  accountName: accountId === 'a1' ? 'Northwind PEA' : 'Woodgrove Savings Plan',
   accountType: accountId === 'a1' ? 'PEA' : 'PEE',
   instrumentName: name,
   isin: `ISIN${id}`,
@@ -152,11 +152,11 @@ describe('HoldingListPage class filter', () => {
   it('should narrow the list to the clicked class and summarise it', async () => {
     const user = userEvent.setup();
     await open();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(chip(/^ETF/));
 
-    await vi.waitFor(() => expect(screen.queryByText('Esalia')).not.toBeInTheDocument());
+    await vi.waitFor(() => expect(screen.queryByText('Woodgrove Savings Plan')).not.toBeInTheDocument());
 
     expect(chip(/^ETF/)).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('class-summary')).toHaveTextContent('ETF · €4,000.00 · 66.7% of wealth, in 1 account');
@@ -165,7 +165,7 @@ describe('HoldingListPage class filter', () => {
   it('should write the slug of the clicked class to the URL, and drop it with Toutes', async () => {
     const user = userEvent.setup();
     await open();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
     const router = TestBed.inject(Router);
 
     await user.click(chip(/^Funds/));
@@ -190,20 +190,20 @@ describe('HoldingListPage class filter', () => {
   it('should go back to every account with Toutes', async () => {
     const user = userEvent.setup();
     await open('/?classe=etf');
-    await screen.findAllByText('Saxo Investor');
+    await screen.findAllByText('Northwind PEA');
 
     await user.click(chip(/^All/));
 
     await vi.waitFor(() => expect(screen.queryByTestId('class-summary')).not.toBeInTheDocument());
 
-    expect((await screen.findAllByText('Esalia')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Woodgrove Savings Plan')).length).toBeGreaterThan(0);
   });
 
   it('should open filtered from ?classe=', async () => {
     await open('/?classe=fonds');
 
     expect(await screen.findByRole('button', { name: /^Funds/ })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByText('Saxo Investor')).not.toBeInTheDocument();
+    expect(screen.queryByText('Northwind PEA')).not.toBeInTheDocument();
   });
 
   it('should say accounts in the plural from two accounts on', async () => {
@@ -253,7 +253,7 @@ describe('HoldingListPage class filter', () => {
   it('should say nothing matches the search in the class, and how to widen it', async () => {
     const user = userEvent.setup();
     await open('/?classe=etf');
-    await screen.findAllByText('Saxo Investor');
+    await screen.findAllByText('Northwind PEA');
 
     await user.type(screen.getByTestId('holdings-search'), 'fcpe');
 
@@ -271,7 +271,7 @@ describe('HoldingListPage class filter', () => {
   it('should keep the plain search copy without a class', async () => {
     const user = userEvent.setup();
     await open();
-    await screen.findAllByText('Saxo Investor');
+    await screen.findAllByText('Northwind PEA');
 
     await user.type(screen.getByTestId('holdings-search'), 'zzz');
 
@@ -317,7 +317,7 @@ describe('HoldingListPage class filter', () => {
 
     it('should wait for the router to place the page before landing', async () => {
       await open('/?compte=a2');
-      await screen.findAllByRole('heading', { name: 'Esalia' });
+      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
 
       expect(scrolled).toHaveLength(0);
       expect(animated).toHaveLength(0);
@@ -327,7 +327,7 @@ describe('HoldingListPage class filter', () => {
       const focus = vi.spyOn(HTMLElement.prototype, 'focus');
       const scrollTo = vi.spyOn(window, 'scrollTo');
       await open('/?compte=a2');
-      const headings = await screen.findAllByRole('heading', { name: 'Esalia' });
+      const headings = await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
 
       routerScrolls();
 
@@ -342,34 +342,34 @@ describe('HoldingListPage class filter', () => {
         animated.every((element) => element.closest('[data-account-id]')?.getAttribute('data-account-id') === 'a2'),
       ).toBe(true);
       expect(scrollTo).not.toHaveBeenCalled();
-      expect(screen.getAllByRole('heading', { name: 'Saxo Investor' }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('heading', { name: 'Northwind PEA' }).length).toBeGreaterThan(0);
       expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('should not highlight the header again when a filter rebuilds the groups', async () => {
       const user = userEvent.setup();
       await open('/?compte=a2');
-      await screen.findAllByRole('heading', { name: 'Esalia' });
+      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
       routerScrolls();
       await vi.waitFor(() => expect(animated.length).toBeGreaterThan(0));
       const played = animated.length;
 
       await user.click(chip(/^Funds/));
-      await screen.findAllByRole('heading', { name: 'Esalia' });
+      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
       await user.click(chip(/^All/));
-      await screen.findAllByRole('heading', { name: 'Saxo Investor' });
+      await screen.findAllByRole('heading', { name: 'Northwind PEA' });
 
       expect(animated).toHaveLength(played);
     });
 
     it('should ignore a ?compte= that matches no account: no scroll, no focus, no highlight', async () => {
       await open('/?compte=nope');
-      await screen.findAllByRole('heading', { name: 'Esalia' });
+      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
       routerScrolls();
       TestBed.tick();
       await TestBed.inject(ApplicationRef).whenStable();
 
-      expect(screen.getAllByRole('heading', { name: 'Esalia' }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('heading', { name: 'Woodgrove Savings Plan' }).length).toBeGreaterThan(0);
       expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
       expect(scrolled).toEqual([]);
       expect(animated).toEqual([]);
