@@ -1,7 +1,3 @@
-// Five more envelopes beyond the PEA account api.ts already carries (with its stale and unvalued
-// holdings), so the portfolio screen has a realistic full set: PEE ~107,700, CTO ~33,300,
-// SAVINGS ~20,000 cash only, PER ~9,300, LIFE_INSURANCE ~9,100.
-
 const BASE = {
   accountCash: false,
   priceCurrency: 'EUR',
@@ -128,8 +124,6 @@ export const EXTRA_ACCOUNTS = EXTRA_HOLDINGS.map((holding) => ({
 
 type PeaHolding = { accountType: string; marketValueEur: number; dayChangeEur: number };
 
-// The PEA envelope combines api.ts's normal and stale holdings into one row, matching how the
-// `byEnvelope` API response aggregates by `AccountType` rather than by holding.
 export const buildEnvelopes = (
   pea: PeaHolding,
   staleHolding: PeaHolding,

@@ -20,7 +20,6 @@ type PerformanceFixtures = {
   };
 };
 
-// Park-Miller minimal standard LCG: deterministic (same seed -> same series every run), values in (0, 1).
 const lcg = (seed: number): (() => number) => {
   let state = seed % 2147483647;
 
@@ -31,12 +30,6 @@ const lcg = (seed: number): (() => number) => {
   };
 };
 
-/**
- * A trending series from `start` to `end` with a random walk added on top (a few flat stretches,
- * most steps around 0.03-0.05% of the value), pinned exactly to `start` and `end` regardless of
- * the walk: it is a Brownian bridge (the random part alone, `cumulative - linear`, is 0 at both
- * ends), added to the straight-line trend rather than replacing it.
- */
 export const buildTrendSeries = (start: number, end: number, count: number, seed: number): number[] => {
   const random = lcg(seed);
   const stepScale = ((start + end) / 2) * 0.0004;
@@ -59,7 +52,6 @@ export const buildTrendSeries = (start: number, end: number, count: number, seed
   });
 };
 
-// 09:00 to 17:30 Paris time every 30 minutes (07:00-15:30 UTC in August's CEST offset).
 const buildIntradayPoints = (openEur: number, closeEur: number): { at: string; totalEur: number }[] => {
   const series = buildTrendSeries(openEur, closeEur, 18, 20_260_827);
 

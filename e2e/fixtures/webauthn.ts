@@ -31,8 +31,6 @@ const passkeys: Passkey[] = [
 
 const initialPasskeys = structuredClone(passkeys);
 
-// Browser-valid base64url: WebAuthn parses these into ArrayBuffers before the virtual
-// authenticator ever sees them.
 const base64url = (value: string): string =>
   Buffer.from(value).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+/g, '');
 
@@ -73,8 +71,6 @@ const registerWebauthnOptions: Handler = async (route) => {
   await route.fulfill({ json: registrationOptions });
 };
 
-// Stateful on purpose: the account screen reloads the passkeys after registering, and the new
-// passkey has to show up in the list it re-reads.
 const registerWebauthn: Handler = async (route) => {
   passkeys.push({
     credentialId: base64url('new-passkey'),

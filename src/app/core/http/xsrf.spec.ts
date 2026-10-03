@@ -4,13 +4,6 @@ import { TestBed } from '@angular/core/testing';
 
 import { XSRF_COOKIE_NAME, XSRF_HEADER_NAME } from './xsrf';
 
-/**
- * These two names are one half of a contract whose other half lives in another repository, in
- * Spring's CookieCsrfTokenRepository. They are asserted here against literals rather than against
- * the constants they configure, because a test that reads the same constant it configures would
- * agree with any rename, including the one that shipped: the application sent X-CSRF-TOKEN, the
- * server read X-XSRF-TOKEN, and every write was rejected while every read went through.
- */
 describe('XSRF configuration', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({

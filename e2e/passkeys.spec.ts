@@ -16,9 +16,6 @@ const addVirtualAuthenticator = async (page: Page): Promise<void> => {
   });
 };
 
-// Seeds a discoverable credential for `localhost` straight into the virtual authenticator, so an
-// authentication ceremony in the same test has something to offer without the app's own register
-// flow (which is exercised separately, and asks for a signed-in session).
 const seedResidentCredential = (page: Page): Promise<void> =>
   page.evaluate(async () => {
     await navigator.credentials.create({
@@ -67,9 +64,6 @@ test.describe('passkeys', () => {
     await addVirtualAuthenticator(page);
     await mockApi(page);
 
-    // The default fixture session is a signed-in one (every other journey needs it); this test
-    // overrides it to start signed out, so the login screen's guard lets it render, then flips to
-    // signed in once the passkey ceremony below reports success.
     let signedIn = false;
     await page.route('**/api/session', async (route) => {
       if (!signedIn) {

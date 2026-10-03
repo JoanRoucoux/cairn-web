@@ -11,8 +11,6 @@ test.describe('holdings list', () => {
   test('opens the add dialog and focuses the safe action first', async ({ page }) => {
     await page.getByTestId('add-holding-desktop').click();
 
-    // The native <dialog> renders in the top layer once open, so its wrapping
-    // <ui-dialog> host has an empty box: assert on the <dialog> itself.
     await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('holding-add-account')).toBeFocused();
   });

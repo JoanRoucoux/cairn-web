@@ -20,7 +20,6 @@ export const provideTranslocoGlobal = (): EnvironmentProviders => {
       config: {
         availableLangs: [...AVAILABLE_LANGS],
         defaultLang: 'en',
-        // Remove this option if your application doesn't support changing language in runtime.
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
       },
@@ -31,8 +30,7 @@ export const provideTranslocoGlobal = (): EnvironmentProviders => {
         useValue: cookiesStorage(),
       },
     }),
-    // Wait for the active language to load before the app renders, otherwise the first paint
-    // (including the page title) briefly shows missing-translation warnings.
+    // Without waiting for the active language, the first paint shows missing-translation warnings.
     provideAppInitializer(() => {
       const translocoService = inject(TranslocoService);
       return firstValueFrom(translocoService.load(translocoService.getActiveLang()));
