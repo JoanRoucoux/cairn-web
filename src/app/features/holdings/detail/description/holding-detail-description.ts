@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-import { UiExternalLink } from '@joanroucoux/cairn-ui';
+import { UiExternalLink } from '@joanroucoux/cairn-ui/external-link';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({

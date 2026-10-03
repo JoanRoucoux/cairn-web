@@ -13,7 +13,11 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { UiAlert, UiButton, UiDialog, UiField, UiSelect } from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiDialog } from '@joanroucoux/cairn-ui/dialog';
+import { UiField } from '@joanroucoux/cairn-ui/field';
+import { UiSelect } from '@joanroucoux/cairn-ui/select';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
 import {

@@ -1,24 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import {
-  UiAmount,
-  UiAsync,
-  UiBadge,
-  UiButton,
-  UiCard,
-  UiMenu,
-  UiMenuItem,
-  UiMenuTrigger,
-  UiRowAction,
-  UiRowLink,
-  UiSkeleton,
-  UiTable,
-  UiTd,
-  UiTh,
-  UiTr,
-  delayedState,
-} from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
+import { UiBadge } from '@joanroucoux/cairn-ui/badge';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
+import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash, LucideWallet } from '@lucide/angular';
 

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import type { ActivatedRouteSnapshot, ViewTransitionInfo } from '@angular/router';
 
-import { injectReducedMotion } from '@joanroucoux/cairn-ui';
+import { injectReducedMotion } from '@joanroucoux/cairn-ui/motion';
 
 import { SHELL_DESTINATIONS } from '@core/shell/shell-nav';
 

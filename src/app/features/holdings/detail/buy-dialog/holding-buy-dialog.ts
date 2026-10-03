@@ -1,17 +1,13 @@
 import { Component, ElementRef, LOCALE_ID, afterRenderEffect, computed, inject, input, output } from '@angular/core';
 
-import {
-  UiAlert,
-  UiAmount,
-  UiButton,
-  UiCard,
-  UiDialog,
-  UiFact,
-  UiFacts,
-  UiField,
-  UiInput,
-  formatAmount,
-} from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiDialog } from '@joanroucoux/cairn-ui/dialog';
+import { UiFact, UiFacts } from '@joanroucoux/cairn-ui/fact';
+import { UiField } from '@joanroucoux/cairn-ui/field';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

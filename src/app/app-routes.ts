@@ -3,8 +3,6 @@ import { type Routes } from '@angular/router';
 import { NotFoundPage } from '@core/not-found-page/not-found-page';
 import { AppShell } from '@core/shell/app-shell';
 
-import { PORTFOLIO_ROUTES } from '@features/portfolio/portfolio-routes';
-
 export const routes: Routes = [
   {
     path: 'login',
@@ -30,10 +28,9 @@ export const routes: Routes = [
         path: 'profile',
         loadChildren: () => import('./features/profile/profile-routes').then((m) => m.PROFILE_ROUTES),
       },
-      // Eagerly load the landing feature. Its translations still load lazily with the scope.
       {
         path: '',
-        children: PORTFOLIO_ROUTES,
+        loadChildren: () => import('./features/portfolio/portfolio-routes').then((m) => m.PORTFOLIO_ROUTES),
       },
     ],
   },

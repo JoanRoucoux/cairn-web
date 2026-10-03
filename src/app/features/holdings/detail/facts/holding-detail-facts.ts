@@ -1,6 +1,8 @@
 import { Component, LOCALE_ID, computed, inject, input } from '@angular/core';
 
-import { UiAmount, UiCard, UiFact, UiFacts } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiFact, UiFacts } from '@joanroucoux/cairn-ui/fact';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

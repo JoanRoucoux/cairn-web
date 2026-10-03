@@ -1,7 +1,7 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { type AsyncState } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 
 import { AccountService } from '@core/api-client/account/account.service';
 import type { AccountType } from '@core/api-client/cairnAPI.schemas';

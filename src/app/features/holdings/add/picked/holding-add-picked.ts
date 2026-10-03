@@ -1,6 +1,11 @@
 import { Component, input, output } from '@angular/core';
 
-import { UiAmount, UiBadge, UiButton, UiCard, UiField, UiInput } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiBadge } from '@joanroucoux/cairn-ui/badge';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiField } from '@joanroucoux/cairn-ui/field';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { AssetClass } from '@core/api-client/cairnAPI.schemas';

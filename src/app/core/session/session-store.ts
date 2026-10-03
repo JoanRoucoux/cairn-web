@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
-import { type AsyncState } from '@joanroucoux/cairn-ui';
+import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 import { catchError, firstValueFrom, of } from 'rxjs';
 
 import { SessionService } from '@core/api-client/session/session.service';

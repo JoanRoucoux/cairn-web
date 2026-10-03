@@ -1,16 +1,12 @@
 import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 
-import {
-  type AsyncState,
-  UiAsync,
-  UiButton,
-  UiCard,
-  UiField,
-  UiFieldLeading,
-  UiInput,
-  UiRow,
-  UiSkeleton,
-} from '@joanroucoux/cairn-ui';
+import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
+import { UiRow } from '@joanroucoux/cairn-ui/row';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideSearch } from '@lucide/angular';
 
