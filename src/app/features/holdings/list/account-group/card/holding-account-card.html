@@ -51,7 +51,7 @@
             <ui-amount currency="EUR" [value]="holding.marketValueEur" />
           </span>
           @if (foreign) {
-            <span class="text-label text-(--muted-foreground)">{{ 'holdings.replace.open' | transloco }}</span>
+            <span class="text-label font-medium">{{ 'holdings.replace.open' | transloco }}</span>
           } @else if (unpriced(holding)) {
             <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
           } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {

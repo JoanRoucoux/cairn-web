@@ -177,6 +177,8 @@
     "title2": "Instrument",
     "titlePlaceholder": "Name or ISIN",
     "catalogHeading": "In the catalogue",
+    "catalogError": "The catalogue did not answer.",
+    "catalogLoading": "Searching the catalogue",
     "onlineHeading": "New instrument, found online",
     "onlineError": "The online search did not answer.",
     "onlineRetry": "Retry",
