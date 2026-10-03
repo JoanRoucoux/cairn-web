@@ -1,9 +1,13 @@
-<div align="center">
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/github/banner-dark.png">
+    <img alt="Cairn: Wealth tracking, line by line." src="docs/github/banner-light.png">
+  </picture>
+</p>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/github/banner-dark.png">
-  <img alt="Cairn: Wealth tracking, line by line." src="docs/github/banner-light.png">
-</picture>
+<br>
+
+<div align="center">
 
 [![CI](https://github.com/JoanRoucoux/cairn-web/actions/workflows/ci.yml/badge.svg)](https://github.com/JoanRoucoux/cairn-web/actions/workflows/ci.yml)
 [![Deploy](https://github.com/JoanRoucoux/cairn-web/actions/workflows/deploy.yml/badge.svg)](https://github.com/JoanRoucoux/cairn-web/actions/workflows/deploy.yml)
@@ -18,10 +22,22 @@ The Angular frontend of [Cairn](https://github.com/JoanRoucoux/cairn), a single-
 
 It is built on the [Cairn UI](https://github.com/JoanRoucoux/cairn-ui) design system ([Storybook](https://joanroucoux.github.io/cairn-ui/)) and runs at https://cairn.joanroucoux.fr, behind passkey sign-in.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/github/screenshots/dashboard-dark.png">
-  <img alt="The Cairn dashboard" src="docs/github/screenshots/dashboard-light.png">
-</picture>
+<p align="center">
+  <img alt="The dashboard: net worth, day change, unrealized gain, the performance chart over a selectable range and the envelopes" src="docs/github/screenshots/dashboard-dark.png">
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img alt="Allocation of the portfolio by asset class and by account" src="docs/github/screenshots/allocation-dark.png"></td>
+    <td width="50%"><img alt="The holdings list with the detail panel of one holding open" src="docs/github/screenshots/holding-dark.png"></td>
+  </tr>
+</table>
+
+<p align="center">
+  <img alt="Mobile dashboard" src="docs/github/screenshots/mobile-dashboard-dark.png" width="30%">
+  <img alt="Mobile holdings list" src="docs/github/screenshots/mobile-holdings-dark.png" width="30%">
+  <img alt="Mobile holding detail" src="docs/github/screenshots/mobile-holding-dark.png" width="30%">
+</p>
 
 The data shown is fictional.
 
