@@ -115,7 +115,7 @@ describe('PortfolioTotal', () => {
 
     const link = await screen.findByTestId('stale-link');
 
-    expect(link.parentElement).toContainElement(screen.getByTestId('total-excluded'));
+    expect(link.parentElement?.parentElement).toContainElement(screen.getByTestId('total-excluded'));
   });
 
   it('should say "hors N lignes" once a non-EUR line is among them, counting both', async () => {
