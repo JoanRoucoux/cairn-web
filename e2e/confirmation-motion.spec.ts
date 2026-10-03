@@ -166,14 +166,14 @@ test.describe('after a change on iPhone', () => {
 
   test('confirms a new balance 8 px above the tab bar and highlights the cash line', async ({ page }) => {
     await page.goto('/holdings');
-    const boursorama = page.getByTestId('account-card').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.getByTestId('edit-cash-mobile').click();
+    const northwind = page.getByTestId('account-card').filter({ hasText: 'Northwind PEA' });
+    await northwind.getByTestId('edit-cash-mobile').click();
     await page.getByTestId('holding-cash-amount').fill('900');
     await clearMotion(page);
     await page.getByTestId('holding-cash-submit').click();
 
     await expect(toast(page)).toHaveText('Balance updated');
-    await expect(boursorama.getByTestId('edit-cash-mobile')).toContainText('900');
+    await expect(northwind.getByTestId('edit-cash-mobile')).toContainText('900');
     await expect
       .poll(async () =>
         (await motion(page)).filter((entry) => entry.name === 'backgroundColor').map((entry) => entry.tag),
@@ -210,7 +210,7 @@ test.describe('after a change on the profile', () => {
     const passkeys = [
       {
         credentialId: 'aXBob25l',
-        label: 'iPhone de Joan',
+        label: "iPhone d'Alex",
         createdAt: '2026-02-01T10:00:00Z',
         lastUsedAt: null,
         current: true,
@@ -235,7 +235,7 @@ test.describe('after a change on the profile', () => {
     await page.route('**/webauthn/register', (route) => {
       passkeys.push({
         credentialId: 'aVBhZA',
-        label: 'iPad de Joan',
+        label: "iPad d'Alex",
         createdAt: '2026-10-02T10:00:00Z',
         lastUsedAt: null,
         current: false,
@@ -252,12 +252,12 @@ test.describe('after a change on the profile', () => {
     await page.goto('/profile');
     await expect(page.getByText('MacBook Air')).toBeVisible();
     await page.getByTestId('manage-passkeys').click();
-    await page.getByTestId('passkey-label').fill('iPad de Joan');
+    await page.getByTestId('passkey-label').fill("iPad d'Alex");
     await clearMotion(page);
     await page.getByTestId('passkey-register').click();
 
     await expect(toast(page)).toHaveText('Passkey added');
-    await expect(page.getByTestId('added-passkey')).toContainText('iPad de Joan');
+    await expect(page.getByTestId('added-passkey')).toContainText("iPad d'Alex");
     await expect
       .poll(async () =>
         (await motion(page)).filter((entry) => entry.testId === 'added-passkey').map((entry) => entry.name),
@@ -272,7 +272,7 @@ test.describe('after a change on the profile', () => {
     await expect(toast(page)).toHaveText('Passkey deleted');
     const entries = await motion(page);
     expect(entries.some((entry) => entry.name === 'cairn-fade-out' && entry.text.includes('MacBook Air'))).toBe(true);
-    expect(entries.some((entry) => entry.name === 'transform' && entry.text.includes('iPad de Joan'))).toBe(true);
+    expect(entries.some((entry) => entry.name === 'transform' && entry.text.includes("iPad d'Alex"))).toBe(true);
   });
 
   test('confirms an import with the number of holdings it brought in', async ({ page }) => {

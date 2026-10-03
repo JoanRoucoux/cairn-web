@@ -12,7 +12,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 const instruments = [
   { id: 'i1', name: 'Amundi MSCI World', isin: 'LU1681043599', assetClass: 'ETF', priceSource: 'YAHOO' },
 ];
@@ -134,16 +134,16 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
   });
 
   it('leaves savings accounts out of the accounts a line can be added to', async () => {
-    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
     await renderDialog([], [livret, ...accounts]);
 
-    expect(await screen.findByRole('option', { name: /Saxo Investor/ })).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: /Northwind PEA/ })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: /Livret A/ })).not.toBeInTheDocument();
     expect((screen.getByTestId('holding-add-account') as HTMLSelectElement).value).toBe('a1');
   });
 
   it('ignores a preset savings account and falls back to the first securities account', async () => {
-    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
     await render(HoldingAddDialog, {
       inputs: { presetAccountId: 's1' },
       imports: [getTranslocoTestingModule()],

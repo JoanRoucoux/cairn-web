@@ -45,9 +45,9 @@ const settleSession = async (): Promise<void> => {
   const http = TestBed.inject(HttpTestingController);
 
   (await vi.waitFor(() => http.expectOne('/api/session'))).flush({
-    displayName: 'Joan Roucoux',
-    initials: 'JR',
-    username: 'joan',
+    displayName: 'Alex Martin',
+    initials: 'AM',
+    username: 'alex',
     signInMethod: 'PASSKEY',
   });
 };

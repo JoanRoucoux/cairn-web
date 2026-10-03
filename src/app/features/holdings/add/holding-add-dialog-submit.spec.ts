@@ -12,7 +12,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 const instruments = [
   {
     id: 'i1',

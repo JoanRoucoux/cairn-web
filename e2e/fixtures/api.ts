@@ -20,7 +20,7 @@ const holding = {
   accountCash: false,
   id: '11111111-1111-1111-1111-111111111111',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
-  accountName: 'PEA Boursorama',
+  accountName: 'Northwind PEA',
   accountType: 'PEA',
   instrumentId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
   instrumentName: 'Amundi MSCI World',
@@ -100,7 +100,7 @@ const account = {
   id: holding.accountId,
   name: holding.accountName,
   type: holding.accountType,
-  institution: 'Boursorama',
+  institution: 'Northwind Bank',
 };
 
 const accounts = [account, ...EXTRA_ACCOUNTS];

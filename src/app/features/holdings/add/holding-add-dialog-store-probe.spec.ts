@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { HoldingAddDialogStore } from './holding-add-dialog-store';
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 const instruments = [
   { id: 'i1', name: 'Amundi MSCI World', isin: 'LU1681043599', assetClass: 'ETF', priceSource: 'YAHOO' },
 ];

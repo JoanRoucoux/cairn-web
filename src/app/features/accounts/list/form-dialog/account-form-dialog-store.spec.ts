@@ -12,9 +12,9 @@ describe('AccountFormDialogStore', () => {
   let httpTesting: HttpTestingController;
 
   const fillValidDraft = (): void => {
-    store.form.name().value.set('PEA Boursorama');
+    store.form.name().value.set('Northwind PEA');
     store.form.type().value.set('PEA');
-    store.form.institution().value.set('Boursorama');
+    store.form.institution().value.set('Northwind Bank');
   };
 
   beforeEach(() => {
@@ -62,10 +62,10 @@ describe('AccountFormDialogStore', () => {
   });
 
   it('should prefill from an existing account', () => {
-    store.prefill({ name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama' });
+    store.prefill({ name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' });
 
-    expect(store.form.name().value()).toBe('PEA Boursorama');
-    expect(store.form.institution().value()).toBe('Boursorama');
+    expect(store.form.name().value()).toBe('Northwind PEA');
+    expect(store.form.institution().value()).toBe('Northwind Bank');
   });
 
   it('should flag a name conflict on a 409 without a generic failure', async () => {

@@ -12,16 +12,16 @@ type Passkey = {
 };
 
 const session = {
-  displayName: 'Joan Roucoux',
-  initials: 'JR',
-  username: 'joan',
+  displayName: 'Alex Martin',
+  initials: 'AM',
+  username: 'alex',
   signInMethod: 'PASSKEY',
 };
 
 const passkeys: Passkey[] = [
   {
     credentialId: 'aXBob25l',
-    label: 'iPhone de Joan',
+    label: "iPhone d'Alex",
     createdAt: '2026-02-01T10:00:00Z',
     lastUsedAt: null,
     current: true,
@@ -48,8 +48,8 @@ const registrationOptions = {
   rp: { id: 'localhost', name: 'Cairn' },
   user: {
     id: base64url('e2e-owner'),
-    name: 'joan',
-    displayName: 'Joan Roucoux',
+    name: 'alex',
+    displayName: 'Alex Martin',
   },
   challenge: base64url('register-challenge'),
   pubKeyCredParams: [{ type: 'public-key', alg: -7 }],

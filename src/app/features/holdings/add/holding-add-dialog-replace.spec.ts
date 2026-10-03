@@ -13,7 +13,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 const instruments = [
   { id: 'i1', name: 'Amundi MSCI World', isin: 'LU1681043599', currency: 'EUR', assetClass: 'ETF' },
   { id: 'i2', name: 'iShares MSCI World USD', isin: 'IE00B4L5Y983', currency: 'USD', assetClass: 'ETF' },
@@ -123,7 +123,7 @@ describe('HoldingAddDialog non-EUR candidates and replace mode', () => {
     it('keeps a candidate of unknown currency selectable and creates it with euro', async () => {
       const user = userEvent.setup();
       await renderDialog();
-      await screen.findByRole('option', { name: /Saxo Investor/ });
+      await screen.findByRole('option', { name: /Northwind PEA/ });
 
       await user.type(screen.getByTestId('holding-add-query'), 'ishares world');
       (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([

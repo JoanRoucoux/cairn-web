@@ -25,7 +25,7 @@ const seedResidentCredential = (page: Page): Promise<void> =>
       publicKey: {
         challenge: Uint8Array.from([1, 2, 3, 4]),
         rp: { id: 'localhost', name: 'Cairn' },
-        user: { id: Uint8Array.from([5, 6, 7, 8]), name: 'joan', displayName: 'Joan Roucoux' },
+        user: { id: Uint8Array.from([5, 6, 7, 8]), name: 'alex', displayName: 'Alex Martin' },
         pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
         authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
       },
@@ -38,7 +38,7 @@ test.describe('passkeys', () => {
     await mockApi(page);
 
     await page.goto('/profile');
-    await expect(page.getByTestId('identity')).toContainText('Joan Roucoux');
+    await expect(page.getByTestId('identity')).toContainText('Alex Martin');
 
     await page.getByTestId('manage-passkeys').click();
     await expect(page.getByTestId('profile-passkey-dialog').locator('dialog')).toBeVisible();
@@ -52,13 +52,13 @@ test.describe('passkeys', () => {
       return route.fallback();
     });
 
-    await page.getByTestId('passkey-label').fill('MacBook de Joan');
+    await page.getByTestId('passkey-label').fill("MacBook d'Alex");
     await page.getByTestId('passkey-register').click();
 
     await expect(page.getByTestId('profile-passkey-dialog')).toHaveCount(0);
-    await expect(page.getByText('MacBook de Joan')).toBeVisible();
+    await expect(page.getByText("MacBook d'Alex")).toBeVisible();
 
-    expect(registerBody?.publicKey.label).toBe('MacBook de Joan');
+    expect(registerBody?.publicKey.label).toBe("MacBook d'Alex");
     expect(registerBody?.publicKey.credential.response.attestationObject).toBeTruthy();
     expect(registerBody?.publicKey.credential.response.clientDataJSON).toBeTruthy();
   });

@@ -81,15 +81,15 @@ test.describe('holdings list', () => {
   test('finds an instrument by name ignoring accents and case', async ({ page }) => {
     await page.getByTestId('holdings-search').fill('amundi');
 
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await expect(boursorama.getByRole('link', { name: 'Amundi MSCI World' })).toBeVisible();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await expect(northwind.getByRole('link', { name: 'Amundi MSCI World' })).toBeVisible();
   });
 
   test('finds an instrument by ISIN typed in lowercase', async ({ page }) => {
     await page.getByTestId('holdings-search').fill('fr0010756098');
 
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await expect(boursorama.getByRole('link', { name: 'Amundi MSCI World' })).toBeVisible();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await expect(northwind.getByRole('link', { name: 'Amundi MSCI World' })).toBeVisible();
   });
 
   test('tells the reader what was searched when nothing matches', async ({ page }) => {
@@ -99,8 +99,8 @@ test.describe('holdings list', () => {
   });
 
   test('shows the prefilled balance and updates it through the cash dialog', async ({ page }) => {
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.getByTestId('edit-cash').click();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await northwind.getByTestId('edit-cash').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('holding-cash-cancel')).toBeFocused();
@@ -110,24 +110,24 @@ test.describe('holdings list', () => {
     await page.getByTestId('holding-cash-submit').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeHidden();
-    await expect(boursorama.getByTestId('cash-row')).toContainText('900');
+    await expect(northwind.getByTestId('cash-row')).toContainText('900');
   });
 
   test('removes the cash line when the balance is set to zero', async ({ page }) => {
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.getByTestId('edit-cash').click();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await northwind.getByTestId('edit-cash').click();
 
     await expect(page.getByTestId('holding-cash-amount')).toHaveValue('732.4');
     await page.getByTestId('holding-cash-amount').fill('0');
     await page.getByTestId('holding-cash-submit').click();
 
     await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeHidden();
-    await expect(boursorama.getByTestId('cash-row')).toHaveText(/0[,.]00/);
+    await expect(northwind.getByTestId('cash-row')).toHaveText(/0[,.]00/);
   });
 
   test('refuses a negative amount in the cash dialog', async ({ page }) => {
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.getByTestId('edit-cash').click();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await northwind.getByTestId('edit-cash').click();
     await page.getByTestId('holding-cash-amount').fill('-10');
     await page.getByTestId('holding-cash-submit').click();
 
@@ -135,7 +135,7 @@ test.describe('holdings list', () => {
   });
 
   test('pluralizes a one-line account in the singular', async ({ page }) => {
-    const cto = page.getByTestId('account-group').filter({ hasText: 'CTO Boursorama' });
+    const cto = page.getByTestId('account-group').filter({ hasText: 'Contoso Trading' });
 
     await expect(cto).toContainText(/1 holding(?!s)/);
   });
@@ -143,7 +143,7 @@ test.describe('holdings list', () => {
   test('renders a savings account as one dated balance row, with no line count', async ({ page }) => {
     const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
 
-    await expect(livretA.getByText(/^Savings · Boursorama · balance as of \d\d\/\d\d$/)).toBeVisible();
+    await expect(livretA.getByText(/^Savings · Woodgrove Bank · balance as of \d\d\/\d\d$/)).toBeVisible();
     await expect(livretA.getByTestId('cash-row')).toHaveText(/Balance.*Entered on \d\d\/\d\d.*20.?000/);
     await expect(livretA.getByTestId('holding-row')).toHaveCount(0);
     await expect(livretA.getByTestId('edit-cash')).toHaveAccessibleName(/Livret A/);
@@ -157,8 +157,8 @@ test.describe('holding detail', () => {
   });
 
   test('opens next to the list on desktop and reduces the table to three columns', async ({ page }) => {
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.getByRole('link', { name: 'Amundi MSCI World' }).click();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await northwind.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
     await expect(page.getByTestId('holdings-list').getByRole('columnheader')).toHaveCount(3);
@@ -166,8 +166,8 @@ test.describe('holding detail', () => {
 
   test('keeps the search text when closing the detail', async ({ page }) => {
     await page.getByTestId('holdings-search').fill('amundi');
-    const boursorama = page.getByTestId('account-group').filter({ hasText: 'PEA Boursorama' });
-    await boursorama.getByRole('link', { name: 'Amundi MSCI World' }).click();
+    const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
+    await northwind.getByRole('link', { name: 'Amundi MSCI World' }).click();
     await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
 
     await page.getByRole('link', { name: 'Close the detail' }).click();

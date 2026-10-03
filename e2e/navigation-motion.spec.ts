@@ -188,7 +188,7 @@ test.describe('navigation motion', () => {
       const login = new LoginPageObject(page);
       await login.goto();
 
-      await login.signInWithPassword('joan', 'a-real-password');
+      await login.signInWithPassword('alex', 'a-real-password');
 
       await expect(page).toHaveURL('/');
       expect(await page.evaluate(() => sessionStorage.getItem('swap'))).toBe('true');

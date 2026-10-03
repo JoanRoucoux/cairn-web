@@ -52,13 +52,13 @@ test.describe('login', () => {
     const login = new LoginPageObject(page);
     await login.goto();
 
-    await login.signInWithPassword('joan', 'wrong-password');
+    await login.signInWithPassword('alex', 'wrong-password');
 
     await expect(login.refused).toBeVisible();
     await expect(login.refused).toContainText('Incorrect username or password.');
     await expect(login.username).toHaveAttribute('aria-invalid', 'true');
     await expect(login.password).toHaveAttribute('aria-invalid', 'true');
-    await expect(login.username).toHaveValue('joan');
+    await expect(login.username).toHaveValue('alex');
     await expect(login.password).toBeFocused();
   });
 
@@ -71,7 +71,7 @@ test.describe('login', () => {
     const login = new LoginPageObject(page);
     await login.goto();
 
-    await login.signInWithPassword('joan', 'a-real-password');
+    await login.signInWithPassword('alex', 'a-real-password');
 
     await expect(page).toHaveURL('/');
   });

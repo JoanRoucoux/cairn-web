@@ -20,8 +20,8 @@
     "error": "That account was refused.",
     "nameConflict": "An account already has this name.",
     "savingsConflict": "This account has holdings: it cannot become a savings account.",
-    "namePlaceholder": "For example Boursorama PEA",
-    "institutionPlaceholder": "For example Boursorama",
+    "namePlaceholder": "For example Northwind PEA",
+    "institutionPlaceholder": "For example Northwind Bank",
     "create": "Create the account"
   },
   "delete": {

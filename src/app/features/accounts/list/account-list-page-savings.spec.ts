@@ -13,8 +13,8 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { AccountListPage } from './account-list-page';
 import { AccountListStore } from './account-list-store';
 
-const boursorama = { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama' };
-const livretA = { id: 'a2', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+const northwind = { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' };
+const livretA = { id: 'a2', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
 
 describe('AccountListPage savings accounts', () => {
   let httpTesting: HttpTestingController;
@@ -76,7 +76,7 @@ describe('AccountListPage savings accounts', () => {
 
   it('should offer to edit the balance from the menu and lead to Lignes on that account', async () => {
     const user = userEvent.setup();
-    await renderPage([livretA, boursorama], [cash]);
+    await renderPage([livretA, northwind], [cash]);
 
     const [trigger] = await screen.findAllByTestId('account-menu-trigger');
     await user.click(trigger!);
@@ -97,7 +97,7 @@ describe('AccountListPage savings accounts', () => {
 
   it('should offer the balance edit on no other account', async () => {
     const user = userEvent.setup();
-    await renderPage([boursorama], []);
+    await renderPage([northwind], []);
 
     await user.click(await screen.findByTestId('account-menu-trigger'));
 

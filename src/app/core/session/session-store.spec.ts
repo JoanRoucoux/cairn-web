@@ -6,9 +6,9 @@ import { TestBed } from '@angular/core/testing';
 import { SessionStore } from './session-store';
 
 const session = {
-  displayName: 'Joan Roucoux',
-  initials: 'JR',
-  username: 'joan',
+  displayName: 'Alex Martin',
+  initials: 'AM',
+  username: 'alex',
   signInMethod: 'PASSKEY',
 };
 
@@ -35,8 +35,8 @@ describe('SessionStore', () => {
   it('should expose the signed-in owner once the session resolves', async () => {
     await settleSession();
 
-    expect(store.owner().displayName).toBe('Joan Roucoux');
-    expect(store.owner().initials).toBe('JR');
+    expect(store.owner().displayName).toBe('Alex Martin');
+    expect(store.owner().initials).toBe('AM');
   });
 
   it('should hold an empty identity while the session is in flight', async () => {
@@ -48,7 +48,7 @@ describe('SessionStore', () => {
   it('should expose the username and how the session was opened', async () => {
     await settleSession();
 
-    expect(store.username()).toBe('joan');
+    expect(store.username()).toBe('alex');
     expect(store.signInMethod()).toBe('PASSKEY');
   });
 

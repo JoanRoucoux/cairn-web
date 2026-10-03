@@ -47,10 +47,10 @@ describe('AccountFormDialog', () => {
   });
 
   it('should show the edit title and the prefilled draft with an existing account', async () => {
-    await renderDialog({ id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama' });
+    await renderDialog({ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' });
 
     expect(await screen.findByText('accounts.form.editTitle')).toBeInTheDocument();
-    expect(screen.getByTestId('account-form-name')).toHaveValue('PEA Boursorama');
+    expect(screen.getByTestId('account-form-name')).toHaveValue('Northwind PEA');
   });
 
   it('should emit dismissed on cancel', async () => {
@@ -118,7 +118,7 @@ describe('AccountFormDialog', () => {
     expect(screen.getByRole('radio', { name: 'enums.accountType.PEA' })).toBeChecked();
     expect(screen.getByTestId('account-form-submit')).toBeDisabled();
 
-    await user.type(screen.getByTestId('account-form-name'), 'Boursorama');
+    await user.type(screen.getByTestId('account-form-name'), 'Northwind Bank');
 
     expect(screen.getByTestId('account-form-submit')).toBeEnabled();
   });
@@ -128,18 +128,18 @@ describe('AccountFormDialog', () => {
     await renderDialog();
 
     expect(screen.getByTestId('account-form-submit')).toHaveTextContent('accounts.form.create');
-    await user.type(screen.getByTestId('account-form-name'), 'Trade Republic');
+    await user.type(screen.getByTestId('account-form-name'), 'Contoso Trading');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
     await user.type(screen.getByTestId('account-form-institution'), '   ');
     await user.click(screen.getByTestId('account-form-submit'));
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts'));
-    expect(request.request.body).toEqual({ name: 'Trade Republic', type: 'CTO', institution: '' });
+    expect(request.request.body).toEqual({ name: 'Contoso Trading', type: 'CTO', institution: '' });
     request.flush({});
   });
 
   it('labels the primary action Save when editing', async () => {
-    await renderDialog({ id: 'a1', name: 'PEA', type: 'PEA', institution: 'Saxo' });
+    await renderDialog({ id: 'a1', name: 'PEA', type: 'PEA', institution: 'Northwind Bank' });
 
     expect(screen.getByTestId('account-form-submit')).toHaveTextContent('accounts.form.submit');
   });
@@ -149,9 +149,9 @@ describe('AccountFormDialog', () => {
     await renderDialog();
     slowDialogExit();
 
-    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.type(screen.getByTestId('account-form-name'), 'Northwind PEA');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
-    await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
+    await user.type(screen.getByTestId('account-form-institution'), 'Northwind Bank');
     await user.click(screen.getByTestId('account-form-submit'));
     await vi.waitFor(() => expectSubmitting(screen.getByTestId('account-form-submit')));
 
@@ -164,9 +164,9 @@ describe('AccountFormDialog', () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.type(screen.getByTestId('account-form-name'), 'Northwind PEA');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
-    await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
+    await user.type(screen.getByTestId('account-form-institution'), 'Northwind Bank');
     await user.click(screen.getByTestId('account-form-submit'));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(null, { status: 409, statusText: 'Conflict' }));
@@ -178,7 +178,7 @@ describe('AccountFormDialog', () => {
 
   it('should keep the dialog open with a field error on the envelope, and no toast, on a 422', async () => {
     const user = userEvent.setup();
-    await renderDialog({ id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: '' });
+    await renderDialog({ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: '' });
 
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.SAVINGS' }));
     await user.click(screen.getByTestId('account-form-submit'));
@@ -199,7 +199,7 @@ describe('AccountFormDialog', () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.type(screen.getByTestId('account-form-name'), 'Northwind PEA');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.click(screen.getByTestId('account-form-submit'));
     await vi.waitFor(() =>
@@ -216,9 +216,9 @@ describe('AccountFormDialog', () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.type(screen.getByTestId('account-form-name'), 'Northwind PEA');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
-    await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
+    await user.type(screen.getByTestId('account-form-institution'), 'Northwind Bank');
     await user.click(screen.getByTestId('account-form-submit'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(null, { status: 409, statusText: 'Conflict' }));
     await screen.findByText('accounts.form.nameConflict');
@@ -232,9 +232,9 @@ describe('AccountFormDialog', () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.type(screen.getByTestId('account-form-name'), 'Northwind PEA');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
-    await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
+    await user.type(screen.getByTestId('account-form-institution'), 'Northwind Bank');
     await user.click(screen.getByTestId('account-form-submit'));
 
     await vi.waitFor(() =>

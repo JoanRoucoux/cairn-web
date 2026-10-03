@@ -29,9 +29,9 @@ const settleSession = async (): Promise<void> => {
   const http = TestBed.inject(HttpTestingController);
 
   (await vi.waitFor(() => http.expectOne('/api/session'))).flush({
-    displayName: 'Joan Roucoux',
-    initials: 'JR',
-    username: 'joan',
+    displayName: 'Alex Martin',
+    initials: 'AM',
+    username: 'alex',
     signInMethod: 'PASSKEY',
   });
 };
@@ -106,7 +106,7 @@ describe('AppShell', () => {
     await renderShell();
     await settleSession();
 
-    expect(await screen.findByText('JR')).toBeInTheDocument();
+    expect(await screen.findByText('AM')).toBeInTheDocument();
   });
 
   it('should stay usable while the session is still loading', async () => {
