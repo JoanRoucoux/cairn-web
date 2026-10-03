@@ -12,7 +12,6 @@ const RANGE_DAYS: Record<ChartRange, number | null> = {
   max: null,
 };
 
-/** Start of the window for a range, or undefined for the whole available history. */
 export const rangeStart = (range: ChartRange, now: Date = new Date()): string | undefined => {
   const days = RANGE_DAYS[range];
 

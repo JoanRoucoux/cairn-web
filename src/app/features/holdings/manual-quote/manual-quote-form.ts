@@ -7,7 +7,6 @@ export type ManualQuote = {
   price: number | null;
 };
 
-// A factory so each dialog instance gets its own model object.
 export const initialManualQuote = (): ManualQuote => ({
   asOf: new Date().toISOString().slice(0, 10),
   price: null,

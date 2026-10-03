@@ -26,8 +26,6 @@ describe('PortfolioImportStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  // The server declares consumes = "text/csv"; Angular would otherwise send text/plain and be
-  // answered with 415.
   it('should post the file content as text/csv', async () => {
     const imported = store.importFile(new File([CSV], 'portfolio.csv'));
 
@@ -69,7 +67,6 @@ describe('PortfolioImportStore', () => {
     expect(store.failed()).toBe(false);
   });
 
-  // A 500 carries no row list: the screen must say something went wrong rather than show nothing.
   it('should report a failure that is not a rejection', async () => {
     const imported = store.importFile(new File([CSV], 'portfolio.csv'));
 
@@ -93,7 +90,6 @@ describe('PortfolioImportStore', () => {
     );
 
     await imported;
-    // An empty table would tell the reader to fix nothing in particular.
     expect(store.rejections()).toEqual([]);
     expect(store.failed()).toBe(true);
   });

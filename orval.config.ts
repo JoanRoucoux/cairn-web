@@ -14,9 +14,7 @@ export default defineConfig({
       formatter: 'prettier',
     },
     hooks: {
-      // Orval 8.30 started writing a root index.ts, which makes the generated client a barrel
-      // module that Sheriff then refuses every deep import from. `indexFiles: false` is not the
-      // way out: it also splits cairnAPI.schemas.ts into files the services then fail to import.
+      // Orval's root index.ts turns the client into a barrel Sheriff refuses deep imports from; `indexFiles: false` breaks the schemas import.
       afterAllFilesWrite: () => rmSync(`${target}/index.ts`, { force: true }),
     },
   },

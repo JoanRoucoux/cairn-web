@@ -20,7 +20,6 @@ export class LanguageStore {
   readonly availableLangs: readonly string[] = AVAILABLE_LANGS;
 
   constructor() {
-    // Keep the `lang` attribute on <html> in sync so assistive technologies announce the right language.
     effect(() => {
       this.#document.documentElement.lang = this.activeLang();
     });

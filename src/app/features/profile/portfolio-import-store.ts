@@ -15,9 +15,7 @@ export class PortfolioImportStore {
   #portfolioApiClient = inject(PortfolioService);
 
   readonly importing = signal(false);
-  /** Rows the server refused, kept whole: the point of its 422 is that the file is fixed in one pass. */
   readonly rejections = signal<ImportErrorResponse[]>([]);
-  /** Anything that is not a rejection, which carries no rows to show. */
   readonly failed = signal(false);
 
   async importFile(file: File): Promise<ImportReportResponse | null> {
@@ -27,8 +25,7 @@ export class PortfolioImportStore {
 
     try {
       const report = await firstValueFrom(
-        // The endpoint declares consumes = "text/csv"; a string body would otherwise be sent as
-        // text/plain and refused with 415.
+        // The endpoint consumes text/csv: a string body would otherwise go out as text/plain and get a 415.
         this.#portfolioApiClient.importPortfolio(await file.text(), {
           headers: new HttpHeaders({ 'Content-Type': 'text/csv' }),
         }),

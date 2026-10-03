@@ -9,7 +9,6 @@ type Account = { id: string; name: string };
 const sumBy = (holdings: Holding[], field: 'marketValueEur' | 'dayChangeEur' | 'unrealizedGainEur'): number =>
   holdings.reduce((sum, candidate) => sum + (candidate[field] ?? 0), 0);
 
-/** `byAccount`, from the same `holdings`/`accounts` fixtures rather than duplicated numbers. */
 export const summarizeByAccount = (
   holdings: Holding[],
   accounts: Account[],

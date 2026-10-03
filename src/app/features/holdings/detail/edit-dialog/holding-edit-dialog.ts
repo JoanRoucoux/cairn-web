@@ -37,7 +37,6 @@ export class HoldingEditDialog {
     this.#changes.reveal(change);
   });
 
-  // The parent creates this component to open the dialog: it is open from its first render.
   protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
@@ -47,8 +46,6 @@ export class HoldingEditDialog {
   constructor() {
     effect(() => this.#store.prefill(this.holding()));
 
-    // showModal() focuses the first focusable descendant by default, which would be a form
-    // field: pull focus back onto the safe action once the dialog has rendered open.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         focusInitial(this.#host.nativeElement, 'holding-edit-cancel', 'holding-edit-quantity');

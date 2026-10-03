@@ -3,8 +3,7 @@
 @import '@joanroucoux/cairn-ui/styles/theme.css';
 @import '@joanroucoux/cairn-ui/styles/motion.css';
 
-/* Tailwind does not scan node_modules: without this, the classes used inside cairn-ui templates
-   are never generated. */
+/* Tailwind does not scan node_modules: without this, cairn-ui's classes are never generated. */
 @source '../node_modules/@joanroucoux/cairn-ui';
 
 html {

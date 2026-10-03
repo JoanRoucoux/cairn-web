@@ -28,7 +28,6 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      # openapi/openapi.yaml is a copy of cairn-api's contract; nothing else stops the two drifting.
       - name: Check the API contract matches the backend
         run: |
           curl -fsSL -o "$RUNNER_TEMP/upstream-openapi.yaml" "$CONTRACT_URL"

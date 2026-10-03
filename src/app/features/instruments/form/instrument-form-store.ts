@@ -59,7 +59,6 @@ export class InstrumentFormStore {
       this.candidates.set(candidates);
       this.notFound.set(candidates.length === 0);
     } catch {
-      // 422 is the documented answer for "no candidate": it is an outcome, not a failure.
       this.notFound.set(true);
     } finally {
       this.searching.set(false);

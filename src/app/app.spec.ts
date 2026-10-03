@@ -15,8 +15,6 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { App } from './app';
 
-// Mirrors app-routes.ts's shape (login as a sibling of the AppShell layout route) without pulling
-// every lazy feature into this spec's module graph.
 const LOGIN_OUTSIDE_SHELL_ROUTES: Routes = [
   {
     path: 'login',
@@ -40,7 +38,6 @@ const renderApp = (): Promise<unknown> =>
     ],
   });
 
-// SessionStore is providedIn: 'root' and fetches the session as soon as the shell injects it.
 const settleSession = async (): Promise<void> => {
   const http = TestBed.inject(HttpTestingController);
 
@@ -88,8 +85,6 @@ describe('App', () => {
     fixture.detectChanges();
     const navigation = TestBed.inject(Router).navigateByUrl('/login');
 
-    // The guard and (on the unfixed app) the shell each ask for the session independently, and
-    // the login feature is lazy, so several ticks are needed before either request exists.
     for (let round = 0; round < 20; round++) {
       await new Promise((resolve) => setTimeout(resolve, 0));
       for (const req of httpTesting.match('/api/session')) {

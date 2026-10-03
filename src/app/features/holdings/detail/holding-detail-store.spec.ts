@@ -35,8 +35,6 @@ describe('HoldingDetailStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  // Chained resources (holding -> instrument/quotes) fire their next request from an effect that
-  // is only flushed once change detection and the microtask queue have both had a turn.
   const settle = async (): Promise<void> => {
     for (let i = 0; i < 10; i++) {
       TestBed.tick();

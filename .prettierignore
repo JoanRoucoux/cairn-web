@@ -1,15 +1,12 @@
-# Build outputs and caches
 /.angular
 /coverage
 /dist
 node_modules
 
-# Generated OpenAPI clients and models (Orval)
 /src/app/core/api-client
 
 # A byte-for-byte copy of cairn-api's contract, which CI diffs against the backend's main.
 # Reformatting it here would only hide a drift the diff exists to catch.
 /openapi/openapi.yaml
 
-# Lockfile
 pnpm-lock.yaml

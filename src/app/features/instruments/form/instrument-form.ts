@@ -15,7 +15,6 @@ export type InstrumentDraft = {
   description: string;
 };
 
-// A factory so each page instance gets its own model object.
 export const initialInstrumentDraft = (instrument?: InstrumentDetailResponse): InstrumentDraft => ({
   name: instrument?.name ?? '',
   isin: instrument?.isin ?? '',

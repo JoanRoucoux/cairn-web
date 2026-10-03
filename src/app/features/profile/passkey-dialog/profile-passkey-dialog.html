@@ -9,7 +9,6 @@
   (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
-  <!-- novalidate: the native required/maxlength validation would block submit() from ever running. -->
   <form id="profile-passkey-form" novalidate (submit)="onSubmit($event)">
     <ui-field [label]="'profile.addPasskeyLabel' | transloco">
       <input data-testid="passkey-label" type="text" uiInput [formField]="form.label" />

@@ -21,12 +21,10 @@ export class ManualQuoteDialogStore {
 
   readonly error = signal(false);
 
-  // Returns true when the quote reached the API.
   async save(instrumentId: string): Promise<boolean> {
     this.error.set(false);
     let saved = false;
 
-    // submit() marks every field as touched, skips the action while invalid and drives form().submitting().
     await submit(this.form, async () => {
       try {
         const model = this.#model();

@@ -11,11 +11,6 @@ import { summarizeByAccount, totalsOf } from './portfolio-summary';
 import { buyHolding, changeHoldingInstrument, resolveInstrument, sellHolding } from './trading';
 import { getPasskeys, getSession, mockWebauthn } from './webauthn';
 
-// No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
-// fixed JSON here instead, so the suite is self-contained in CI and locally.
-
-// PEA ~88,200 (this holding plus the stale one below); the other 5 envelopes live in
-// ./envelope-holdings.ts, summing with this one to the portfolio total.
 const holding = {
   accountCash: false,
   id: '11111111-1111-1111-1111-111111111111',
@@ -72,7 +67,6 @@ const unvaluedHolding = {
   dayChangeRatio: null,
 };
 
-// The PEA account's own EUR cash line: part of the PEA envelope, and never a day move.
 const cashHolding = {
   ...holding,
   accountCash: true,
@@ -108,14 +102,11 @@ const accounts = [account, ...EXTRA_ACCOUNTS];
 const instrument = buildInstrument(holding);
 const unvaluedInstrument = buildUnvaluedInstrument(unvaluedHolding);
 
-// Not part of `instruments`: it backs a holding used for one screen only, and must not shift the
-// count the instruments list asserts on.
 const instruments = [instrument];
 
 let created = 0;
 
 const { totalEur, dayChangeEur, unrealizedGainEur } = totalsOf(holdings);
-// Every holding is assetClass ETF except the stale one (CRYPTO) and the SAVINGS envelope (CASH).
 const cashEur = 20_000;
 const etfEur = totalEur - staleHolding.marketValueEur - cashEur;
 
@@ -138,8 +129,6 @@ const portfolio = {
   holdings,
 };
 
-// Irregular, not a smooth climb: a portfolio has down days too. Same trend-plus-random-walk shape
-// as the intraday fixture (`buildTrendSeries`), pinned to end exactly on `totalEur`.
 const historyDates = [
   '2026-08-20',
   '2026-08-21',
@@ -216,11 +205,9 @@ const listQuotes: Handler = (route, [, instrumentId]) => {
   });
 };
 
-// Stateful on purpose: a quote recorded for a newly created cash instrument must value it.
 const recordQuote: Handler = (route, [, instrumentId]) =>
   route.fulfill({ status: 201, json: { instrumentId, ...(route.request().postDataJSON() as object) } });
 
-// Stateful on purpose: a holding is unique per account and instrument, and a duplicate is refused.
 const createHolding: Handler = (route) => {
   const body = route.request().postDataJSON() as {
     accountId: string;
@@ -271,10 +258,8 @@ const createHolding: Handler = (route) => {
 
 const { createAccount, updateAccount, deleteAccount } = buildAccountCrudHandlers(accounts, holdings);
 
-// Stateful on purpose: setting the balance again must show the new amount, 0 clears a securities line and keeps a savings one.
 const setCashBalanceHandler: Handler = setCashBalance(holdings, accounts, cashHolding);
 
-// Stateful on purpose: a created instrument has to show up in the list that follows.
 const createInstrument: Handler = (route) => {
   const saved = {
     ...instrument,
@@ -286,7 +271,6 @@ const createInstrument: Handler = (route) => {
   return route.fulfill({ status: 201, json: saved });
 };
 
-// Stateful on purpose: an edited instrument has to show up updated in the list that follows.
 const updateInstrument: Handler = (route, [, id]) => {
   const existing = instruments.find((candidate) => candidate.id === id);
 
@@ -299,7 +283,6 @@ const updateInstrument: Handler = (route, [, id]) => {
   return route.fulfill({ json: existing });
 };
 
-// Stateful on purpose: a deleted instrument, and the holdings it backs, must disappear.
 const deleteInstrument: Handler = (route, [, id]) => {
   const index = instruments.findIndex((candidate) => candidate.id === id);
 

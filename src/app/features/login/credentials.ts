@@ -7,7 +7,6 @@ export type Credentials = {
   password: string;
 };
 
-// A factory so each page instance gets its own model object.
 export const initialCredentials = (): Credentials => ({ username: '', password: '' });
 
 export const credentialsSchema = (messages: FormMessages): Schema<Credentials> =>

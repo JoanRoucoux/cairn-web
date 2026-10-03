@@ -25,12 +25,10 @@ export class HoldingCashStore {
     this.#model.set(initialHoldingCashDraft(balance));
   }
 
-  // Returns true once the cash balance reached the API.
   async save(accountId: string): Promise<boolean> {
     this.error.set(false);
     let saved = false;
 
-    // submit() marks every field as touched, skips the action while invalid and drives form().submitting().
     await submit(this.form, async () => {
       try {
         const amount = this.#model().amount as number;

@@ -21,9 +21,6 @@ import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
 import { flushCall, passkeys, session, settleProfile } from './profile-testing';
 
-// Simulates the profile scope's real, asynchronous load: the plain TranslocoTestingModule loader
-// resolves scopes synchronously, which cannot reproduce the race between first render and the
-// lazy scope finishing loading.
 class DeferredScopeLoader implements TranslocoLoader {
   #resolvedLangs: Record<string, Record<string, unknown>>;
   #deferredLangs: string[];
@@ -263,8 +260,6 @@ describe('ProfilePage', () => {
     await user.click(screen.getByTestId('sign-out'));
     await vi.waitFor(() => httpTesting.expectOne('/logout').flush(null));
 
-    // A router navigation would leave the application running on a session the server has just
-    // destroyed, showing the previous user's name until something happens to fail.
     await vi.waitFor(() => expect(signIn).toHaveBeenCalled());
   });
   it('should sign the user out', async () => {
@@ -288,8 +283,6 @@ describe('ProfilePage', () => {
     );
     localStorage.clear();
     await render(ProfilePage, {
-      // Skip preloading (which would await every scope, including the deferred ones, up front)
-      // so the profile scope stays genuinely pending after the page has rendered once.
       imports: [getTranslocoTestingModule({ preloadLangs: false })],
       providers: [
         provideZonelessChangeDetection(),

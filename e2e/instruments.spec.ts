@@ -51,7 +51,7 @@ test.describe('instruments', () => {
     await page.goto('/instruments');
     await page.getByTestId('instrument-menu-trigger').click();
     await page.getByTestId('instrument-menu-edit').click();
-    // Typing before the draft is seeded loses the keystrokes to the prefill that follows.
+    // Typing before the draft is seeded loses the keystrokes to the prefill.
     await expect(page.getByTestId('instrument-name')).toHaveValue('Amundi MSCI World');
 
     await page.getByTestId('instrument-name').fill('Amundi MSCI World (renamed)');

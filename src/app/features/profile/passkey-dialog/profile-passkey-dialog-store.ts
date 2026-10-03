@@ -26,7 +26,6 @@ export class ProfilePasskeyDialogStore {
     this.failed.set(false);
     let registered = false;
 
-    // submit() marks every field as touched and skips the ceremony while the form is invalid.
     await submit(this.form, async () => {
       this.submitting.set(true);
 
