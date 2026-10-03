@@ -55,7 +55,7 @@
           @if (portfolio.staleCount > 0 || excluded()) {
             <div class="max-lg:contents lg:flex lg:items-center lg:gap-x-6">
               @if (portfolio.staleCount > 0) {
-                <a chevron data-testid="stale-link" routerLink="/holdings" uiStaleLink>
+                <a chevron data-testid="stale-link" routerLink="/holdings" size="label" uiStaleLink>
                   {{ staleKey() | transloco: { count: portfolio.staleCount } }}
                 </a>
               }
