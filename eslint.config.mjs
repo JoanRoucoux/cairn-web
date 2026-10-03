@@ -54,6 +54,17 @@ export default defineConfig([
       complexity: ['error', 20],
       eqeqeq: 'error',
       'no-console': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@joanroucoux/cairn-ui',
+              message: "Import from the component's subpath, e.g. '@joanroucoux/cairn-ui/button'.",
+            },
+          ],
+        },
+      ],
       'no-var': 'error',
       'prefer-const': 'error',
     },
