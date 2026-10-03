@@ -1,7 +1,8 @@
 import { Component, booleanAttribute, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiAmount, UiCellSub, UiRowLink } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiCellSub, UiRowLink } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

@@ -1,6 +1,8 @@
 import { Component, input } from '@angular/core';
 
-import { type AsyncState, UiAlert, UiSkeleton, delayedState } from '@joanroucoux/cairn-ui';
+import { UiAlert } from '@joanroucoux/cairn-ui/alert';
+import { type AsyncState, delayedState } from '@joanroucoux/cairn-ui/async';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 @Component({

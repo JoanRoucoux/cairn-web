@@ -1,18 +1,8 @@
 import { Component, LOCALE_ID, booleanAttribute, computed, inject, input, output } from '@angular/core';
 
-import {
-  UI_AMOUNT_MASKED,
-  UiAmount,
-  UiCellSub,
-  UiFlipItem,
-  UiGroup,
-  UiGroupCell,
-  UiHighlight,
-  UiRowLink,
-  UiTd,
-  UiTr,
-  formatAmount,
-} from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiFlipItem, UiHighlight } from '@joanroucoux/cairn-ui/motion';
+import { UiCellSub, UiGroup, UiGroupCell, UiRowLink, UiTd, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

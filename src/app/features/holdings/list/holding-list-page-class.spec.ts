@@ -4,7 +4,7 @@ import { ApplicationRef, Component, LOCALE_ID, provideZonelessChangeDetection, s
 import { TestBed } from '@angular/core/testing';
 import { type Event, NavigationEnd, Router, RouterOutlet, Scroll } from '@angular/router';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
 import { TRANSLOCO_LOADER, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';

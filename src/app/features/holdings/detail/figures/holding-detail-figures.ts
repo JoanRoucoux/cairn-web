@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 
-import { UiAmount, UiDelta } from '@joanroucoux/cairn-ui';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiDelta } from '@joanroucoux/cairn-ui/delta';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';

@@ -11,7 +11,7 @@ import {
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
-import type { ChartPoint } from '@joanroucoux/cairn-ui';
+import type { ChartPoint } from '@joanroucoux/cairn-ui/line-chart';
 import { map } from 'rxjs';
 
 import type { QuoteResponse } from '@core/api-client/cairnAPI.schemas';

@@ -1,6 +1,6 @@
 import { Component, LOCALE_ID, computed, inject, input } from '@angular/core';
 
-import { UI_AMOUNT_MASKED, formatAmount } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED, formatAmount } from '@joanroucoux/cairn-ui/amount';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { ShortDatePipe } from '@shared/format/short-date-pipe';

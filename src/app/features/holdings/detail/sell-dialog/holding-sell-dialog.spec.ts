@@ -3,8 +3,8 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { LOCALE_ID, type Provider, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui';
-import { UiToasts } from '@joanroucoux/cairn-ui';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
+import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
