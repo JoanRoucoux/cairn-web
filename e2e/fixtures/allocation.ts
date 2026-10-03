@@ -6,6 +6,8 @@ type Row = {
 
 type Portfolio = {
   totalEur: number;
+  unvaluedCount: number;
+  nonEurCount: number;
   byAssetClass: Row[];
   byAccount: Row[];
 };
@@ -27,6 +29,8 @@ export const buildAllocationFixtures = (
 ): Record<string, unknown> => ({
   'GET /api/portfolio/allocation/classes': {
     totalEur: portfolio.totalEur,
+    unvaluedCount: portfolio.unvaluedCount,
+    nonEurCount: portfolio.nonEurCount,
     items: portfolio.byAssetClass.map((row) => ({
       assetClass: row.label,
       valueEur: row.valueEur,
@@ -36,6 +40,8 @@ export const buildAllocationFixtures = (
   },
   'GET /api/portfolio/allocation/accounts': {
     totalEur: portfolio.totalEur,
+    unvaluedCount: portfolio.unvaluedCount,
+    nonEurCount: portfolio.nonEurCount,
     items: portfolio.byAccount.map((row) => {
       const account = accounts.find((candidate) => candidate.name === row.label);
 

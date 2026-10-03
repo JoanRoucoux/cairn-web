@@ -1,7 +1,10 @@
 {
   "searchLabel": "Rechercher un instrument",
   "searchPlaceholder": "Nom ou ISIN",
-  "empty": "Aucun instrument ne correspond à votre recherche.",
+  "empty": "Aucun instrument dans le catalogue.",
+  "noMatch": "Aucun instrument ne correspond à « {{query}} »",
+  "noMatchHint": "La recherche porte sur le nom et l'ISIN.",
+  "addLine": "Ajouter une ligne",
   "add": "Nouvel instrument",
   "name": "Nom",
   "isin": "ISIN",
@@ -38,6 +41,8 @@
   },
   "count_one": "{{count}} instrument",
   "count_other": "{{count}} instruments",
+  "countOf_one": "{{shown}} sur {{count}} instrument",
+  "countOf_other": "{{shown}} sur {{count}} instruments",
   "searchPlaceholderDesktop": "Rechercher par nom ou ISIN",
   "columns": {
     "instrument": "Instrument",
@@ -52,5 +57,10 @@
   "errorTitle": "Le catalogue n'a pas pu être chargé",
   "errorMessage": "Le serveur n'a pas répondu.",
   "retry": "Réessayer",
-  "manualCaption": "Aucune cotation automatique"
+  "manualCaption": "Aucune cotation automatique",
+  "toasts": {
+    "created": "Instrument créé",
+    "updated": "Instrument modifié",
+    "deleted": "Instrument supprimé"
+  }
 }

@@ -4,12 +4,14 @@ import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/c
 import { TestBed } from '@angular/core/testing';
 import { RouterOutlet } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListPage } from './holding-list-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -40,6 +42,7 @@ describe('HoldingListPage states', () => {
       routes: [{ path: '', component: HoldingListPage }],
       initialRoute: '/',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -55,11 +58,28 @@ describe('HoldingListPage states', () => {
   it('shows a skeleton shaped like the list while loading', async () => {
     await renderPage();
 
-    expect(screen.getByTestId('holdings-loading')).toBeInTheDocument();
+    expect(await screen.findByTestId('holdings-loading')).toBeInTheDocument();
     expect(screen.getByTestId('holdings-loading-rows').children).toHaveLength(8);
     expect(screen.getByTestId('holdings-loading-cards').children).toHaveLength(2);
     httpTesting.expectOne('/api/holdings').flush([]);
     httpTesting.expectOne('/api/accounts').flush(accounts);
+  });
+
+  it('keeps the rows on screen while a change reloads the list', async () => {
+    await renderPage();
+    httpTesting.expectOne('/api/holdings').flush([unpriced]);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await screen.findAllByText('Newly listed fund');
+
+    TestBed.inject(HoldingChanges).touched('h9');
+    TestBed.tick();
+    const reload = await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }));
+
+    expect(screen.queryByTestId('holdings-loading')).not.toBeInTheDocument();
+    expect(screen.getAllByText('Newly listed fund').length).toBeGreaterThan(0);
+
+    reload.flush([{ ...unpriced, instrumentName: 'Renamed fund' }]);
+    expect((await screen.findAllByText('Renamed fund')).length).toBeGreaterThan(0);
   });
 
   it('shows the error block and retries only the holdings call', async () => {
@@ -73,7 +93,10 @@ describe('HoldingListPage states', () => {
 
     await user.click(screen.getByRole('button', { name: 'holdings.retry' }));
 
-    httpTesting.expectOne('/api/holdings').flush([unpriced]);
+    const retried = await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }));
+    expect(await screen.findByTestId('holdings-loading')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    retried.flush([unpriced]);
     expect((await screen.findAllByText('Newly listed fund')).length).toBeGreaterThan(0);
   });
 
@@ -111,6 +134,8 @@ describe('HoldingListPage states', () => {
     await vi.waitFor(() => httpTesting.expectOne((request) => request.method === 'POST').flush({}));
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush([unpriced]));
     await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.quoteSaved');
+    expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h9');
   });
 
   it('closes the manual quote dialog when it is dismissed', async () => {
@@ -122,6 +147,7 @@ describe('HoldingListPage states', () => {
     await user.click(await screen.findByTestId('enter-quote'));
     await user.click(await screen.findByTestId('manual-quote-cancel'));
 
-    expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('manual-quote-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 });

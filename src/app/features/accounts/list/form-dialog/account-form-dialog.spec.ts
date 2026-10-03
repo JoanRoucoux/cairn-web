@@ -3,10 +3,13 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { AccountFormDialog, type AccountFormTarget } from './account-form-dialog';
@@ -53,18 +56,22 @@ describe('AccountFormDialog', () => {
   it('should emit dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('account-form-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
-    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('keeps the submit disabled until a name and an envelope are set, and names a missing field once it is left', async () => {
@@ -140,14 +147,17 @@ describe('AccountFormDialog', () => {
   it('should emit savedForm once the account is accepted', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
     await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
     await user.click(screen.getByTestId('account-form-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('account-form-submit')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({}));
-    await vi.waitFor(() => expect(savedForm).toHaveBeenCalled());
+    await vi.waitFor(() => expect(savedForm).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('should show a field error on the name, not a generic failure, on a 409', async () => {
@@ -164,6 +174,42 @@ describe('AccountFormDialog', () => {
     expect(await screen.findByText('accounts.form.nameConflict')).toBeInTheDocument();
     expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
     expect(savedForm).not.toHaveBeenCalled();
+  });
+
+  it('should keep the dialog open with a field error on the envelope, and no toast, on a 422', async () => {
+    const user = userEvent.setup();
+    await renderDialog({ id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: '' });
+
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.SAVINGS' }));
+    await user.click(screen.getByTestId('account-form-submit'));
+
+    await vi.waitFor(() =>
+      httpTesting.expectOne('/api/accounts/a1').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
+    );
+
+    expect(await screen.findByText('accounts.form.savingsConflict')).toBeInTheDocument();
+    expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveAttribute('open');
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
+    expect(savedForm).not.toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+  });
+
+  it('should clear the envelope error once another type is chosen', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.type(screen.getByTestId('account-form-name'), 'PEA Boursorama');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
+    await user.click(screen.getByTestId('account-form-submit'));
+    await vi.waitFor(() =>
+      httpTesting.expectOne('/api/accounts').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
+    );
+    await screen.findByText('accounts.form.savingsConflict');
+
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEE' }));
+
+    expect(screen.queryByText('accounts.form.savingsConflict')).not.toBeInTheDocument();
   });
 
   it('should clear the name conflict once the name is edited again', async () => {

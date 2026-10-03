@@ -1,4 +1,4 @@
-import { Injectable, LOCALE_ID, computed, inject } from '@angular/core';
+import { Injectable, LOCALE_ID, computed, effect, inject, signal, untracked } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { type AsyncState } from '@joanroucoux/cairn-ui';
@@ -104,7 +104,40 @@ export class ProfileStore {
     await this.#session.signOut();
   }
 
+  readonly #knownBeforeAdd = signal<ReadonlySet<string> | null>(null);
+  readonly #addedBefore = signal<ReadonlySet<string>>(new Set());
+
+  readonly addedPasskeyIds = computed<ReadonlySet<string>>(() => {
+    const known = this.#knownBeforeAdd();
+    const fresh = known
+      ? this.passkeys()
+          .map((passkey) => passkey.credentialId)
+          .filter((id) => !known.has(id))
+      : [];
+
+    return new Set([...this.#addedBefore(), ...fresh]);
+  });
+
+  constructor() {
+    effect(() => {
+      if (this.#passkeys.status() === 'error') {
+        untracked(() => {
+          this.#addedBefore.set(new Set());
+          this.#knownBeforeAdd.set(null);
+        });
+      }
+    });
+  }
+
   reloadPasskeys(): void {
+    this.#passkeys.reload();
+  }
+
+  passkeyAdded(): void {
+    this.#addedBefore.set(this.addedPasskeyIds());
+    this.#knownBeforeAdd.set(
+      this.#passkeys.hasValue() ? new Set(this.passkeys().map((passkey) => passkey.credentialId)) : null,
+    );
     this.#passkeys.reload();
   }
 

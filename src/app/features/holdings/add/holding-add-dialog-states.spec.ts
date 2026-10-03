@@ -9,6 +9,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
 const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
@@ -28,6 +29,7 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     await render(HoldingAddDialog, {
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -86,6 +88,37 @@ describe('HoldingAddDialog when its calls are late or failing', () => {
     expect(await screen.findByTestId('holding-add-catalog-candidate')).toHaveTextContent(
       'holdings.add.lineCount_other',
     );
+  });
+
+  it('leaves savings accounts out of the accounts a line can be added to', async () => {
+    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    await renderDialog([], [livret, ...accounts]);
+
+    expect(await screen.findByRole('option', { name: /Saxo Investor/ })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: /Livret A/ })).not.toBeInTheDocument();
+    expect((screen.getByTestId('holding-add-account') as HTMLSelectElement).value).toBe('a1');
+  });
+
+  it('ignores a preset savings account and falls back to the first securities account', async () => {
+    const livret = { id: 's1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    await render(HoldingAddDialog, {
+      inputs: { presetAccountId: 's1' },
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        HoldingChanges,
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'en-GB' },
+        provideTranslocoScope('holdings'),
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/accounts').flush([livret, ...accounts]);
+    httpTesting.expectOne('/api/instruments').flush(instruments);
+    httpTesting.expectOne('/api/holdings').flush([]);
+
+    await vi.waitFor(() => expect((screen.getByTestId('holding-add-account') as HTMLSelectElement).value).toBe('a1'));
   });
 
   it('preselects no account when there is none to choose', async () => {

@@ -1,26 +1,10 @@
-<header class="flex items-end justify-between gap-3 px-1 pt-3">
+@let cash = cashRowKeys(group());
+<header class="flex items-end justify-between gap-3 px-1 pt-3" [uiHighlight]="highlight()">
   <div class="flex min-w-0 flex-col">
     <h2 class="text-title m-0 font-semibold outline-none" data-group-heading tabindex="-1">
       {{ group().accountName }}
     </h2>
-    <span class="text-label text-(--muted-foreground)">
-      @if (group().filtered; as filtered) {
-        {{
-          'holdings.filteredMeta'
-            | transloco
-              : {
-                  total: accountTotal(),
-                  lines: filteredCount(filtered.rowCount).key | transloco: filteredCount(filtered.rowCount),
-                }
-        }}
-      } @else {
-        {{ 'enums.accountType.' + group().accountType | transloco }} &middot;
-        @if (group().institution) {
-          {{ group().institution }} &middot;
-        }
-        {{ groupCount(group()).key | transloco: { count: groupCount(group()).count } }}
-      }
-    </span>
+    <app-holding-account-meta [group]="group()" />
   </div>
   <span class="text-title font-semibold whitespace-nowrap tabular-nums">
     <ui-amount currency="EUR" [value]="group().valueEur" />
@@ -29,23 +13,28 @@
 <ui-card clip padding="none">
   <div class="flex flex-col px-2 py-1.5">
     @for (holding of group().holdings; track holding.id) {
+      @let foreign = foreignCurrency(holding);
       <a
+        animate.leave="ui-leave-fade"
+        class="scroll-mb-(--tab-bar-height)"
         data-testid="holding-row-mobile"
         padding="sm"
         queryParamsHandling="preserve"
         size="card"
         ui-row
+        uiFlipItem
         [attr.data-holding-id]="holding.id"
         [routerLink]="['/holdings', holding.id]"
+        [uiHighlight]="flash()?.id === holding.id ? flash() : null"
       >
         <div class="flex min-w-0 flex-1 flex-col">
           <span class="text-body truncate font-medium">{{ holding.instrumentName }}</span>
           <span
             class="text-label truncate tabular-nums"
-            [class]="holding.stale ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
+            [class]="holding.stale && !foreign ? 'text-(--stale)' : 'text-(--subtle-foreground)'"
           >
-            @if (isBooklet(holding)) {
-              {{ 'holdings.booklet' | transloco }}
+            @if (foreign) {
+              {{ 'holdings.foreignQuote' | transloco: { currency: foreign } }}
             } @else if (holding.stale) {
               {{ 'holdings.staleLate' | transloco: { date: holding.priceAsOf | shortDate } }}
             } @else if (unpriced(holding)) {
@@ -58,41 +47,48 @@
           </span>
         </div>
         <div class="flex flex-col items-end whitespace-nowrap tabular-nums">
-          <span class="text-body font-medium">
+          <span class="text-body font-medium" [class]="foreign ? 'text-(--subtle-foreground)' : ''">
             <ui-amount currency="EUR" [value]="holding.marketValueEur" />
           </span>
-          @if (!isBooklet(holding)) {
-            @if (unpriced(holding)) {
-              <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
-            } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
-              <ui-delta
-                weight="regular"
-                [unknownLabel]="'holdings.unknown' | transloco"
-                [value]="holding.unrealizedGainRatio"
-                >{{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</ui-delta
-              >
-            } @else {
-              <span class="text-label text-(--muted-foreground)">{{
-                'holdings.averageCostUnknownShort' | transloco
-              }}</span>
-            }
+          @if (foreign) {
+            <span class="text-label text-(--muted-foreground)">{{ 'holdings.replace.open' | transloco }}</span>
+          } @else if (unpriced(holding)) {
+            <span class="text-label font-medium">{{ 'holdings.manualQuote.open' | transloco }}</span>
+          } @else if (holding.unrealizedGainRatio !== null && holding.unrealizedGainRatio !== undefined) {
+            <ui-delta
+              weight="regular"
+              [unknownLabel]="'holdings.unknown' | transloco"
+              [value]="holding.unrealizedGainRatio"
+              >{{ holding.unrealizedGainRatio | ratio: { signed: true, decimals: 2 } }}</ui-delta
+            >
+          } @else {
+            <span class="text-label text-(--muted-foreground)">{{
+              'holdings.averageCostUnknownShort' | transloco
+            }}</span>
           }
         </div>
       </a>
     }
     @if (group().showCash) {
       <button
+        class="scroll-mb-(--tab-bar-height)"
         data-testid="edit-cash-mobile"
         padding="sm"
         size="card"
         type="button"
         ui-row
-        [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        uiFlipItem
+        [attr.aria-label]="cash.editRow | transloco: { name: group().accountName }"
+        [uiHighlight]="flash()?.id === group().accountId ? flash() : null"
         (click)="editCash.emit(group().accountId)"
       >
         <div class="flex min-w-0 flex-1 flex-col">
-          <span class="text-body truncate font-medium">{{ 'holdings.cash.line' | transloco }}</span>
-          <span class="text-label truncate text-(--subtle-foreground)">{{ 'holdings.cash.entered' | transloco }}</span>
+          <span class="text-body truncate font-medium">{{ cash.line | transloco }}</span>
+          @if (cash.entered; as entered) {
+            <span class="text-label truncate text-(--subtle-foreground)">{{
+              entered | transloco: { date: group().balanceAt | shortDate }
+            }}</span>
+          }
         </div>
         <span class="text-body font-medium whitespace-nowrap tabular-nums">
           <ui-amount currency="EUR" [value]="group().cashEur" />

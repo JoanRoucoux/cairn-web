@@ -7,6 +7,7 @@ import {
   UiBadge,
   UiButton,
   UiCard,
+  UiEmpty,
   UiField,
   UiFieldLeading,
   UiInput,
@@ -19,6 +20,7 @@ import {
   UiTd,
   UiTh,
   UiTr,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideSearch, LucideTrash } from '@lucide/angular';
@@ -46,6 +48,7 @@ import { InstrumentListStore, type InstrumentRow } from './instrument-list-store
     UiBadge,
     UiButton,
     UiCard,
+    UiEmpty,
     UiField,
     UiFieldLeading,
     UiInput,
@@ -70,16 +73,20 @@ export class InstrumentListPage {
   protected readonly filteredRows = this.#store.filteredRows;
   protected readonly search = this.#store.search;
   protected readonly state = this.#store.state;
+  protected readonly shown = delayedState(this.state);
   protected readonly skeletonWidths = [180, 140, 200, 160, 190, 150];
   protected readonly desktop = injectDesktop();
 
   protected readonly cardPadding = computed(
-    () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
+    () => ({ ready: 'p-[6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.shown() ?? 'empty'],
   );
 
+  protected readonly query = this.#store.query;
+  protected readonly searching = computed(() => this.#store.total() > 0 && this.query() !== '');
+
   protected readonly countLabel = translateSignal(
-    computed(() => pluralKey('count', this.#store.rows().length)),
-    computed(() => ({ count: this.#store.rows().length })),
+    computed(() => pluralKey(this.searching() ? 'countOf' : 'count', this.#store.total())),
+    computed(() => ({ count: this.#store.total(), shown: this.filteredRows().length })),
   );
 
   protected readonly toDelete = signal<DeletableInstrument | undefined>(undefined);
@@ -94,6 +101,10 @@ export class InstrumentListPage {
 
   protected onSearchInput(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
+  }
+
+  protected addLine(): void {
+    void this.#router.navigate(['/holdings'], { queryParams: { add: '', q: this.query() } });
   }
 
   protected editInstrument(id: string): void {

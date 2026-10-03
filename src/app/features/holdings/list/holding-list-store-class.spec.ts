@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListStore } from './holding-list-store';
 
 const accountName: Record<string, string> = { a1: 'Saxo', a2: 'Esalia', a3: 'Livret A' };
@@ -57,6 +58,7 @@ describe('HoldingListStore class filter', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -100,13 +102,13 @@ describe('HoldingListStore class filter', () => {
     expect(store.assetClass()).toBeNull();
   });
 
-  it('should count every row shown for Toutes, cash rows and booklets included', async () => {
+  it('should count every row shown for Toutes, cash rows and savings balances included', async () => {
     await open();
 
     expect(store.classCounts().total).toBe(9);
   });
 
-  it('should count the lines of each class and the cash rows with the booklets as liquidities', async () => {
+  it('should count the lines of each class and the cash rows with the savings balances as liquidities', async () => {
     await open();
 
     expect(store.classCounts().byClass).toEqual({ ETF: 2, FUND: 1, EQUITY: 1, CRYPTO: 1, CASH: 4 });
@@ -140,7 +142,7 @@ describe('HoldingListStore class filter', () => {
     expect(store.groups()[0]!.showCash).toBe(false);
   });
 
-  it('should show cash rows and booklets under liquidities and count them', async () => {
+  it('should show cash rows and savings balances under liquidities and count them', async () => {
     await open({ classe: 'liquidites' });
 
     expect(store.groups().map((group) => [group.accountName, group.valueEur, group.filtered?.rowCount])).toEqual([
@@ -199,14 +201,14 @@ describe('HoldingListStore class filter', () => {
     expect(store.classSummary()).toEqual({ valueEur: 0, share: 0, accounts: 1 });
   });
 
-  it('should not count a cash row for a savings account that has no balance', async () => {
+  it('should still count the balance row of a savings account that has none set', async () => {
     await open(
       {},
       holdings.filter((holding) => holding.id !== 'cash-a3'),
     );
 
-    expect(store.classCounts().total).toBe(8);
-    expect(store.classCounts().byClass.CASH).toBe(3);
+    expect(store.classCounts().total).toBe(9);
+    expect(store.classCounts().byClass.CASH).toBe(4);
   });
 
   it('should give a share of zero when nothing is valued', async () => {

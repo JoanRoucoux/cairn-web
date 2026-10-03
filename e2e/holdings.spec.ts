@@ -140,11 +140,11 @@ test.describe('holdings list', () => {
     await expect(cto).toContainText(/1 holding(?!s)/);
   });
 
-  test('renders a cash-only account with no ordinary line', async ({ page }) => {
+  test('renders a savings account as one dated balance row, with no line count', async ({ page }) => {
     const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
 
-    await expect(livretA.getByText('Savings · Boursorama · 0 savings books')).toBeVisible();
-    await expect(livretA.getByTestId('cash-row')).toHaveText(/20.?000/);
+    await expect(livretA.getByText(/^Savings · Boursorama · balance as of \d\d\/\d\d$/)).toBeVisible();
+    await expect(livretA.getByTestId('cash-row')).toHaveText(/Balance.*Entered on \d\d\/\d\d.*20.?000/);
     await expect(livretA.getByTestId('holding-row')).toHaveCount(0);
     await expect(livretA.getByTestId('edit-cash')).toHaveAccessibleName(/Livret A/);
   });
@@ -161,7 +161,7 @@ test.describe('holding detail', () => {
     await boursorama.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
-    await expect(page.getByRole('columnheader')).toHaveCount(3);
+    await expect(page.getByTestId('holdings-list').getByRole('columnheader')).toHaveCount(3);
   });
 
   test('keeps the search text when closing the detail', async ({ page }) => {

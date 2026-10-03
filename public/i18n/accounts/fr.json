@@ -19,6 +19,7 @@
     "submit": "Enregistrer",
     "error": "Ce compte a été refusé.",
     "nameConflict": "Un compte porte déjà ce nom.",
+    "savingsConflict": "Ce compte a des lignes : il ne peut pas devenir un compte d'épargne.",
     "namePlaceholder": "Par exemple Boursorama PEA",
     "institutionPlaceholder": "Par exemple Boursorama",
     "create": "Créer le compte"
@@ -44,11 +45,22 @@
     "share": "Part",
     "actions": "Actions"
   },
+  "uncounted": {
+    "noQuote_one": "{{count}} ligne sans cours, non comptée",
+    "noQuote_other": "{{count}} lignes sans cours, non comptées",
+    "nonEur_one": "{{count}} ligne hors euro, non comptée",
+    "nonEur_other": "{{count}} lignes hors euro, non comptées"
+  },
   "noLine": "Aucune ligne",
-  "bookletCount_one": "{{count}} livret",
-  "bookletCount_other": "{{count}} livrets",
+  "balanceAt": "Solde au {{date}}",
+  "editBalance": "Modifier le solde",
   "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
   "rowEmptyImport": "Importer un CSV",
   "nameLabel": "Nom du compte",
-  "optional": "(facultatif)"
+  "optional": "(facultatif)",
+  "toasts": {
+    "created": "Compte créé",
+    "updated": "Compte modifié",
+    "deleted": "Compte supprimé"
+  }
 }

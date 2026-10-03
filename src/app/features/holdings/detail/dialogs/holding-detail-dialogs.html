@@ -1,5 +1,6 @@
 @if (pricingInstrument(); as pricing) {
   <app-manual-quote-dialog
+    [holdingId]="holding().id"
     [instrumentId]="pricing.id"
     [instrumentName]="pricing.name"
     (dismissed)="quoteDismissed.emit()"
@@ -8,17 +9,34 @@
 }
 
 @if (buyOpen()) {
-  <app-holding-buy-dialog [holding]="holding()" (bought)="bought.emit()" (dismissed)="buyDismissed.emit()" />
+  <app-holding-buy-dialog [holding]="buyHolding()" (bought)="bought.emit($event)" (dismissed)="buyDismissed.emit()" />
 }
 
 @if (sellOpen()) {
-  <app-holding-sell-dialog [holding]="holding()" (dismissed)="sellDismissed.emit()" (sold)="sold.emit($event)" />
+  <app-holding-sell-dialog [holding]="sellHolding()" (dismissed)="sellDismissed.emit()" (sold)="sold.emit($event)" />
 }
 
 @if (editOpen()) {
-  <app-holding-edit-dialog [holding]="holding()" (dismissed)="editDismissed.emit()" (savedForm)="edited.emit()" />
+  <app-holding-edit-dialog
+    [holding]="editHolding()"
+    (dismissed)="editDismissed.emit()"
+    (savedForm)="edited.emit($event)"
+  />
 }
 
 @if (deleteOpen()) {
-  <app-holding-delete-dialog [holding]="holding()" (deleted)="deleted.emit()" (dismissed)="deleteDismissed.emit()" />
+  <app-holding-delete-dialog
+    [holding]="deleteHolding()"
+    (deleted)="deleted.emit($event)"
+    (dismissed)="deleteDismissed.emit()"
+  />
+}
+
+@if (listingOpen()) {
+  <app-holding-add-dialog
+    [initialQuery]="listingQuery()"
+    [replaceHoldingId]="listingHolding().id"
+    (dismissed)="listingDismissed.emit()"
+    (saved)="listingChanged.emit()"
+  />
 }

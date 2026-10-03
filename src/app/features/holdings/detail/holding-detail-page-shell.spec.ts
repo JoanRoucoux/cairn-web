@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/angular';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailPage } from './holding-detail-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -29,6 +30,7 @@ describe('HoldingDetailPage shell', () => {
       ],
       initialRoute: 'holdings/h1',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -44,8 +46,9 @@ describe('HoldingDetailPage shell', () => {
   it('should keep the back link and a loading status while the holdings load', async () => {
     await renderPage();
 
-    expect(await screen.findByRole('status')).toHaveTextContent('holdings.loading');
     expect(screen.getByTestId('holding-detail-back')).toHaveAttribute('href', '/holdings');
+    expect(await screen.findByRole('status')).toHaveTextContent('holdings.loading');
+    await vi.waitFor(() => expect(document.querySelector('ui-skeleton')).not.toBeNull());
     httpTesting.expectOne('/api/holdings').flush([]);
   });
 

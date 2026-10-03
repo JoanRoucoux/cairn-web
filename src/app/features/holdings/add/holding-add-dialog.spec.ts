@@ -7,8 +7,11 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
 const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
@@ -37,6 +40,7 @@ describe('HoldingAddDialog', () => {
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -82,6 +86,7 @@ describe('HoldingAddDialog', () => {
     await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
 
     expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-quantity')).toHaveFocus();
     expect(screen.queryByText('holdings.add.newBadge')).not.toBeInTheDocument();
 
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
@@ -137,6 +142,7 @@ describe('HoldingAddDialog', () => {
 
     await user.click(await screen.findByTestId('holding-add-create-manual'));
     expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-quantity')).toHaveFocus();
     expect(screen.getByText('holdings.add.newBadge')).toBeInTheDocument();
   });
 
@@ -174,6 +180,7 @@ describe('HoldingAddDialog', () => {
   it('emits saved once the holding has been created', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
     await screen.findByRole('option', { name: /Saxo Investor/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
@@ -182,18 +189,23 @@ describe('HoldingAddDialog', () => {
     await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
     await user.type(screen.getByTestId('holding-add-quantity'), '10');
     await user.click(screen.getByTestId('holding-add-submit'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('holding-add-submit')));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 
-    await vi.waitFor(() => expect(saved).toHaveBeenCalled());
+    await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h9' }));
+    expect(saved).toHaveBeenCalledTimes(1);
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('emits dismissed on the native dialog close', async () => {
     await renderDialog();
+    slowDialogExit();
 
-    screen.getByRole('dialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('dialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('reads an optional average cost', async () => {
@@ -220,6 +232,7 @@ describe('HoldingAddDialog', () => {
       on: { saved, dismissed },
       imports: [getTranslocoTestingModule()],
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -242,10 +255,12 @@ describe('HoldingAddDialog', () => {
   it('dismisses from the Cancel button', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('holding-add-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('preselects the first account when none is given', async () => {

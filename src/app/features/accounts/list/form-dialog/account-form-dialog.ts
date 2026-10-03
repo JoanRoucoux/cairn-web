@@ -7,7 +7,7 @@ import {
   inject,
   input,
   output,
-  signal,
+  untracked,
 } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
@@ -17,7 +17,9 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AccountType } from '@core/api-client/cairnAPI.schemas';
 import { LanguageStore } from '@core/i18n/language-store';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
+import { injectToast } from '@shared/feedback/toast';
 
 import { type AccountDraftSource } from './account-form';
 import { AccountFormDialogStore } from './account-form-dialog-store';
@@ -47,10 +49,16 @@ export class AccountFormDialog {
   readonly savedForm = output<void>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  readonly #outcome = injectDialogOutcome<void>(() =>
+    this.#toast(this.account() ? 'accounts.toasts.updated' : 'accounts.toasts.created'),
+  );
+
+  protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly error = this.#store.error;
   protected readonly nameConflict = this.#store.nameConflict;
+  protected readonly savingsConflict = this.#store.savingsConflict;
   readonly #transloco = inject(TranslocoService);
   readonly #language = inject(LanguageStore);
 
@@ -66,6 +74,11 @@ export class AccountFormDialog {
   constructor() {
     effect(() => this.#store.prefill(this.account()));
 
+    effect(() => {
+      this.form.type().value();
+      untracked(() => this.#store.savingsConflict.set(false));
+    });
+
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         focusInitial(this.#host.nativeElement, 'account-form-cancel', 'account-form-name');
@@ -78,14 +91,22 @@ export class AccountFormDialog {
   }
 
   protected dismiss(): void {
-    this.open.set(false);
-    this.dismissed.emit();
+    this.#outcome.dismiss();
+  }
+
+  protected onClosed(): void {
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.savedForm.emit();
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     if (await this.#store.save(this.account()?.id)) {
-      this.open.set(false);
-      this.savedForm.emit();
+      this.#outcome.succeed();
     }
   }
 }

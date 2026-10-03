@@ -15,15 +15,13 @@ export class PortfolioImportStore {
   #portfolioApiClient = inject(PortfolioService);
 
   readonly importing = signal(false);
-  readonly report = signal<ImportReportResponse | null>(null);
   /** Rows the server refused, kept whole: the point of its 422 is that the file is fixed in one pass. */
   readonly rejections = signal<ImportErrorResponse[]>([]);
   /** Anything that is not a rejection, which carries no rows to show. */
   readonly failed = signal(false);
 
-  async importFile(file: File): Promise<void> {
+  async importFile(file: File): Promise<ImportReportResponse | null> {
     this.importing.set(true);
-    this.report.set(null);
     this.rejections.set([]);
     this.failed.set(false);
 
@@ -35,7 +33,7 @@ export class PortfolioImportStore {
           headers: new HttpHeaders({ 'Content-Type': 'text/csv' }),
         }),
       );
-      this.report.set(report);
+      return report;
     } catch (error) {
       const rejected = rejectionOf(error);
       if (rejected) {
@@ -43,6 +41,8 @@ export class PortfolioImportStore {
       } else {
         this.failed.set(true);
       }
+
+      return null;
     } finally {
       this.importing.set(false);
     }

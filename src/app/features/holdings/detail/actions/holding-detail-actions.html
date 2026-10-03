@@ -1,0 +1,25 @@
+<div class="hidden lg:grid lg:gap-2" [class]="columns()">
+  @if (foreign()) {
+    <button data-testid="holding-change-listing" type="button" ui-button (click)="changeListing.emit()">
+      {{ 'holdings.replace.open' | transloco }}
+    </button>
+  } @else {
+    <button data-testid="holding-buy" type="button" ui-button (click)="buy.emit()">
+      {{ 'holdings.buy.open' | transloco }}
+    </button>
+    <button data-testid="holding-sell" type="button" ui-button variant="outline" (click)="sell.emit()">
+      {{ 'holdings.sell.open' | transloco }}
+    </button>
+  }
+  <button
+    aria-label="{{ 'holdings.detail.menu' | transloco }}"
+    data-testid="holding-menu-trigger-desktop"
+    size="icon"
+    type="button"
+    ui-button
+    variant="outline"
+    [uiMenuTrigger]="menu()"
+  >
+    <svg lucideEllipsis [size]="20" [strokeWidth]="1.75" />
+  </button>
+</div>

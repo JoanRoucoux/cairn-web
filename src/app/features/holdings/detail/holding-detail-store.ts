@@ -1,15 +1,27 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import {
+  Injectable,
+  type ResourceStatus,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal,
+  untracked,
+} from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
 import type { ChartPoint } from '@joanroucoux/cairn-ui';
 import { map } from 'rxjs';
 
+import type { QuoteResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 import { QuoteService } from '@core/api-client/quote/quote.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
+
+import { HoldingChanges } from '../holding-changes';
 
 const EPOCH = '1900-01-01';
 
@@ -21,6 +33,7 @@ export class HoldingDetailStore {
   #instrumentsApiClient = inject(InstrumentService);
   #quotesApiClient = inject(QuoteService);
   #route = inject(ActivatedRoute);
+  #changes = inject(HoldingChanges);
 
   readonly holdingId = toSignal(this.#route.paramMap.pipe(map((params) => params.get('holdingId') ?? undefined)));
 
@@ -54,10 +67,43 @@ export class HoldingDetailStore {
     defaultValue: [],
   });
 
+  readonly #series = linkedSignal<
+    { instrumentId: string | undefined; range: ChartRange; quotes: QuoteResponse[] | undefined },
+    { range: ChartRange; quotes: QuoteResponse[] }
+  >({
+    source: () => {
+      const status = this.quotes.status();
+
+      return {
+        instrumentId: this.holding()?.instrumentId,
+        range: this.range(),
+        quotes: status === 'loading' || status === 'error' ? undefined : this.quotes.value(),
+      };
+    },
+    computation: (source, previous) =>
+      source.quotes
+        ? { range: source.range, quotes: source.quotes }
+        : previous && previous.source.instrumentId === source.instrumentId
+          ? previous.value
+          : { range: source.range, quotes: [] },
+  });
+
+  readonly shownRange = computed(() => this.#series().range);
+
+  readonly quotesFailed = computed(() => this.quotes.status() === 'error');
+
+  readonly #retrying = linkedSignal<ResourceStatus, boolean>({
+    source: () => this.quotes.status(),
+    computation: (status, previous) =>
+      status === 'resolved' || status === 'error' ? false : (previous?.value ?? false),
+  });
+
+  readonly quotesRetrying = this.#retrying.asReadonly();
+
   readonly points = computed<ChartPoint[]>(() => {
     const quantity = this.holding()?.quantity ?? 0;
 
-    return this.quotes.value().map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
+    return this.#series().quotes.map((quote) => ({ t: Date.parse(quote.asOf), v: quote.price * quantity }));
   });
 
   readonly rangeChange = computed(() => {
@@ -73,6 +119,25 @@ export class HoldingDetailStore {
 
     return { amount, ratio: first.v === 0 ? null : amount / first.v };
   });
+
+  #changesSeen = false;
+
+  constructor() {
+    effect(() => {
+      this.#changes.lastTouched();
+
+      if (this.#changesSeen) {
+        untracked(() => this.reload());
+      }
+
+      this.#changesSeen = true;
+    });
+  }
+
+  retryQuotes(): void {
+    this.#retrying.set(true);
+    this.quotes.reload();
+  }
 
   reload(): void {
     this.holdings.reload();

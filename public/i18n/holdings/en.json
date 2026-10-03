@@ -10,9 +10,19 @@
   "searchPlaceholderShort": "Search a holding",
   "lineCount_one": "{{count}} holding",
   "lineCount_other": "{{count}} holdings",
-  "bookletCount_one": "{{count}} savings book",
-  "bookletCount_other": "{{count}} savings books",
-  "booklet": "Savings book",
+  "balanceMeta": "balance as of {{date}}",
+  "balance": {
+    "line": "Balance",
+    "editRow": "Edit the balance of {{name}}",
+    "title": "Balance of {{name}}",
+    "entered": "Entered on {{date}}"
+  },
+  "uncounted": {
+    "noQuote_one": "{{count}} with no quote, not counted",
+    "noQuote_other": "{{count}} with no quote, not counted",
+    "nonEur_one": "{{count}} outside the euro, not counted",
+    "nonEur_other": "{{count}} outside the euro, not counted"
+  },
   "averageCostUnknownShort": "Cost unknown",
   "loading": "Loading your holdings",
   "empty": "No holding matches your search.",
@@ -35,6 +45,8 @@
   "errorMessage": "The server did not answer. Check your connection, then try again.",
   "retry": "Retry",
   "notFound": "This holding no longer exists.",
+  "chartErrorTitle": "The chart could not be loaded",
+  "chartErrorMessage": "The server did not answer.",
   "chartLabel": "Value over the selected range",
   "externalLink": "Page on {{domain}}",
   "columns": {
@@ -191,6 +203,25 @@
     "noOtherOnline": "No other instrument found online.",
     "onlineSearching": "Searching online",
     "gainAtProbe": "unrealized gain",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "unavailableSub": "Quoted in {{currency}}. Cairn only tracks quotes in euros.",
+    "unavailable": "unavailable"
+  },
+  "replace": {
+    "open": "Change listing",
+    "title": "Change listing",
+    "duplicate": "This account already holds this listing.",
+    "notFound": "No euro listing found for \"{{query}}\"."
+  },
+  "foreignQuote": "Quoted in {{currency}}, not counted",
+  "toasts": {
+    "bought": "Purchase saved",
+    "sold": "Sale saved",
+    "edited": "Holding updated",
+    "deleted": "Holding deleted",
+    "added": "Holding added",
+    "balanceSaved": "Balance updated",
+    "quoteSaved": "Price saved",
+    "listingChanged": "Listing changed"
   }
 }

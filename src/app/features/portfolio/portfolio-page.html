@@ -1,7 +1,7 @@
 @if (isEmpty()) {
   <app-portfolio-empty />
 } @else if (allFailed()) {
-  <ui-alert>{{ 'portfolio.pageError' | transloco }}</ui-alert>
+  <ui-alert [fadeIn]="false">{{ 'portfolio.pageError' | transloco }}</ui-alert>
 } @else {
   <div class="flex flex-col gap-(--stack-section)">
     <div class="grid grid-cols-1 gap-(--stack-section) lg:grid-cols-[1fr_360px]">
@@ -12,12 +12,14 @@
           <app-portfolio-curve
             class="flex min-h-0 flex-1 flex-col"
             [blocking]="curveBlocking()"
+            [chartReloading]="curveReloading()"
             [formats]="chartFormats()"
             [points]="points()"
             [range]="range()"
             [rangeChangeEur]="rangeChange()?.eur"
             [rangeChangeRatio]="rangeChange()?.ratio"
             [reconstructed]="reconstructed()"
+            [shownRange]="shownRange()"
             [startLabel]="'chart.startLabel' | transloco"
             [state]="curveState()"
             (rangeChange)="setRange($event)"

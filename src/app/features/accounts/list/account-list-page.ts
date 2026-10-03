@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import {
   UiAmount,
@@ -17,31 +17,39 @@ import {
   UiTd,
   UiTh,
   UiTr,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash, LucideWallet } from '@lucide/angular';
 
-import { pluralKey } from '@shared/format/plural-key';
+import { excludedTotal } from '@shared/format/excluded-lines';
 import { RatioPipe } from '@shared/format/ratio-pipe';
+import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 import { AccountListStore, type AccountView } from './account-list-store';
 import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
 import { AccountFormDialog, type AccountFormTarget } from './form-dialog/account-form-dialog';
 import { linesLabel } from './lines-label';
 import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
+import { AccountSummary } from './summary/account-summary';
+import { AccountUncounted } from './uncounted/account-uncounted';
 
 @Component({
   selector: 'app-account-list-page',
   imports: [
     AccountDeleteDialog,
+    AccountUncounted,
     AccountMobileRows,
+    AccountSummary,
     AccountFormDialog,
     LucideEllipsis,
     LucidePencil,
     LucidePlus,
     LucideTrash,
+    LucideWallet,
     RatioPipe,
     RouterLink,
+    ShortDatePipe,
     TranslocoPipe,
     UiAmount,
     UiAsync,
@@ -64,14 +72,16 @@ import { AccountMobileRows } from './mobile-rows/account-mobile-rows';
 })
 export class AccountListPage {
   #store = inject(AccountListStore);
+  #router = inject(Router);
 
   protected readonly accounts = this.#store.accounts;
   protected readonly totalEur = this.#store.totalEur;
+  protected readonly excludedTotal = computed(() => excludedTotal(this.#store.excluded()));
   protected readonly linesLabel = linesLabel;
-  protected readonly pluralKey = pluralKey;
   protected readonly state = this.#store.state;
+  protected readonly shown = delayedState(this.state);
   protected readonly cardPadding = computed(
-    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.state()],
+    () => ({ ready: 'p-[6px_4px_6px_8px]', loading: 'px-4 py-2', error: '', empty: '' })[this.shown() ?? 'empty'],
   );
   protected readonly skeletonWidths = [120, 90, 100, 80, 110, 96];
 
@@ -87,6 +97,10 @@ export class AccountListPage {
   protected onEdit(account: AccountView): void {
     this.accountToEdit.set(account);
     this.formOpen.set(true);
+  }
+
+  protected onEditBalance(account: AccountView): void {
+    void this.#router.navigate(['/holdings'], { queryParams: { balance: account.id } });
   }
 
   protected onFormSaved(): void {

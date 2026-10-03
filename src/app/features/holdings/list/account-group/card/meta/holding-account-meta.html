@@ -1,0 +1,21 @@
+@let parts = metaParts(group());
+@if (group().filtered; as filtered) {
+  {{
+    'holdings.filteredMeta'
+      | transloco
+        : {
+            total: accountTotal(),
+            lines: filteredCount(filtered.rowCount).key | transloco: filteredCount(filtered.rowCount),
+          }
+  }}
+} @else {
+  {{ 'enums.accountType.' + group().accountType | transloco }}
+  @if (group().institution) {
+    &middot; {{ group().institution }}
+  }
+  @for (part of [parts.count, parts.balance, parts.unvalued, parts.nonEur]; track $index) {
+    @if (part) {
+      &middot; {{ part.key | transloco: { count: part.count, date: part.date | shortDate } }}
+    }
+  }
+}

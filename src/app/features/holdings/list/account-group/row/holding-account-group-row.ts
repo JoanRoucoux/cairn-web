@@ -8,8 +8,8 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
+import { foreignCurrencyOf } from '../../../foreign-currency';
 import { isMissing } from '../../../is-missing';
-import { isBooklet } from '../../holding-list-store';
 import { HoldingEnterQuote } from './enter-quote/holding-enter-quote';
 import { HoldingLineCell } from './line-cell/holding-line-cell';
 import { HoldingQuoteCell } from './quote-cell/holding-quote-cell';
@@ -36,9 +36,10 @@ export class HoldingAccountGroupRow {
   readonly open = input(false, { transform: booleanAttribute });
 
   readonly enterQuote = output<HoldingResponse>();
+  readonly changeListing = output<HoldingResponse>();
 
   protected readonly decimalPlaces = decimalPlaces;
-  protected readonly booklet = computed(() => isBooklet(this.holding()));
+  protected readonly foreign = computed(() => foreignCurrencyOf(this.holding()) !== undefined);
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
   protected readonly unknownDay = computed(() => isMissing(this.holding().dayChangeRatio));
   protected readonly hasGain = computed(() => !isMissing(this.holding().unrealizedGainEur));

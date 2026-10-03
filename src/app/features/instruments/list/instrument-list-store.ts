@@ -50,6 +50,10 @@ export class InstrumentListStore {
       .sort((a, b) => this.#collator.compare(a.name, b.name));
   });
 
+  readonly total = computed(() => this.rows().length);
+
+  readonly query = computed(() => this.search().trim());
+
   readonly state = computed<AsyncState>(() => {
     if (this.instruments.error() || this.holdings.error()) {
       return 'error';
@@ -62,7 +66,7 @@ export class InstrumentListStore {
   });
 
   readonly filteredRows = computed(() => {
-    const search = normalizeSearch(this.search().trim());
+    const search = normalizeSearch(this.query());
 
     if (!search) {
       return this.rows();

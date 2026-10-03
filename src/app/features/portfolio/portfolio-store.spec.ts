@@ -26,13 +26,13 @@ const portfolio = {
 } as unknown as PortfolioResponse;
 
 const holdings = [
-  { id: 'h1', dayChangeRatio: 0.012 },
-  { id: 'h2', dayChangeRatio: -0.03 },
-  { id: 'h3', dayChangeRatio: 0.001 },
-  { id: 'h4', dayChangeRatio: null },
-  { id: 'h5', dayChangeRatio: 0.0045 },
-  { id: 'h6', dayChangeRatio: -0.0008 },
-  { id: 'h7', dayChangeRatio: 0.02 },
+  { id: 'h1', dayChangeRatio: 0.012, marketValueEur: 100 },
+  { id: 'h2', dayChangeRatio: -0.03, marketValueEur: 100 },
+  { id: 'h3', dayChangeRatio: 0.001, marketValueEur: 100 },
+  { id: 'h4', dayChangeRatio: null, marketValueEur: 100 },
+  { id: 'h5', dayChangeRatio: 0.0045, marketValueEur: 100 },
+  { id: 'h6', dayChangeRatio: -0.0008, marketValueEur: 100 },
+  { id: 'h7', dayChangeRatio: 0.02, marketValueEur: 100 },
 ] as unknown as HoldingResponse[];
 
 const performance = {
@@ -136,7 +136,7 @@ describe('PortfolioStore', () => {
 
   it('should flag the movers block as empty when no holding moved today', async () => {
     flushPortfolio(portfolio, [
-      { id: 'h1', dayChangeRatio: 0 },
+      { id: 'h1', dayChangeRatio: 0, marketValueEur: 100 },
       { id: 'h2', dayChangeRatio: null },
     ] as unknown as HoldingResponse[]);
     await flushHistory();

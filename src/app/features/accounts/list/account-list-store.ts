@@ -7,14 +7,19 @@ import { AccountService } from '@core/api-client/account/account.service';
 import type { AccountType } from '@core/api-client/cairnAPI.schemas';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
-export type AccountView = {
+import { type ExcludedCounts, excludedCounts, isExcluded } from '@shared/format/excluded-lines';
+
+export type AccountView = ExcludedCounts & {
   id: string;
   name: string;
   type: AccountType;
   institution: string;
-  valueEur: number | null;
+  valueEur: number;
   share: number | null;
   lineCount: number;
+  excludedLineId: string | null;
+  balanceAt: string | null;
+  empty: boolean;
 };
 
 @Injectable()
@@ -31,12 +36,18 @@ export class AccountListStore {
     stream: () => this.#portfolioApiClient.getPortfolio(),
   });
 
+  #isLoading(resource: { status: () => string; error: () => unknown }): boolean {
+    const status = resource.status();
+
+    return status === 'loading' || (status === 'reloading' && Boolean(resource.error()));
+  }
+
   readonly state = computed<AsyncState>(() => {
+    if (this.#isLoading(this.#accounts) || this.#isLoading(this.#portfolio)) {
+      return 'loading';
+    }
     if (this.#accounts.error() || this.#portfolio.error()) {
       return 'error';
-    }
-    if (this.#accounts.isLoading() || this.#portfolio.isLoading()) {
-      return 'loading';
     }
 
     return this.accounts().length === 0 ? 'empty' : 'ready';
@@ -52,8 +63,9 @@ export class AccountListStore {
     const views = this.#accounts.value().map((account) => {
       const own = holdings.filter((holding) => holding.accountId === account.id);
       const lineCount = own.filter((holding) => !holding.accountCash).length;
-      const unvalued = own.some((holding) => holding.marketValueEur === null || holding.marketValueEur === undefined);
-      const valueEur = unvalued ? null : own.reduce((sum, holding) => sum + (holding.marketValueEur as number), 0);
+      const excluded = own.filter((holding) => !holding.accountCash && isExcluded(holding));
+      const cash = own.find((holding) => holding.accountCash);
+      const valueEur = own.reduce((sum, holding) => sum + (holding.marketValueEur ?? 0), 0);
 
       return {
         id: account.id,
@@ -61,15 +73,29 @@ export class AccountListStore {
         type: account.type,
         institution: account.institution.trim(),
         valueEur,
-        share: valueEur !== null && valueEur > 0 && totalEur > 0 ? valueEur / totalEur : null,
+        share: valueEur > 0 && totalEur > 0 ? valueEur / totalEur : null,
         lineCount,
+        ...excludedCounts(excluded),
+        excludedLineId: excluded.length === 1 ? excluded[0]!.id : null,
+        balanceAt: cash?.updatedAt ?? null,
+        empty: account.type !== 'SAVINGS' && lineCount === 0 && !cash,
       };
     });
 
-    return views.sort((a, b) => (b.valueEur ?? -1) - (a.valueEur ?? -1));
+    return views.sort((a, b) => b.valueEur - a.valueEur);
   });
 
   readonly totalEur = computed(() => (this.#portfolio.hasValue() ? this.#portfolio.value().totalEur : null));
+
+  readonly excluded = computed<ExcludedCounts>(() => {
+    if (!this.#portfolio.hasValue()) {
+      return { unvaluedCount: 0, nonEurCount: 0 };
+    }
+
+    const { unvaluedCount, nonEurCount } = this.#portfolio.value();
+
+    return { unvaluedCount, nonEurCount };
+  });
 
   retry(): void {
     this.#accounts.reload();

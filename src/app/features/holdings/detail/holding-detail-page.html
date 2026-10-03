@@ -1,11 +1,11 @@
 <ng-template #back>
-  <a data-testid="holding-detail-back" queryParamsHandling="preserve" routerLink="/holdings" size="header" ui-back-link>
+  <a data-testid="holding-detail-back" size="header" ui-back-link [href]="listHref()" (click)="onBack($event)">
     {{ 'holdings.detail.back' | transloco }}
   </a>
 </ng-template>
 
 <article
-  class="fixed inset-x-0 top-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
+  class="fixed inset-x-0 top-0 bottom-(--tab-bar-height) z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
   [class.pb-25]="holding()"
 >
   @if (holding(); as holding) {
@@ -27,6 +27,12 @@
         </div>
 
         <ui-menu #menu [label]="'holdings.detail.menu' | transloco" [width]="208">
+          @if (foreignCurrency()) {
+            <button data-testid="holding-change-listing-menu" type="button" uiMenuItem (click)="openListing()">
+              <svg lucideRefreshCw [size]="18" [strokeWidth]="1.75" />
+              {{ 'holdings.replace.open' | transloco }}
+            </button>
+          }
           <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
             <svg lucidePencil [size]="18" [strokeWidth]="1.75" />
             {{ 'holdings.edit.open' | transloco }}
@@ -65,34 +71,16 @@
             <app-holding-detail-figures [holding]="holding" />
 
             @if (!isCash()) {
-              <div class="hidden lg:grid lg:grid-cols-[1fr_1fr_auto] lg:gap-2">
-                <button data-testid="holding-buy" type="button" ui-button (click)="buyOpen.set(true)">
-                  {{ 'holdings.buy.open' | transloco }}
-                </button>
-                <button
-                  data-testid="holding-sell"
-                  type="button"
-                  ui-button
-                  variant="outline"
-                  (click)="sellOpen.set(true)"
-                >
-                  {{ 'holdings.sell.open' | transloco }}
-                </button>
-                <button
-                  aria-label="{{ 'holdings.detail.menu' | transloco }}"
-                  data-testid="holding-menu-trigger-desktop"
-                  size="icon"
-                  type="button"
-                  ui-button
-                  variant="outline"
-                  [uiMenuTrigger]="menu"
-                >
-                  <svg lucideEllipsis [size]="20" [strokeWidth]="1.75" />
-                </button>
-              </div>
+              <app-holding-detail-actions
+                [foreign]="foreignCurrency() !== undefined"
+                [menu]="menu"
+                (buy)="buyOpen.set(true)"
+                (changeListing)="listingOpen.set(true)"
+                (sell)="sellOpen.set(true)"
+              />
             }
 
-            @if (holding.price !== null && holding.price !== undefined) {
+            @if (priced()) {
               <div class="flex flex-col gap-3">
                 @if (rangeChange(); as change) {
                   <div
@@ -106,26 +94,34 @@
                       }
                     </ui-delta>
                     <span class="text-(--muted-foreground)">{{
-                      'holdings.detail.rangeChange.' + range() | transloco
+                      'holdings.detail.rangeChange.' + shownRange() | transloco
                     }}</span>
                   </div>
                 }
-                <div class="h-[179px] lg:h-[169px]">
-                  <ui-line-chart
-                    axisTicks="3"
-                    [axisFormat]="chart().axis"
-                    [deltaFormat]="chart().delta"
-                    [label]="'holdings.chartLabel' | transloco"
-                    [points]="points()"
-                    [startLabel]="startLabel()"
-                    [timeColumnLabel]="'chart.time' | transloco"
-                    [timeFormat]="chart().time"
-                    [tooltipDelta]="false"
-                    [tooltipFormat]="tooltipFormat()"
-                    [valueColumnLabel]="'chart.value' | transloco"
-                    [valueFormat]="chart().value"
-                  />
-                </div>
+                <ui-async
+                  [errorMessage]="'holdings.chartErrorMessage' | transloco"
+                  [errorTitle]="'holdings.chartErrorTitle' | transloco"
+                  [retryLabel]="'holdings.retry' | transloco"
+                  [state]="chartState()"
+                  (retry)="retryQuotes()"
+                >
+                  <div class="h-[179px] lg:h-[169px]">
+                    <ui-line-chart
+                      axisTicks="3"
+                      [axisFormat]="chart().axis"
+                      [deltaFormat]="chart().delta"
+                      [label]="'holdings.chartLabel' | transloco"
+                      [points]="points()"
+                      [startLabel]="startLabel()"
+                      [timeColumnLabel]="'chart.time' | transloco"
+                      [timeFormat]="chart().time"
+                      [tooltipDelta]="false"
+                      [tooltipFormat]="tooltipFormat()"
+                      [valueColumnLabel]="'chart.value' | transloco"
+                      [valueFormat]="chart().value"
+                    />
+                  </div>
+                </ui-async>
                 <ui-segmented
                   class="block w-full"
                   size="sm"
@@ -137,7 +133,7 @@
               </div>
             } @else {
               <p class="text-label text-(--muted-foreground)" data-testid="no-quote-yet">
-                {{ 'holdings.noQuoteYet' | transloco }}
+                {{ noQuoteKey() | transloco: { currency: foreignCurrency() } }}
               </p>
             }
           </div>
@@ -150,15 +146,16 @@
           }
         }
 
-        @if (holding.priceSource === 'MANUAL' || holding.price === null || holding.price === undefined) {
-          <button data-testid="enter-quote" type="button" ui-button variant="outline" (click)="onEnterQuote()">
-            {{ 'holdings.manualQuote.open' | transloco }}
-          </button>
-        }
+        <app-holding-detail-quote-action
+          [foreign]="foreignCurrency() !== undefined"
+          [needsQuote]="needsQuote()"
+          (changeListing)="listingOpen.set(true)"
+          (enterQuote)="onEnterQuote()"
+        />
       </div>
     </ui-card>
 
-    @if (!isCash()) {
+    @if (tradable()) {
       <app-holding-detail-bar (buy)="buyOpen.set(true)" (sell)="sellOpen.set(true)" />
     }
 
@@ -167,14 +164,17 @@
       [deleteOpen]="deleteOpen()"
       [editOpen]="editOpen()"
       [holding]="holding"
+      [listingOpen]="listingOpen()"
       [pricingInstrument]="pricingInstrument()"
       [sellOpen]="sellOpen()"
-      (bought)="onBought()"
+      (bought)="buyOpen.set(false)"
       (buyDismissed)="buyOpen.set(false)"
       (deleteDismissed)="deleteOpen.set(false)"
-      (deleted)="onDeleted()"
+      (deleted)="onDeleted($event)"
       (editDismissed)="editOpen.set(false)"
-      (edited)="onEdited()"
+      (edited)="editOpen.set(false)"
+      (listingChanged)="listingOpen.set(false)"
+      (listingDismissed)="listingOpen.set(false)"
       (quoteDismissed)="onQuoteDismissed()"
       (quoteSaved)="onQuoteSaved()"
       (sellDismissed)="sellOpen.set(false)"
@@ -184,14 +184,6 @@
     <div class="-mx-2 flex h-(--header-height) shrink-0 items-center lg:hidden">
       <ng-container [ngTemplateOutlet]="back" />
     </div>
-    @if (holdings.error()) {
-      <ui-alert>{{ 'holdings.error' | transloco }}</ui-alert>
-    } @else if (holdings.isLoading()) {
-      <p class="sr-only" role="status">{{ 'holdings.loading' | transloco }}</p>
-      <ui-skeleton class="max-w-56" [height]="30" [lines]="2" />
-      <ui-skeleton class="mt-6" [height]="168" />
-    } @else {
-      <ui-alert>{{ 'holdings.notFound' | transloco }}</ui-alert>
-    }
+    <app-holding-detail-missing [state]="missingState()" />
   }
 </article>

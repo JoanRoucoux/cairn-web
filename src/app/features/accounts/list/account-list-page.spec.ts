@@ -4,6 +4,7 @@ import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
@@ -34,6 +35,7 @@ describe('AccountListPage', () => {
         marketValueEur: 500,
       },
     ],
+    counts = { unvaluedCount: 0, nonEurCount: 0 },
   ): Promise<void> => {
     await render(AccountListPage, {
       imports: [getTranslocoTestingModule()],
@@ -49,7 +51,7 @@ describe('AccountListPage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/accounts').flush(accounts);
-    httpTesting.expectOne('/api/portfolio').flush({ totalEur, byAssetClass: [], byAccount: [], holdings });
+    httpTesting.expectOne('/api/portfolio').flush({ totalEur, ...counts, byAssetClass: [], byAccount: [], holdings });
   };
 
   afterEach(() => httpTesting.verify());
@@ -75,13 +77,14 @@ describe('AccountListPage', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
 
-    expect(screen.getByTestId('accounts-summary-skeleton')).toBeInTheDocument();
+    expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument();
+    expect(await screen.findByTestId('accounts-summary-skeleton')).toBeInTheDocument();
 
     httpTesting.expectOne('/api/accounts').flush(null, { status: 500, statusText: 'Server Error' });
     httpTesting.expectOne('/api/portfolio').flush({ totalEur: 0, byAssetClass: [], byAccount: [], holdings: [] });
 
     await screen.findByRole('alert');
-    expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('accounts-summary-skeleton')).not.toBeInTheDocument());
     expect(screen.getByTestId('accounts-summary')).toHaveTextContent('');
   });
 
@@ -159,25 +162,68 @@ describe('AccountListPage', () => {
     ]);
   });
 
-  it('should count the lines of a savings account as booklets', async () => {
-    await renderPage(
-      [livretA],
-      [{ accountId: 'a2', assetClass: 'CASH', priceSource: 'MANUAL', accountCash: false, marketValueEur: 500 }],
-    );
+  describe('with lines left out', () => {
+    const priced = {
+      id: 'h1',
+      accountId: 'a1',
+      assetClass: 'ETF',
+      priceSource: 'YAHOO',
+      priceCurrency: 'EUR',
+      marketValueEur: 1000,
+    };
+    const unpriced = { ...priced, id: 'h2', marketValueEur: null, priceCurrency: null };
+    const usd = { ...priced, id: 'h3', marketValueEur: undefined, priceCurrency: 'USD' };
 
-    expect((await screen.findAllByText(/accounts.bookletCount_one/)).length).toBeGreaterThan(0);
-  });
+    it('should show the partial sum and its share, not a dash, for an account with an unpriced line', async () => {
+      await renderPage([boursorama], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
 
-  it('should show a dash, not 0, for the value and the share of an account with an unvalued line', async () => {
-    await renderPage(
-      [boursorama],
-      [{ accountId: 'a1', assetClass: 'ETF', priceSource: 'YAHOO', priceCurrency: 'EUR', marketValueEur: null }],
-    );
+      const row = await screen.findByTestId('account-row');
 
-    const row = await screen.findByTestId('account-row');
+      expect(row).toHaveTextContent('1 000,00');
+      expect(row).not.toHaveTextContent('—');
+    });
 
-    expect(row).toHaveTextContent('—');
-    expect(row).not.toHaveTextContent('0,00');
+    it('should lead the desktop caption to the line when it is the only one left out', async () => {
+      await renderPage([boursorama], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
+
+      const caption = await screen.findByTestId('account-uncounted');
+
+      expect(caption).toHaveTextContent('accounts.uncounted.noQuote_one');
+      expect(caption).toHaveAttribute('href', '/holdings/h2');
+    });
+
+    it('should lead the desktop caption to the account in Lignes when several are left out', async () => {
+      await renderPage([boursorama], [priced, unpriced, usd], { unvaluedCount: 1, nonEurCount: 1 });
+
+      const caption = await screen.findByTestId('account-uncounted');
+
+      expect(caption).toHaveTextContent('accounts.uncounted.noQuote_one');
+      expect(caption).toHaveTextContent('accounts.uncounted.nonEur_one');
+      expect(caption).toHaveAttribute('href', '/holdings?compte=a1');
+    });
+
+    it('should show no caption when every line is counted', async () => {
+      await renderPage();
+
+      await screen.findAllByTestId('account-row');
+
+      expect(screen.queryByTestId('account-uncounted')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('accounts-summary-excluded')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('accounts-summary-excluded-mobile')).not.toBeInTheDocument();
+    });
+
+    it('should say what the total leaves out, inline on desktop and capitalised on its own line on iPhone', async () => {
+      await renderPage([boursorama], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
+
+      expect(await screen.findByTestId('accounts-summary-excluded')).toHaveTextContent('excluded.noQuote_one');
+      expect(screen.getByTestId('accounts-summary-excluded-mobile')).toHaveTextContent('Excluded.noQuote_one');
+    });
+
+    it('should say "hors N lignes" once a non-EUR line is among them', async () => {
+      await renderPage([boursorama], [priced, unpriced, usd], { unvaluedCount: 1, nonEurCount: 1 });
+
+      expect(await screen.findByTestId('accounts-summary-excluded')).toHaveTextContent('excluded.lines_other');
+    });
   });
 
   it('should send the empty-account hint to the holdings list for that account, and to the import', async () => {
@@ -188,10 +234,15 @@ describe('AccountListPage', () => {
     expect(screen.getAllByTestId('account-row')[0]).toHaveTextContent('accounts.noLine');
   });
 
-  it('should show the empty-account hint for an account with only its cash balance', async () => {
-    await renderPage();
+  it('should show no empty-account hint for a securities account holding its cash balance', async () => {
+    await renderPage(
+      [boursorama],
+      [{ accountId: 'a1', assetClass: 'CASH', priceSource: 'MANUAL', accountCash: true, marketValueEur: 50 }],
+    );
 
-    expect(await screen.findByText('accounts.rowEmpty')).toBeInTheDocument();
+    await screen.findByTestId('account-row');
+
+    expect(screen.queryByText('accounts.rowEmpty')).not.toBeInTheDocument();
   });
 
   it('should open the create dialog from the add button', async () => {
@@ -210,8 +261,9 @@ describe('AccountListPage', () => {
     await user.click(screen.getByTestId('account-add'));
     await user.click(await screen.findByTestId('account-form-cancel'));
 
-    expect(screen.queryByTestId('account-form-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('account-form-dialog')).not.toBeInTheDocument());
     httpTesting.expectNone('/api/accounts');
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
   });
 
   it('should open the edit dialog prefilled from the row menu', async () => {
@@ -223,6 +275,22 @@ describe('AccountListPage', () => {
 
     expect(await screen.findByTestId('account-form-dialog')).toBeInTheDocument();
     expect(screen.getByTestId('account-form-name')).toHaveValue('PEA Boursorama');
+  });
+
+  it('should confirm an edited account', async () => {
+    const user = userEvent.setup();
+    await renderPage([boursorama], []);
+
+    await user.click(await screen.findByTestId('account-menu-trigger'));
+    await user.click(screen.getByTestId('account-edit'));
+    await user.click(await screen.findByTestId('account-form-submit'));
+
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1').flush(boursorama));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts')).then((request) => request.flush([boursorama]));
+    await vi
+      .waitFor(() => httpTesting.expectOne('/api/portfolio'))
+      .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.updated');
   });
 
   it('should reload the list once the form is saved', async () => {
@@ -243,6 +311,7 @@ describe('AccountListPage', () => {
     await vi
       .waitFor(() => httpTesting.expectOne('/api/portfolio'))
       .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.created');
   });
 
   it('should open the delete dialog from the row menu and reload once confirmed', async () => {
@@ -261,6 +330,7 @@ describe('AccountListPage', () => {
     await vi
       .waitFor(() => httpTesting.expectOne('/api/portfolio'))
       .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
+    expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.deleted');
   });
 
   it('should dismiss the delete dialog without deleting anything', async () => {
@@ -271,7 +341,8 @@ describe('AccountListPage', () => {
     await user.click(screen.getByTestId('account-delete'));
     await user.click(await screen.findByTestId('account-delete-cancel'));
 
-    expect(screen.queryByTestId('account-delete-dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(screen.queryByTestId('account-delete-dialog')).not.toBeInTheDocument());
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
     httpTesting.expectNone('/api/accounts/a1');
   });
 

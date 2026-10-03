@@ -24,9 +24,9 @@
     class="grid h-full gap-3 [grid-template-areas:'header'_'chart'_'segmented'] max-lg:grid-rows-[auto_1fr_auto] lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr] lg:items-center lg:gap-4 lg:[grid-template-areas:'header_segmented'_'chart_chart']"
   >
     <div class="text-label lg:text-body flex flex-wrap items-baseline gap-1.5 [grid-area:header]">
-      @if (state() === 'loading') {
+      @if (shown() === 'loading' && !chartReloading()) {
         <div class="w-50" data-testid="curve-range-loading"><ui-skeleton [height]="14" /></div>
-      } @else if (state() !== 'error') {
+      } @else if (shown() !== null && shown() !== 'error') {
         @if (rangeChangeEur() !== undefined) {
           <ui-delta size="inherit" [unknownLabel]="'portfolio.unknown' | transloco" [value]="rangeChangeEur()">
             <ui-amount currency="EUR" signed whenMasked="hide" [value]="rangeChangeEur()" />
@@ -54,7 +54,7 @@
         [errorMessage]="'portfolio.error.message' | transloco"
         [errorTitle]="'portfolio.curve.error' | transloco"
         [retryLabel]="'portfolio.error.retry' | transloco"
-        [state]="state()"
+        [state]="chartReloading() ? 'ready' : state()"
         (retry)="retry.emit()"
       >
         <div asyncLoading class="flex flex-1 flex-col" data-testid="curve-loading">

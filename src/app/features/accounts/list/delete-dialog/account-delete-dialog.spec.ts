@@ -7,6 +7,8 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { slowDialogExit } from '@shared/testing/dialog-exit';
+import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import type { AccountView } from '../account-list-store';
@@ -20,6 +22,11 @@ const account: AccountView = {
   valueEur: 1000,
   share: null,
   lineCount: 3,
+  unvaluedCount: 0,
+  nonEurCount: 0,
+  excludedLineId: null,
+  balanceAt: null,
+  empty: false,
 };
 
 describe('AccountDeleteDialog', () => {
@@ -57,28 +64,35 @@ describe('AccountDeleteDialog', () => {
   it('should emit dismissed on cancel', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('account-delete-cancel'));
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit dismissed when the native dialog closes', async () => {
     await renderDialog();
+    slowDialogExit();
 
-    screen.getByRole('alertdialog').dispatchEvent(new Event('close'));
+    (screen.getByRole('alertdialog') as HTMLDialogElement).close();
 
-    expect(dismissed).toHaveBeenCalled();
+    expect(dismissed).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
   });
 
   it('should emit deleted once the account is removed', async () => {
     const user = userEvent.setup();
     await renderDialog();
+    slowDialogExit();
 
     await user.click(screen.getByTestId('account-delete-confirm'));
+    await vi.waitFor(() => expectSubmitting(screen.getByTestId('account-delete-confirm')));
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1').flush(null));
-    await vi.waitFor(() => expect(deleted).toHaveBeenCalled());
+    await vi.waitFor(() => expect(deleted).toHaveBeenCalledTimes(1));
+    expect(dismissed).not.toHaveBeenCalled();
   });
 
   it('keeps the dialog open with the line count from the view model on a 422', async () => {

@@ -25,7 +25,6 @@
   "importTemplate": "Télécharger le modèle CSV",
   "importTemplateHint": "Les colonnes attendues par l'import",
   "instrumentsHint": "Le catalogue des titres suivis",
-  "importDone": "Terminé : {{accountsCreated}} comptes et {{instrumentsCreated}} instruments créés, {{holdingsCreated}} lignes ajoutées, {{holdingsUpdated}} mises à jour.",
   "importFailed": "L'import n'a pas pu être envoyé. Réessayez.",
   "importRejected": "Rien n'a été importé. Corrigez ces {{count}} ligne(s) puis réessayez.",
   "importLine": "Ligne",
@@ -36,7 +35,8 @@
     "UNKNOWN_ACCOUNT_TYPE": "\"{{value}}\" n'est pas un type de compte connu.",
     "NOT_A_NUMBER": "\"{{value}}\" n'est pas un nombre.",
     "ZERO_QUANTITY": "Une quantité ne peut pas être nulle. Retirez plutôt la ligne.",
-    "UNRESOLVED_INSTRUMENT": "Aucune source de prix ne connaît \"{{value}}\"."
+    "UNRESOLVED_INSTRUMENT": "Aucune source de prix ne connaît \"{{value}}\".",
+    "SAVINGS_ACCOUNT_LINE": "Un compte épargne ne contient que son solde en euros : aucune ligne de titre n'y est acceptée."
   },
   "passkeys": "Clés d'accès",
   "addPasskey": "Ajouter une clé sur cet appareil",
@@ -45,7 +45,6 @@
   "addPasskeyLabel": "Nom de l'appareil",
   "addPasskeyCancel": "Annuler",
   "addPasskeySubmit": "Ajouter",
-  "addPasskeySubmitting": "Ajout en cours...",
   "addPasskeyUnsupported": "Ce navigateur ne peut pas créer de passkey.",
   "addPasskeyFailed": "La passkey n'a pas pu être ajoutée. Réessayez.",
   "onlyKey": "C'est votre seule clé : elle ne peut pas être supprimée. Ajoutez une clé sur un autre appareil pour garder un accès de secours.",
@@ -93,5 +92,11 @@
     "submit": "Supprimer la clé",
     "refused": "C'est votre seule clé d'accès. Ajoutez un autre appareil avant de la supprimer.",
     "error": "La clé n'a pas pu être supprimée."
+  },
+  "toasts": {
+    "passkeyAdded": "Clé d'accès ajoutée",
+    "passkeyDeleted": "Clé d'accès supprimée",
+    "imported_one": "{{count}} ligne importée",
+    "imported_other": "{{count}} lignes importées"
   }
 }

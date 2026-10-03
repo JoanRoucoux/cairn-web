@@ -29,7 +29,12 @@ export class ThemeStore {
   set(preference: ThemePreference): void {
     this.#preference.set(preference);
     localStorage.setItem(STORAGE_KEY, preference);
+
+    const root = this.#document.documentElement;
+    root.setAttribute('data-theme-switching', '');
     this.#apply(preference);
+    root.getBoundingClientRect();
+    requestAnimationFrame(() => root.removeAttribute('data-theme-switching'));
   }
 
   #followDevice(): void {

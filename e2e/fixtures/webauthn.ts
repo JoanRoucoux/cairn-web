@@ -29,6 +29,8 @@ const passkeys: Passkey[] = [
   },
 ];
 
+const initialPasskeys = structuredClone(passkeys);
+
 // Browser-valid base64url: WebAuthn parses these into ArrayBuffers before the virtual
 // authenticator ever sees them.
 const base64url = (value: string): string =>
@@ -114,6 +116,7 @@ export const getSession = (): typeof session => session;
 export const getPasskeys = (): Passkey[] => passkeys;
 
 export const mockWebauthn = async (page: Page): Promise<void> => {
+  passkeys.splice(0, passkeys.length, ...structuredClone(initialPasskeys));
   await page.route('**/webauthn/**', handleWebauthnRoute);
   await page.route('**/login/webauthn', handleWebauthnRoute);
 };

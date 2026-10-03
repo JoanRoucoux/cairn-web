@@ -83,6 +83,29 @@ describe('AccountFormDialogStore', () => {
     expect(store.error()).toBe(false);
   });
 
+  it('should flag the envelope on a 422 without a generic failure, and clear it on the next save', async () => {
+    fillValidDraft();
+
+    const saved = store.save('a1');
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1'))).flush(null, {
+      status: 422,
+      statusText: 'Unprocessable Entity',
+    });
+
+    await expect(saved).resolves.toBe(false);
+    expect(store.savingsConflict()).toBe(true);
+    expect(store.error()).toBe(false);
+    expect(store.nameConflict()).toBe(false);
+
+    const again = store.save('a1');
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1'))).flush({ id: 'a1' });
+    await again;
+
+    expect(store.savingsConflict()).toBe(false);
+  });
+
   it('should report a generic failure on any other error', async () => {
     fillValidDraft();
 

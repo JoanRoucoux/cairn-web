@@ -38,6 +38,7 @@ export class PortfolioPage {
   protected readonly envelopesState = this.#store.envelopesState;
   protected readonly moversState = this.#store.moversState;
   protected readonly curveBlocking = this.#store.curveBlocking;
+  protected readonly curveReloading = this.#store.curveReloading;
   protected readonly allFailed = this.#store.allFailed;
 
   protected readonly portfolio = this.#store.portfolioValue;
@@ -46,11 +47,12 @@ export class PortfolioPage {
   protected readonly rangeChange = this.#store.rangeChange;
   protected readonly reconstructed = this.#store.reconstructed;
   protected readonly range = this.#store.range;
+  protected readonly shownRange = this.#store.shownRange;
   protected readonly movers = this.#store.movers;
 
   protected readonly isEmpty = computed(() => this.totalState() === 'empty');
 
-  protected readonly chartFormats = computed(() => chartFormats(this.#locale, this.#masked(), this.range()));
+  protected readonly chartFormats = computed(() => chartFormats(this.#locale, this.#masked(), this.shownRange()));
 
   protected setRange(value: ChartRange): void {
     this.#store.range.set(value);

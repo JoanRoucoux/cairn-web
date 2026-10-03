@@ -10,9 +10,19 @@
   "searchPlaceholderShort": "Rechercher une ligne",
   "lineCount_one": "{{count}} ligne",
   "lineCount_other": "{{count}} lignes",
-  "bookletCount_one": "{{count}} livret",
-  "bookletCount_other": "{{count}} livrets",
-  "booklet": "Livret",
+  "balanceMeta": "solde au {{date}}",
+  "balance": {
+    "line": "Solde",
+    "editRow": "Modifier le solde de {{name}}",
+    "title": "Solde de {{name}}",
+    "entered": "Saisi le {{date}}"
+  },
+  "uncounted": {
+    "noQuote_one": "{{count}} sans cours, non comptée",
+    "noQuote_other": "{{count}} sans cours, non comptées",
+    "nonEur_one": "{{count}} hors euro, non comptée",
+    "nonEur_other": "{{count}} hors euro, non comptées"
+  },
   "averageCostUnknownShort": "PRU inconnu",
   "loading": "Chargement de vos lignes",
   "empty": "Aucune ligne ne correspond à votre recherche.",
@@ -35,6 +45,8 @@
   "errorMessage": "Le serveur n'a pas répondu. Vérifiez la connexion, puis réessayez.",
   "retry": "Réessayer",
   "notFound": "Cette ligne n'existe plus.",
+  "chartErrorTitle": "Le graphique n'a pas pu être chargé",
+  "chartErrorMessage": "Le serveur n'a pas répondu.",
   "chartLabel": "Valeur sur la plage sélectionnée",
   "externalLink": "Fiche sur {{domain}}",
   "columns": {
@@ -191,6 +203,25 @@
     "noOtherOnline": "Aucun autre titre trouvé en ligne.",
     "onlineSearching": "Recherche en ligne",
     "gainAtProbe": "plus-value latente",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "unavailableSub": "Coté en {{currency}}. Cairn ne suit que les cotations en euros.",
+    "unavailable": "indisponible"
+  },
+  "replace": {
+    "open": "Changer de cotation",
+    "title": "Changer de cotation",
+    "duplicate": "Ce compte détient déjà cette cotation.",
+    "notFound": "Aucune cotation en euros trouvée pour « {{query}} »."
+  },
+  "foreignQuote": "Coté en {{currency}}, non compté",
+  "toasts": {
+    "bought": "Achat enregistré",
+    "sold": "Vente enregistrée",
+    "edited": "Ligne modifiée",
+    "deleted": "Ligne supprimée",
+    "added": "Ligne ajoutée",
+    "balanceSaved": "Solde modifié",
+    "quoteSaved": "Cours enregistré",
+    "listingChanged": "Cotation changée"
   }
 }

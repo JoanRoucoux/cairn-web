@@ -102,6 +102,15 @@ describe('InstrumentListStore', () => {
     expect(store.rows().find((row) => row.id === 'i2')?.holdingCount).toBe(0);
   });
 
+  it('should keep the catalogue total apart from the trimmed query', async () => {
+    await load();
+
+    store.search.set('  societe ');
+    expect(store.query()).toBe('societe');
+    expect(store.total()).toBe(2);
+    expect(store.filteredRows()).toHaveLength(1);
+  });
+
   it('should filter the rows, ignoring accents and case', async () => {
     await load();
 

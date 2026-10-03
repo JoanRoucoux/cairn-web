@@ -3,12 +3,13 @@ import { type Routes } from '@angular/router';
 import { provideTranslocoScope } from '@jsverse/transloco';
 
 import { HoldingDetailPage } from './detail/holding-detail-page';
+import { HoldingChanges } from './holding-changes';
 import { HoldingListPage } from './list/holding-list-page';
 
 export const HOLDINGS_ROUTES: Routes = [
   {
     path: '',
-    providers: [provideTranslocoScope('holdings')],
+    providers: [provideTranslocoScope('holdings'), HoldingChanges],
     children: [
       {
         path: '',

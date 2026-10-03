@@ -81,9 +81,9 @@ describe('HoldingAddDialogStore search and probe', () => {
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/instruments'));
     expect(request.request.body).toMatchObject({ isin: 'IE00B4L5Y983', symbol: 'EUNL', sourceRef: 'EUNL.DE' });
     request.flush({ id: 'i9' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toEqual({ id: 'h9' });
   });
 
   it('has no line count while the holdings are not loaded', async () => {

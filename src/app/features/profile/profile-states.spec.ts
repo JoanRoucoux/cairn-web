@@ -44,7 +44,7 @@ describe('ProfilePage loading states', () => {
 
     expect(await screen.findByTestId('identity')).toBeInTheDocument();
     expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
-    expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0);
+    await vi.waitFor(() => expect(document.querySelectorAll('ui-skeleton').length).toBeGreaterThan(0));
 
     await flushCall(httpTesting, '/api/session/passkeys', passkeys);
   });
@@ -75,6 +75,16 @@ describe('ProfilePage loading states', () => {
     expect(await screen.findByTestId('current-passkey')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'profile.title' })).toBeInTheDocument();
     expect(screen.queryByTestId('identity')).not.toBeInTheDocument();
+  });
+
+  it('should show the identity placeholder only once the session has taken over 150 ms', async () => {
+    await renderPage();
+
+    expect(document.querySelector('ui-skeleton.w-14')).toBeNull();
+    await vi.waitFor(() => expect(document.querySelector('ui-skeleton.w-14')).not.toBeNull());
+
+    await settleProfile(httpTesting);
+    expect(await screen.findByTestId('identity')).toBeInTheDocument();
   });
 
   it('should title the page while the session loads', async () => {

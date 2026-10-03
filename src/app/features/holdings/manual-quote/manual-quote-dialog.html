@@ -1,9 +1,11 @@
 <ui-dialog
   data-testid="manual-quote-dialog"
   width="md"
+  [busy]="form().submitting()"
   [closeLabel]="'dialog.close' | transloco"
   [heading]="'holdings.manualQuote.title' | transloco: { name: instrumentName() }"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.manualQuote.asOf' | transloco">
@@ -44,6 +46,7 @@
     type="button"
     ui-button
     [disabled]="form().submitting()"
+    [loading]="form().submitting()"
     (click)="confirm()"
   >
     {{ 'holdings.manualQuote.submit' | transloco }}

@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, linkedSignal, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, linkedSignal, signal, untracked } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 
@@ -6,9 +6,13 @@ import { AccountService } from '@core/api-client/account/account.service';
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 
+import { excludedCounts } from '@shared/format/excluded-lines';
 import { normalizeSearch } from '@shared/format/normalize-search';
 
+import { type HoldingChange, HoldingChanges } from '../holding-changes';
+
 export type AccountGroup = {
+  key: string;
   accountId: string;
   accountName: string;
   accountType: string;
@@ -17,7 +21,9 @@ export type AccountGroup = {
   cashEur: number;
   showCash: boolean;
   lineCount: number;
-  bookletCount: number;
+  balanceAt: string | null;
+  unvaluedCount: number;
+  nonEurCount: number;
   holdings: HoldingResponse[];
   filtered: { accountValueEur: number; rowCount: number } | null;
 };
@@ -46,19 +52,22 @@ const matches = (holding: HoldingResponse, search: string): boolean =>
 
 const round = (value: number): number => Number(value.toFixed(2));
 
-export const isBooklet = (holding: HoldingResponse): boolean => holding.assetClass === 'CASH';
-
 @Injectable()
 export class HoldingListStore {
   #holdingsApiClient = inject(HoldingService);
   #accountsApiClient = inject(AccountService);
   #route = inject(ActivatedRoute);
+  #changes = inject(HoldingChanges);
 
   readonly search = signal('');
 
   readonly #queryParamMap = toSignal(this.#route.queryParamMap);
 
   readonly addParam = computed(() => this.#queryParamMap()?.get('add') ?? null);
+
+  readonly balanceParam = computed(() => this.#queryParamMap()?.get('balance') ?? null);
+
+  readonly queryParam = computed(() => this.#queryParamMap()?.get('q') ?? '');
 
   readonly accountParam = computed(() => this.#queryParamMap()?.get('compte') ?? null);
 
@@ -76,6 +85,51 @@ export class HoldingListStore {
     defaultValue: [],
   });
 
+  readonly filterKey = computed(() => `${this.search()}|${this.assetClass() ?? ''}`);
+
+  readonly #flash = linkedSignal<string, HoldingChange | null>({ source: this.filterKey, computation: () => null });
+  readonly flash = this.#flash.asReadonly();
+  readonly #pendingFlash = signal<HoldingChange | null>(null);
+
+  #changesSeen = false;
+  #seenTouched: HoldingChange | null = null;
+
+  constructor() {
+    effect(() => {
+      const touched = this.#changes.lastTouched();
+      this.#changes.lastRemoved();
+
+      if (this.#changesSeen) {
+        untracked(() => {
+          if (touched !== this.#seenTouched) {
+            this.#pendingFlash.set(touched);
+          }
+          this.holdings.reload();
+        });
+      }
+
+      this.#seenTouched = touched;
+      this.#changesSeen = true;
+    });
+
+    effect(() => {
+      const pending = this.#pendingFlash();
+      const status = this.holdings.status();
+
+      if (status === 'error') {
+        untracked(() => {
+          this.#pendingFlash.set(null);
+          this.#flash.set(null);
+        });
+      } else if (pending && status === 'resolved' && this.#changes.lastRevealed() === pending) {
+        untracked(() => {
+          this.#flash.set(pending);
+          this.#pendingFlash.set(null);
+        });
+      }
+    });
+  }
+
   readonly #accountList = computed(() => (this.accounts.hasValue() ? this.accounts.value() : []));
 
   readonly #institutionByAccount = computed(
@@ -85,7 +139,7 @@ export class HoldingListStore {
   readonly #allHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
 
   readonly #cashByAccount = computed(() => {
-    const cash = new Map<string, { accountName: string; accountType: string; amount: number }>();
+    const cash = new Map<string, { accountName: string; accountType: string; amount: number; updatedAt: string }>();
 
     for (const holding of this.#allHoldings()) {
       if (holding.accountCash) {
@@ -93,6 +147,7 @@ export class HoldingListStore {
           accountName: holding.accountName,
           accountType: holding.accountType,
           amount: holding.quantity,
+          updatedAt: holding.updatedAt,
         });
       }
     }
@@ -106,15 +161,18 @@ export class HoldingListStore {
     const byAccount = new Map<string, AccountGroup>();
     const cashByAccount = this.#cashByAccount();
     const newGroup = (accountId: string, accountName: string, accountType: string): AccountGroup => ({
+      key: accountId,
       accountId,
       accountName,
       accountType,
       institution: this.#institutionByAccount().get(accountId) ?? '',
       valueEur: cashByAccount.get(accountId)?.amount ?? 0,
       cashEur: cashByAccount.get(accountId)?.amount ?? 0,
-      showCash: accountType !== 'SAVINGS' || cashByAccount.has(accountId),
+      showCash: true,
+      balanceAt: cashByAccount.get(accountId)?.updatedAt ?? null,
       lineCount: 0,
-      bookletCount: 0,
+      unvaluedCount: 0,
+      nonEurCount: 0,
       holdings: [],
       filtered: null,
     });
@@ -125,11 +183,7 @@ export class HoldingListStore {
 
       group.valueEur += holding.marketValueEur ?? 0;
 
-      if (isBooklet(holding)) {
-        group.bookletCount += 1;
-      } else {
-        group.lineCount += 1;
-      }
+      group.lineCount += 1;
 
       group.holdings.push(holding);
       byAccount.set(holding.accountId, group);
@@ -141,11 +195,17 @@ export class HoldingListStore {
       }
     }
 
+    for (const account of this.#accountList()) {
+      if (account.type === 'SAVINGS' && !byAccount.has(account.id)) {
+        byAccount.set(account.id, newGroup(account.id, account.name, account.type));
+      }
+    }
+
     const order = new Map(this.#accountList().map((account, index) => [account.id, index]));
     const rank = (group: AccountGroup): number => order.get(group.accountId) ?? Number.MAX_SAFE_INTEGER;
 
     return [...byAccount.values()]
-      .map((group) => ({ ...group, valueEur: round(group.valueEur) }))
+      .map((group) => ({ ...group, valueEur: round(group.valueEur), ...excludedCounts(group.holdings) }))
       .sort((left, right) => rank(left) - rank(right));
   });
 
@@ -154,10 +214,8 @@ export class HoldingListStore {
     let total = 0;
 
     for (const group of this.#allGroups()) {
-      const cashRow = group.showCash ? 1 : 0;
-
-      total += group.holdings.length + cashRow;
-      byClass.CASH += cashRow;
+      total += group.holdings.length + 1;
+      byClass.CASH += 1;
 
       for (const holding of group.holdings) {
         byClass[holding.assetClass] += 1;
@@ -170,7 +228,8 @@ export class HoldingListStore {
   readonly groups = computed<AccountGroup[]>(() => {
     const search = normalizeSearch(this.search().trim());
     const assetClass = this.assetClass();
-    const all = this.#allGroups();
+    const filterKey = this.filterKey();
+    const all = this.#allGroups().map((group) => ({ ...group, key: `${group.accountId}|${filterKey}` }));
 
     if (search === '' && assetClass === null) {
       return all;

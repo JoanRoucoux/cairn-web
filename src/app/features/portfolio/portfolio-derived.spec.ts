@@ -103,12 +103,34 @@ describe('PortfolioStore derived values', () => {
     expect(store.rangeChange()).toEqual({ eur: 10, ratio: 0.1 });
   });
 
+  it('should leave a line without a EUR value out of the movers', async () => {
+    const store = setup();
+    await flushWhenSeen('/api/holdings', [
+      { id: 'a', dayChangeRatio: 0.01, marketValueEur: 100 },
+      { id: 'usd', dayChangeRatio: 0.2, priceCurrency: 'USD' },
+      { id: 'unpriced', dayChangeRatio: 0.3, marketValueEur: null },
+    ] as unknown as HoldingResponse[]);
+    await vi.waitFor(() => expect(store.holdings.status()).toBe('resolved'));
+
+    expect(store.movers().map((holding) => holding.id)).toEqual(['a']);
+  });
+
+  it('should flag the movers block as empty when only lines without a EUR value moved', async () => {
+    const store = setup();
+    await flushWhenSeen('/api/holdings', [
+      { id: 'usd', dayChangeRatio: 0.2, priceCurrency: 'USD' },
+    ] as unknown as HoldingResponse[]);
+    await vi.waitFor(() => expect(store.holdings.status()).toBe('resolved'));
+
+    expect(store.moversState()).toBe('empty');
+  });
+
   it('should keep API order between movers with the same absolute day change in percent', async () => {
     const store = setup();
     await flushWhenSeen('/api/holdings', [
-      { id: 'a', dayChangeRatio: 0.01 },
-      { id: 'b', dayChangeRatio: -0.01 },
-      { id: 'c', dayChangeRatio: 0.01 },
+      { id: 'a', dayChangeRatio: 0.01, marketValueEur: 100 },
+      { id: 'b', dayChangeRatio: -0.01, marketValueEur: 100 },
+      { id: 'c', dayChangeRatio: 0.01, marketValueEur: 100 },
     ] as unknown as HoldingResponse[]);
     await vi.waitFor(() => expect(store.holdings.status()).toBe('resolved'));
 

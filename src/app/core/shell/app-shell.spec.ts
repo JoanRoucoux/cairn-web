@@ -4,6 +4,7 @@ import { Component, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { type ActivatedRoute, Router, provideRouter } from '@angular/router';
 
+import { UiToasts } from '@joanroucoux/cairn-ui';
 import { render, screen } from '@testing-library/angular';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -182,6 +183,15 @@ describe('AppShell', () => {
     await settleSession();
 
     expect(await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' })).not.toHaveClass('max-lg:hidden');
+  });
+
+  it('should show the confirmation message of a data change', async () => {
+    await renderShell();
+    await settleSession();
+
+    TestBed.inject(UiToasts).show('Purchase saved');
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Purchase saved');
   });
 
   it('should give the skip link a target', async () => {

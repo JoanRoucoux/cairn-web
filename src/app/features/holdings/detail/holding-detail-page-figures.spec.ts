@@ -7,9 +7,11 @@ import { RouterOutlet } from '@angular/router';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
+import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingDetailPage } from './holding-detail-page';
 
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
@@ -52,6 +54,7 @@ describe('HoldingDetailPage figures', () => {
       routes: [{ path: 'holdings/:holdingId', component: HoldingDetailPage }],
       initialRoute: 'holdings/h1',
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -128,5 +131,76 @@ describe('HoldingDetailPage figures', () => {
     await renderPage({ ...holding, isin: null });
 
     expect((await screen.findByText('holdings.detail.isin')).parentElement).toHaveTextContent('—');
+  });
+
+  it('keeps the chart mounted while a new range loads', async () => {
+    const user = userEvent.setup();
+    await renderPage(holding, [{ asOf: '2026-08-21', price: 30 }]);
+    const chart = document.querySelector('ui-line-chart');
+
+    expect(chart).not.toBeNull();
+
+    await user.click(screen.getByRole('radio', { name: 'chart.range.1y' }));
+    TestBed.tick();
+
+    expect(document.querySelector('ui-line-chart')).toBe(chart);
+    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+  });
+
+  it('keeps the range variation of the series shown, labelled with its own range, while a new range loads', async () => {
+    const user = userEvent.setup();
+    await renderPage(holding, [
+      { asOf: '2026-08-21', price: 30 },
+      { asOf: '2026-09-21', price: 33 },
+    ]);
+    expect(await screen.findByTestId('range-change')).toHaveTextContent('holdings.detail.rangeChange.1m');
+
+    await user.click(screen.getByRole('radio', { name: 'chart.range.1y' }));
+    TestBed.tick();
+
+    expect(screen.getByTestId('range-change')).toHaveTextContent('holdings.detail.rangeChange.1m');
+    expect(screen.getByTestId('range-change')).toHaveTextContent('+10.00%');
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) =>
+        request.flush([
+          { asOf: '2025-09-21', price: 15 },
+          { asOf: '2026-09-21', price: 33 },
+        ]),
+      );
+
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('range-change')).toHaveTextContent('holdings.detail.rangeChange.1y'),
+    );
+    expect(screen.getByTestId('range-change')).toHaveTextContent('+120.00%');
+  });
+
+  it('shows the chart error with a retry that reloads only the quotes when the new range fails', async () => {
+    const user = userEvent.setup();
+    await renderPage(holding, [{ asOf: '2026-08-21', price: 30 }]);
+
+    await user.click(screen.getByRole('radio', { name: 'chart.range.1y' }));
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .forEach((request) => request.flush(null, { status: 500, statusText: 'Server error' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('holdings.chartErrorTitle');
+    expect(screen.queryByTestId('range-change')).not.toBeInTheDocument();
+    expect(document.querySelector('ui-line-chart')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'holdings.retry' }));
+
+    const retried = await vi.waitFor(() => {
+      const requests = httpTesting.match((request) => request.url.includes('/quotes'));
+      expect(requests).toHaveLength(1);
+
+      return requests[0];
+    });
+    expect(document.querySelector('ui-line-chart')).toBeNull();
+    expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
+    retried?.flush([{ asOf: '2026-08-21', price: 30 }]);
+
+    await vi.waitFor(() => expect(document.querySelector('ui-line-chart')).not.toBeNull());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 });

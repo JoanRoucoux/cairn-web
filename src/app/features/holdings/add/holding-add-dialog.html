@@ -2,34 +2,40 @@
   data-testid="holding-add-dialog"
   layout="list"
   width="560px"
+  [busy]="submitting()"
   [closeLabel]="'dialog.close' | transloco"
-  [heading]="'holdings.add.title' | transloco"
+  [heading]="(replacing() ? 'holdings.replace.title' : 'holdings.add.title') | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <form class="flex flex-col gap-4" id="holding-add-form" novalidate (submit)="onSubmit($event)">
-    <ui-field [label]="'holdings.add.account' | transloco">
-      <select
-        data-testid="holding-add-account"
-        size="lg"
-        uiSelect
-        [value]="accountId()"
-        (change)="onAccountChange($event)"
-      >
-        @for (account of accountOptions(); track account.id) {
-          <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
-        }
-      </select>
-    </ui-field>
+    @if (!replacing()) {
+      <ui-field [label]="'holdings.add.account' | transloco">
+        <select
+          data-testid="holding-add-account"
+          size="lg"
+          uiSelect
+          [value]="accountId()"
+          (change)="onAccountChange($event)"
+        >
+          @for (account of accountOptions(); track account.id) {
+            <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
+          }
+        </select>
+      </ui-field>
+    }
 
     <div class="flex flex-col gap-4">
       @if (!picked()) {
         <app-holding-add-search
+          [busyKey]="replacingKey()"
           [candidates]="candidates()"
           [catalogResults]="catalogResults()"
           [onlineError]="onlineError()"
           [onlineSearched]="onlineSearched()"
           [query]="query()"
+          [replacing]="replacing()"
           [searchingOnline]="searchingOnline()"
           (pickedCatalog)="pickCatalog($event)"
           (pickedManual)="pickManual()"
@@ -59,7 +65,9 @@
       }
     </div>
 
-    @if (error()) {
+    @if (duplicate()) {
+      <ui-alert data-testid="holding-add-duplicate">{{ 'holdings.replace.duplicate' | transloco }}</ui-alert>
+    } @else if (error()) {
       <ui-alert data-testid="holding-add-error">
         {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
       </ui-alert>
@@ -78,15 +86,17 @@
   >
     {{ 'holdings.add.cancel' | transloco }}
   </button>
-  <button
-    data-testid="holding-add-submit"
-    dialogActions
-    form="holding-add-form"
-    type="submit"
-    ui-button
-    [disabled]="!valid() || submitting()"
-    [loading]="submitting()"
-  >
-    {{ (isNew() ? 'holdings.add.submitNew' : 'holdings.add.submit') | transloco }}
-  </button>
+  @if (!replacing()) {
+    <button
+      data-testid="holding-add-submit"
+      dialogActions
+      form="holding-add-form"
+      type="submit"
+      ui-button
+      [disabled]="!valid() || submitting()"
+      [loading]="submitting()"
+    >
+      {{ (isNew() ? 'holdings.add.submitNew' : 'holdings.add.submit') | transloco }}
+    </button>
+  }
 </ui-dialog>

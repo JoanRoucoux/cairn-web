@@ -18,6 +18,12 @@
     "home": "Back to the portfolio",
     "error404": "Error 404"
   },
+  "excluded": {
+    "noQuote_one": "excluding {{count}} line with no quote",
+    "noQuote_other": "excluding {{count}} lines with no quote",
+    "lines_one": "excluding {{count}} line",
+    "lines_other": "excluding {{count}} lines"
+  },
   "chart": {
     "rangeLabel": "Time range",
     "range": { "1d": "1D", "7d": "7D", "1m": "1M", "1y": "1Y", "5y": "5Y", "max": "Max" },

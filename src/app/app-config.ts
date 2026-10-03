@@ -1,6 +1,6 @@
 import { provideHttpClient, withInterceptors, withXsrfConfiguration } from '@angular/common/http';
 import { type ApplicationConfig, LOCALE_ID, inject, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { TitleStrategy, provideRouter } from '@angular/router';
+import { TitleStrategy, provideRouter, withInMemoryScrolling, withViewTransitions } from '@angular/router';
 
 import { TranslocoService } from '@jsverse/transloco';
 
@@ -10,6 +10,7 @@ import { AppTitleStrategy } from '@core/i18n/title-strategy';
 import { provideTranslocoGlobal } from '@core/i18n/transloco-provider';
 import { authRedirectInterceptor } from '@core/interceptors/auth-redirect-interceptor';
 import { errorHandlerInterceptor } from '@core/interceptors/error-handler-interceptor';
+import { onViewTransitionCreated } from '@core/navigation/view-transitions';
 import { provideServiceWorkerRemoval } from '@core/pwa/service-worker-removal';
 import { provideThemeInit } from '@core/theme/theme-init';
 
@@ -18,7 +19,11 @@ import { routes } from './app-routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withViewTransitions({ onViewTransitionCreated, skipInitialTransition: true }),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
+    ),
     provideHttpClient(
       withXsrfConfiguration({ cookieName: XSRF_COOKIE_NAME, headerName: XSRF_HEADER_NAME }),
       withInterceptors([authRedirectInterceptor, errorHandlerInterceptor]),

@@ -2,11 +2,13 @@ import type { Page, Route } from '@playwright/test';
 
 import { buildAccountCrudHandlers } from './account-crud';
 import { buildAllocationFixtures } from './allocation';
+import { setCashBalance } from './cash-balance';
 import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdings';
 import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstrument } from './instruments';
+import { buildUsdHolding } from './non-eur-holding';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
-import { buyHolding, resolveInstrument, sellHolding } from './trading';
+import { buyHolding, changeHoldingInstrument, resolveInstrument, sellHolding } from './trading';
 import { getPasskeys, getSession, mockWebauthn } from './webauthn';
 
 // No `cairn-api` backend runs in this environment: every screen's /api/** calls are served
@@ -29,6 +31,7 @@ const holding = {
   price: 410.2,
   priceCurrency: 'EUR',
   priceAsOf: '2026-08-27T18:00:00Z',
+  updatedAt: '2026-08-27T18:00:00Z',
   priceSource: 'YAHOO',
   stale: false,
   marketValueEur: 83_277.6,
@@ -89,7 +92,9 @@ const cashHolding = {
   dayChangeRatio: 0,
 };
 
-const holdings = [holding, staleHolding, unvaluedHolding, cashHolding, ...EXTRA_HOLDINGS];
+const usdHolding = buildUsdHolding(holding);
+
+const holdings = [holding, staleHolding, unvaluedHolding, usdHolding, cashHolding, ...EXTRA_HOLDINGS];
 
 const account = {
   id: holding.accountId,
@@ -122,6 +127,7 @@ const portfolio = {
   unrealizedGainRatio: unrealizedGainEur / (totalEur - unrealizedGainEur),
   staleCount: 1,
   unvaluedCount: 1,
+  nonEurCount: 1,
   generatedAt: '2026-08-27T18:00:00Z',
   byAssetClass: [
     { label: 'ETF', valueEur: etfEur, share: etfEur / totalEur },
@@ -265,34 +271,8 @@ const createHolding: Handler = (route) => {
 
 const { createAccount, updateAccount, deleteAccount } = buildAccountCrudHandlers(accounts, holdings);
 
-// Stateful on purpose: setting the balance again must show the new amount, and 0 must clear the line.
-const setCashBalance: Handler = (route, [, accountId]) => {
-  const { amount } = route.request().postDataJSON() as { amount: number };
-
-  if (amount < 0) {
-    return route.fulfill({ status: 422, json: { message: 'amount must not be negative' } });
-  }
-
-  const index = holdings.findIndex((candidate) => candidate.accountId === accountId && candidate.accountCash);
-
-  if (amount === 0 && index !== -1) {
-    holdings.splice(index, 1);
-  } else if (amount > 0 && index !== -1) {
-    holdings[index] = { ...holdings[index]!, quantity: amount, marketValueEur: amount };
-  } else if (amount > 0) {
-    const owningAccount = accounts.find((candidate) => candidate.id === accountId);
-    holdings.push({
-      ...cashHolding,
-      accountId,
-      accountName: owningAccount?.name ?? 'Unknown account',
-      accountType: owningAccount?.type ?? 'PEA',
-      quantity: amount,
-      marketValueEur: amount,
-    });
-  }
-
-  return route.fulfill({ status: 204 });
-};
+// Stateful on purpose: setting the balance again must show the new amount, 0 clears a securities line and keeps a savings one.
+const setCashBalanceHandler: Handler = setCashBalance(holdings, accounts, cashHolding);
 
 // Stateful on purpose: a created instrument has to show up in the list that follows.
 const createInstrument: Handler = (route) => {
@@ -348,7 +328,12 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/buy$'), handle: buyHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/sell$'), handle: sellHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
-  { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalance },
+  {
+    method: 'PUT',
+    path: new RegExp('^/api/holdings/([^/]+)/instrument$'),
+    handle: changeHoldingInstrument(holdings, allInstruments),
+  },
+  { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalanceHandler },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)$'), handle: updateAccount },
   { method: 'DELETE', path: new RegExp('^/api/accounts/([^/]+)$'), handle: deleteAccount },
   { method: 'POST', path: new RegExp('^/api/accounts$'), handle: createAccount },

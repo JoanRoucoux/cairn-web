@@ -1,4 +1,6 @@
-<tr group uiTr>
+@let parts = metaParts(group());
+@let cash = cashRowKeys(group());
+<tr group uiFlipItem uiTr>
   <td
     size="lg"
     ui-group-cell
@@ -13,40 +15,65 @@
                   filteredCount(group().filtered!.rowCount).key | transloco: filteredCount(group().filtered!.rowCount),
               })
         : ('enums.accountType.' + group().accountType | transloco) +
-          ' · ' +
-          (group().institution ? group().institution + ' · ' : '') +
-          (groupCount(group()).key | transloco: { count: groupCount(group()).count })
+          (group().institution ? ' · ' + group().institution : '') +
+          (parts.count
+            ? ' · ' + (parts.count.key | transloco: { count: parts.count.count, date: parts.count.date | shortDate })
+            : '') +
+          (parts.balance
+            ? ' · ' +
+              (parts.balance.key | transloco: { count: parts.balance.count, date: parts.balance.date | shortDate })
+            : '') +
+          (parts.unvalued
+            ? ' · ' +
+              (parts.unvalued.key | transloco: { count: parts.unvalued.count, date: parts.unvalued.date | shortDate })
+            : '') +
+          (parts.nonEur
+            ? ' · ' + (parts.nonEur.key | transloco: { count: parts.nonEur.count, date: parts.nonEur.date | shortDate })
+            : '')
     "
     [name]="group().accountName"
+    [uiHighlight]="highlight()"
   >
     <ui-amount currency="EUR" [value]="group().valueEur" />
   </td>
 </tr>
 @for (holding of group().holdings; track holding.id) {
   <tr
+    animate.leave="ui-leave-fade"
     app-holding-account-group-row
     interactive
+    uiFlipItem
     uiTr
     [compact]="compact()"
     [holding]="holding"
     [open]="holding.id === selectedHoldingId()"
     [selected]="holding.id === selectedHoldingId()"
+    [uiHighlight]="flash()?.id === holding.id ? flash() : null"
+    (changeListing)="changeListing.emit($event)"
     (enterQuote)="enterQuote.emit($event)"
   ></tr>
 }
 @if (group().showCash) {
-  <tr data-testid="cash-row" interactive uiTr>
+  <tr
+    data-testid="cash-row"
+    interactive
+    uiFlipItem
+    uiTr
+    [uiHighlight]="flash()?.id === group().accountId ? flash() : null"
+  >
     <td primary uiTd>
       <button
         data-testid="edit-cash"
         type="button"
         uiRowLink
-        [attr.aria-label]="'holdings.cash.editRow' | transloco: { name: group().accountName }"
+        [attr.aria-label]="cash.editRow | transloco: { name: group().accountName }"
         (click)="editCash.emit(group().accountId)"
       >
-        {{ 'holdings.cash.line' | transloco }}
+        {{ cash.line | transloco }}
       </button>
-      <span uiCellSub>{{ 'holdings.cash.entered' | transloco }}</span>
+      @if (cash.entered; as entered) {
+        <span uiCellSub>{{ entered | transloco: { date: group().balanceAt | shortDate } }}</span>
+      }
     </td>
     @if (!compact()) {
       <td numeric secondary uiTd></td>

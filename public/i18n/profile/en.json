@@ -25,7 +25,6 @@
   "importTemplate": "Download the CSV template",
   "importTemplateHint": "The columns the import expects",
   "instrumentsHint": "The catalog of tracked instruments",
-  "importDone": "Done: {{accountsCreated}} accounts and {{instrumentsCreated}} instruments created, {{holdingsCreated}} positions added, {{holdingsUpdated}} updated.",
   "importFailed": "The import could not be sent. Try again.",
   "importRejected": "Nothing was imported. Fix these {{count}} line(s) and try again.",
   "importLine": "Line",
@@ -36,7 +35,8 @@
     "UNKNOWN_ACCOUNT_TYPE": "\"{{value}}\" is not a known account type.",
     "NOT_A_NUMBER": "\"{{value}}\" is not a number.",
     "ZERO_QUANTITY": "A quantity cannot be zero. Remove the line instead.",
-    "UNRESOLVED_INSTRUMENT": "No price source knows \"{{value}}\"."
+    "UNRESOLVED_INSTRUMENT": "No price source knows \"{{value}}\".",
+    "SAVINGS_ACCOUNT_LINE": "A savings account only holds its balance in euros: no securities line is accepted."
   },
   "passkeys": "Passkeys",
   "addPasskey": "Add a passkey on this device",
@@ -45,7 +45,6 @@
   "addPasskeyLabel": "Device name",
   "addPasskeyCancel": "Cancel",
   "addPasskeySubmit": "Add",
-  "addPasskeySubmitting": "Adding...",
   "addPasskeyUnsupported": "This browser cannot create a passkey.",
   "addPasskeyFailed": "The passkey could not be added. Try again.",
   "onlyKey": "This is your only key: it cannot be deleted. Add a key on another device to keep a backup way in.",
@@ -93,5 +92,11 @@
     "submit": "Delete the key",
     "refused": "This is your only passkey. Add another device before deleting it.",
     "error": "The key could not be deleted."
+  },
+  "toasts": {
+    "passkeyAdded": "Passkey added",
+    "passkeyDeleted": "Passkey deleted",
+    "imported_one": "{{count}} holding imported",
+    "imported_other": "{{count}} holdings imported"
   }
 }

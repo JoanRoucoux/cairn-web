@@ -17,6 +17,7 @@ import { PerformanceService } from '@core/api-client/performance/performance.ser
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
+import { isExcluded } from '@shared/format/excluded-lines';
 import { parisDateString } from '@shared/format/paris-date';
 
 type HistoryOrIntraday = HistoryResponse | IntradayHistoryResponse;
@@ -84,7 +85,26 @@ export class PortfolioStore {
     defaultValue: EMPTY_HISTORY,
   });
 
-  readonly #historyValue = computed(() => settledValue(this.history, EMPTY_HISTORY));
+  readonly #historyValue = linkedSignal<HistoryOrIntraday | undefined, HistoryOrIntraday>({
+    source: () => settledValue<HistoryOrIntraday | undefined>(this.history, undefined),
+    computation: (settled, previous) => settled ?? previous?.value ?? EMPTY_HISTORY,
+  });
+
+  readonly shownRange = linkedSignal<{ range: ChartRange; settled: boolean }, ChartRange>({
+    source: () => ({ range: this.range(), settled: isSettled(this.history.status()) }),
+    computation: (source, previous) => (source.settled ? source.range : (previous?.value ?? source.range)),
+  });
+
+  readonly #performanceKept = linkedSignal<
+    { range: ChartRange; value: PerformanceResponse | undefined },
+    { range: ChartRange; value: PerformanceResponse } | undefined
+  >({
+    source: () => ({
+      range: this.range(),
+      value: settledValue<PerformanceResponse | undefined>(this.performance, undefined),
+    }),
+    computation: (source, previous) => (source.value ? { range: source.range, value: source.value } : previous?.value),
+  });
 
   readonly points = computed<ChartPoint[]>(() => {
     const value = this.#historyValue();
@@ -95,7 +115,8 @@ export class PortfolioStore {
   });
 
   readonly rangeChange = computed(() => {
-    const dayTotal = this.range() === '1d' ? this.performanceValue()?.total : undefined;
+    const kept = this.#performanceKept();
+    const dayTotal = this.shownRange() === '1d' && kept?.range === '1d' ? kept.value.total : undefined;
 
     if (dayTotal) {
       return { eur: dayTotal.changeEur, ratio: dayTotal.changeRatio ?? null };
@@ -144,12 +165,19 @@ export class PortfolioStore {
     return (state === 'loading' || state === 'error') && !shown;
   });
 
+  readonly curveReloading = computed(
+    () => this.history.status() === 'loading' && this.#curveShown() && this.#historyValue().points.length > 0,
+  );
+
   readonly envelopesState = computed<AsyncState>(() =>
     toAsyncState(this.performance, (value) => value.byEnvelope.length === 0),
   );
 
   readonly moversState = computed<AsyncState>(() =>
-    toAsyncState(this.holdings, (value) => !value.some((holding) => Boolean(holding.dayChangeRatio))),
+    toAsyncState(
+      this.holdings,
+      (value) => !value.some((holding) => Boolean(holding.dayChangeRatio) && !isExcluded(holding)),
+    ),
   );
 
   readonly allFailed = computed(
@@ -164,7 +192,7 @@ export class PortfolioStore {
     settledValue(this.holdings, [])
       .filter(
         (candidate): candidate is HoldingResponse & { dayChangeRatio: number } =>
-          candidate.dayChangeRatio !== null && candidate.dayChangeRatio !== undefined,
+          candidate.dayChangeRatio !== null && candidate.dayChangeRatio !== undefined && !isExcluded(candidate),
       )
       .sort((left, right) => Math.abs(right.dayChangeRatio) - Math.abs(left.dayChangeRatio))
       .slice(0, MOVER_COUNT),

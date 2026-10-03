@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { type Locator, type Page, expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
 
@@ -121,5 +121,35 @@ test.describe('buy and sell', () => {
     await page.getByTestId('holding-sell-submit').click();
 
     await expect(page.getByTestId('holding-sell-error')).toBeVisible();
+  });
+});
+
+test.describe('list beside the detail on desktop', () => {
+  const row = (page: Page): Locator =>
+    page.locator('tr').filter({ has: page.locator(`[data-holding-id="${AMUNDI_ID}"]`) });
+
+  test.beforeEach(async ({ page }) => {
+    await mockApi(page);
+    await page.goto(`/holdings/${AMUNDI_ID}`);
+    await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible({ timeout: 15_000 });
+    await expect(row(page)).toContainText('83,277.60');
+  });
+
+  test('shows the new value in the list row after a partial sell', async ({ page }) => {
+    await page.getByTestId('holding-sell').click();
+    await page.getByTestId('holding-sell-quantity').fill('100');
+    await page.getByTestId('holding-sell-submit').click();
+
+    await expect(page.getByTestId('holding-sell-dialog')).toHaveCount(0);
+    await expect(row(page)).toContainText('42,250.60');
+  });
+
+  test('removes the list row after selling everything', async ({ page }) => {
+    await page.getByTestId('holding-sell').click();
+    await page.getByTestId('holding-sell-all').click();
+    await page.getByTestId('holding-sell-submit').click();
+
+    await expect(page).toHaveURL(/\/holdings$/);
+    await expect(row(page)).toHaveCount(0);
   });
 });

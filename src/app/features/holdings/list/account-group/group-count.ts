@@ -2,12 +2,53 @@ import { pluralKey } from '@shared/format/plural-key';
 
 import type { AccountGroup } from '../holding-list-store';
 
-export const groupCount = (group: AccountGroup): { key: string; count: number } =>
-  group.accountType === 'SAVINGS'
-    ? { key: pluralKey('holdings.bookletCount', group.bookletCount), count: group.bookletCount }
-    : { key: pluralKey('holdings.lineCount', group.lineCount), count: group.lineCount };
+export const isSavings = (group: AccountGroup): boolean => group.accountType === 'SAVINGS';
+
+export const groupCount = (group: AccountGroup): { key: string; count: number } | undefined =>
+  isSavings(group) ? undefined : { key: pluralKey('holdings.lineCount', group.lineCount), count: group.lineCount };
 
 export const filteredCount = (rows: number): { key: string; count: number } => ({
   key: pluralKey('holdings.lineCount', rows),
   count: rows,
 });
+
+export const unvaluedMeta = (group: AccountGroup): { key: string; count: number } | undefined =>
+  group.unvaluedCount > 0
+    ? { key: pluralKey('holdings.uncounted.noQuote', group.unvaluedCount), count: group.unvaluedCount }
+    : undefined;
+
+export const nonEurMeta = (group: AccountGroup): { key: string; count: number } | undefined =>
+  group.nonEurCount > 0
+    ? { key: pluralKey('holdings.uncounted.nonEur', group.nonEurCount), count: group.nonEurCount }
+    : undefined;
+
+export type CashRowKeys = { line: string; editRow: string; entered: string | null };
+
+export const cashRowKeys = (group: AccountGroup): CashRowKeys =>
+  isSavings(group)
+    ? {
+        line: 'holdings.balance.line',
+        editRow: 'holdings.balance.editRow',
+        entered: group.balanceAt ? 'holdings.balance.entered' : null,
+      }
+    : { line: 'holdings.cash.line', editRow: 'holdings.cash.editRow', entered: 'holdings.cash.entered' };
+
+export type MetaPart = { key: string; count: number; date: string | null };
+
+export type MetaParts = { count?: MetaPart; balance?: MetaPart; unvalued?: MetaPart; nonEur?: MetaPart };
+
+export const metaParts = (group: AccountGroup): MetaParts => {
+  const count = groupCount(group);
+  const unvalued = unvaluedMeta(group);
+  const nonEur = nonEurMeta(group);
+
+  return {
+    count: count && { ...count, date: null },
+    balance:
+      isSavings(group) && group.balanceAt
+        ? { key: 'holdings.balanceMeta', count: 0, date: group.balanceAt }
+        : undefined,
+    unvalued: unvalued && { ...unvalued, date: null },
+    nonEur: nonEur && { ...nonEur, date: null },
+  };
+};

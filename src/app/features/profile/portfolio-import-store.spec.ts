@@ -37,8 +37,12 @@ describe('PortfolioImportStore', () => {
     expect(request.request.headers.get('Content-Type')).toBe('text/csv');
     request.flush({ accountsCreated: 1, instrumentsCreated: 2, holdingsCreated: 3, holdingsUpdated: 4 });
 
-    await imported;
-    expect(store.report()?.holdingsCreated).toBe(3);
+    expect(await imported).toEqual({
+      accountsCreated: 1,
+      instrumentsCreated: 2,
+      holdingsCreated: 3,
+      holdingsUpdated: 4,
+    });
     expect(store.rejections()).toEqual([]);
     expect(store.failed()).toBe(false);
     expect(store.importing()).toBe(false);
@@ -59,10 +63,9 @@ describe('PortfolioImportStore', () => {
       { status: 422, statusText: 'Unprocessable Content' },
     );
 
-    await imported;
+    expect(await imported).toBeNull();
     expect(store.rejections()).toHaveLength(2);
     expect(store.rejections()[0]).toMatchObject({ line: 2, code: 'UNKNOWN_ACCOUNT_TYPE', value: 'PEAA' });
-    expect(store.report()).toBeNull();
     expect(store.failed()).toBe(false);
   });
 
@@ -75,7 +78,7 @@ describe('PortfolioImportStore', () => {
       statusText: 'Server Error',
     });
 
-    await imported;
+    expect(await imported).toBeNull();
     expect(store.failed()).toBe(true);
     expect(store.rejections()).toEqual([]);
     expect(store.importing()).toBe(false);

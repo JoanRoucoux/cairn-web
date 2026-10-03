@@ -8,6 +8,13 @@ test.describe('portfolio', () => {
     await mockApi(page);
   });
 
+  test('says under the day change how many lines the total leaves out', async ({ page }) => {
+    const portfolio = new PortfolioPageObject(page);
+    await portfolio.goto();
+
+    await expect(page.getByTestId('total-excluded')).toHaveText('Excluding 2 lines');
+  });
+
   test('shows six ranges, all at a 44px touch target', async ({ browser }) => {
     const context = await browser.newContext({ hasTouch: true });
     const page = await context.newPage();

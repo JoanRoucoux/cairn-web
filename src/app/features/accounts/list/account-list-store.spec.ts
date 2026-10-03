@@ -41,10 +41,18 @@ describe('AccountListStore', () => {
 
   afterEach(() => httpTesting.verify());
 
-  const flush = async (holdings: unknown[], accounts: unknown[] = [account], totalEur = 350): Promise<void> => {
+  const flush = async (
+    holdings: unknown[],
+    accounts: unknown[] = [account],
+    totalEur = 350,
+    unvaluedCount = 0,
+    nonEurCount = 0,
+  ): Promise<void> => {
     TestBed.tick();
     httpTesting.expectOne('/api/accounts').flush(accounts);
-    httpTesting.expectOne('/api/portfolio').flush({ totalEur, byAssetClass: [], byAccount: [], holdings });
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur, unvaluedCount, nonEurCount, byAssetClass: [], byAccount: [], holdings });
     await TestBed.inject(ApplicationRef).whenStable();
   };
 
@@ -54,6 +62,21 @@ describe('AccountListStore', () => {
     expect(store.state()).toBe('loading');
     httpTesting.expectOne('/api/accounts').flush([account]);
     httpTesting.expectOne('/api/portfolio').flush({ byAssetClass: [], byAccount: [], holdings: [] });
+  });
+
+  it('should stay ready, keeping the accounts, while a retry reloads', async () => {
+    await flush([holding()]);
+
+    store.retry();
+    TestBed.tick();
+
+    expect(store.state()).toBe('ready');
+    expect(store.accounts()).toHaveLength(1);
+    httpTesting.expectOne('/api/accounts').flush([account]);
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 100, byAssetClass: [], byAccount: [], holdings: [holding()] });
+    await TestBed.inject(ApplicationRef).whenStable();
   });
 
   it('should sum market values including cash and count lines excluding the EUR cash holding', async () => {
@@ -68,6 +91,11 @@ describe('AccountListStore', () => {
         valueEur: 350,
         share: 1,
         lineCount: 2,
+        unvaluedCount: 0,
+        nonEurCount: 0,
+        excludedLineId: null,
+        balanceAt: null,
+        empty: false,
       },
     ]);
   });
@@ -84,30 +112,126 @@ describe('AccountListStore', () => {
         valueEur: 50,
         share: 50 / 350,
         lineCount: 0,
+        unvaluedCount: 0,
+        nonEurCount: 0,
+        excludedLineId: null,
+        balanceAt: null,
+        empty: false,
       },
     ]);
   });
 
-  it('should count a savings booklet as a line, although it is cash in euros too', async () => {
-    await flush([cashHolding({ id: 'h-livret', accountCash: false, marketValueEur: 20000 })]);
+  describe('a savings account', () => {
+    const savings = { id: 'a1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
 
-    expect(store.accounts()[0]!.lineCount).toBe(1);
+    it('should carry the date its balance was written, from the cash line', async () => {
+      await flush([cashHolding({ updatedAt: '2026-09-12T08:00:00Z' })], [savings]);
+
+      expect(store.accounts()[0]).toMatchObject({ balanceAt: '2026-09-12T08:00:00Z', empty: false });
+    });
+
+    it('should carry no date and stay non-empty while its balance was never set', async () => {
+      await flush([], [savings], 0);
+
+      expect(store.accounts()[0]).toMatchObject({ valueEur: 0, balanceAt: null, empty: false });
+    });
+
+    it('should keep its zero balance as a dated line', async () => {
+      await flush([cashHolding({ marketValueEur: 0, updatedAt: '2026-09-03T08:00:00Z' })], [savings]);
+
+      expect(store.accounts()[0]).toMatchObject({ valueEur: 0, balanceAt: '2026-09-03T08:00:00Z', empty: false });
+    });
   });
 
-  it('should report a null value when a line is unvalued rather than a partial sum', async () => {
-    await flush([holding(), holding({ id: 'h2', marketValueEur: null })]);
+  describe('a securities account', () => {
+    it('should be empty with no line and no cash', async () => {
+      await flush([]);
 
-    expect(store.accounts()[0]!.valueEur).toBeNull();
+      expect(store.accounts()[0]!.empty).toBe(true);
+    });
+
+    it('should not be empty with only its cash', async () => {
+      await flush([cashHolding()]);
+
+      expect(store.accounts()[0]!.empty).toBe(false);
+    });
+
+    it('should not be empty with a line and no cash', async () => {
+      await flush([holding()]);
+
+      expect(store.accounts()[0]!.empty).toBe(false);
+    });
   });
 
-  it('should give no share to an account whose value is unknown or zero', async () => {
+  it('should sum the lines that have a EUR value and count the unpriced one it leaves out', async () => {
+    await flush([holding(), holding({ id: 'h2', marketValueEur: null, priceCurrency: null })], [account], 100, 1);
+
+    expect(store.accounts()[0]).toMatchObject({
+      valueEur: 100,
+      share: 1,
+      lineCount: 2,
+      unvaluedCount: 1,
+      nonEurCount: 0,
+      excludedLineId: 'h2',
+    });
+  });
+
+  it('should count a line quoted in another currency apart from an unpriced one', async () => {
+    await flush(
+      [
+        holding(),
+        holding({ id: 'h2', marketValueEur: undefined, priceCurrency: 'USD' }),
+        holding({ id: 'h3', marketValueEur: null, priceCurrency: null }),
+      ],
+      [account],
+      100,
+      1,
+      1,
+    );
+
+    expect(store.accounts()[0]).toMatchObject({
+      valueEur: 100,
+      unvaluedCount: 1,
+      nonEurCount: 1,
+      excludedLineId: null,
+    });
+  });
+
+  it('should point the caption at the only line left out, whatever the reason', async () => {
+    await flush(
+      [holding(), holding({ id: 'h2', marketValueEur: undefined, priceCurrency: 'USD' })],
+      [account],
+      100,
+      0,
+      1,
+    );
+
+    expect(store.accounts()[0]).toMatchObject({ unvaluedCount: 0, nonEurCount: 1, excludedLineId: 'h2' });
+  });
+
+  it('should not count the cash balance among the lines left out', async () => {
+    await flush([cashHolding(), holding({ marketValueEur: null, priceCurrency: null })]);
+
+    expect(store.accounts()[0]).toMatchObject({ valueEur: 50, unvaluedCount: 1, lineCount: 1 });
+  });
+
+  it('should give no share to an account whose lines are all left out or that is empty', async () => {
     const empty = { ...account, id: 'a2', name: 'Vide' };
-    await flush([holding(), holding({ id: 'h2', marketValueEur: null })], [account, empty]);
+    await flush([holding({ marketValueEur: null, priceCurrency: null })], [account, empty], 100, 1);
 
-    expect(store.accounts().map((view) => view.share)).toEqual([null, null]);
+    expect(store.accounts().map((view) => [view.valueEur, view.share])).toEqual([
+      [0, null],
+      [0, null],
+    ]);
   });
 
-  it('should order accounts by value, largest first, the empty one then the unknown one last', async () => {
+  it('should share the portfolio total by the partial value of the account', async () => {
+    await flush([holding({ marketValueEur: 25 }), holding({ id: 'h2', marketValueEur: null })], [account], 100, 1);
+
+    expect(store.accounts()[0]!.share).toBe(0.25);
+  });
+
+  it('should order accounts by partial value, largest first, ties keeping the account order', async () => {
     const small = { ...account, id: 'a2', name: 'Petit' };
     const empty = { ...account, id: 'a3', name: 'Vide' };
     const unknown = { ...account, id: 'a4', name: 'Inconnu' };
@@ -121,10 +245,10 @@ describe('AccountListStore', () => {
       100,
     );
 
-    expect(store.accounts().map((view) => view.name)).toEqual(['PEA Boursorama', 'Petit', 'Vide', 'Inconnu']);
+    expect(store.accounts().map((view) => view.name)).toEqual(['PEA Boursorama', 'Petit', 'Inconnu', 'Vide']);
   });
 
-  it('should hold no account while a call is pending, and order several unknown values together', async () => {
+  it('should hold no account while a call is pending', async () => {
     TestBed.tick();
 
     expect(store.accounts()).toEqual([]);
@@ -138,7 +262,7 @@ describe('AccountListStore', () => {
     });
     await TestBed.inject(ApplicationRef).whenStable();
 
-    expect(store.accounts().map((view) => view.valueEur)).toEqual([null, null]);
+    expect(store.accounts().map((view) => view.valueEur)).toEqual([0, 0]);
   });
 
   it('should expose the portfolio total once loaded and nothing before', async () => {
@@ -152,6 +276,19 @@ describe('AccountListStore', () => {
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.totalEur()).toBe(164294.28);
+  });
+
+  it('should expose what the total leaves out, nothing before the portfolio answers', async () => {
+    TestBed.tick();
+
+    expect(store.excluded()).toEqual({ unvaluedCount: 0, nonEurCount: 0 });
+    httpTesting.expectOne('/api/accounts').flush([]);
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 10, unvaluedCount: 2, nonEurCount: 1, byAssetClass: [], byAccount: [], holdings: [] });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.excluded()).toEqual({ unvaluedCount: 2, nonEurCount: 1 });
   });
 
   it('should report the empty state once loaded with no account', async () => {
@@ -170,6 +307,28 @@ describe('AccountListStore', () => {
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.state()).toBe('error');
+  });
+
+  it('should go back to loading on a retry after an error, then to content', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/accounts').flush(null, { status: 500, statusText: 'Server error' });
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 100, byAssetClass: [], byAccount: [], holdings: [holding()] });
+    await TestBed.inject(ApplicationRef).whenStable();
+    expect(store.state()).toBe('error');
+
+    store.retry();
+    TestBed.tick();
+
+    expect(store.state()).toBe('loading');
+    httpTesting.expectOne('/api/accounts').flush([account]);
+    httpTesting
+      .expectOne('/api/portfolio')
+      .flush({ totalEur: 100, byAssetClass: [], byAccount: [], holdings: [holding()] });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.state()).toBe('ready');
   });
 
   it('should reload both calls on retry', async () => {

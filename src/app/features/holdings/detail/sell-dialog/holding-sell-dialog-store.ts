@@ -2,11 +2,14 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 
 import { firstValueFrom } from 'rxjs';
 
+import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 
 import { parseDecimal } from '@shared/format/parse-decimal';
 
 export type SellOutcome = 'kept' | 'closed';
+
+export type SellResult = { outcome: SellOutcome; holdingId: string; holding: HoldingResponse | null };
 
 @Injectable()
 export class HoldingSellDialogStore {
@@ -24,7 +27,7 @@ export class HoldingSellDialogStore {
     return quantity !== null && quantity > 0 && quantity <= heldQuantity;
   }
 
-  async save(holdingId: string, quantity: number): Promise<SellOutcome | undefined> {
+  async save(holdingId: string, quantity: number): Promise<SellResult | null> {
     this.submitting.set(true);
     this.error.set(false);
 
@@ -33,11 +36,13 @@ export class HoldingSellDialogStore {
         this.#holdingsApiClient.sellHolding(holdingId, { quantity }, { observe: 'response' }),
       );
 
-      return response.status === 204 ? 'closed' : 'kept';
+      return response.status === 204
+        ? { outcome: 'closed', holdingId, holding: null }
+        : { outcome: 'kept', holdingId, holding: response.body as HoldingResponse | null };
     } catch {
       this.error.set(true);
 
-      return undefined;
+      return null;
     } finally {
       this.submitting.set(false);
     }

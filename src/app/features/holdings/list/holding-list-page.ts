@@ -1,6 +1,15 @@
-import { Component, ElementRef, afterRenderEffect, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import {
+  Component,
+  ElementRef,
+  afterRenderEffect,
+  computed,
+  effect,
+  inject,
+  linkedSignal,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, NavigationEnd, NavigationStart, Router, RouterOutlet, Scroll } from '@angular/router';
 
 import {
   type AsyncState,
@@ -11,10 +20,13 @@ import {
   UiField,
   UiFieldLeading,
   UiFilterChips,
+  UiFlipItem,
+  UiFlipList,
   UiInput,
   UiSkeleton,
   UiTable,
   UiTh,
+  delayedState,
 } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
@@ -25,6 +37,7 @@ import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.sche
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { listingQueryOf } from '../foreign-currency';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
@@ -58,6 +71,8 @@ const ALL = 'ALL';
     UiFilterChips,
     UiInput,
     UiSkeleton,
+    UiFlipItem,
+    UiFlipList,
     UiTable,
     UiTh,
   ],
@@ -80,15 +95,20 @@ export class HoldingListPage {
   protected readonly search = this.#store.search;
   protected readonly assetClass = this.#store.assetClass;
   protected readonly classSummary = this.#store.classSummary;
+  protected readonly flash = this.#store.flash;
 
   protected readonly desktop = injectDesktop();
   protected readonly state = computed<AsyncState>(() => {
-    if (this.holdings.error()) {
-      return 'error';
+    const status = this.holdings.status();
+
+    if (status === 'loading' || (status === 'reloading' && this.holdings.error())) {
+      return 'loading';
     }
 
-    return this.holdings.isLoading() ? 'loading' : 'ready';
+    return this.holdings.error() ? 'error' : 'ready';
   });
+
+  protected readonly shown = delayedState(this.state);
 
   protected readonly chips = computed<FilterChipOption[]>(() => {
     this.#translocoEvents();
@@ -108,8 +128,17 @@ export class HoldingListPage {
   protected readonly chipValue = computed(() => this.assetClass() ?? ALL);
 
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
+  protected readonly listingTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
+  protected readonly addDialogOpen = computed(() => this.addOpen() || this.listingTarget() !== undefined);
+  protected readonly replaceHoldingId = computed(() => this.listingTarget()?.id ?? null);
+  protected readonly listingQuery = computed(() => {
+    const target = this.listingTarget();
+
+    return target ? listingQueryOf(target) : this.searchedQuery();
+  });
   protected readonly presetAccountId = signal<string | null>(null);
+  protected readonly searchedQuery = signal('');
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
@@ -129,11 +158,31 @@ export class HoldingListPage {
   #lastSelected: string | undefined;
   #landedOn: string | undefined;
 
+  protected readonly arrival = linkedSignal<string, { accountId: string } | null>({
+    source: this.#store.filterKey,
+    computation: () => null,
+  });
+  readonly #routerScrolled = signal(false);
+
   constructor() {
+    let leftAt = 0;
+
+    this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
+      if (event instanceof Scroll) {
+        this.#routerScrolled.set(true);
+      }
+
+      if (event instanceof NavigationStart) {
+        leftAt = window.scrollY;
+      } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith('/holdings')) {
+        window.scrollTo({ top: leftAt, behavior: 'instant' });
+      }
+    });
+
     afterRenderEffect(() => {
       const accountId = this.#store.accountParam();
 
-      if (!accountId || this.state() !== 'ready' || accountId === this.#landedOn) {
+      if (!accountId || !this.#routerScrolled() || this.state() !== 'ready' || accountId === this.#landedOn) {
         return;
       }
 
@@ -144,19 +193,36 @@ export class HoldingListPage {
 
       if (heading) {
         this.#landedOn = accountId;
-        heading.focus();
+        heading.closest('[data-account-id]')!.scrollIntoView({ block: 'start', behavior: 'auto' });
+        heading.focus({ preventScroll: true });
+        this.arrival.set({ accountId });
       }
     });
 
     effect(() => {
       const account = this.#store.addParam();
 
-      if (account) {
-        this.presetAccountId.set(account);
+      if (account !== null) {
+        this.presetAccountId.set(account || null);
+        this.searchedQuery.set(this.#store.queryParam());
         this.addOpen.set(true);
         void this.#router.navigate([], {
           relativeTo: this.#route,
-          queryParams: { add: null },
+          queryParams: { add: null, q: null },
+          queryParamsHandling: 'merge',
+          replaceUrl: true,
+        });
+      }
+    });
+
+    effect(() => {
+      const account = this.#store.balanceParam();
+
+      if (account) {
+        this.accountToEditCashFor.set(account);
+        void this.#router.navigate([], {
+          relativeTo: this.#route,
+          queryParams: { balance: null },
           queryParamsHandling: 'merge',
           replaceUrl: true,
         });
@@ -180,6 +246,12 @@ export class HoldingListPage {
     });
   }
 
+  protected highlightFor(accountId: string): object | null {
+    const arrival = this.arrival();
+
+    return arrival?.accountId === accountId ? arrival : null;
+  }
+
   protected onSearchInput(event: Event): void {
     this.search.set((event.target as HTMLInputElement).value);
   }
@@ -194,23 +266,21 @@ export class HoldingListPage {
   }
 
   protected onAddSaved(): void {
-    this.addOpen.set(false);
-    this.presetAccountId.set(null);
-    this.holdings.reload();
+    this.onAddDismissed();
   }
 
   protected onAddDismissed(): void {
     this.addOpen.set(false);
     this.presetAccountId.set(null);
+    this.searchedQuery.set('');
+    this.listingTarget.set(undefined);
   }
 
   protected onQuoteSaved(): void {
     this.quoteTarget.set(undefined);
-    this.holdings.reload();
   }
 
   protected onCashSaved(): void {
     this.accountToEditCashFor.set(undefined);
-    this.holdings.reload();
   }
 }

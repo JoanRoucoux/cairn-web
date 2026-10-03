@@ -1,8 +1,10 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 
 import { UiAlert, UiButton, UiDialog } from '@joanroucoux/cairn-ui';
 import { TranslocoPipe } from '@jsverse/transloco';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
+import { injectToast } from '@shared/feedback/toast';
 import { pluralKey } from '@shared/format/plural-key';
 
 import type { AccountView } from '../account-list-store';
@@ -22,20 +24,31 @@ export class AccountDeleteDialog {
   readonly deleted = output<void>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  readonly #outcome = injectDialogOutcome<void>(() => this.#toast('accounts.toasts.deleted'));
+
+  protected readonly open = this.#outcome.open;
   protected readonly deleting = this.#store.deleting;
   protected readonly refused = this.#store.refused;
   protected readonly error = this.#store.error;
 
   protected dismiss(): void {
-    this.open.set(false);
-    this.dismissed.emit();
+    this.#outcome.dismiss();
+  }
+
+  protected onClosed(): void {
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.deleted.emit();
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected async confirm(): Promise<void> {
     if (await this.#store.remove(this.account().id)) {
-      this.open.set(false);
-      this.deleted.emit();
+      this.#outcome.succeed();
     }
   }
 }

@@ -1,14 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  LOCALE_ID,
-  afterRenderEffect,
-  computed,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
+import { Component, ElementRef, LOCALE_ID, afterRenderEffect, computed, inject, input, output } from '@angular/core';
 
 import {
   UiAlert,
@@ -27,13 +17,16 @@ import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
+import { injectToast } from '@shared/feedback/toast';
 import { decimalPlaces } from '@shared/format/decimal-places';
 import { filterDecimalInput } from '@shared/format/parse-decimal';
 import { pluralKey } from '@shared/format/plural-key';
 
+import { type HoldingChange, HoldingChanges } from '../../holding-changes';
 import { sellPreview } from '../trade-preview';
-import { HoldingSellDialogStore } from './holding-sell-dialog-store';
+import { HoldingSellDialogStore, type SellResult } from './holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-sell-dialog',
@@ -46,10 +39,21 @@ export class HoldingSellDialog {
   #locale = inject(LOCALE_ID);
 
   readonly holding = input.required<HoldingResponse>();
-  readonly sold = output<boolean>();
+  readonly sold = output<SellResult>();
   readonly dismissed = output<void>();
 
-  protected readonly open = signal(true);
+  #toast = injectToast();
+  #changes = inject(HoldingChanges);
+  readonly #outcome = injectDialogOutcome<{ result: SellResult; change: HoldingChange | null }>(({ change }) => {
+    if (change) {
+      this.#toast('holdings.toasts.sold');
+      this.#changes.reveal(change);
+    } else {
+      this.#toast('holdings.toasts.deleted');
+    }
+  });
+
+  protected readonly open = this.#outcome.open;
   protected readonly quantityText = this.#store.quantityText;
   protected readonly submitting = this.#store.submitting;
   protected readonly error = this.#store.error;
@@ -127,8 +131,17 @@ export class HoldingSellDialog {
   }
 
   protected dismiss(): void {
-    this.open.set(false);
-    this.dismissed.emit();
+    this.#outcome.dismiss();
+  }
+
+  protected onClosed(): void {
+    const result = this.#outcome.settle();
+
+    if (result) {
+      this.sold.emit(result.value.result);
+    } else {
+      this.dismissed.emit();
+    }
   }
 
   protected onSubmit(event: Event): void {
@@ -143,11 +156,20 @@ export class HoldingSellDialog {
       return;
     }
 
-    const outcome = await this.#store.save(this.holding().id, quantity);
+    const result = await this.#store.save(this.holding().id, quantity);
 
-    if (outcome) {
-      this.open.set(false);
-      this.sold.emit(outcome === 'closed');
+    if (result) {
+      this.#outcome.succeed({ result, change: this.#record(result) });
     }
+  }
+
+  #record(result: SellResult): HoldingChange | null {
+    if (result.outcome === 'closed') {
+      this.#changes.removed(this.holding().id);
+
+      return null;
+    }
+
+    return this.#changes.touched(this.holding().id);
   }
 }

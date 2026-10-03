@@ -6,6 +6,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import type { HoldingChange } from '../../holding-changes';
 import type { AccountGroup } from '../holding-list-store';
 import { HoldingAccountGroup } from './holding-account-group';
 
@@ -16,8 +17,10 @@ import { HoldingAccountGroup } from './holding-account-group';
     <tbody
       app-holding-account-group
       [compact]="compact()"
+      [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
+      (changeListing)="changeListing.emit($event)"
       (editCash)="editCash.emit($event)"
       (enterQuote)="enterQuote.emit($event)"
     ></tbody>
@@ -26,9 +29,11 @@ import { HoldingAccountGroup } from './holding-account-group';
 class TestHost {
   readonly group = input.required<AccountGroup>();
   readonly compact = input(false);
+  readonly flash = input<HoldingChange | null>(null);
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
+  readonly changeListing = output<unknown>();
 }
 
 const holding = {
@@ -56,7 +61,7 @@ const group = {
   cashEur: 0,
   showCash: true,
   lineCount: 1,
-  bookletCount: 0,
+  balanceAt: null,
   holdings: [holding],
 } as unknown as AccountGroup;
 
@@ -64,9 +69,10 @@ const renderGroup = (
   overrides: Partial<AccountGroup> = {},
   compact = false,
   selectedHoldingId: string | undefined = undefined,
+  flash: HoldingChange | null = null,
 ): ReturnType<typeof render<TestHost>> =>
   render(TestHost, {
-    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId },
+    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId, flash },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
@@ -81,10 +87,75 @@ describe('HoldingAccountGroup', () => {
     );
   });
 
-  it('should count booklets, not lines, for a savings account', async () => {
-    await renderGroup({ accountType: 'SAVINGS', lineCount: 0, bookletCount: 2 });
+  it('should add the lines left out to the meta, muted like the rest, singular then plural', async () => {
+    await renderGroup({ unvaluedCount: 1 });
 
-    expect(await screen.findByText(/holdings\.bookletCount_other/)).toBeInTheDocument();
+    expect(await screen.findByText(/enums.accountType.PEE/)).toHaveTextContent(
+      'enums.accountType.PEE · Amundi ESR · holdings.lineCount_one · holdings.uncounted.noQuote_one',
+    );
+  });
+
+  it('should name the non-EUR lines apart from the unpriced ones in the meta', async () => {
+    await renderGroup({ unvaluedCount: 2, nonEurCount: 1 });
+
+    expect(await screen.findByText(/enums.accountType.PEE/)).toHaveTextContent(
+      'holdings.lineCount_one · holdings.uncounted.noQuote_other · holdings.uncounted.nonEur_one',
+    );
+  });
+
+  it('should add nothing to the meta when every line is counted', async () => {
+    await renderGroup();
+
+    expect(await screen.findByText(/enums.accountType.PEE/)).not.toHaveTextContent('uncounted');
+  });
+
+  describe('a savings account', () => {
+    const savings = { accountType: 'SAVINGS', institution: 'Fortuneo', lineCount: 0, holdings: [] };
+
+    it('should name its balance date in the meta, never a line count', async () => {
+      await renderGroup({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
+
+      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(
+        'enums.accountType.SAVINGS · Fortuneo · holdings.balanceMeta',
+      );
+      expect(screen.getByText(/enums.accountType.SAVINGS/)).not.toHaveTextContent('lineCount');
+    });
+
+    it('should say neither a date nor a count while the balance was never set', async () => {
+      await renderGroup({ ...savings, institution: '' });
+
+      expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(
+        /^\s*enums\.accountType\.SAVINGS\s*$/,
+      );
+    });
+
+    it('should show one balance row dated by the entry, editable like the cash row', async () => {
+      const user = userEvent.setup();
+      const { fixture } = await renderGroup({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
+      const emitted = vi.fn();
+      fixture.componentInstance.editCash.subscribe(emitted);
+
+      const row = await screen.findByTestId('cash-row');
+
+      expect(row).toHaveTextContent('holdings.balance.line');
+      expect(row).toHaveTextContent('holdings.balance.entered');
+      expect(row).not.toHaveTextContent('holdings.cash.entered');
+      expect(screen.queryAllByTestId('holding-row')).toHaveLength(0);
+
+      await user.click(screen.getByTestId('edit-cash'));
+
+      expect(emitted).toHaveBeenCalledWith('a1');
+    });
+
+    it('should show the balance row with no date while the balance was never set', async () => {
+      await renderGroup(savings);
+
+      const row = await screen.findByTestId('cash-row');
+
+      expect(row).toHaveTextContent('holdings.balance.line');
+      expect(row).not.toHaveTextContent('holdings.balance.entered');
+      expect(row).not.toHaveTextContent('holdings.cash.entered');
+    });
   });
 
   it('should show the account total in the band', async () => {
@@ -190,6 +261,54 @@ describe('HoldingAccountGroup', () => {
     expect(screen.getByText('holdings.noQuoteToEnter')).toBeInTheDocument();
   });
 
+  describe('a line quoted in another currency', () => {
+    const usd = { ...holding, priceCurrency: 'USD', marketValueEur: null, stale: false, averageCost: 250 };
+
+    it('should show a dash in the subtle tone for the value and the quote in its own currency', async () => {
+      await renderGroup({ holdings: [usd as never] });
+      const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
+
+      expect(cells[3]).toHaveTextContent('US$289.11');
+      expect(cells[4]).toHaveTextContent('—');
+      expect(cells[4]!.querySelector('span')).toHaveClass('text-(--subtle-foreground)');
+      expect(cells[4]).not.toHaveTextContent('holdings.manualQuote.open');
+    });
+
+    it('should caption the line as quoted in its currency and not counted', async () => {
+      await renderGroup({ holdings: [usd as never] });
+
+      expect(await screen.findByText('holdings.foreignQuote')).toBeInTheDocument();
+      expect(screen.queryByText('holdings.noQuote')).not.toBeInTheDocument();
+    });
+
+    it('should keep the caption in the line cell when the detail is open', async () => {
+      await renderGroup({ holdings: [usd as never] }, true);
+
+      expect(await screen.findByText('holdings.foreignQuote')).toBeInTheDocument();
+    });
+
+    it('should offer to change the listing from the Cours column and emit the line', async () => {
+      const user = userEvent.setup();
+      const { fixture } = await renderGroup({ holdings: [usd as never] });
+      const changed = vi.fn();
+      fixture.componentInstance.changeListing.subscribe(changed);
+
+      const button = await screen.findByTestId('change-listing');
+      expect(button).toHaveTextContent('holdings.replace.open');
+      expect(screen.queryByTestId('enter-quote')).not.toBeInTheDocument();
+      await user.click(button);
+
+      expect(changed).toHaveBeenCalledWith(expect.objectContaining({ id: 'h3' }));
+    });
+
+    it('should offer no change of listing for a line quoted in euros', async () => {
+      await renderGroup({ holdings: [{ ...usd, priceCurrency: 'EUR' } as never] });
+
+      await screen.findByTestId('holding-row');
+      expect(screen.queryByTestId('change-listing')).not.toBeInTheDocument();
+    });
+  });
+
   it('should link each line to its detail screen', async () => {
     await renderGroup();
 
@@ -213,18 +332,6 @@ describe('HoldingAccountGroup', () => {
 
     expect(await screen.findByTestId('holding-row')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('link', { name: 'FCPE Actions' })).toHaveAttribute('aria-current', 'true');
-  });
-
-  it('should list a booklet with the Livret subtitle and no quantity or quote', async () => {
-    await renderGroup({
-      accountType: 'SAVINGS',
-      holdings: [{ ...holding, instrumentName: 'Livret A', isin: null, assetClass: 'CASH', stale: false } as never],
-    });
-    const row = await screen.findByTestId('holding-row');
-
-    expect(row).toHaveTextContent('holdings.booklet');
-    expect(row.querySelectorAll('td')[1]).toBeEmptyDOMElement();
-    expect(row.querySelectorAll('td')[3]).toBeEmptyDOMElement();
   });
 
   it('should end with the cash line captioned as an entered balance, even at zero', async () => {
@@ -268,6 +375,13 @@ describe('HoldingAccountGroup under a class filter', () => {
 
     expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell] span.truncate')).toHaveTextContent('holdings.filteredMeta');
+  });
+
+  it('should not repeat the lines left out in the filtered meta', async () => {
+    await renderGroup({ filtered, unvaluedCount: 1 });
+
+    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(document.querySelector('td[ui-group-cell]')).not.toHaveTextContent('uncounted');
   });
 
   it('should carry the account id so a deep link can find the group', async () => {

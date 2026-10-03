@@ -2,8 +2,10 @@
   data-testid="holding-delete-dialog"
   layout="confirm"
   width="488px"
+  [busy]="deleting()"
   [heading]="'holdings.delete.title' | transloco"
   [open]="open()"
+  (closed)="onClosed()"
   (dismissed)="dismiss()"
 >
   <p class="text-body text-(--muted-foreground)">{{ description() }}</p>
@@ -32,6 +34,7 @@
     ui-button
     variant="destructive"
     [disabled]="deleting()"
+    [loading]="deleting()"
     (click)="confirm()"
   >
     {{ 'holdings.delete.submit' | transloco }}

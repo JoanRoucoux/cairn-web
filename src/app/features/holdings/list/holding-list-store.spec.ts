@@ -8,6 +8,7 @@ import { of } from 'rxjs';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { HoldingChanges } from '../holding-changes';
 import { HoldingListStore } from './holding-list-store';
 
 const holdings = [
@@ -105,6 +106,7 @@ describe('HoldingListStore', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
@@ -235,34 +237,66 @@ describe('HoldingListStore', () => {
     expect(esalia?.cashEur).toBe(0);
   });
 
-  it('should not show a cash line for a savings account without a cash balance', async () => {
-    const booklet = {
-      ...holdings[0]!,
-      id: 'h8',
-      accountId: 'a4',
-      accountName: 'Fortuneo',
-      accountType: 'SAVINGS',
-      assetClass: 'CASH',
-      instrumentName: 'Livret A',
-    };
-    TestBed.tick();
-    httpTesting.expectOne('/api/holdings').flush([booklet]);
-    httpTesting
-      .expectOne('/api/accounts')
-      .flush([...accounts, { id: 'a4', name: 'Fortuneo', type: 'SAVINGS', institution: 'Fortuneo' }]);
-    await TestBed.inject(ApplicationRef).whenStable();
-
-    expect(store.groups()[0]!.showCash).toBe(false);
-    expect(store.groups()[0]!.bookletCount).toBe(1);
-    expect(store.groups()[0]!.lineCount).toBe(0);
-  });
-
   it('should leave unvalued lines out of the account subtotal', async () => {
     await load();
 
     const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
 
     expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
+  });
+
+  it('should count the lines a group leaves out, apart by reason', async () => {
+    TestBed.tick();
+    httpTesting.expectOne('/api/holdings').flush([
+      ...holdings,
+      {
+        id: 'h9',
+        accountId: 'a1',
+        accountName: 'Saxo Investor',
+        accountType: 'PEA',
+        instrumentName: 'US fund',
+        priceCurrency: 'USD',
+        stale: false,
+      },
+    ]);
+    httpTesting.expectOne('/api/accounts').flush(accounts);
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
+
+    expect(saxo).toMatchObject({ unvaluedCount: 1, nonEurCount: 1 });
+    expect(esalia).toMatchObject({ unvaluedCount: 0, nonEurCount: 0 });
+  });
+
+  it('should not reload on its own once loaded', async () => {
+    await load();
+    TestBed.tick();
+
+    httpTesting.expectNone('/api/holdings');
+  });
+
+  it('should reload the holdings when one is touched, keeping the groups meanwhile', async () => {
+    await load();
+
+    TestBed.inject(HoldingChanges).touched('h1');
+    TestBed.tick();
+
+    expect(store.holdings.status()).toBe('reloading');
+    expect(store.groups()).toHaveLength(3);
+    httpTesting.expectOne('/api/holdings').flush(holdings.slice(0, 2));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(store.groups()).toHaveLength(2);
+  });
+
+  it('should reload the holdings when one is removed', async () => {
+    await load();
+
+    TestBed.inject(HoldingChanges).removed('h1');
+    TestBed.tick();
+
+    httpTesting.expectOne('/api/holdings').flush(holdings);
   });
 
   it('should hold empty groups while loading', () => {
@@ -308,8 +342,8 @@ describe('HoldingListStore', () => {
     expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
   });
 
-  it('should not find a savings booklet by its name', async () => {
-    const booklet = {
+  it('should not find a savings balance by the name of its account', async () => {
+    const balance = {
       ...holdings[0]!,
       id: 'h8',
       accountId: 'a3',
@@ -319,7 +353,7 @@ describe('HoldingListStore', () => {
       instrumentName: 'Livret A',
     };
     TestBed.tick();
-    httpTesting.expectOne('/api/holdings').flush([booklet]);
+    httpTesting.expectOne('/api/holdings').flush([balance]);
     httpTesting.expectOne('/api/accounts').flush(accounts);
     await TestBed.inject(ApplicationRef).whenStable();
 
@@ -332,5 +366,6 @@ describe('HoldingListStore', () => {
     await load();
 
     expect(store.addParam()).toBeNull();
+    expect(store.balanceParam()).toBeNull();
   });
 });

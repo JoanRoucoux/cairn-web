@@ -18,8 +18,10 @@ import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/trans
 
 import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
+import { UpperFirstPipe } from '@shared/format/upper-first-pipe';
 
 import { AllocationStore } from './allocation-store';
 
@@ -54,7 +56,7 @@ const asyncStateFor = (loading: boolean, failed: boolean, empty: boolean): Async
 
 @Component({
   selector: 'app-allocation-page',
-  imports: [NgTemplateOutlet, TranslocoPipe, UiAmount, UiAsync, UiCard, UiDonut, UiSkeleton],
+  imports: [NgTemplateOutlet, TranslocoPipe, UiAmount, UiAsync, UiCard, UiDonut, UiSkeleton, UpperFirstPipe],
   templateUrl: './allocation-page.html',
   providers: [AllocationStore, RatioPipe],
 })
@@ -69,13 +71,15 @@ export class AllocationPage {
   readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
   readonly #scopeLoaded = translateSignal('allocation.cashSubtitle');
 
-  protected readonly totalEur = computed<number | undefined>(() => {
+  protected readonly summary = computed<AssetClassAllocationResponse | AccountAllocationResponse | undefined>(() => {
     if (this.#store.classes.hasValue()) {
-      return this.#store.classes.value().totalEur;
+      return this.#store.classes.value();
     }
 
-    return this.#store.accounts.hasValue() ? this.#store.accounts.value().totalEur : undefined;
+    return this.#store.accounts.hasValue() ? this.#store.accounts.value() : undefined;
   });
+
+  protected readonly excludedTotal = excludedTotal;
 
   protected readonly assetClassState = computed<AsyncState>(() =>
     asyncStateFor(

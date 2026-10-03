@@ -19,6 +19,8 @@ const FAIL = 'fail' as const;
 
 const classesBody = {
   totalEur: 247_912,
+  unvaluedCount: 0,
+  nonEurCount: 0,
   items: [
     { assetClass: 'ETF', valueEur: 128_656, share: 0.519, lineCount: 2 },
     { assetClass: 'CASH', valueEur: 119_256, share: 0.481, lineCount: 1 },
@@ -34,6 +36,8 @@ const accountItem = (name: string, type: string, institution: string, valueEur: 
 
 const accountsBody = {
   totalEur: 247_912,
+  unvaluedCount: 0,
+  nonEurCount: 0,
   items: [
     accountItem('Saxo Investor', 'PEA', 'Saxo', 128_654, 0.519),
     accountItem('Esalia', 'PEE', 'Amundi', 119_258, 0.481),
@@ -238,6 +242,32 @@ describe('AllocationPage', () => {
     httpTesting.expectOne(ACCOUNTS).flush(accountsBody);
 
     expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+  });
+
+  it('should say nothing about lines left out when there are none', async () => {
+    await renderPage();
+
+    await screen.findByText('portfolio.allocation.total');
+
+    expect(screen.queryByTestId('allocation-excluded')).not.toBeInTheDocument();
+  });
+
+  it('should say under the total how many unpriced lines it leaves out', async () => {
+    await renderPage({ ...classesBody, unvaluedCount: 1 });
+
+    expect(await screen.findByTestId('allocation-excluded')).toHaveTextContent('Excluded.noQuote_one');
+  });
+
+  it('should say "hors N lignes" once a non-EUR line is among them', async () => {
+    await renderPage({ ...classesBody, unvaluedCount: 1, nonEurCount: 2 });
+
+    expect(await screen.findByTestId('allocation-excluded')).toHaveTextContent('Excluded.lines_other');
+  });
+
+  it('should read the counts of the account breakdown when the class breakdown fails', async () => {
+    await renderPage(FAIL, { ...accountsBody, nonEurCount: 1 });
+
+    expect(await screen.findByTestId('allocation-excluded')).toHaveTextContent('Excluded.lines_one');
   });
 
   it('should show no total when both calls fail', async () => {
