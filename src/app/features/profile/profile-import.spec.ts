@@ -169,7 +169,6 @@ describe('ProfilePage import and export', () => {
   it('should send nothing when the file picker is dismissed', async () => {
     await renderPage();
 
-    // A cancelled picker still fires change, with no file on it.
     screen.getByTestId('import-file').dispatchEvent(new Event('change'));
 
     httpTesting.expectNone('/api/portfolio/import');

@@ -6,7 +6,6 @@ export type PasskeyDraft = {
   label: string;
 };
 
-// A factory so each dialog instance gets its own model object.
 export const initialPasskeyDraft = (): PasskeyDraft => ({ label: '' });
 
 export const passkeyDraftSchema = (messages: FormMessages): Schema<PasskeyDraft> => {

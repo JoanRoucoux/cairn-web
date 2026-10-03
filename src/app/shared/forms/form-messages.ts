@@ -4,12 +4,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { map } from 'rxjs';
 
-/**
- * The text a refused field shows, one entry per validator this application uses.
- *
- * Signals, not strings: a validator's `message` callback reads them while the error is computed,
- * so they recompute when the active language changes.
- */
 export type FormMessages = {
   required: Signal<string>;
   maxLength: (limit: number) => Signal<string>;
@@ -17,7 +11,6 @@ export type FormMessages = {
   positive: Signal<string>;
 };
 
-/** Builds the messages. Call it from an injection context: toSignal needs one. */
 export const formMessages = (): FormMessages => {
   const service = inject(TranslocoService);
   const injector = inject(Injector);

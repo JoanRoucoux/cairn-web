@@ -30,7 +30,6 @@ export class ProfilePasskeyDialog {
   #toast = injectToast();
   readonly #outcome = injectDialogOutcome<void>(() => this.#toast('profile.toasts.passkeyAdded'));
 
-  // The parent creates this component to open the dialog: it is open from its first render.
   protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
   protected readonly submitting = this.#store.submitting;
@@ -38,7 +37,6 @@ export class ProfilePasskeyDialog {
   protected readonly failed = this.#store.failed;
 
   constructor() {
-    // The close cross is the first focusable descendant: showModal() would focus it instead of the field.
     afterRenderEffect(() => {
       if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
         focusInitial(this.#host.nativeElement, 'passkey-label');

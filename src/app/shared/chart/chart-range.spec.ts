@@ -20,7 +20,6 @@ describe('rangeStart', () => {
   });
 
   it('should compute the day boundary in Paris time, not UTC', () => {
-    // 2026-01-15T23:30:00Z is already 2026-01-16 00:30 in Paris (CET, UTC+1).
     const justAfterParisMidnight = new Date('2026-01-15T23:30:00Z');
 
     expect(rangeStart('1d', justAfterParisMidnight)).toBe('2026-01-15');

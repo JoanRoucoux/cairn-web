@@ -94,8 +94,6 @@ export class ProfilePage {
   protected readonly rejections = this.#importStore.rejections;
   protected readonly failed = this.#importStore.failed;
 
-  // Scope-relative keys: translateSignal resolves the injected TRANSLOCO_SCOPE itself,
-  // and reacts to both scope-load completion and language change.
   #themeLabels = translateSignal(THEME_PREFERENCES.map((value) => `theme.${value}`));
 
   protected readonly themeOptions = computed<SegmentedOption[]>(() =>
@@ -120,10 +118,10 @@ export class ProfilePage {
     this.#store.setHideAmounts((event.target as HTMLInputElement).checked);
   }
 
-  // Resets the input so picking the same corrected file again still fires a change event.
   protected async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
+    // Resets the input so picking the same corrected file again still fires a change event.
     input.value = '';
 
     if (!file) {
@@ -157,11 +155,9 @@ export class ProfilePage {
     this.#store.reloadPasskeys();
   }
 
-  // Navigation stays in the page: the store returns, the page decides where to go.
   protected async onSignOut(): Promise<void> {
     await this.#store.signOut();
-    // A full page load, not a router navigation: the server session is gone, so the application
-    // has to restart rather than keep rendering the one it still holds in memory.
+    // A full page load, not a router navigation: the app would keep rendering the destroyed session.
     this.#signIn.start();
   }
 }
