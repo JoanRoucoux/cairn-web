@@ -45,7 +45,7 @@ describe('LoginPage', () => {
 
   const fillIn = async (user: ReturnType<typeof userEvent.setup>, password: string): Promise<void> => {
     await user.click(screen.getByTestId('login-password-toggle'));
-    await user.type(screen.getByTestId('login-username'), 'joan');
+    await user.type(screen.getByTestId('login-username'), 'alex');
     await user.type(screen.getByTestId('login-password'), password);
     await user.click(screen.getByTestId('login-submit'));
   };
@@ -207,7 +207,7 @@ describe('LoginPage', () => {
     TestBed.tick();
 
     await vi.waitFor(() => expect(screen.getByTestId('login-password')).toHaveFocus());
-    expect(screen.getByTestId('login-username')).toHaveValue('joan');
+    expect(screen.getByTestId('login-username')).toHaveValue('alex');
   });
 
   it('should replace the passkey block with the password form, and back', async () => {

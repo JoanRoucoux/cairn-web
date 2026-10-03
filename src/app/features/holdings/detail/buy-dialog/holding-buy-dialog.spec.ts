@@ -19,7 +19,7 @@ import { HoldingBuyDialog } from './holding-buy-dialog';
 
 const holding = {
   id: 'h1',
-  accountName: 'Saxo Investor',
+  accountName: 'Northwind PEA',
   instrumentName: 'Amundi MSCI World',
   quantity: 500,
   averageCost: 24.12,

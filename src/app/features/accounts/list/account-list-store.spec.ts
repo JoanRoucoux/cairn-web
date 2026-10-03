@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { AccountListStore } from './account-list-store';
 
-const account = { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama' };
+const account = { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' };
 
 const holding = (overrides: Record<string, unknown> = {}): unknown => ({
   id: 'h1',
@@ -85,9 +85,9 @@ describe('AccountListStore', () => {
     expect(store.accounts()).toEqual([
       {
         id: 'a1',
-        name: 'PEA Boursorama',
+        name: 'Northwind PEA',
         type: 'PEA',
-        institution: 'Boursorama',
+        institution: 'Northwind Bank',
         valueEur: 350,
         share: 1,
         lineCount: 2,
@@ -106,9 +106,9 @@ describe('AccountListStore', () => {
     expect(store.accounts()).toEqual([
       {
         id: 'a1',
-        name: 'PEA Boursorama',
+        name: 'Northwind PEA',
         type: 'PEA',
-        institution: 'Boursorama',
+        institution: 'Northwind Bank',
         valueEur: 50,
         share: 50 / 350,
         lineCount: 0,
@@ -122,7 +122,7 @@ describe('AccountListStore', () => {
   });
 
   describe('a savings account', () => {
-    const savings = { id: 'a1', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+    const savings = { id: 'a1', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
 
     it('should carry the date its balance was written, from the cash line', async () => {
       await flush([cashHolding({ updatedAt: '2026-09-12T08:00:00Z' })], [savings]);
@@ -245,7 +245,7 @@ describe('AccountListStore', () => {
       100,
     );
 
-    expect(store.accounts().map((view) => view.name)).toEqual(['PEA Boursorama', 'Petit', 'Inconnu', 'Vide']);
+    expect(store.accounts().map((view) => view.name)).toEqual(['Northwind PEA', 'Petit', 'Inconnu', 'Vide']);
   });
 
   it('should hold no account while a call is pending', async () => {
@@ -272,10 +272,10 @@ describe('AccountListStore', () => {
     httpTesting.expectOne('/api/accounts').flush([]);
     httpTesting
       .expectOne('/api/portfolio')
-      .flush({ totalEur: 164294.28, byAssetClass: [], byAccount: [], holdings: [] });
+      .flush({ totalEur: 152318.64, byAssetClass: [], byAccount: [], holdings: [] });
     await TestBed.inject(ApplicationRef).whenStable();
 
-    expect(store.totalEur()).toBe(164294.28);
+    expect(store.totalEur()).toBe(152318.64);
   });
 
   it('should expose what the total leaves out, nothing before the portfolio answers', async () => {

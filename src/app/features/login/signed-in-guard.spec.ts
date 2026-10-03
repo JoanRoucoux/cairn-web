@@ -33,9 +33,9 @@ describe('signedInGuard', () => {
     const decision = decide();
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/session'))).flush({
-      displayName: 'Joan Roucoux',
-      initials: 'JR',
-      username: 'joan',
+      displayName: 'Alex Martin',
+      initials: 'AM',
+      username: 'alex',
       signInMethod: 'PASSKEY',
     });
 

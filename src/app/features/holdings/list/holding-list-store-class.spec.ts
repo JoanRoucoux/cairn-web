@@ -11,7 +11,7 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingChanges } from '../holding-changes';
 import { HoldingListStore } from './holding-list-store';
 
-const accountName: Record<string, string> = { a1: 'Saxo', a2: 'Esalia', a3: 'Livret A' };
+const accountName: Record<string, string> = { a1: 'Northwind PEA', a2: 'Woodgrove Savings Plan', a3: 'Livret A' };
 const accountType: Record<string, string> = { a1: 'PEA', a2: 'PEE', a3: 'SAVINGS' };
 
 const line = (id: string, accountId: string, assetClass: string, name: string, value: number | null): unknown => ({
@@ -45,9 +45,9 @@ const holdings = [
 ] as HoldingResponse[];
 
 const accounts = [
-  { id: 'a1', name: 'Saxo', type: 'PEA', institution: 'Saxo' },
-  { id: 'a2', name: 'Esalia', type: 'PEE', institution: 'Amundi' },
-  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' },
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a2', name: 'Woodgrove Savings Plan', type: 'PEE', institution: 'Woodgrove Bank' },
+  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' },
 ];
 
 describe('HoldingListStore class filter', () => {
@@ -124,7 +124,7 @@ describe('HoldingListStore class filter', () => {
   it('should keep the accounts that hold the class and drop the others', async () => {
     await open({ classe: 'etf' });
 
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo']);
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Northwind PEA']);
     expect(store.groups()[0]!.holdings.map((holding) => holding.id)).toEqual(['h1', 'h2']);
   });
 
@@ -146,8 +146,8 @@ describe('HoldingListStore class filter', () => {
     await open({ classe: 'liquidites' });
 
     expect(store.groups().map((group) => [group.accountName, group.valueEur, group.filtered?.rowCount])).toEqual([
-      ['Saxo', 250, 1],
-      ['Esalia', 50, 1],
+      ['Northwind PEA', 250, 1],
+      ['Woodgrove Savings Plan', 50, 1],
       ['Livret A', 710, 2],
     ]);
   });
@@ -187,7 +187,7 @@ describe('HoldingListStore class filter', () => {
     await open({ classe: 'crypto' });
     store.assetClass.set('FUND');
 
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Esalia']);
+    expect(store.groups().map((group) => group.accountName)).toEqual(['Woodgrove Savings Plan']);
 
     store.assetClass.set(null);
 

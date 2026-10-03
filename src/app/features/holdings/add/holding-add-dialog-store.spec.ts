@@ -24,7 +24,7 @@ const instruments = [
   },
 ];
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 
 describe('HoldingAddDialogStore', () => {
   let store: HoldingAddDialogStore;

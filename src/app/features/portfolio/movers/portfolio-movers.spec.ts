@@ -15,7 +15,7 @@ const movers = [
   {
     id: 'h1',
     instrumentName: 'Amundi MSCI World',
-    accountName: 'PEA Boursorama',
+    accountName: 'Northwind PEA',
     marketValueEur: 83277.6,
     dayChangeEur: 142.8,
     dayChangeRatio: 0.0017,

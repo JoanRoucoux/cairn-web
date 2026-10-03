@@ -12,9 +12,9 @@ test.describe('accounts', () => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    const row = accounts.rowFor('PEA Boursorama');
+    const row = accounts.rowFor('Northwind PEA');
     await expect(row).toContainText('PEA');
-    await expect(row).toContainText('Boursorama');
+    await expect(row).toContainText('Northwind Bank');
     await expect(row).toContainText('holdings');
   });
 
@@ -24,7 +24,7 @@ test.describe('accounts', () => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    const row = accounts.rowFor('PEA Boursorama');
+    const row = accounts.rowFor('Northwind PEA');
     await expect(row).not.toContainText('—');
     const caption = row.getByTestId('account-uncounted');
     await expect(caption).toContainText('1 line with no quote, not counted');
@@ -44,7 +44,7 @@ test.describe('accounts', () => {
 
     await expect(page.getByTestId('accounts-summary-excluded-mobile')).toHaveText('Excluding 2 lines');
     await expect(page.getByTestId('accounts-summary-excluded')).toBeHidden();
-    const row = page.getByTestId('account-row-mobile').filter({ hasText: 'PEA Boursorama' });
+    const row = page.getByTestId('account-row-mobile').filter({ hasText: 'Northwind PEA' });
     await expect(row.getByTestId('account-uncounted-mobile')).toHaveText([
       '1 line with no quote, not counted',
       '1 line outside the euro, not counted',
@@ -107,7 +107,7 @@ test.describe('accounts', () => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    await accounts.openMenuFor('PEA Boursorama');
+    await accounts.openMenuFor('Northwind PEA');
     await expect(page.getByRole('menuitem', { name: 'Edit the balance' })).toHaveCount(0);
     await page.keyboard.press('Escape');
 
@@ -136,7 +136,7 @@ test.describe('accounts', () => {
     await page.getByTestId('add-holding-desktop').click();
 
     await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'Livret A' })).toHaveCount(0);
-    await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'PEA Boursorama' })).toHaveCount(
+    await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'Northwind PEA' })).toHaveCount(
       1,
     );
   });
@@ -145,13 +145,13 @@ test.describe('accounts', () => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    const link = accounts.rowFor('PEA Boursorama').getByTestId('account-link');
+    const link = accounts.rowFor('Northwind PEA').getByTestId('account-link');
     await expect(link).toHaveAttribute('href', /\/holdings\?compte=.+/);
     await link.click();
 
     await expect(page).toHaveURL(/\/holdings\?compte=/);
     await expect(page.locator('h2[data-group-heading]:focus')).toBeVisible();
-    await expect(page.locator('h2[data-group-heading]:focus')).toContainText('PEA Boursorama');
+    await expect(page.locator('h2[data-group-heading]:focus')).toContainText('Northwind PEA');
   });
 
   test('summarises the accounts with their count and total above the table', async ({ page }) => {
@@ -189,7 +189,7 @@ test.describe('accounts', () => {
     await accounts.addButton.click();
     await page.getByTestId('account-form-name').fill('Wise EUR');
     await page.getByTestId('account-form-type').getByRole('radio', { name: 'CTO', exact: true }).click();
-    await page.getByTestId('account-form-institution').fill('Boursorama');
+    await page.getByTestId('account-form-institution').fill('Contoso Securities');
     await page.getByTestId('account-form-submit').click();
 
     await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeHidden();
@@ -202,11 +202,11 @@ test.describe('accounts', () => {
 
     await accounts.openMenuFor('Livret A');
     await accounts.editButtonFor('Livret A').click();
-    await page.getByTestId('account-form-name').fill('Livret A (Fortuneo)');
+    await page.getByTestId('account-form-name').fill('Livret A (Woodgrove)');
     await page.getByTestId('account-form-submit').click();
 
     await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeHidden();
-    await expect(accounts.rowFor('Livret A (Fortuneo)')).toBeVisible();
+    await expect(accounts.rowFor('Livret A (Woodgrove)')).toBeVisible();
   });
 
   test('shows a field error on the name, not a generic failure, when it is already taken', async ({ page }) => {
@@ -215,7 +215,7 @@ test.describe('accounts', () => {
 
     await accounts.openMenuFor('Livret A');
     await accounts.editButtonFor('Livret A').click();
-    await page.getByTestId('account-form-name').fill('PEA Boursorama');
+    await page.getByTestId('account-form-name').fill('Northwind PEA');
     await page.getByTestId('account-form-submit').click();
 
     await expect(page.getByText('already has this name')).toBeVisible();
@@ -230,7 +230,7 @@ test.describe('accounts', () => {
     await accounts.addButton.click();
     await page.getByTestId('account-form-name').fill('Wise EUR');
     await page.getByTestId('account-form-type').getByRole('radio', { name: 'CTO', exact: true }).click();
-    await page.getByTestId('account-form-institution').fill('Boursorama');
+    await page.getByTestId('account-form-institution').fill('Contoso Securities');
     await page.getByTestId('account-form-submit').click();
     await expect(accounts.rowFor('Wise EUR')).toBeVisible();
 
@@ -248,14 +248,14 @@ test.describe('accounts', () => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    await accounts.openMenuFor('PEA Boursorama');
-    await accounts.deleteButtonFor('PEA Boursorama').click();
+    await accounts.openMenuFor('Northwind PEA');
+    await accounts.deleteButtonFor('Northwind PEA').click();
     await page.getByTestId('account-delete-confirm').click();
 
     await expect(page.getByTestId('account-delete-refused')).toBeVisible();
     await expect(page.getByTestId('account-delete-dialog').locator('dialog')).toBeVisible();
 
     await page.getByTestId('account-delete-cancel').click();
-    await expect(accounts.rowFor('PEA Boursorama')).toBeVisible();
+    await expect(accounts.rowFor('Northwind PEA')).toBeVisible();
   });
 });

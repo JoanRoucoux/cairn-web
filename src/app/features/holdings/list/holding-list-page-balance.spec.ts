@@ -18,8 +18,8 @@ import { HoldingListPage } from './holding-list-page';
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
 
-const livret = { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
-const saxo = { id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' };
+const livret = { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
+const northwind = { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' };
 
 describe('HoldingListPage balance query param', () => {
   let httpTesting: HttpTestingController;
@@ -43,7 +43,7 @@ describe('HoldingListPage balance query param', () => {
       request.flush([]);
     }
     for (const request of httpTesting.match('/api/accounts')) {
-      request.flush([saxo, livret]);
+      request.flush([northwind, livret]);
     }
   };
 

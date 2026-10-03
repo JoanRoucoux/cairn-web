@@ -45,7 +45,7 @@ describe('ProfilePasskeyDialogStore', () => {
   });
 
   it('should register once the ceremony succeeds', async () => {
-    store.form.label().value.set('iPhone de Joan');
+    store.form.label().value.set("iPhone d'Alex");
     register.mockResolvedValue('ok');
 
     expect(await store.register()).toBe(true);
@@ -62,7 +62,7 @@ describe('ProfilePasskeyDialogStore', () => {
   });
 
   it('should report neither outcome when the ceremony is dismissed', async () => {
-    store.form.label().value.set('iPhone de Joan');
+    store.form.label().value.set("iPhone d'Alex");
     register.mockResolvedValue('cancelled');
 
     expect(await store.register()).toBe(false);
@@ -71,7 +71,7 @@ describe('ProfilePasskeyDialogStore', () => {
   });
 
   it('should report an unsupported browser', async () => {
-    store.form.label().value.set('iPhone de Joan');
+    store.form.label().value.set("iPhone d'Alex");
     register.mockResolvedValue('unsupported');
 
     expect(await store.register()).toBe(false);
@@ -79,7 +79,7 @@ describe('ProfilePasskeyDialogStore', () => {
   });
 
   it('should report a breakdown', async () => {
-    store.form.label().value.set('iPhone de Joan');
+    store.form.label().value.set("iPhone d'Alex");
     register.mockResolvedValue('failed');
 
     expect(await store.register()).toBe(false);
@@ -87,7 +87,7 @@ describe('ProfilePasskeyDialogStore', () => {
   });
 
   it('should treat a refusal as a breakdown', async () => {
-    store.form.label().value.set('iPhone de Joan');
+    store.form.label().value.set("iPhone d'Alex");
     register.mockResolvedValue('refused');
 
     expect(await store.register()).toBe(false);
@@ -95,7 +95,7 @@ describe('ProfilePasskeyDialogStore', () => {
   });
 
   it('should clear the previous outcome before trying again', async () => {
-    store.form.label().value.set('iPhone de Joan');
+    store.form.label().value.set("iPhone d'Alex");
     register.mockResolvedValueOnce('failed');
     await store.register();
     expect(store.failed()).toBe(true);

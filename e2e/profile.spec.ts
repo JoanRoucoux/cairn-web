@@ -75,7 +75,7 @@ test.describe('profile', () => {
     const passkeys = [
       {
         credentialId: 'aXBob25l',
-        label: 'iPhone de Joan',
+        label: "iPhone d'Alex",
         createdAt: '2025-03-12T10:00:00Z',
         lastUsedAt: null,
         current: true,
@@ -129,7 +129,7 @@ test.describe('profile', () => {
     });
     await profile.goto();
 
-    await expect(page.getByTestId('identity')).toContainText('Joan Roucoux');
+    await expect(page.getByTestId('identity')).toContainText('Alex Martin');
     await expect(page.getByRole('alert')).toBeVisible();
     await page.getByRole('button', { name: 'Retry' }).click();
 

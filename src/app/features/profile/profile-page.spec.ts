@@ -81,7 +81,7 @@ describe('ProfilePage', () => {
   it('should name the owner and how the session was opened', async () => {
     await renderPage();
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Joan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Alex' })).toBeInTheDocument();
     expect(screen.getByTestId('identity')).toHaveTextContent('profile.signedIn.PASSKEY');
   });
 

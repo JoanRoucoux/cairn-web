@@ -32,7 +32,7 @@ const view = (overrides: Partial<PasskeyView>): PasskeyView => ({
 const passkeys: PasskeyView[] = [
   view({
     credentialId: 'a',
-    label: 'iPhone de Joan',
+    label: "iPhone d'Alex",
     current: true,
     provider: 'ICLOUD_KEYCHAIN',
     usage: { kind: 'today', date: '' },
@@ -84,7 +84,7 @@ describe('ProfilePasskeyList', () => {
     const badges = screen.getAllByTestId('current-passkey');
 
     expect(badges).toHaveLength(1);
-    expect(badges[0]!.closest('li')).toHaveTextContent('iPhone de Joan');
+    expect(badges[0]!.closest('li')).toHaveTextContent("iPhone d'Alex");
   });
 
   it('should describe each key with its provider, creation date and last use, omitting an unknown provider', async () => {

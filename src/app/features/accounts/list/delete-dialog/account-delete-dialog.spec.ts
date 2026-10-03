@@ -16,9 +16,9 @@ import { AccountDeleteDialog } from './account-delete-dialog';
 
 const account: AccountView = {
   id: 'a1',
-  name: 'PEA Boursorama',
+  name: 'Northwind PEA',
   type: 'PEA',
-  institution: 'Boursorama',
+  institution: 'Northwind Bank',
   valueEur: 1000,
   share: null,
   lineCount: 3,

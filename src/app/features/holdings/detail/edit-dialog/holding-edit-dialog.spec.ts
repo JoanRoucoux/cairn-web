@@ -19,7 +19,7 @@ import { HoldingEditDialog } from './holding-edit-dialog';
 const holding = {
   id: 'h1',
   instrumentName: 'BNP Paribas Easy S&P 500',
-  accountName: 'Saxo Investor',
+  accountName: 'Northwind PEA',
   quantity: 676,
   averageCost: 26.654,
 } as unknown as HoldingResponse;

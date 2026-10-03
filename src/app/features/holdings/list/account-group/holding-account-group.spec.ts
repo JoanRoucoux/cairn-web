@@ -44,7 +44,7 @@ const holding = {
   quantity: 412.5,
   price: 289.11,
   priceAsOf: '2026-09-24',
-  marketValueEur: 119258,
+  marketValueEur: 60926,
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
   averageCost: null,
@@ -54,10 +54,10 @@ const holding = {
 
 const group = {
   accountId: 'a1',
-  accountName: 'Esalia',
+  accountName: 'Woodgrove Savings Plan',
   accountType: 'PEE',
-  institution: 'Amundi ESR',
-  valueEur: 119258,
+  institution: 'Woodgrove Bank',
+  valueEur: 60926,
   cashEur: 0,
   showCash: true,
   lineCount: 1,
@@ -81,9 +81,9 @@ describe('HoldingAccountGroup', () => {
   it('should open with a band naming the account, its envelope, its institution and its line count', async () => {
     await renderGroup();
 
-    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
     expect(screen.getByText(/enums\.accountType\.PEE/)).toHaveTextContent(
-      'enums.accountType.PEE · Amundi ESR · holdings.lineCount_one',
+      'enums.accountType.PEE · Woodgrove Bank · holdings.lineCount_one',
     );
   });
 
@@ -91,7 +91,7 @@ describe('HoldingAccountGroup', () => {
     await renderGroup({ unvaluedCount: 1 });
 
     expect(await screen.findByText(/enums.accountType.PEE/)).toHaveTextContent(
-      'enums.accountType.PEE · Amundi ESR · holdings.lineCount_one · holdings.uncounted.noQuote_one',
+      'enums.accountType.PEE · Woodgrove Bank · holdings.lineCount_one · holdings.uncounted.noQuote_one',
     );
   });
 
@@ -110,13 +110,13 @@ describe('HoldingAccountGroup', () => {
   });
 
   describe('a savings account', () => {
-    const savings = { accountType: 'SAVINGS', institution: 'Fortuneo', lineCount: 0, holdings: [] };
+    const savings = { accountType: 'SAVINGS', institution: 'Woodgrove Bank', lineCount: 0, holdings: [] };
 
     it('should name its balance date in the meta, never a line count', async () => {
       await renderGroup({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
 
       expect(await screen.findByText(/enums.accountType.SAVINGS/)).toHaveTextContent(
-        'enums.accountType.SAVINGS · Fortuneo · holdings.balanceMeta',
+        'enums.accountType.SAVINGS · Woodgrove Bank · holdings.balanceMeta',
       );
       expect(screen.getByText(/enums.accountType.SAVINGS/)).not.toHaveTextContent('lineCount');
     });
@@ -161,8 +161,8 @@ describe('HoldingAccountGroup', () => {
   it('should show the account total in the band', async () => {
     await renderGroup();
 
-    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
-    expect(document.querySelector('td[ui-group-cell]')).toHaveTextContent('€119,258.00');
+    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+    expect(document.querySelector('td[ui-group-cell]')).toHaveTextContent('€60,926.00');
   });
 
   it('should show the ISIN and the class as the subtitle', async () => {
@@ -371,16 +371,16 @@ describe('HoldingAccountGroup under a class filter', () => {
   const filtered = { accountValueEur: 130000.5, rowCount: 1 };
 
   it('should read the account total and the number of rows in the meta instead of the envelope', async () => {
-    await renderGroup({ filtered, valueEur: 119258 });
+    await renderGroup({ filtered, valueEur: 60926 });
 
-    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell] span.truncate')).toHaveTextContent('holdings.filteredMeta');
   });
 
   it('should not repeat the lines left out in the filtered meta', async () => {
     await renderGroup({ filtered, unvaluedCount: 1 });
 
-    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell]')).not.toHaveTextContent('uncounted');
   });
 

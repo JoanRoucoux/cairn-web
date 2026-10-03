@@ -15,7 +15,7 @@ const holdings = [
   {
     id: 'h1',
     accountId: 'a1',
-    accountName: 'Saxo Investor',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'BNP Paribas Easy S&P 500',
     marketValueEur: 22515.47,
@@ -25,7 +25,7 @@ const holdings = [
   {
     id: 'h2',
     accountId: 'a1',
-    accountName: 'Saxo Investor',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'Amundi MSCI World Swap',
     marketValueEur: 19903,
@@ -35,17 +35,17 @@ const holdings = [
   {
     id: 'h3',
     accountId: 'a2',
-    accountName: 'Esalia',
+    accountName: 'Woodgrove Savings Plan',
     accountType: 'PEE',
     instrumentName: 'FCPE Actions',
-    marketValueEur: 119258,
+    marketValueEur: 60926,
     unrealizedGainEur: null,
     stale: true,
   },
   {
     id: 'h4',
     accountId: 'a1',
-    accountName: 'Saxo Investor',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'Newly listed fund',
     symbol: 'NLF',
@@ -56,7 +56,7 @@ const holdings = [
   {
     id: 'h5',
     accountId: 'a1',
-    accountName: 'Saxo Investor',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'Euros',
     accountCash: true,
@@ -86,9 +86,9 @@ const holdings = [
 ] as unknown as HoldingResponse[];
 
 const accounts = [
-  { id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' },
-  { id: 'a2', name: 'Esalia', type: 'PEE', institution: 'Amundi ESR' },
-  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' },
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a2', name: 'Woodgrove Savings Plan', type: 'PEE', institution: 'Woodgrove Bank' },
+  { id: 'a3', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' },
 ];
 
 describe('HoldingListStore', () => {
@@ -125,14 +125,18 @@ describe('HoldingListStore', () => {
   it('should group holdings by account in the order of the accounts list', async () => {
     await load();
 
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
+    expect(store.groups().map((group) => group.accountName)).toEqual([
+      'Northwind PEA',
+      'Woodgrove Savings Plan',
+      'Livret A',
+    ]);
   });
 
   it('should subtotal each account', async () => {
     await load();
 
     expect(store.groups()[0]!.valueEur).toBeCloseTo(43150.87, 2);
-    expect(store.groups()[1]!.valueEur).toBe(119258);
+    expect(store.groups()[1]!.valueEur).toBe(60926);
   });
 
   it('should filter on the instrument name, case-insensitively', async () => {
@@ -154,7 +158,7 @@ describe('HoldingListStore', () => {
   it('should not match on the account name of an ordinary holding', async () => {
     await load();
 
-    store.search.set('esalia');
+    store.search.set('woodgrove');
 
     expect(store.groups().flatMap((group) => group.holdings)).toHaveLength(0);
   });
@@ -173,7 +177,7 @@ describe('HoldingListStore', () => {
   it('should drop an account with no matching line while searching', async () => {
     await load();
 
-    store.search.set('esalia');
+    store.search.set('woodgrove');
 
     expect(store.groups()).toEqual([]);
   });
@@ -193,28 +197,28 @@ describe('HoldingListStore', () => {
   it('should exclude the EUR cash line from the positions and its lineCount', async () => {
     await load();
 
-    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+    const northwind = store.groups().find((group) => group.accountName === 'Northwind PEA');
 
-    expect(saxo?.holdings.some((holding) => holding.instrumentName === 'Euros')).toBe(false);
-    expect(saxo?.holdings).toHaveLength(3);
-    expect(saxo?.lineCount).toBe(3);
+    expect(northwind?.holdings.some((holding) => holding.instrumentName === 'Euros')).toBe(false);
+    expect(northwind?.holdings).toHaveLength(3);
+    expect(northwind?.lineCount).toBe(3);
   });
 
   it('should include the cash balance in the account subtotal', async () => {
     await load();
 
-    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+    const northwind = store.groups().find((group) => group.accountName === 'Northwind PEA');
 
-    expect(saxo?.cashEur).toBe(732.4);
-    expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
+    expect(northwind?.cashEur).toBe(732.4);
+    expect(northwind?.valueEur).toBeCloseTo(43150.87, 2);
   });
 
   it('should default the cash balance to zero for an account with no cash line', async () => {
     await load();
 
-    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
+    const woodgrove = store.groups().find((group) => group.accountName === 'Woodgrove Savings Plan');
 
-    expect(esalia?.cashEur).toBe(0);
+    expect(woodgrove?.cashEur).toBe(0);
   });
 
   it('should default a cash-only account institution to blank when it is missing from the accounts list', async () => {
@@ -231,18 +235,18 @@ describe('HoldingListStore', () => {
   it('should show the cash line of an account that has none, at zero', async () => {
     await load();
 
-    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
+    const woodgrove = store.groups().find((group) => group.accountName === 'Woodgrove Savings Plan');
 
-    expect(esalia?.showCash).toBe(true);
-    expect(esalia?.cashEur).toBe(0);
+    expect(woodgrove?.showCash).toBe(true);
+    expect(woodgrove?.cashEur).toBe(0);
   });
 
   it('should leave unvalued lines out of the account subtotal', async () => {
     await load();
 
-    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+    const northwind = store.groups().find((group) => group.accountName === 'Northwind PEA');
 
-    expect(saxo?.valueEur).toBeCloseTo(43150.87, 2);
+    expect(northwind?.valueEur).toBeCloseTo(43150.87, 2);
   });
 
   it('should count the lines a group leaves out, apart by reason', async () => {
@@ -252,7 +256,7 @@ describe('HoldingListStore', () => {
       {
         id: 'h9',
         accountId: 'a1',
-        accountName: 'Saxo Investor',
+        accountName: 'Northwind PEA',
         accountType: 'PEA',
         instrumentName: 'US fund',
         priceCurrency: 'USD',
@@ -262,11 +266,11 @@ describe('HoldingListStore', () => {
     httpTesting.expectOne('/api/accounts').flush(accounts);
     await TestBed.inject(ApplicationRef).whenStable();
 
-    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
-    const esalia = store.groups().find((group) => group.accountName === 'Esalia');
+    const northwind = store.groups().find((group) => group.accountName === 'Northwind PEA');
+    const woodgrove = store.groups().find((group) => group.accountName === 'Woodgrove Savings Plan');
 
-    expect(saxo).toMatchObject({ unvaluedCount: 1, nonEurCount: 1 });
-    expect(esalia).toMatchObject({ unvaluedCount: 0, nonEurCount: 0 });
+    expect(northwind).toMatchObject({ unvaluedCount: 1, nonEurCount: 1 });
+    expect(woodgrove).toMatchObject({ unvaluedCount: 0, nonEurCount: 0 });
   });
 
   it('should not reload on its own once loaded', async () => {
@@ -323,9 +327,9 @@ describe('HoldingListStore', () => {
   it('should carry the account institution onto each group', async () => {
     await load();
 
-    const saxo = store.groups().find((group) => group.accountName === 'Saxo Investor');
+    const northwind = store.groups().find((group) => group.accountName === 'Northwind PEA');
 
-    expect(saxo?.institution).toBe('Saxo');
+    expect(northwind?.institution).toBe('Northwind Bank');
   });
 
   it('should expose the add query param', async () => {
@@ -336,10 +340,14 @@ describe('HoldingListStore', () => {
   });
 
   it('should ignore filter params it no longer knows', async () => {
-    configure({ filter: 'stale', account: 'Esalia', assetClass: 'ETF' });
+    configure({ filter: 'stale', account: 'Woodgrove Savings Plan', assetClass: 'ETF' });
     await load();
 
-    expect(store.groups().map((group) => group.accountName)).toEqual(['Saxo Investor', 'Esalia', 'Livret A']);
+    expect(store.groups().map((group) => group.accountName)).toEqual([
+      'Northwind PEA',
+      'Woodgrove Savings Plan',
+      'Livret A',
+    ]);
   });
 
   it('should not find a savings balance by the name of its account', async () => {

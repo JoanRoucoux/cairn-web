@@ -3,16 +3,16 @@ import type { HttpTestingController } from '@angular/common/http/testing';
 import { vi } from 'vitest';
 
 export const session = {
-  displayName: 'Joan',
-  initials: 'JO',
-  username: 'joan',
+  displayName: 'Alex',
+  initials: 'AL',
+  username: 'alex',
   signInMethod: 'PASSKEY',
 };
 
 export const passkeys: Record<string, unknown>[] = [
   {
     credentialId: 'aXBob25l',
-    label: 'iPhone de Joan',
+    label: "iPhone d'Alex",
     createdAt: '2025-03-12T10:00:00Z',
     lastUsedAt: '2026-09-25T08:00:00Z',
     current: true,

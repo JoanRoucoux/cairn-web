@@ -18,13 +18,13 @@ import { HoldingListPage } from './holding-list-page';
 @Component({ selector: 'app-test-host', imports: [RouterOutlet], template: '<router-outlet />' })
 class TestHost {}
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 
 const holdings = [
   {
     id: 'h1',
     accountId: 'a1',
-    accountName: 'Saxo Investor',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'BNP Paribas Easy S&P 500',
     quantity: 676,
@@ -36,12 +36,12 @@ const holdings = [
   {
     id: 'h3',
     accountId: 'a2',
-    accountName: 'Esalia',
+    accountName: 'Woodgrove Savings Plan',
     accountType: 'PEE',
     instrumentName: 'FCPE Actions',
     quantity: 412.5,
     price: 289.11,
-    marketValueEur: 119258,
+    marketValueEur: 60926,
     unrealizedGainEur: null,
     stale: true,
   },
@@ -82,19 +82,19 @@ describe('HoldingListPage', () => {
   it('should group the holdings by account', async () => {
     await renderPage();
 
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
-    expect(screen.getAllByText('Saxo Investor')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Woodgrove Savings Plan')).not.toHaveLength(0);
+    expect(screen.getAllByText('Northwind PEA')).not.toHaveLength(0);
   });
 
   it('should filter as the user types', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.type(screen.getByTestId('holdings-search'), 'bnp paribas');
 
-    expect(await screen.findAllByText('Saxo Investor')).not.toHaveLength(0);
-    expect(screen.queryByText('Esalia')).not.toBeInTheDocument();
+    expect(await screen.findAllByText('Northwind PEA')).not.toHaveLength(0);
+    expect(screen.queryByText('Woodgrove Savings Plan')).not.toBeInTheDocument();
   });
 
   it('names the search box with its label, not only its placeholder', async () => {
@@ -109,7 +109,7 @@ describe('HoldingListPage', () => {
   it('tells the user what was searched when nothing matches', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.type(screen.getByTestId('holdings-search'), 'zzz');
 
@@ -119,7 +119,7 @@ describe('HoldingListPage', () => {
   it('opens the add dialog', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getByTestId('add-holding-desktop'));
 
@@ -135,7 +135,7 @@ describe('HoldingListPage', () => {
   it('closes the add dialog when it is dismissed', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
@@ -153,7 +153,7 @@ describe('HoldingListPage', () => {
     onTestFinished(() => motion.restore());
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
@@ -161,7 +161,7 @@ describe('HoldingListPage', () => {
     await vi.waitFor(() =>
       httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
     );
-    await screen.findByRole('option', { name: /Saxo Investor/ });
+    await screen.findByRole('option', { name: /Northwind PEA/ });
 
     await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');
@@ -194,7 +194,7 @@ describe('HoldingListPage', () => {
   it('reloads the list after the cash balance is set', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.type(screen.getByTestId('holding-cash-amount'), '500');
@@ -207,7 +207,7 @@ describe('HoldingListPage', () => {
     );
     await vi.waitFor(() => httpTesting.expectOne({ url: '/api/holdings', method: 'GET' }).flush(holdings));
 
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Woodgrove Savings Plan')).not.toHaveLength(0);
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.balanceSaved');
     expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('a1');
   });
@@ -215,7 +215,7 @@ describe('HoldingListPage', () => {
   it('closes the cash dialog when it is dismissed', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getAllByTestId('edit-cash')[0]!);
     await user.click(await screen.findByTestId('holding-cash-cancel'));
@@ -248,7 +248,7 @@ describe('HoldingListPage', () => {
 
   it('should link each line to its detail screen', async () => {
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     const links = await screen.findAllByRole('link', { name: /FCPE Actions/ });
 
@@ -259,7 +259,7 @@ describe('HoldingListPage', () => {
 
   it('shows the icon add button on the iPhone and the filled one on desktop only', async () => {
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     expect(screen.getByTestId('add-holding').parentElement).toHaveClass('lg:hidden');
     expect(screen.getByTestId('add-holding-desktop').parentElement).toHaveClass('hidden', 'lg:block');
@@ -268,7 +268,7 @@ describe('HoldingListPage', () => {
   it('opens the add dialog from the mobile icon button too', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getByTestId('add-holding'));
 
@@ -311,7 +311,7 @@ describe('HoldingListPage', () => {
   it('opens the cash dialog from the mobile cash line', async () => {
     const user = userEvent.setup();
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     await user.click(screen.getAllByTestId('edit-cash-mobile')[0]!);
 
@@ -335,7 +335,7 @@ describe('HoldingListPage', () => {
       };
     });
     await renderPage();
-    await screen.findAllByText('Esalia');
+    await screen.findAllByText('Woodgrove Savings Plan');
 
     expect(screen.getByTestId('holdings-search')).toHaveAttribute('placeholder', 'holdings.searchPlaceholderShort');
 
@@ -349,9 +349,9 @@ describe('HoldingListPage', () => {
   });
 
   it('ignores the old filter params', async () => {
-    await renderPage('/?filter=stale&account=Esalia&assetClass=ETF');
+    await renderPage('/?filter=stale&account=Woodgrove Savings Plan&assetClass=ETF');
 
-    expect((await screen.findAllByText('Saxo Investor')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Esalia').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Northwind PEA')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Woodgrove Savings Plan').length).toBeGreaterThan(0);
   });
 });

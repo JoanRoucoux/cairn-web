@@ -22,7 +22,7 @@ const holdings = [
   {
     id: 'h1',
     accountId: 'a1',
-    accountName: 'Saxo Investor',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'BNP Paribas Easy S&P 500',
     assetClass: 'ETF',
@@ -33,7 +33,7 @@ const holdings = [
   },
 ];
 
-const accounts = [{ id: 'a1', name: 'Saxo Investor', type: 'PEA', institution: 'Saxo' }];
+const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
 
 describe('HoldingListPage focus', () => {
   let httpTesting: HttpTestingController;

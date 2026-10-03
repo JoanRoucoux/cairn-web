@@ -13,7 +13,7 @@ const holdings = [
   {
     id: 'h1',
     accountId: 'a1',
-    accountName: 'Saxo',
+    accountName: 'Northwind PEA',
     accountType: 'PEA',
     instrumentName: 'Amundi',
     assetClass: 'ETF',
@@ -22,7 +22,7 @@ const holdings = [
   {
     id: 'h2',
     accountId: 'a2',
-    accountName: 'Esalia',
+    accountName: 'Woodgrove Savings Plan',
     accountType: 'PEE',
     instrumentName: 'FCPE',
     assetClass: 'FUND',
@@ -31,8 +31,8 @@ const holdings = [
 ];
 
 const accounts = [
-  { id: 'a1', name: 'Saxo', type: 'PEA', institution: 'Saxo' },
-  { id: 'a2', name: 'Esalia', type: 'PEE', institution: 'Amundi ESR' },
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a2', name: 'Woodgrove Savings Plan', type: 'PEE', institution: 'Woodgrove Bank' },
 ];
 
 describe('HoldingListStore after a change', () => {

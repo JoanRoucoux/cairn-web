@@ -16,7 +16,7 @@ export const peeHolding = {
   ...BASE,
   id: '44444444-4444-4444-4444-444444444444',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab',
-  accountName: 'PEE Amundi',
+  accountName: 'Woodgrove Savings Plan',
   accountType: 'PEE',
   instrumentId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb2',
   instrumentName: 'Amundi Label Employe Diversifie',
@@ -35,7 +35,7 @@ export const ctoHolding = {
   ...BASE,
   id: '55555555-5555-5555-5555-555555555555',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaac',
-  accountName: 'CTO Boursorama',
+  accountName: 'Contoso Trading',
   accountType: 'CTO',
   instrumentId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb3',
   instrumentName: 'iShares Core MSCI World',
@@ -76,7 +76,7 @@ export const perHolding = {
   ...BASE,
   id: '77777777-7777-7777-7777-777777777777',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaae',
-  accountName: 'PER Linxea',
+  accountName: 'Woodgrove Retirement',
   accountType: 'PER',
   instrumentId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb5',
   instrumentName: 'Amundi PER Croissance',
@@ -95,10 +95,10 @@ export const lifeInsuranceHolding = {
   ...BASE,
   id: '88888888-8888-8888-8888-888888888888',
   accountId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaf',
-  accountName: 'Assurance-vie Boursorama',
+  accountName: 'Fabrikam Life',
   accountType: 'LIFE_INSURANCE',
   instrumentId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbb6',
-  instrumentName: 'Fonds Euro Boursorama Vie',
+  instrumentName: 'Fabrikam Euro Fund',
   isin: 'FR0013455260',
   quantity: 9_100,
   averageCost: 0.95,
@@ -113,7 +113,11 @@ export const lifeInsuranceHolding = {
 export const EXTRA_HOLDINGS = [peeHolding, ctoHolding, savingsHolding, perHolding, lifeInsuranceHolding];
 
 const institutionOf = (holding: (typeof EXTRA_HOLDINGS)[number]): string =>
-  holding === peeHolding ? 'Amundi' : holding === perHolding ? 'Linxea' : 'Boursorama';
+  holding === ctoHolding
+    ? 'Contoso Securities'
+    : holding === lifeInsuranceHolding
+      ? 'Fabrikam Insurance'
+      : 'Woodgrove Bank';
 
 export const EXTRA_ACCOUNTS = EXTRA_HOLDINGS.map((holding) => ({
   id: holding.accountId,

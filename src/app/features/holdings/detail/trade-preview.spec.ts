@@ -10,7 +10,7 @@ describe('buyPreview', () => {
   });
 
   it('takes the unit price as the average cost when none was known', () => {
-    const preview = buyPreview(342, null, 20, 51.2);
+    const preview = buyPreview(120, null, 20, 51.2);
 
     expect(preview.averageCostAfter).toBe(51.2);
   });
@@ -34,7 +34,7 @@ describe('sellPreview', () => {
   });
 
   it('has no realized gain without a known cost basis', () => {
-    const preview = sellPreview(342, null, 51.76, 20);
+    const preview = sellPreview(120, null, 51.76, 20);
 
     expect(preview.realizedGain).toBeNull();
     expect(preview.amount).toBeCloseTo(20 * 51.76);

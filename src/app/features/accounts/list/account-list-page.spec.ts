@@ -14,8 +14,8 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { AccountListPage } from './account-list-page';
 import { AccountListStore } from './account-list-store';
 
-const boursorama = { id: 'a1', name: 'PEA Boursorama', type: 'PEA', institution: 'Boursorama' };
-const livretA = { id: 'a2', name: 'Livret A', type: 'SAVINGS', institution: 'Fortuneo' };
+const northwind = { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' };
+const livretA = { id: 'a2', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
 
 describe('AccountListPage', () => {
   let httpTesting: HttpTestingController;
@@ -23,7 +23,7 @@ describe('AccountListPage', () => {
   const totalEur = 1500;
 
   const renderPage = async (
-    accounts: unknown[] = [boursorama, livretA],
+    accounts: unknown[] = [northwind, livretA],
     holdings: unknown[] = [
       { accountId: 'a1', assetClass: 'ETF', priceSource: 'YAHOO', priceCurrency: 'EUR', marketValueEur: 1000 },
       {
@@ -59,7 +59,7 @@ describe('AccountListPage', () => {
   it('should render every account with its value and line count', async () => {
     await renderPage();
 
-    expect((await screen.findAllByText('PEA Boursorama')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Northwind PEA')).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/accounts.lineCount_(one|other)/)).not.toHaveLength(0);
   });
 
@@ -89,7 +89,7 @@ describe('AccountListPage', () => {
   });
 
   it('should show a blank institution as nothing on the meta line and a dash in the column', async () => {
-    await renderPage([{ ...boursorama, institution: '  ' }], []);
+    await renderPage([{ ...northwind, institution: '  ' }], []);
 
     const row = await screen.findByTestId('account-row');
 
@@ -134,12 +134,12 @@ describe('AccountListPage', () => {
   });
 
   it('should list the accounts by value, largest first, with their share of the total', async () => {
-    await renderPage([livretA, boursorama]);
+    await renderPage([livretA, northwind]);
 
     const rows = await screen.findAllByTestId('account-row');
 
     expect(rows.map((row) => within(row).getByTestId('account-link').textContent?.trim())).toEqual([
-      'PEA Boursorama',
+      'Northwind PEA',
       'Livret A',
     ]);
     expect(rows[0]).toHaveTextContent(/66,7[^0-9]%/);
@@ -175,7 +175,7 @@ describe('AccountListPage', () => {
     const usd = { ...priced, id: 'h3', marketValueEur: undefined, priceCurrency: 'USD' };
 
     it('should show the partial sum and its share, not a dash, for an account with an unpriced line', async () => {
-      await renderPage([boursorama], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
+      await renderPage([northwind], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
 
       const row = await screen.findByTestId('account-row');
 
@@ -184,7 +184,7 @@ describe('AccountListPage', () => {
     });
 
     it('should lead the desktop caption to the line when it is the only one left out', async () => {
-      await renderPage([boursorama], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
+      await renderPage([northwind], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
 
       const caption = await screen.findByTestId('account-uncounted');
 
@@ -193,7 +193,7 @@ describe('AccountListPage', () => {
     });
 
     it('should lead the desktop caption to the account in Lignes when several are left out', async () => {
-      await renderPage([boursorama], [priced, unpriced, usd], { unvaluedCount: 1, nonEurCount: 1 });
+      await renderPage([northwind], [priced, unpriced, usd], { unvaluedCount: 1, nonEurCount: 1 });
 
       const caption = await screen.findByTestId('account-uncounted');
 
@@ -213,21 +213,21 @@ describe('AccountListPage', () => {
     });
 
     it('should say what the total leaves out, inline on desktop and capitalised on its own line on iPhone', async () => {
-      await renderPage([boursorama], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
+      await renderPage([northwind], [priced, unpriced], { unvaluedCount: 1, nonEurCount: 0 });
 
       expect(await screen.findByTestId('accounts-summary-excluded')).toHaveTextContent('excluded.noQuote_one');
       expect(screen.getByTestId('accounts-summary-excluded-mobile')).toHaveTextContent('Excluded.noQuote_one');
     });
 
     it('should say "hors N lignes" once a non-EUR line is among them', async () => {
-      await renderPage([boursorama], [priced, unpriced, usd], { unvaluedCount: 1, nonEurCount: 1 });
+      await renderPage([northwind], [priced, unpriced, usd], { unvaluedCount: 1, nonEurCount: 1 });
 
       expect(await screen.findByTestId('accounts-summary-excluded')).toHaveTextContent('excluded.lines_other');
     });
   });
 
   it('should send the empty-account hint to the holdings list for that account, and to the import', async () => {
-    await renderPage([boursorama], []);
+    await renderPage([northwind], []);
 
     expect(await screen.findByTestId('account-empty-add')).toHaveAttribute('href', '/holdings?add=a1');
     expect(screen.getByTestId('account-empty-import')).toHaveAttribute('href', '/profile');
@@ -236,7 +236,7 @@ describe('AccountListPage', () => {
 
   it('should show no empty-account hint for a securities account holding its cash balance', async () => {
     await renderPage(
-      [boursorama],
+      [northwind],
       [{ accountId: 'a1', assetClass: 'CASH', priceSource: 'MANUAL', accountCash: true, marketValueEur: 50 }],
     );
 
@@ -268,25 +268,25 @@ describe('AccountListPage', () => {
 
   it('should open the edit dialog prefilled from the row menu', async () => {
     const user = userEvent.setup();
-    await renderPage([boursorama], []);
+    await renderPage([northwind], []);
 
     await user.click(await screen.findByTestId('account-menu-trigger'));
     await user.click(screen.getByTestId('account-edit'));
 
     expect(await screen.findByTestId('account-form-dialog')).toBeInTheDocument();
-    expect(screen.getByTestId('account-form-name')).toHaveValue('PEA Boursorama');
+    expect(screen.getByTestId('account-form-name')).toHaveValue('Northwind PEA');
   });
 
   it('should confirm an edited account', async () => {
     const user = userEvent.setup();
-    await renderPage([boursorama], []);
+    await renderPage([northwind], []);
 
     await user.click(await screen.findByTestId('account-menu-trigger'));
     await user.click(screen.getByTestId('account-edit'));
     await user.click(await screen.findByTestId('account-form-submit'));
 
-    await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1').flush(boursorama));
-    await vi.waitFor(() => httpTesting.expectOne('/api/accounts')).then((request) => request.flush([boursorama]));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1').flush(northwind));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts')).then((request) => request.flush([northwind]));
     await vi
       .waitFor(() => httpTesting.expectOne('/api/portfolio'))
       .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
@@ -300,14 +300,14 @@ describe('AccountListPage', () => {
     await user.click(screen.getByTestId('account-add'));
     await user.type(screen.getByTestId('account-form-name'), 'CTO Bourso');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.CTO' }));
-    await user.type(screen.getByTestId('account-form-institution'), 'Boursorama');
+    await user.type(screen.getByTestId('account-form-institution'), 'Northwind Bank');
     await user.click(screen.getByTestId('account-form-submit'));
 
-    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({ ...boursorama, id: 'a3' }));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({ ...northwind, id: 'a3' }));
 
     await vi
       .waitFor(() => httpTesting.expectOne('/api/accounts'))
-      .then((request) => request.flush([boursorama, livretA]));
+      .then((request) => request.flush([northwind, livretA]));
     await vi
       .waitFor(() => httpTesting.expectOne('/api/portfolio'))
       .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
@@ -316,7 +316,7 @@ describe('AccountListPage', () => {
 
   it('should open the delete dialog from the row menu and reload once confirmed', async () => {
     const user = userEvent.setup();
-    await renderPage([boursorama], []);
+    await renderPage([northwind], []);
 
     await user.click(await screen.findByTestId('account-menu-trigger'));
     await user.click(screen.getByTestId('account-delete'));
@@ -335,7 +335,7 @@ describe('AccountListPage', () => {
 
   it('should dismiss the delete dialog without deleting anything', async () => {
     const user = userEvent.setup();
-    await renderPage([boursorama], []);
+    await renderPage([northwind], []);
 
     await user.click(await screen.findByTestId('account-menu-trigger'));
     await user.click(screen.getByTestId('account-delete'));

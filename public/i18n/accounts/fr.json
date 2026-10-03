@@ -20,8 +20,8 @@
     "error": "Ce compte a été refusé.",
     "nameConflict": "Un compte porte déjà ce nom.",
     "savingsConflict": "Ce compte a des lignes : il ne peut pas devenir un compte d'épargne.",
-    "namePlaceholder": "Par exemple Boursorama PEA",
-    "institutionPlaceholder": "Par exemple Boursorama",
+    "namePlaceholder": "Par exemple Northwind PEA",
+    "institutionPlaceholder": "Par exemple Northwind Bank",
     "create": "Créer le compte"
   },
   "delete": {

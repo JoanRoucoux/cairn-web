@@ -46,7 +46,7 @@ const holding = {
   quantity: 412.5,
   price: 289.11,
   priceAsOf: '2026-09-24',
-  marketValueEur: 119258,
+  marketValueEur: 60926,
   unrealizedGainEur: null,
   unrealizedGainRatio: null,
   averageCost: null,
@@ -56,10 +56,10 @@ const holding = {
 
 const group = {
   accountId: 'a1',
-  accountName: 'Esalia',
+  accountName: 'Woodgrove Savings Plan',
   accountType: 'PEE',
-  institution: 'Amundi ESR',
-  valueEur: 119258,
+  institution: 'Woodgrove Bank',
+  valueEur: 60926,
   cashEur: 0,
   showCash: true,
   lineCount: 1,
@@ -112,7 +112,7 @@ describe('HoldingAccountGroup after a change', () => {
   it('should highlight nothing when no line of the account changed', async () => {
     await renderGroup({}, false, undefined, { id: 'elsewhere', at: 1 });
 
-    expect(await screen.findByRole('heading', { name: 'Esalia' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
     expect(motion.highlighted).toEqual([]);
   });
 
@@ -135,7 +135,7 @@ describe('HoldingAccountGroup in a sliding list', () => {
     const { fixture } = await renderGroup(savings);
 
     expect(flipItems(fixture)).toEqual([
-      screen.getByRole('heading', { name: 'Esalia' }).closest('tr'),
+      screen.getByRole('heading', { name: 'Woodgrove Savings Plan' }).closest('tr'),
       screen.getByTestId('cash-row'),
     ]);
   });

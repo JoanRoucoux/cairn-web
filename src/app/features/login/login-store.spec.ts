@@ -33,14 +33,14 @@ describe('LoginStore', () => {
   afterEach(() => httpTesting.verify());
 
   it('should post the credentials the way a form would, which is what Spring reads', async () => {
-    store.form.username().value.set('joan');
+    store.form.username().value.set('alex');
     store.form.password().value.set('a-real-password');
 
     const signedIn = store.signIn();
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'));
 
     expect(request.request.headers.get('Content-Type')).toContain('application/x-www-form-urlencoded');
-    expect(String(request.request.body)).toBe('username=joan&password=a-real-password');
+    expect(String(request.request.body)).toBe('username=alex&password=a-real-password');
     request.flush(null, { status: 204, statusText: 'No Content' });
 
     expect(await signedIn).toBe(true);
@@ -54,7 +54,7 @@ describe('LoginStore', () => {
   });
 
   it('should report a refused password without reporting a breakdown', async () => {
-    store.form.username().value.set('joan');
+    store.form.username().value.set('alex');
     store.form.password().value.set('wrong');
 
     const signedIn = store.signIn();
@@ -70,7 +70,7 @@ describe('LoginStore', () => {
   });
 
   it('should tell a breakdown apart from a refusal', async () => {
-    store.form.username().value.set('joan');
+    store.form.username().value.set('alex');
     store.form.password().value.set('a-real-password');
 
     const signedIn = store.signIn();
@@ -85,7 +85,7 @@ describe('LoginStore', () => {
   });
 
   it('should clear the previous outcome before trying again', async () => {
-    store.form.username().value.set('joan');
+    store.form.username().value.set('alex');
     store.form.password().value.set('wrong');
     const first = store.signIn();
     (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
@@ -148,7 +148,7 @@ describe('LoginStore', () => {
   });
 
   it('should clear a stale password outcome when a passkey attempt runs', async () => {
-    store.form.username().value.set('joan');
+    store.form.username().value.set('alex');
     store.form.password().value.set('wrong');
     const passwordAttempt = store.signIn();
     (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
@@ -169,7 +169,7 @@ describe('LoginStore', () => {
     await store.signInWithPasskey();
     expect(store.passkeyRefused()).toBe(true);
 
-    store.form.username().value.set('joan');
+    store.form.username().value.set('alex');
     store.form.password().value.set('a-real-password');
     const passwordAttempt = store.signIn();
     (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {

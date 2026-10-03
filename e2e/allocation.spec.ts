@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { mockApi } from './fixtures/api';
 import { AllocationPageObject } from './pages/allocation-page';
 
-const PEA_BOURSORAMA_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const NORTHWIND_PEA_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 
 test.describe('allocation', () => {
   test.beforeEach(async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe('allocation', () => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await expect(page.getByText('PEA Boursorama')).toBeVisible();
+    await expect(page.getByText('Northwind PEA')).toBeVisible();
     await expect(page.getByText('Others')).toHaveCount(0);
   });
 
@@ -53,12 +53,12 @@ test.describe('allocation', () => {
     const allocation = new AllocationPageObject(page);
     await allocation.goto();
 
-    await page.getByRole('link', { name: /PEA Boursorama/ }).click();
+    await page.getByRole('link', { name: /Northwind PEA/ }).click();
     await page.waitForURL('**/holdings?**');
 
     const url = new URL(page.url());
     expect(url.pathname).toBe('/holdings');
-    expect(url.searchParams.get('compte')).toBe(PEA_BOURSORAMA_ID);
+    expect(url.searchParams.get('compte')).toBe(NORTHWIND_PEA_ID);
   });
 
   test('shows an error on the failing ring only and retries just that call', async ({ page }) => {

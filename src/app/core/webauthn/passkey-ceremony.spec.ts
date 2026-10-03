@@ -16,7 +16,7 @@ const requestOptionsJSON = {
 const creationOptionsJSON = {
   challenge: 'Y2hhbGxlbmdl',
   rp: { name: 'Cairn', id: 'cairn.example' },
-  user: { id: 'dXNlcg', name: 'joan', displayName: 'Joan' },
+  user: { id: 'dXNlcg', name: 'alex', displayName: 'Alex' },
   pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
 };
 

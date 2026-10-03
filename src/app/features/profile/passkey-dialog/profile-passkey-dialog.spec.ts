@@ -84,7 +84,7 @@ describe('ProfilePasskeyDialog', () => {
     slowDialogExit();
     register.mockResolvedValue('ok');
 
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.type(screen.getByTestId('passkey-label'), "iPhone d'Alex");
     await user.click(screen.getByTestId('passkey-register'));
 
     await vi.waitFor(() => expect(registered).toHaveBeenCalledTimes(1));
@@ -96,7 +96,7 @@ describe('ProfilePasskeyDialog', () => {
     await renderDialog();
     register.mockResolvedValue('ok');
 
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan{Enter}');
+    await user.type(screen.getByTestId('passkey-label'), "iPhone d'Alex{Enter}");
 
     await vi.waitFor(() => expect(registered).toHaveBeenCalled());
   });
@@ -118,7 +118,7 @@ describe('ProfilePasskeyDialog', () => {
     slowDialogExit();
     register.mockResolvedValue('cancelled');
 
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.type(screen.getByTestId('passkey-label'), "iPhone d'Alex");
     await user.click(screen.getByTestId('passkey-register'));
 
     await vi.waitFor(() => expect(register).toHaveBeenCalled());
@@ -132,7 +132,7 @@ describe('ProfilePasskeyDialog', () => {
     await renderDialog();
     register.mockResolvedValue('unsupported');
 
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.type(screen.getByTestId('passkey-label'), "iPhone d'Alex");
     await user.click(screen.getByTestId('passkey-register'));
 
     expect(await screen.findByTestId('passkey-unsupported')).toBeInTheDocument();
@@ -143,7 +143,7 @@ describe('ProfilePasskeyDialog', () => {
     await renderDialog();
     register.mockResolvedValue('failed');
 
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.type(screen.getByTestId('passkey-label'), "iPhone d'Alex");
     await user.click(screen.getByTestId('passkey-register'));
 
     expect(await screen.findByTestId('passkey-failed')).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe('ProfilePasskeyDialog', () => {
     let resolveRegister!: (outcome: PasskeyOutcome) => void;
     register.mockReturnValue(new Promise((resolve) => (resolveRegister = resolve)));
 
-    await user.type(screen.getByTestId('passkey-label'), 'iPhone de Joan');
+    await user.type(screen.getByTestId('passkey-label'), "iPhone d'Alex");
     await user.click(screen.getByTestId('passkey-register'));
 
     expect(await screen.findByTestId('passkey-register')).toBeDisabled();

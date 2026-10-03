@@ -23,7 +23,7 @@ const usdHolding = {
   instrumentId: 'i1',
   instrumentName: 'iShares Core MSCI World USD',
   isin: 'IE00B4L5Y983',
-  accountName: 'Saxo Investor',
+  accountName: 'Northwind PEA',
   accountType: 'PEA',
   assetClass: 'ETF',
   quantity: 10,

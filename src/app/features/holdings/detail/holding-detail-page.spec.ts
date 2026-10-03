@@ -26,7 +26,7 @@ const holding = {
   instrumentId: 'i1',
   instrumentName: 'BNP Paribas Easy S&P 500',
   isin: 'FR0011550185',
-  accountName: 'Saxo Investor',
+  accountName: 'Northwind PEA',
   accountType: 'PEA',
   assetClass: 'ETF',
   quantity: 676,

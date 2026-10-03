@@ -18,12 +18,12 @@ const ACCOUNTS = '/api/portfolio/allocation/accounts';
 const FAIL = 'fail' as const;
 
 const classesBody = {
-  totalEur: 247_912,
+  totalEur: 152_318,
   unvaluedCount: 0,
   nonEurCount: 0,
   items: [
-    { assetClass: 'ETF', valueEur: 128_656, share: 0.519, lineCount: 2 },
-    { assetClass: 'CASH', valueEur: 119_256, share: 0.481, lineCount: 1 },
+    { assetClass: 'ETF', valueEur: 91_392, share: 0.6, lineCount: 2 },
+    { assetClass: 'CASH', valueEur: 60_926, share: 0.4, lineCount: 1 },
   ],
 };
 
@@ -35,12 +35,12 @@ const accountItem = (name: string, type: string, institution: string, valueEur: 
 });
 
 const accountsBody = {
-  totalEur: 247_912,
+  totalEur: 152_318,
   unvaluedCount: 0,
   nonEurCount: 0,
   items: [
-    accountItem('Saxo Investor', 'PEA', 'Saxo', 128_654, 0.519),
-    accountItem('Esalia', 'PEE', 'Amundi', 119_258, 0.481),
+    accountItem('Northwind PEA', 'PEA', 'Northwind Bank', 91_392, 0.6),
+    accountItem('Woodgrove Savings Plan', 'PEE', 'Woodgrove Bank', 60_926, 0.4),
   ],
 };
 
@@ -115,7 +115,7 @@ describe('AllocationPage', () => {
     await renderPage();
 
     expect(await screen.findAllByText('enums.assetClass.ETF')).not.toHaveLength(0);
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Woodgrove Savings Plan')).not.toHaveLength(0);
   });
 
   it('should show the cash balances as the cash sub-label instead of a line count', async () => {
@@ -135,11 +135,11 @@ describe('AllocationPage', () => {
   it('should show the envelope and institution as the account sub-label', async () => {
     await renderPage();
 
-    expect(await screen.findByText('enums.accountType.PEE · Amundi')).toBeInTheDocument();
+    expect(await screen.findByText('enums.accountType.PEE · Woodgrove Bank')).toBeInTheDocument();
   });
 
   it('should show the envelope alone when the institution is blank', async () => {
-    await renderPage(classesBody, { totalEur: 1, items: [accountItem('Esalia', 'PEE', '  ', 1, 1)] });
+    await renderPage(classesBody, { totalEur: 1, items: [accountItem('Woodgrove Savings Plan', 'PEE', '  ', 1, 1)] });
 
     expect(await screen.findByText('enums.accountType.PEE')).toBeInTheDocument();
     expect(screen.queryByText(/·/)).not.toBeInTheDocument();
@@ -194,20 +194,20 @@ describe('AllocationPage', () => {
     await renderPage();
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    const [row] = await screen.findAllByRole('link', { name: /Esalia/ });
+    const [row] = await screen.findAllByRole('link', { name: /Woodgrove Savings Plan/ });
 
-    expect(row).toHaveAttribute('href', '/holdings?compte=id-Esalia');
+    expect(row).toHaveAttribute('href', '/holdings?compte=id-Woodgrove%20Savings%20Plan');
 
     await user.click(row!);
 
-    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { compte: 'id-Esalia' } });
+    expect(navigate).toHaveBeenCalledWith(['/holdings'], { queryParams: { compte: 'id-Woodgrove Savings Plan' } });
   });
 
   it('should keep the Others row a button that goes nowhere', async () => {
     const user = userEvent.setup();
     const many = {
       totalEur: 7,
-      items: Array.from({ length: 8 }, (_, index) => accountItem('A' + index, 'PEA', 'Saxo', 8 - index, 0.1)),
+      items: Array.from({ length: 8 }, (_, index) => accountItem('A' + index, 'PEA', 'Northwind Bank', 8 - index, 0.1)),
     };
     await renderPage(classesBody, many);
     const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -222,7 +222,7 @@ describe('AllocationPage', () => {
     await renderPage(FAIL);
 
     expect(await screen.findAllByRole('alert')).toHaveLength(1);
-    expect(screen.getAllByText('Esalia')).not.toHaveLength(0);
+    expect(screen.getAllByText('Woodgrove Savings Plan')).not.toHaveLength(0);
 
     await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
     httpTesting.expectNone(ACCOUNTS);
@@ -241,7 +241,7 @@ describe('AllocationPage', () => {
     httpTesting.expectNone(CLASSES);
     httpTesting.expectOne(ACCOUNTS).flush(accountsBody);
 
-    expect(await screen.findAllByText('Esalia')).not.toHaveLength(0);
+    expect(await screen.findAllByText('Woodgrove Savings Plan')).not.toHaveLength(0);
   });
 
   it('should say nothing about lines left out when there are none', async () => {
