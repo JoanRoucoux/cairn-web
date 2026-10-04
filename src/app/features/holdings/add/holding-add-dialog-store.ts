@@ -15,7 +15,7 @@ import type {
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
-import { parseDecimal } from '@shared/format/parse-decimal';
+import { filterDecimalInput, parseDecimal } from '@shared/format/parse-decimal';
 
 import { compactIsin, isIsin } from './isin';
 import { type SourceResult, groupsFor, trackedIdsFound, trackedMatches, trackedTitlesOf } from './result-groups';
@@ -56,14 +56,20 @@ export class HoldingAddDialogStore {
   readonly mode = signal<AddMode>('search');
   readonly picked = signal<PickedTitle | undefined>(undefined);
 
-  readonly siriusIsinText = signal('');
-  readonly manualName = signal('');
-  readonly manualClass = signal<AssetClass>('OTHER');
-  readonly manualPriceText = signal('');
+  readonly #siriusIsinText = signal('');
+  readonly siriusIsinText = this.#siriusIsinText.asReadonly();
+  readonly #manualName = signal('');
+  readonly manualName = this.#manualName.asReadonly();
+  readonly #manualClass = signal<AssetClass>('OTHER');
+  readonly manualClass = this.#manualClass.asReadonly();
+  readonly #manualPriceText = signal('');
+  readonly manualPriceText = this.#manualPriceText.asReadonly();
 
   readonly accountId = signal('');
-  readonly quantityText = signal('');
-  readonly averageCostText = signal('');
+  readonly #quantityText = signal('');
+  readonly quantityText = this.#quantityText.asReadonly();
+  readonly #averageCostText = signal('');
+  readonly averageCostText = this.#averageCostText.asReadonly();
 
   readonly submitting = signal(false);
   readonly error = signal<AddError | null>(null);
@@ -217,6 +223,34 @@ export class HoldingAddDialogStore {
     this.error.set(null);
   }
 
+  typeSiriusIsin(text: string): void {
+    this.#siriusIsinText.set(text.toUpperCase());
+    this.error.set(null);
+  }
+
+  typeManualName(name: string): void {
+    this.#manualName.set(name);
+    this.error.set(null);
+  }
+
+  chooseManualClass(assetClass: AssetClass): void {
+    this.#manualClass.set(assetClass);
+    this.error.set(null);
+  }
+
+  typeManualPrice(text: string): void {
+    this.#manualPriceText.set(filterDecimalInput(text));
+    this.error.set(null);
+  }
+
+  typeQuantity(text: string): void {
+    this.#quantityText.set(filterDecimalInput(text));
+  }
+
+  typeAverageCost(text: string): void {
+    this.#averageCostText.set(filterDecimalInput(text));
+  }
+
   async save(): Promise<HoldingResponse | null> {
     if (!this.valid()) {
       return null;
@@ -251,7 +285,9 @@ export class HoldingAddDialogStore {
 
   #searchMissing(): void {
     for (const { source, query } of this.#plan()) {
-      if (query !== null && !this.#results().has(resultKey(source, query))) {
+      const known = this.#results().get(resultKey(source, query ?? ''))?.state;
+
+      if (query !== null && known !== 'ready' && known !== 'loading') {
         void this.#search(source, query);
       }
     }

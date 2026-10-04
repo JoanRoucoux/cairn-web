@@ -230,7 +230,7 @@
       "intro": "SG Sirius ne permet pas de recherche. Saisissez l'ISIN figurant sur votre relevé.",
       "isin": "ISIN",
       "example": "Ex. : XS2381234567",
-      "count_one": "{{count}} caractère sur 12",
+      "count_one": "{{count}} caractères sur 12",
       "count_other": "{{count}} caractères sur 12",
       "invalid": "Ce n'est pas un ISIN valide : 2 lettres, 9 caractères, 1 chiffre.",
       "valid": "Format valide",

@@ -15,7 +15,6 @@ import type {
 
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { injectToast } from '@shared/feedback/toast';
-import { filterDecimalInput } from '@shared/format/parse-decimal';
 
 import { type HoldingChange, HoldingChanges } from '../holding-changes';
 import { type AddMode, HoldingAddDialogStore } from './holding-add-dialog-store';
@@ -172,19 +171,19 @@ export class HoldingAddDialog {
   }
 
   protected onSiriusIsinInput(event: Event): void {
-    this.siriusIsinText.set(inputValue(event).toUpperCase());
+    this.#store.typeSiriusIsin(inputValue(event));
   }
 
   protected onManualNameInput(event: Event): void {
-    this.manualName.set(inputValue(event));
+    this.#store.typeManualName(inputValue(event));
   }
 
   protected onManualClassChange(event: Event): void {
-    this.manualClass.set(inputValue(event) as AssetClass);
+    this.#store.chooseManualClass(inputValue(event) as AssetClass);
   }
 
   protected onManualPriceInput(event: Event): void {
-    this.manualPriceText.set(filterDecimalInput(inputValue(event)));
+    this.#store.typeManualPrice(inputValue(event));
   }
 
   protected onAccountChange(event: Event): void {
@@ -192,11 +191,11 @@ export class HoldingAddDialog {
   }
 
   protected onQuantityInput(event: Event): void {
-    this.quantityText.set(filterDecimalInput(inputValue(event)));
+    this.#store.typeQuantity(inputValue(event));
   }
 
   protected onAverageCostInput(event: Event): void {
-    this.averageCostText.set(filterDecimalInput(inputValue(event)));
+    this.#store.typeAverageCost(inputValue(event));
   }
 
   protected dismiss(): void {

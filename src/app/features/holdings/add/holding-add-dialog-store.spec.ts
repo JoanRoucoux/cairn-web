@@ -135,6 +135,34 @@ describe('HoldingAddDialogStore search', () => {
     searchOf('COINGECKO', 'msci').flush([]);
   });
 
+  it('asks a failed source again when the same query is typed again, reusing only what succeeded', async () => {
+    await load();
+
+    await type('msci');
+    searchOf('YAHOO').flush([]);
+    searchOf('COINGECKO').flush(null, { status: 502, statusText: 'Bad Gateway' });
+
+    await type('msc');
+    searchOf('YAHOO', 'msc').flush([]);
+    searchOf('COINGECKO', 'msc').flush([]);
+
+    await type('msci');
+    searchOf('COINGECKO', 'msci').flush([]);
+    httpTesting.expectNone((request) => request.params.get('source') === 'YAHOO', 'Yahoo answered already');
+  });
+
+  it('asks a failed source again on a chip change', async () => {
+    await load();
+
+    await type('solana');
+    searchOf('YAHOO').flush([]);
+    searchOf('COINGECKO').flush(null, { status: 502, statusText: 'Bad Gateway' });
+    await vi.waitFor(() => expect(store.groups().find((group) => group.source === 'COINGECKO')?.state).toBe('error'));
+
+    store.chooseFilter('COINGECKO');
+    searchOf('COINGECKO', 'solana').flush([]);
+  });
+
   it('retries nothing for a source the query does not ask', async () => {
     await load();
 

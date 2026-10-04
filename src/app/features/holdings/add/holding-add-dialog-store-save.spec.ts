@@ -75,8 +75,8 @@ describe('HoldingAddDialogStore save', () => {
 
   const position = (accountId = 'a2', quantity = '10', averageCost = ''): void => {
     store.chooseAccount(accountId);
-    store.quantityText.set(quantity);
-    store.averageCostText.set(averageCost);
+    store.typeQuantity(quantity);
+    store.typeAverageCost(averageCost);
   };
 
   const savedBody = async (): Promise<unknown> => {
@@ -114,7 +114,7 @@ describe('HoldingAddDialogStore save', () => {
     position('a1', '0');
     expect(store.valid()).toBe(false);
 
-    store.quantityText.set('10');
+    store.typeQuantity('10');
     expect(store.valid()).toBe(true);
   });
 
@@ -149,7 +149,7 @@ describe('HoldingAddDialogStore save', () => {
   it('values a title found online at its trial price', async () => {
     await load();
     store.pickCandidate(candidate);
-    store.quantityText.set('10');
+    store.typeQuantity('10');
 
     expect(store.value()).toBeCloseTo(978.4);
 
@@ -199,7 +199,7 @@ describe('HoldingAddDialogStore save', () => {
   it('values a tracked title at its last price, only in euros', async () => {
     await load();
     store.pickTracked(yahooTitle);
-    store.quantityText.set('2');
+    store.typeQuantity('2');
 
     expect(store.value()).toBeCloseTo(1056.62);
 
@@ -213,7 +213,7 @@ describe('HoldingAddDialogStore save', () => {
   it('creates an SG Sirius title from its ISIN alone, spaces dropped, with no value', async () => {
     await load();
     store.openMode('sirius');
-    store.siriusIsinText.set('XS23 8123 4568');
+    store.typeSiriusIsin('XS23 8123 4568');
     position('a1');
 
     expect(store.titleReady()).toBe(true);
@@ -226,7 +226,7 @@ describe('HoldingAddDialogStore save', () => {
   it('refuses an SG Sirius ISIN that is not one', async () => {
     await load();
     store.openMode('sirius');
-    store.siriusIsinText.set('XS238123456X');
+    store.typeSiriusIsin('XS238123456X');
 
     expect(store.titleReady()).toBe(false);
   });
@@ -234,11 +234,11 @@ describe('HoldingAddDialogStore save', () => {
   it('creates a manual title with its name, class and price, valued at that price', async () => {
     await load();
     store.openMode('manual');
-    store.manualName.set('  Northwind Private Equity  ');
+    store.typeManualName('  Northwind Private Equity  ');
     expect(store.titleReady()).toBe(false);
 
-    store.manualPriceText.set('1 135,00');
-    store.manualClass.set('BOND');
+    store.typeManualPrice('1 135,00');
+    store.chooseManualClass('BOND');
     position('a1', '8');
 
     expect(store.value()).toBe(9080);
@@ -250,8 +250,8 @@ describe('HoldingAddDialogStore save', () => {
   it('defaults a manual title to the class Autre and refuses a zero price', async () => {
     await load();
     store.openMode('manual');
-    store.manualName.set('Corum');
-    store.manualPriceText.set('0');
+    store.typeManualName('Corum');
+    store.typeManualPrice('0');
 
     expect(store.manualClass()).toBe('OTHER');
     expect(store.titleReady()).toBe(false);
@@ -275,11 +275,47 @@ describe('HoldingAddDialogStore save', () => {
 
     store.unpick();
     store.openMode('sirius');
-    store.siriusIsinText.set('XS2381234567');
+    store.typeSiriusIsin('XS2381234567');
     await store.save();
     expect(store.error()).toBe('duplicate');
 
     httpTesting.expectNone('/api/holdings');
+  });
+
+  it('clears the duplicate message once the SG Sirius ISIN is corrected', async () => {
+    await load();
+    store.openMode('sirius');
+    store.typeSiriusIsin('xs2381234567');
+    position('a1');
+    await store.save();
+    expect(store.error()).toBe('duplicate');
+
+    store.typeSiriusIsin('XS2381234568');
+
+    expect(store.error()).toBeNull();
+    expect(store.siriusIsinText()).toBe('XS2381234568');
+  });
+
+  it('clears an error when a manual field changes, but not on the quantity or the cost', async () => {
+    await load();
+    store.openMode('manual');
+
+    for (const change of [
+      () => store.typeManualName('Northwind'),
+      () => store.chooseManualClass('BOND'),
+      () => store.typeManualPrice('12a'),
+    ]) {
+      store.error.set('failed');
+      change();
+      expect(store.error()).toBeNull();
+    }
+
+    store.error.set('failed');
+    store.typeQuantity('3x');
+    store.typeAverageCost('1,5y');
+
+    expect(store.error()).toBe('failed');
+    expect([store.manualPriceText(), store.quantityText(), store.averageCostText()]).toEqual(['12', '3', '1,5']);
   });
 
   it('reports a refused line and clears the message when the title changes', async () => {
