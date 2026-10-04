@@ -81,7 +81,7 @@
   "delete": {
     "open": "Delete this holding",
     "title": "Delete this holding",
-    "description": "{{name}} will be removed from your portfolio. Its quotes are kept.",
+    "description": "{{name}} will be removed from your portfolio.",
     "cancel": "Cancel",
     "submit": "Delete",
     "error": "This holding could not be deleted."
@@ -108,7 +108,9 @@
       "5y": "over 5 years",
       "max": "since purchase"
     },
-    "panel": "Holding detail"
+    "panel": "Holding detail",
+    "priceSource": "Price source",
+    "noAutomaticQuote": "No automatic quote"
   },
   "noQuoteYet": "No quote yet for this instrument.",
   "cash": {
@@ -174,41 +176,94 @@
   "add": {
     "title": "Add a holding",
     "account": "Account",
-    "title2": "Instrument",
-    "titlePlaceholder": "Name or ISIN",
-    "catalogHeading": "In the catalogue",
-    "catalogError": "The catalogue did not answer.",
-    "catalogRetry": "Retry the catalogue",
-    "catalogLoading": "Searching the catalogue",
-    "onlineHeading": "New instrument, found online",
-    "onlineError": "The online search did not answer.",
-    "onlineRetry": "Retry",
-    "notFound": "Nothing found for \"{{query}}\". Check the ISIN, or create the instrument with a manual price.",
-    "createManual": "Create with a manual price",
-    "assetClass": "Class",
-    "chooseAssetClass": "Choose a class",
+    "searchLabel": "Search for an instrument",
+    "sourcesLabel": "Where to search",
+    "allSources": "All",
+    "placeholder": {
+      "ALL": "Name, symbol or ISIN",
+      "YAHOO": "Name, ticker or ISIN",
+      "COINGECKO": "Name or symbol",
+      "AMUNDI": "12-character ISIN"
+    },
+    "help": {
+      "ALL": "Cairn searches Yahoo Finance and CoinGecko, and Amundi for an ISIN.",
+      "YAHOO": "Listed stocks and ETFs. E.g. Air Liquide, CW8.PA, IE00B4L5Y983.",
+      "COINGECKO": "Cryptocurrencies. E.g. solana, SOL.",
+      "AMUNDI": "Employee savings and retirement funds (Amundi, SG Gestion). By ISIN only."
+    },
+    "tracked": {
+      "heading": "Already tracked",
+      "nature": "in your holdings",
+      "priceCaption": "last price",
+      "loading": "Searching your holdings",
+      "error": "The catalogue did not answer.",
+      "retry": "Retry"
+    },
+    "nature": {
+      "YAHOO": "live price",
+      "COINGECKO": "crypto, live price in euros",
+      "AMUNDI": "daily net asset value"
+    },
+    "priceCaption": {
+      "YAHOO": "trial price",
+      "COINGECKO": "price in euros",
+      "AMUNDI": "net asset value"
+    },
+    "navOn": "NAV of {{date}}",
+    "quotedIn": "quoted in {{currency}}",
+    "unavailable": "Unavailable",
+    "euroOnly": "Cairn only tracks euros",
+    "searching": "Searching {{source}}",
+    "sourceEmpty": "No result from {{source}}.",
+    "sourceError": "{{source}} is not answering right now.",
+    "retry": "Retry",
+    "amundiNeedsIsin": "Type a full 12-character ISIN: Amundi does not search by name.",
+    "noneFound": "Nothing found for \"{{query}}\". An SG structured product or an instrument without a quote is added with the links below.",
+    "searchAll": "Search every source",
+    "siriusLink": "SG Sirius structured product",
+    "siriusLinkSub": "No search: type the ISIN",
+    "manualLink": "Enter by hand",
+    "manualLinkSub": "For an instrument without a source, price entered by you",
+    "backToSearch": "Back to the search",
+    "sirius": {
+      "title": "SG Sirius structured product",
+      "intro": "SG Sirius offers no search. Type the ISIN shown on your statement.",
+      "isin": "ISIN",
+      "example": "E.g. XS2381234567",
+      "count_one": "{{count}} character out of 12",
+      "count_other": "{{count}} characters out of 12",
+      "invalid": "This is not a valid ISIN: 2 letters, 9 characters, 1 digit.",
+      "valid": "Valid format",
+      "note": "Cairn cannot check this ISIN before adding it. The price will arrive with the next SG Sirius statement; if the ISIN is wrong, the holding will stay without a price."
+    },
+    "manual": {
+      "title": "Manual entry",
+      "intro": "For an instrument without a source: its price only changes when you enter it.",
+      "name": "Name",
+      "assetClass": "Class",
+      "price": "Price"
+    },
     "newBadge": "New",
-    "newNote": "The instrument will be added to the catalogue.",
     "change": "Change",
+    "sourceLine": {
+      "YAHOO": "live price",
+      "COINGECKO": "live price in euros",
+      "AMUNDI": "net asset value",
+      "AMUNDI_ON": "net asset value of {{date}}",
+      "tracked": "already tracked in your holdings"
+    },
+    "trial": "trial",
     "quantity": "Quantity",
     "averageCost": "Average cost",
     "averageCostOptional": "(optional)",
     "valueAtProbe": "Value at the trial price",
+    "valueAtManual": "Value at the entered price",
     "submit": "Add the holding",
     "submitNew": "Create the instrument and add the holding",
+    "submitSirius": "Add with this ISIN",
     "error": "This holding could not be added.",
-    "instrumentError": "This instrument could not be created.",
-    "noLine": "No holdings",
-    "lineCount_one": "{{count}} holding",
-    "lineCount_other": "{{count}} holdings",
-    "trialPriceCaption": "trial price",
-    "trialPrice": "Trial price",
-    "noOtherOnline": "No other instrument found online.",
-    "onlineSearching": "Searching online",
-    "gainAtProbe": "unrealized gain",
-    "cancel": "Cancel",
-    "unavailableSub": "Quoted in {{currency}}. Cairn only tracks quotes in euros.",
-    "unavailable": "unavailable"
+    "duplicate": "This account already holds this instrument.",
+    "cancel": "Cancel"
   },
   "foreignQuote": "Quoted in {{currency}}, not counted",
   "toasts": {

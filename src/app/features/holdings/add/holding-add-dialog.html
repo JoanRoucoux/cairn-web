@@ -10,62 +10,68 @@
   (dismissed)="dismiss()"
 >
   <form class="flex flex-col gap-4" id="holding-add-form" novalidate (submit)="onSubmit($event)">
-    <ui-field [label]="'holdings.add.account' | transloco">
-      <select
-        data-testid="holding-add-account"
-        size="lg"
-        uiSelect
-        [value]="accountId()"
-        (change)="onAccountChange($event)"
-      >
-        @for (account of accountOptions(); track account.id) {
-          <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
-        }
-      </select>
-    </ui-field>
-
-    <div class="flex flex-col gap-4">
-      @if (!picked()) {
-        <app-holding-add-search
-          [candidates]="candidates()"
-          [catalogResults]="catalogResults()"
-          [catalogState]="catalogState()"
-          [onlineError]="onlineError()"
-          [onlineSearched]="onlineSearched()"
-          [query]="query()"
-          [searchingOnline]="searchingOnline()"
-          (pickedCatalog)="pickCatalog($event)"
-          (pickedManual)="pickManual()"
-          (pickedOnline)="pickOnline($event)"
-          (queryInput)="onQueryInput($event)"
-          (retried)="retryOnline()"
-          (retriedCatalog)="retryCatalog()"
-        />
-      } @else {
-        <app-holding-add-picked
-          [assetClass]="assetClass()"
-          [assetClasses]="assetClasses"
-          [averageCostText]="averageCostText()"
-          [gainAtProbe]="gainAtProbe()"
-          [isNew]="isNew()"
-          [manual]="picked()?.kind === 'manual'"
-          [name]="pickedName()"
-          [quantityText]="quantityText()"
-          [sourceLabel]="pickedSourceLabel()"
-          [sub]="pickedSub()"
-          [trialPrice]="trialPrice()"
-          [valueAtProbe]="valueAtProbe()"
-          (assetClassInput)="onAssetClassChange($event)"
-          (averageCostInput)="onAverageCostInput($event)"
-          (changed)="unpick()"
-          (quantityInput)="onQuantityInput($event)"
+    @switch (mode()) {
+      @case ('sirius') {
+        <app-holding-add-sirius
+          [isinText]="siriusIsinText()"
+          (back)="openMode('search')"
+          (isinInput)="onSiriusIsinInput($event)"
         />
       }
-    </div>
+      @case ('manual') {
+        <app-holding-add-manual
+          [assetClass]="manualClass()"
+          [name]="manualName()"
+          [priceText]="manualPriceText()"
+          (assetClassChange)="onManualClassChange($event)"
+          (back)="openMode('search')"
+          (nameInput)="onManualNameInput($event)"
+          (priceInput)="onManualPriceInput($event)"
+        />
+      }
+      @default {
+        @if (picked(); as title) {
+          <app-holding-add-picked [title]="title" (changed)="unpick()" />
+        } @else {
+          <app-holding-add-search
+            [filter]="filter()"
+            [groups]="groups()"
+            [narrowed]="narrowed()"
+            [noneFound]="noneFound()"
+            [query]="query()"
+            [showResults]="showResults()"
+            [tracked]="tracked()"
+            [trackedState]="trackedState()"
+            (filterChange)="onFilterChange($event)"
+            (manualOpened)="openMode('manual')"
+            (pickedCandidate)="pickCandidate($event)"
+            (pickedTracked)="pickTracked($event)"
+            (queryInput)="onQueryInput($event)"
+            (retried)="retry($event)"
+            (retriedTracked)="retryTracked()"
+            (siriusOpened)="openMode('sirius')"
+          />
+        }
+      }
+    }
 
-    @if (error()) {
+    @if (titleReady()) {
+      <app-holding-add-position
+        [accountId]="accountId()"
+        [accountOptions]="accountOptions()"
+        [averageCostText]="averageCostText()"
+        [manual]="mode() === 'manual'"
+        [quantityText]="quantityText()"
+        [value]="value()"
+        (accountChange)="onAccountChange($event)"
+        (averageCostInput)="onAverageCostInput($event)"
+        (quantityInput)="onQuantityInput($event)"
+      />
+    }
+
+    @if (error(); as error) {
       <ui-alert data-testid="holding-add-error">
-        {{ instrumentError() ? ('holdings.add.instrumentError' | transloco) : ('holdings.add.error' | transloco) }}
+        {{ (error === 'duplicate' ? 'holdings.add.duplicate' : 'holdings.add.error') | transloco }}
       </ui-alert>
     }
   </form>
@@ -91,6 +97,6 @@
     [disabled]="!valid() || submitting()"
     [loading]="submitting()"
   >
-    {{ (isNew() ? 'holdings.add.submitNew' : 'holdings.add.submit') | transloco }}
+    {{ submitKey() | transloco }}
   </button>
 </ui-dialog>

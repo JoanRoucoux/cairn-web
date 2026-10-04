@@ -34,7 +34,7 @@ import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
 import { HoldingListEmpty } from './empty/holding-list-empty';
-import { CLASS_ORDER, HoldingListStore, SLUG_BY_CLASS } from './holding-list-store';
+import { CLASSES_SHOWN_WHEN_HELD, CLASS_ORDER, HoldingListStore, SLUG_BY_CLASS } from './holding-list-store';
 import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
 import { HoldingClassSummary } from './summary/holding-class-summary';
 
@@ -108,7 +108,12 @@ export class HoldingListPage {
 
     return [
       { value: ALL, label: this.#allLabel(), count: counts?.total },
-      ...CLASS_ORDER.map((assetClass) => ({
+      ...CLASS_ORDER.filter(
+        (assetClass) =>
+          !CLASSES_SHOWN_WHEN_HELD.includes(assetClass) ||
+          (counts?.byClass[assetClass] ?? 0) > 0 ||
+          this.assetClass() === assetClass,
+      ).map((assetClass) => ({
         value: assetClass,
         label: this.#transloco.translate(`enums.assetClass.${assetClass}`),
         count: counts?.byClass[assetClass],

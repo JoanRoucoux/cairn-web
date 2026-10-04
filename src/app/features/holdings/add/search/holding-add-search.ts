@@ -1,78 +1,83 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
+import { type FilterChipOption, UiFilterChips } from '@joanroucoux/cairn-ui/filter-chips';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { UiRow } from '@joanroucoux/cairn-ui/row';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
-import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideSearch } from '@lucide/angular';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { LucideChevronRight, LucideSearch } from '@lucide/angular';
 
-import type { InstrumentCandidateResponse, InstrumentResponse } from '@core/api-client/cairnAPI.schemas';
+import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
 
-import { pluralKey } from '@shared/format/plural-key';
-
-import { isinOf } from '../isin';
-import { HoldingAddCandidate } from './candidate/holding-add-candidate';
-
-export type CatalogResult = {
-  instrument: InstrumentResponse;
-  lineCount: number | null;
-  foreignCurrency?: string;
-};
+import type { ResultGroup } from '../result-groups';
+import { SOURCE_FILTERS, type SourceFilter } from '../search-plan';
+import { HoldingAddGroup } from './group/holding-add-group';
+import { HoldingAddTracked } from './tracked/holding-add-tracked';
 
 @Component({
   selector: 'app-holding-add-search',
   imports: [
-    HoldingAddCandidate,
+    HoldingAddGroup,
+    HoldingAddTracked,
+    LucideChevronRight,
     LucideSearch,
     TranslocoPipe,
     UiAsync,
-    UiCard,
     UiButton,
+    UiCard,
     UiField,
     UiFieldLeading,
+    UiFilterChips,
     UiInput,
     UiRow,
     UiSkeleton,
   ],
   templateUrl: './holding-add-search.html',
+  host: { class: 'flex flex-col gap-4' },
 })
 export class HoldingAddSearch {
   readonly query = input.required<string>();
-  readonly catalogResults = input.required<CatalogResult[]>();
-  readonly catalogState = input<AsyncState>('ready');
-  readonly candidates = input.required<InstrumentCandidateResponse[]>();
-  readonly searchingOnline = input.required<boolean>();
-  readonly onlineError = input.required<boolean>();
-  readonly onlineSearched = input.required<boolean>();
+  readonly filter = input.required<SourceFilter>();
+  readonly showResults = input.required<boolean>();
+  readonly tracked = input.required<HoldingResponse[]>();
+  readonly trackedState = input.required<AsyncState>();
+  readonly groups = input.required<ResultGroup[]>();
+  readonly noneFound = input.required<boolean>();
+  readonly narrowed = input.required<boolean>();
 
   readonly queryInput = output<Event>();
-  readonly pickedCatalog = output<InstrumentResponse>();
-  readonly pickedOnline = output<InstrumentCandidateResponse>();
-  readonly pickedManual = output<void>();
-  readonly retried = output<void>();
-  readonly retriedCatalog = output<void>();
+  readonly filterChange = output<SourceFilter>();
+  readonly pickedTracked = output<HoldingResponse>();
+  readonly pickedCandidate = output<InstrumentCandidateResponse>();
+  readonly retried = output<SearchableSource>();
+  readonly retriedTracked = output<void>();
+  readonly siriusOpened = output<void>();
+  readonly manualOpened = output<void>();
 
-  protected readonly showResults = computed(() => this.query().trim().length >= 2);
-  protected readonly showOnline = computed(() => this.query().trim().length >= 3);
-  protected readonly onlineLoading = computed(
-    () => this.searchingOnline() || (!this.onlineSearched() && !this.onlineError()),
-  );
-  protected readonly onlineState = computed<AsyncState>(() =>
-    this.onlineLoading() ? 'loading' : this.onlineError() ? 'error' : 'ready',
-  );
-  protected readonly typedIsin = computed(() => isinOf(this.query()));
+  readonly #transloco = inject(TranslocoService);
+  readonly #translocoEvents = toSignal(this.#transloco.events$);
 
-  protected lineCountKey(count: number): string {
-    return count === 0 ? 'holdings.add.noLine' : pluralKey('holdings.add.lineCount', count);
+  protected readonly filterOptions = computed<FilterChipOption[]>(() => {
+    this.#translocoEvents();
+
+    return SOURCE_FILTERS.map((value) => ({
+      value,
+      label: this.#transloco.translate(value === 'ALL' ? 'holdings.add.allSources' : `enums.priceSource.${value}`),
+    }));
+  });
+
+  protected readonly showTracked = computed(() => this.trackedState() !== 'ready' || this.tracked().length > 0);
+
+  protected chooseFilter(value: string): void {
+    this.filterChange.emit(value as SourceFilter);
   }
 
-  protected candidateSub(candidate: InstrumentCandidateResponse): string {
-    return [candidate.isin ?? this.typedIsin(), candidate.exchange, candidate.symbol ?? candidate.sourceRef]
-      .filter(Boolean)
-      .join(' · ');
+  protected searchAll(): void {
+    this.filterChange.emit('ALL');
   }
 }

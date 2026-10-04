@@ -16,6 +16,8 @@
     }}</span>
   } @else if (unpriced()) {
     <span uiCellSub>{{ 'holdings.noQuote' | transloco }}</span>
+  } @else if (manual()) {
+    <span uiCellSub>{{ 'enums.priceSource.MANUAL' | transloco }}</span>
   } @else {
     <span uiCellSub>{{ 'enums.assetClass.' + holding().assetClass | transloco }}</span>
   }
@@ -25,6 +27,9 @@
       {{ reference }} &middot;
     }
     {{ 'enums.assetClass.' + holding().assetClass | transloco }}
+    @if (manual()) {
+      &middot; {{ 'enums.priceSource.MANUAL' | transloco }}
+    }
   </span>
   <span narrow uiCellSub>
     <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />

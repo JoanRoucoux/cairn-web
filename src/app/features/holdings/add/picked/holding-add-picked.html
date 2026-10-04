@@ -1,98 +1,44 @@
-<div class="flex flex-col gap-1.5">
-  <span class="text-label font-medium text-(--muted-foreground)">{{ 'holdings.add.title2' | transloco }}</span>
-  <ui-card border="border" padding="sm" variant="inset">
-    <div class="flex items-start gap-3">
-      <div class="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div class="flex flex-wrap items-start gap-x-2 gap-y-1">
-          <span class="text-body font-medium text-pretty">{{ name() }}</span>
-          @if (isNew()) {
-            <ui-badge class="flex-none" size="sm">{{ 'holdings.add.newBadge' | transloco }}</ui-badge>
-          }
-        </div>
-        <span class="text-caption text-(--subtle-foreground)">{{ sub() }}</span>
-        @if (isNew() && trialPrice() !== null) {
-          <span class="text-label mt-1 text-(--muted-foreground) tabular-nums">
-            {{ 'holdings.add.trialPrice' | transloco }}
-            <ui-amount currency="EUR" [value]="trialPrice()" />
-            &middot; {{ sourceLabel() }}. {{ 'holdings.add.newNote' | transloco }}
-          </span>
-        } @else if (isNew()) {
-          <span class="text-label mt-1 text-(--muted-foreground)">{{ 'holdings.add.newNote' | transloco }}</span>
+@let picked = view();
+<ui-card border="border" data-testid="holding-add-picked" padding="sm" variant="inset">
+  <div class="flex items-start gap-3">
+    <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div class="flex flex-wrap items-start gap-x-2 gap-y-1">
+        <span class="text-body font-medium text-pretty">{{ picked.name }}</span>
+        @if (picked.isNew) {
+          <ui-badge class="flex-none" size="sm">{{ 'holdings.add.newBadge' | transloco }}</ui-badge>
         }
       </div>
-      <button
-        class="-mt-2 -mr-1"
-        data-testid="holding-add-change"
-        size="slim"
-        type="button"
-        ui-button
-        variant="ghost"
-        (click)="changed.emit()"
-      >
-        {{ 'holdings.add.change' | transloco }}
-      </button>
+      <span class="text-caption text-(--subtle-foreground)" data-testid="holding-add-picked-sub">
+        {{ picked.identifiers }}
+        @if (picked.assetClass; as assetClass) {
+          @if (picked.identifiers) {
+            &middot;
+          }
+          {{ 'enums.assetClass.' + assetClass | transloco }}
+        }
+      </span>
+      <span class="text-label mt-1 text-(--muted-foreground) tabular-nums" data-testid="holding-add-source-line">
+        {{ 'enums.priceSource.' + picked.source | transloco }} &middot;
+        {{ picked.natureKey | transloco: { date: picked.asOf | shortDate } }}
+        @if (picked.trialPrice !== null) {
+          &middot;
+          @if (picked.source !== 'AMUNDI') {
+            {{ 'holdings.add.trial' | transloco }}
+          }
+          <ui-amount currency="EUR" [value]="picked.trialPrice" />
+        }
+      </span>
     </div>
-  </ui-card>
-</div>
-
-@if (manual()) {
-  <ui-field [label]="'holdings.add.assetClass' | transloco">
-    <select
-      data-testid="holding-add-asset-class"
-      size="lg"
-      uiSelect
-      [value]="assetClass() ?? ''"
-      (change)="assetClassInput.emit($event)"
+    <button
+      class="-mt-2 -mr-1"
+      data-testid="holding-add-change"
+      size="slim"
+      type="button"
+      ui-button
+      variant="ghost"
+      (click)="changed.emit()"
     >
-      <option disabled value="">{{ 'holdings.add.chooseAssetClass' | transloco }}</option>
-      @for (candidateClass of assetClasses(); track candidateClass) {
-        <option [value]="candidateClass">{{ 'enums.assetClass.' + candidateClass | transloco }}</option>
-      }
-    </select>
-  </ui-field>
-}
-
-<div animate.enter="ui-enter-fade" class="grid grid-cols-2 gap-3" data-testid="holding-add-fields">
-  <ui-field class="min-w-0" unit="parts" [label]="'holdings.add.quantity' | transloco">
-    <input
-      autocomplete="off"
-      data-testid="holding-add-quantity"
-      enterkeyhint="done"
-      inputmode="decimal"
-      size="lg"
-      type="text"
-      uiInput
-      [value]="quantityText()"
-      (input)="quantityInput.emit($event)"
-    />
-  </ui-field>
-  <ui-field
-    class="min-w-0"
-    unit="€"
-    [label]="'holdings.add.averageCost' | transloco"
-    [optional]="'holdings.add.averageCostOptional' | transloco"
-  >
-    <input
-      autocomplete="off"
-      data-testid="holding-add-average-cost"
-      enterkeyhint="done"
-      inputmode="decimal"
-      size="lg"
-      type="text"
-      uiInput
-      [value]="averageCostText()"
-      (input)="averageCostInput.emit($event)"
-    />
-  </ui-field>
-</div>
-
-@if (valueAtProbe() !== null) {
-  <p class="text-label -mt-1.5 text-(--muted-foreground) tabular-nums" data-testid="holding-add-value-at-probe">
-    {{ 'holdings.add.valueAtProbe' | transloco }}
-    <ui-amount currency="EUR" [value]="valueAtProbe()" />
-    @if (gainAtProbe() !== null) {
-      &middot; {{ 'holdings.add.gainAtProbe' | transloco }}
-      <ui-amount currency="EUR" [signed]="true" [value]="gainAtProbe()" />
-    }
-  </p>
-}
+      {{ 'holdings.add.change' | transloco }}
+    </button>
+  </div>
+</ui-card>

@@ -24,6 +24,8 @@ const CLASS_SLUGS: Record<string, string> = {
   FUND: 'fonds',
   EQUITY: 'actions',
   CRYPTO: 'crypto',
+  BOND: 'obligations',
+  OTHER: 'autre',
   CASH: 'liquidites',
 };
 

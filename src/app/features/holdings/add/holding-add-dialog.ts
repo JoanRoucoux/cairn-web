@@ -1,45 +1,45 @@
-import {
-  Component,
-  ElementRef,
-  LOCALE_ID,
-  afterRenderEffect,
-  computed,
-  effect,
-  inject,
-  input,
-  output,
-} from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, effect, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiDialog } from '@joanroucoux/cairn-ui/dialog';
-import { UiField } from '@joanroucoux/cairn-ui/field';
-import { UiSelect } from '@joanroucoux/cairn-ui/select';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 
-import {
+import type {
   AssetClass,
-  type HoldingResponse,
-  type InstrumentCandidateResponse,
-  type InstrumentResponse,
+  HoldingResponse,
+  InstrumentCandidateResponse,
+  SearchableSource,
 } from '@core/api-client/cairnAPI.schemas';
 
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { injectToast } from '@shared/feedback/toast';
-import { filterDecimalInput } from '@shared/format/parse-decimal';
 
 import { type HoldingChange, HoldingChanges } from '../holding-changes';
-import { HoldingAddDialogStore, type PickedInstrument } from './holding-add-dialog-store';
-import { isinOf } from './isin';
+import { type AddMode, HoldingAddDialogStore } from './holding-add-dialog-store';
+import { HoldingAddManual } from './manual/holding-add-manual';
 import { HoldingAddPicked } from './picked/holding-add-picked';
-import { type CatalogResult, HoldingAddSearch } from './search/holding-add-search';
+import { type AccountOption, HoldingAddPosition } from './position/holding-add-position';
+import type { SourceFilter } from './search-plan';
+import { HoldingAddSearch } from './search/holding-add-search';
+import { HoldingAddSirius } from './sirius/holding-add-sirius';
 
-const CATALOG_RESULT_LIMIT = 4;
+const inputValue = (event: Event): string => (event.target as HTMLInputElement | HTMLSelectElement).value;
 
 @Component({
   selector: 'app-holding-add-dialog',
-  imports: [HoldingAddPicked, HoldingAddSearch, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiSelect],
+  imports: [
+    HoldingAddManual,
+    HoldingAddPicked,
+    HoldingAddPosition,
+    HoldingAddSearch,
+    HoldingAddSirius,
+    TranslocoPipe,
+    UiAlert,
+    UiButton,
+    UiDialog,
+  ],
   templateUrl: './holding-add-dialog.html',
   providers: [HoldingAddDialogStore],
 })
@@ -64,45 +64,32 @@ export class HoldingAddDialog {
   protected readonly accounts = this.#store.accounts;
   protected readonly accountId = this.#store.accountId;
   protected readonly query = this.#store.query;
-  protected readonly filteredCatalog = this.#store.filteredCatalog;
-  protected readonly catalogState = this.#store.catalogState;
-  protected readonly candidates = this.#store.candidates;
-  protected readonly searchingOnline = this.#store.searchingOnline;
-  protected readonly onlineError = this.#store.onlineError;
-  protected readonly onlineSearched = this.#store.onlineSearched;
+  protected readonly filter = this.#store.filter;
+  protected readonly mode = this.#store.mode;
   protected readonly picked = this.#store.picked;
-  protected readonly assetClass = this.#store.assetClass;
-  protected readonly assetClasses = Object.values(AssetClass);
+  protected readonly showResults = this.#store.showResults;
+  protected readonly tracked = this.#store.tracked;
+  protected readonly trackedState = this.#store.trackedState;
+  protected readonly groups = this.#store.groups;
+  protected readonly noneFound = this.#store.noneFound;
+  protected readonly narrowed = this.#store.narrowed;
+  protected readonly siriusIsinText = this.#store.siriusIsinText;
+  protected readonly manualName = this.#store.manualName;
+  protected readonly manualClass = this.#store.manualClass;
+  protected readonly manualPriceText = this.#store.manualPriceText;
+  protected readonly titleReady = this.#store.titleReady;
   protected readonly quantityText = this.#store.quantityText;
   protected readonly averageCostText = this.#store.averageCostText;
-  protected readonly probePrice = this.#store.probePrice;
-  protected readonly valueAtProbe = this.#store.valueAtProbe;
+  protected readonly value = this.#store.value;
   protected readonly valid = this.#store.valid;
   protected readonly submitting = this.#store.submitting;
   protected readonly error = this.#store.error;
-  protected readonly instrumentError = this.#store.instrumentError;
 
-  readonly #collator = new Intl.Collator(inject(LOCALE_ID), { sensitivity: 'base', numeric: true });
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = toSignal(this.#transloco.events$);
 
-  protected readonly catalogResults = computed<CatalogResult[]>(() =>
-    this.filteredCatalog()
-      .map((instrument) => ({
-        instrument,
-        lineCount: this.#store.lineCountOf(instrument.id),
-        foreignCurrency: this.#store.foreignCurrencyOf(instrument),
-      }))
-      .sort(
-        (a, b) =>
-          Number(a.foreignCurrency !== undefined) - Number(b.foreignCurrency !== undefined) ||
-          this.#collator.compare(a.instrument.name, b.instrument.name),
-      )
-      .slice(0, CATALOG_RESULT_LIMIT),
-  );
-
-  protected readonly accountOptions = computed(() => {
+  protected readonly accountOptions = computed<AccountOption[]>(() => {
     this.#translocoEvents();
 
     return this.accounts.value().map((account) => ({
@@ -111,43 +98,25 @@ export class HoldingAddDialog {
     }));
   });
 
-  protected readonly trialPrice = this.#store.probePrice;
-  protected readonly gainAtProbe = this.#store.gainAtProbe;
+  protected readonly submitKey = computed(() => {
+    if (this.mode() === 'sirius') {
+      return 'holdings.add.submitSirius';
+    }
 
-  protected readonly pickedSourceLabel = computed(() => {
-    this.#translocoEvents();
-    const picked = this.picked();
-
-    return picked?.kind === 'online' ? this.#transloco.translate(`enums.priceSource.${picked.candidate.source}`) : '';
+    return this.mode() === 'manual' || this.picked()?.kind === 'online'
+      ? 'holdings.add.submitNew'
+      : 'holdings.add.submit';
   });
 
-  protected readonly pickedSub = computed(() => {
-    this.#translocoEvents();
-    const picked = this.picked();
-
-    if (picked?.kind === 'catalog') {
-      const { assetClass, isin, priceSource } = picked.instrument;
-
-      return [
-        isin,
-        this.#transloco.translate(`enums.assetClass.${assetClass}`),
-        this.#transloco.translate(`enums.priceSource.${priceSource}`),
-      ]
-        .filter(Boolean)
-        .join(' · ');
+  readonly #focusTarget = computed(() => {
+    switch (this.mode()) {
+      case 'sirius':
+        return 'holding-add-sirius-isin';
+      case 'manual':
+        return 'holding-add-manual-name';
+      default:
+        return this.picked() ? 'holding-add-quantity' : 'holding-add-query';
     }
-
-    if (picked?.kind === 'online') {
-      return [
-        picked.candidate.isin ?? isinOf(this.query()),
-        picked.candidate.exchange,
-        picked.candidate.symbol ?? picked.candidate.sourceRef,
-      ]
-        .filter(Boolean)
-        .join(' · ');
-    }
-
-    return '';
   });
 
   constructor() {
@@ -161,74 +130,72 @@ export class HoldingAddDialog {
     });
 
     afterRenderEffect(() => {
-      if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
-        this.#host.nativeElement.querySelector<HTMLSelectElement>('[data-testid="holding-add-account"]')?.focus();
-      }
-    });
+      const target = this.#focusTarget();
 
-    afterRenderEffect(() => {
-      if (this.picked()) {
-        this.#host.nativeElement.querySelector<HTMLInputElement>('[data-testid="holding-add-quantity"]')?.focus();
+      if (this.open() && this.#host.nativeElement.querySelector('dialog')?.open) {
+        this.#host.nativeElement.querySelector<HTMLElement>(`[data-testid="${target}"]`)?.focus();
       }
     });
   }
 
   protected onQueryInput(event: Event): void {
-    this.#store.onQueryChange((event.target as HTMLInputElement).value);
+    this.#store.onQueryChange(inputValue(event));
   }
 
-  protected onAccountChange(event: Event): void {
-    this.accountId.set((event.target as HTMLSelectElement).value);
+  protected onFilterChange(filter: SourceFilter): void {
+    this.#store.chooseFilter(filter);
   }
 
-  protected onAssetClassChange(event: Event): void {
-    this.assetClass.set((event.target as HTMLSelectElement).value as AssetClass);
+  protected pickTracked(title: HoldingResponse): void {
+    this.#store.pickTracked(title);
   }
 
-  protected onQuantityInput(event: Event): void {
-    this.quantityText.set(filterDecimalInput((event.target as HTMLInputElement).value));
+  protected pickCandidate(candidate: InstrumentCandidateResponse): void {
+    this.#store.pickCandidate(candidate);
   }
 
-  protected onAverageCostInput(event: Event): void {
-    this.averageCostText.set(filterDecimalInput((event.target as HTMLInputElement).value));
+  protected retry(source: SearchableSource): void {
+    this.#store.retry(source);
   }
 
-  protected pickCatalog(instrument: InstrumentResponse): void {
-    this.#store.pickCatalog(instrument);
+  protected retryTracked(): void {
+    this.#store.retryTracked();
   }
 
-  protected pickOnline(candidate: InstrumentCandidateResponse): void {
-    this.#store.pickOnline(candidate);
-  }
-
-  protected pickManual(): void {
-    this.#store.pickManual();
+  protected openMode(mode: AddMode): void {
+    this.#store.openMode(mode);
   }
 
   protected unpick(): void {
     this.#store.unpick();
   }
 
-  protected pickedName(): string {
-    const picked = this.picked() as PickedInstrument;
-
-    return picked.kind === 'catalog'
-      ? picked.instrument.name
-      : picked.kind === 'online'
-        ? picked.candidate.name
-        : picked.name;
+  protected onSiriusIsinInput(event: Event): void {
+    this.#store.typeSiriusIsin(inputValue(event));
   }
 
-  protected isNew(): boolean {
-    return this.picked()?.kind !== 'catalog' && this.picked() !== undefined;
+  protected onManualNameInput(event: Event): void {
+    this.#store.typeManualName(inputValue(event));
   }
 
-  protected retryCatalog(): void {
-    this.#store.reloadCatalog();
+  protected onManualClassChange(event: Event): void {
+    this.#store.chooseManualClass(inputValue(event) as AssetClass);
   }
 
-  protected retryOnline(): void {
-    void this.#store.searchOnline();
+  protected onManualPriceInput(event: Event): void {
+    this.#store.typeManualPrice(inputValue(event));
+  }
+
+  protected onAccountChange(event: Event): void {
+    this.#store.chooseAccount(inputValue(event));
+  }
+
+  protected onQuantityInput(event: Event): void {
+    this.#store.typeQuantity(inputValue(event));
+  }
+
+  protected onAverageCostInput(event: Event): void {
+    this.#store.typeAverageCost(inputValue(event));
   }
 
   protected dismiss(): void {

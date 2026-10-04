@@ -1,0 +1,16 @@
+<button data-testid="holding-add-tracked-title" size="dense" type="button" ui-row (click)="picked.emit(title())">
+  <span class="flex min-w-0 flex-1 flex-col">
+    <span class="text-body truncate font-medium">{{ title().instrumentName }}</span>
+    <span class="text-caption text-pretty text-(--subtle-foreground)">
+      @if (title().isin || title().symbol; as reference) {
+        {{ reference }} &middot;
+      }
+      {{ 'enums.assetClass.' + title().assetClass | transloco }} &middot;
+      {{ 'enums.priceSource.' + title().priceSource | transloco }}
+    </span>
+  </span>
+  <span class="flex flex-none flex-col items-end">
+    <ui-amount class="text-label font-medium" [currency]="title().priceCurrency ?? 'EUR'" [value]="title().price" />
+    <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.tracked.priceCaption' | transloco }}</span>
+  </span>
+</button>

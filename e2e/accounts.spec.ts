@@ -1,7 +1,13 @@
-import { expect, test } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
 import { AccountsPageObject } from './pages/accounts-page';
+
+const enterTitleByHand = async (page: Page): Promise<void> => {
+  await page.getByTestId('holding-add-manual-link').click();
+  await page.getByTestId('holding-add-manual-name').fill('Northwind Private Equity');
+  await page.getByTestId('holding-add-manual-price').fill('100');
+};
 
 test.describe('accounts', () => {
   test.beforeEach(async ({ page }) => {
@@ -98,6 +104,7 @@ test.describe('accounts', () => {
 
     await expect(page).toHaveURL(/\/holdings$/);
     await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
+    await enterTitleByHand(page);
     await expect(page.getByTestId('holding-add-account')).toHaveValue(accountId);
   });
 
@@ -118,6 +125,7 @@ test.describe('accounts', () => {
     await page.goto('/holdings');
 
     await page.getByTestId('add-holding-desktop').click();
+    await enterTitleByHand(page);
 
     await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'Livret A' })).toHaveCount(0);
     await expect(page.getByTestId('holding-add-account').locator('option', { hasText: 'Northwind PEA' })).toHaveCount(

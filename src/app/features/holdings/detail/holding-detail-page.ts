@@ -103,7 +103,6 @@ export class HoldingDetailPage {
   protected readonly missingState = computed<AsyncState>(() =>
     this.holdings.error() ? 'error' : this.holdings.isLoading() ? 'loading' : 'empty',
   );
-  protected readonly instrument = this.#store.instrument;
   protected readonly points = this.#store.points;
   protected readonly range = this.#store.range;
   protected readonly rangeChange = computed(() => (this.#store.quotesFailed() ? undefined : this.#store.rangeChange()));
@@ -112,9 +111,6 @@ export class HoldingDetailPage {
   );
   protected readonly shownRange = this.#store.shownRange;
   protected readonly quotesFailed = this.#store.quotesFailed;
-  protected readonly instrumentDetail = computed(() =>
-    this.instrument.hasValue() ? this.instrument.value() : undefined,
-  );
 
   protected readonly foreignCurrency = computed(() => foreignCurrencyOf(this.holding()!));
 

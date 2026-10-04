@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
-import { USD_HOLDING_ISIN } from './fixtures/trading';
+import { USD_HOLDING_ISIN } from './fixtures/search';
 
 test.describe('lines quoted in another currency', () => {
   test.beforeEach(async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('lines quoted in another currency', () => {
     const candidates = page.getByTestId('holding-add-online-candidate');
     await expect(candidates).toHaveCount(2);
     await expect(candidates.nth(1)).toHaveAttribute('aria-disabled', 'true');
-    await expect(candidates.nth(1)).toContainText('Quoted in USD');
+    await expect(candidates.nth(1)).toContainText('quoted in USD');
 
     await candidates.nth(1).click({ force: true });
 

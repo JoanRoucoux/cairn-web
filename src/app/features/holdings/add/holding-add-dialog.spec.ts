@@ -1,40 +1,52 @@
 import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { HttpTestingController, type TestRequest, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import { slowDialogExit } from '@shared/testing/dialog-exit';
-import { expectSubmitting } from '@shared/testing/submitting';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
 import { HoldingAddDialog } from './holding-add-dialog';
 
-const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
-const instruments = [
-  {
-    id: 'i1',
-    name: 'Amundi MSCI World',
-    isin: 'LU1681043599',
-    currency: 'EUR',
-    assetClass: 'ETF',
-    priceSource: 'YAHOO',
-  },
+const accounts = [
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a2', name: 'Contoso Trading', type: 'CTO', institution: 'Contoso Bank' },
 ];
+
+const tracked = {
+  id: 'h1',
+  accountId: 'a1',
+  instrumentId: 'i1',
+  instrumentName: 'Amundi MSCI World',
+  isin: 'LU1681043599',
+  sourceRef: 'CW8.PA',
+  assetClass: 'ETF',
+  priceSource: 'YAHOO',
+  price: 528.31,
+  priceCurrency: 'EUR',
+};
+
+const hit = {
+  name: 'iShares Core MSCI World',
+  source: 'YAHOO',
+  sourceRef: 'EUNL.DE',
+  symbol: 'EUNL.DE',
+  exchange: 'Xetra',
+  assetClass: 'ETF',
+  probePrice: 97.84,
+  currency: 'EUR',
+};
 
 describe('HoldingAddDialog', () => {
   let httpTesting: HttpTestingController;
   const saved = vi.fn();
   const dismissed = vi.fn();
 
-  const renderDialog = async (
-    presetAccountId: string | null = null,
-    catalog: unknown[] = instruments,
-  ): Promise<void> => {
+  const renderDialog = async (presetAccountId: string | null = null): Promise<void> => {
     await render(HoldingAddDialog, {
       inputs: { presetAccountId },
       on: { saved, dismissed },
@@ -50,8 +62,23 @@ describe('HoldingAddDialog', () => {
     });
     httpTesting = TestBed.inject(HttpTestingController);
     httpTesting.expectOne('/api/accounts').flush(accounts);
-    httpTesting.expectOne('/api/instruments').flush(catalog);
-    httpTesting.expectOne('/api/holdings').flush([]);
+    httpTesting.expectOne('/api/holdings').flush([tracked]);
+  };
+
+  const searchOf = (source: string): Promise<TestRequest> =>
+    vi.waitFor(() =>
+      httpTesting.expectOne(
+        (request) => request.url === '/api/instruments/search' && request.params.get('source') === source,
+      ),
+    );
+
+  const chip = (name: string): HTMLElement =>
+    within(screen.getByRole('group', { name: 'holdings.add.sourcesLabel' })).getByRole('button', { name });
+
+  const searchMsci = async (user: ReturnType<typeof userEvent.setup>): Promise<void> => {
+    await user.type(screen.getByTestId('holding-add-query'), 'msci');
+    (await searchOf('YAHOO')).flush([hit]);
+    (await searchOf('COINGECKO')).flush([]);
   };
 
   afterEach(() => {
@@ -60,333 +87,252 @@ describe('HoldingAddDialog', () => {
     dismissed.mockClear();
   });
 
-  it('preselects the account it is opened for', async () => {
-    await renderDialog('a1');
+  it('opens on the search, focused, with every source chosen and no account yet', async () => {
+    await renderDialog();
 
-    expect(await screen.findByRole('option', { name: /Northwind PEA/ })).toBeInTheDocument();
-    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
+    const query = screen.getByRole('searchbox', { name: 'holdings.add.searchLabel' });
+    await vi.waitFor(() => expect(query).toHaveFocus());
+    expect(query).toHaveAttribute('placeholder', 'holdings.add.placeholder.ALL');
+    expect(screen.getByTestId('holding-add-help')).toHaveTextContent('holdings.add.help.ALL');
+    expect(chip('holdings.add.allSources')).toHaveAttribute('aria-pressed', 'true');
+    expect(chip('enums.priceSource.AMUNDI')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByTestId('holding-add-account')).not.toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-submit')).toHaveTextContent('holdings.add.submit');
+    expect(screen.getByTestId('holding-add-submit')).toBeDisabled();
   });
 
-  it('shows the catalogue hit for a local match', async () => {
+  it('changes the placeholder and the help with the chosen source', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
+    await user.click(chip('enums.priceSource.COINGECKO'));
 
-    expect(await screen.findByTestId('holding-add-catalog-candidate')).toHaveTextContent('Amundi MSCI World');
-
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+    expect(chip('enums.priceSource.COINGECKO')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('holding-add-query')).toHaveAttribute(
+      'placeholder',
+      'holdings.add.placeholder.COINGECKO',
+    );
+    expect(screen.getByTestId('holding-add-help')).toHaveTextContent('holdings.add.help.COINGECKO');
   });
 
-  it('picks a catalogue instrument and shows the quantity and cost fields', async () => {
+  it('lists the tracked titles first, then each source under its own heading', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
+    await searchMsci(user);
 
-    expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
-    expect(screen.getByTestId('holding-add-quantity')).toHaveFocus();
-    expect(screen.queryByText('holdings.add.newBadge')).not.toBeInTheDocument();
-
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-  });
-
-  it('shows an online candidate with its badge and live value once picked', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-
-    await user.type(screen.getByTestId('holding-add-query'), 'ishares world');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
-      {
-        name: 'iShares Core MSCI World',
-        source: 'YAHOO',
-        sourceRef: 'EUNL.DE',
-        assetClass: 'ETF',
-        exchange: 'Xetra',
-        probePrice: 97.84,
-      },
+    const results = await screen.findByTestId('holding-add-results');
+    const headings = within(results)
+      .getAllByTestId(/heading$/)
+      .map((heading) => heading.textContent?.trim());
+    expect(headings).toEqual([
+      expect.stringMatching(/holdings.add.tracked.heading\s+holdings.add.tracked.nature/),
+      expect.stringMatching(/enums.priceSource.YAHOO\s+holdings.add.nature.YAHOO/),
     ]);
+    expect(screen.getByTestId('holding-add-tracked-title')).toHaveTextContent(
+      /LU1681043599 · enums.assetClass.ETF · enums.priceSource.YAHOO.*€528.31.*holdings.add.tracked.priceCaption/,
+    );
+    expect(await screen.findByTestId('holding-add-online-candidate')).toHaveTextContent(
+      /Xetra · EUNL.DE.*€97.84.*holdings.add.priceCaption.YAHOO/,
+    );
+  });
+
+  it('picks a title found online, then asks for the account, prefilled, and the quantity', async () => {
+    const user = userEvent.setup();
+    await renderDialog('a2');
+    await searchMsci(user);
 
     await user.click(await screen.findByTestId('holding-add-online-candidate'));
-    expect(screen.getByText('holdings.add.newBadge')).toBeInTheDocument();
-    expect(screen.getByText(/newNote/)).toBeInTheDocument();
+
+    expect(screen.queryByTestId('holding-add-query')).not.toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-picked')).toHaveTextContent('holdings.add.newBadge');
+    expect(screen.getByTestId('holding-add-source-line')).toHaveTextContent(
+      /enums.priceSource.YAHOO · holdings.add.sourceLine.YAHOO · holdings.add.trial €97.84/,
+    );
+    expect(screen.getByTestId('holding-add-account')).toHaveValue('a2');
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-quantity')).toHaveFocus());
+    expect(screen.getByTestId('holding-add-submit')).toHaveTextContent('holdings.add.submitNew');
 
     await user.type(screen.getByTestId('holding-add-quantity'), '10');
-    expect(await screen.findByTestId('holding-add-value-at-probe')).toHaveTextContent('€978.40');
+    expect(screen.getByTestId('holding-add-value')).toHaveTextContent('holdings.add.valueAtProbe €978.40');
   });
 
-  it('shows the online error with its own retry, keeping the catalogue results', async () => {
+  it('picks a tracked title without the New badge, and Change goes back to the same search', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+    await searchMsci(user);
+
+    await user.click(await screen.findByTestId('holding-add-tracked-title'));
+
+    expect(screen.getByTestId('holding-add-picked')).not.toHaveTextContent('holdings.add.newBadge');
+    expect(screen.getByTestId('holding-add-source-line')).toHaveTextContent(
+      'enums.priceSource.YAHOO · holdings.add.sourceLine.tracked',
+    );
+    expect(screen.getByTestId('holding-add-submit')).toHaveTextContent('holdings.add.submit');
+
+    await user.click(screen.getByTestId('holding-add-change'));
+
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-query')).toHaveFocus());
+    expect(screen.getByTestId('holding-add-query')).toHaveValue('msci');
+    expect(screen.getByTestId('holding-add-online-candidate')).toBeInTheDocument();
+    httpTesting.expectNone('/api/instruments/search');
+  });
+
+  it('shows a failing source with its own retry', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
     await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush(null, {
-      status: 500,
-      statusText: 'Server error',
-    });
+    (await searchOf('YAHOO')).flush([]);
+    (await searchOf('COINGECKO')).flush(null, { status: 502, statusText: 'Bad Gateway' });
 
-    expect(await screen.findByText('holdings.add.onlineError')).toBeInTheDocument();
-    expect(screen.getByTestId('holding-add-catalog-candidate')).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: 'holdings.add.onlineRetry' }));
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([]);
+    expect(await screen.findByText('holdings.add.sourceError')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'holdings.add.retry' }));
+    (await searchOf('COINGECKO')).flush([]);
   });
 
-  it('offers to create a manual instrument when nothing is found', async () => {
+  it('says nothing was found anywhere and keeps the two links', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
     await user.type(screen.getByTestId('holding-add-query'), 'zzz');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([]);
+    (await searchOf('YAHOO')).flush([]);
+    (await searchOf('COINGECKO')).flush([]);
 
-    await user.click(await screen.findByTestId('holding-add-create-manual'));
-    expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
-    expect(screen.getByTestId('holding-add-quantity')).toHaveFocus();
-    expect(screen.getByText('holdings.add.newBadge')).toBeInTheDocument();
+    expect(await screen.findByTestId('holding-add-none-found')).toHaveTextContent('holdings.add.noneFound');
+    expect(screen.getByTestId('holding-add-sirius-link')).toHaveTextContent(
+      'holdings.add.siriusLinkholdings.add.siriusLinkSub',
+    );
+    expect(screen.getByTestId('holding-add-manual-link')).toHaveTextContent(
+      'holdings.add.manualLinkholdings.add.manualLinkSub',
+    );
   });
 
-  it('lets Change return to the search', async () => {
+  it('offers every source when the chosen one has nothing, and Amundi asks for an ISIN', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+    await user.click(chip('enums.priceSource.COINGECKO'));
+    await user.type(screen.getByTestId('holding-add-query'), 'zzz');
+    (await searchOf('COINGECKO')).flush([]);
 
-    await user.click(screen.getByTestId('holding-add-change'));
+    expect(await screen.findByText('holdings.add.sourceEmpty')).toBeInTheDocument();
+    await user.click(screen.getByTestId('holding-add-search-all'));
+    expect(chip('holdings.add.allSources')).toHaveAttribute('aria-pressed', 'true');
+    (await searchOf('YAHOO')).flush([]);
 
-    expect(screen.getByTestId('holding-add-query')).toBeInTheDocument();
+    await user.click(chip('enums.priceSource.AMUNDI'));
+    expect(await screen.findByText('holdings.add.amundiNeedsIsin')).toBeInTheDocument();
   });
 
-  it('keeps the submit button disabled until an account, a pick and a quantity are set', async () => {
+  it('takes an SG Sirius ISIN: example, counter, format error, then the position', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    expect(screen.getByTestId('holding-add-submit')).toBeDisabled();
-    await screen.findByRole('option', { name: /Northwind PEA/ });
+    await user.click(screen.getByTestId('holding-add-sirius-link'));
+    const isin = screen.getByTestId('holding-add-sirius-isin');
+    await vi.waitFor(() => expect(isin).toHaveFocus());
+    expect(screen.getByText('holdings.add.sirius.example')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-sirius-note')).toHaveTextContent('holdings.add.sirius.note');
+    expect(screen.getByTestId('holding-add-submit')).toHaveTextContent('holdings.add.submitSirius');
 
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
+    await user.type(isin, 'xs2');
+    expect(isin).toHaveValue('XS2');
+    expect(screen.getByText('holdings.add.sirius.count_other')).toBeInTheDocument();
+    await user.clear(isin);
+    await user.type(isin, 'x');
+    expect(screen.getByText('holdings.add.sirius.count_one')).toBeInTheDocument();
 
-    expect(screen.getByTestId('holding-add-submit')).toBeDisabled();
+    await user.type(isin, 's238123456x');
+    expect(screen.getByRole('alert')).toHaveTextContent('holdings.add.sirius.invalid');
+    expect(screen.queryByTestId('holding-add-account')).not.toBeInTheDocument();
 
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
-    expect(screen.getByTestId('holding-add-submit')).toBeEnabled();
+    await user.clear(isin);
+    await user.type(isin, 'XS2381234567');
+    expect(screen.getByText('holdings.add.sirius.valid')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-add-account')).toHaveValue('a1');
+
+    await user.click(screen.getByTestId('holding-add-back'));
+    await vi.waitFor(() => expect(screen.getByTestId('holding-add-query')).toHaveFocus());
   });
 
-  it('emits saved once the holding has been created', async () => {
+  it('takes a manual title: name, class Autre by default, price, then the value at that price', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    slowDialogExit();
-    await screen.findByRole('option', { name: /Northwind PEA/ });
 
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
+    await user.click(screen.getByTestId('holding-add-manual-link'));
+    const name = screen.getByTestId('holding-add-manual-name');
+    await vi.waitFor(() => expect(name).toHaveFocus());
+    const classes = within(screen.getByTestId('holding-add-manual-class')).getAllByRole('option');
+    expect(classes.map((option) => option.getAttribute('value'))).toEqual([
+      'EQUITY',
+      'ETF',
+      'FUND',
+      'CRYPTO',
+      'BOND',
+      'OTHER',
+    ]);
+    expect(screen.getByTestId('holding-add-manual-class')).toHaveValue('OTHER');
+
+    await user.type(name, 'Northwind Private Equity');
+    await user.selectOptions(screen.getByTestId('holding-add-manual-class'), 'BOND');
+    await user.type(screen.getByTestId('holding-add-manual-price'), '1135');
+    await user.type(screen.getByTestId('holding-add-quantity'), '8');
+
+    expect(screen.getByTestId('holding-add-value')).toHaveTextContent('holdings.add.valueAtManual €9,080.00');
+    expect(screen.getByTestId('holding-add-submit')).toHaveTextContent('holdings.add.submitNew');
+
+    await user.type(screen.getByTestId('holding-add-average-cost'), '1000');
     await user.click(screen.getByTestId('holding-add-submit'));
-    await vi.waitFor(() => expectSubmitting(screen.getByTestId('holding-add-submit')));
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
-
-    await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h9' }));
-    expect(saved).toHaveBeenCalledTimes(1);
-    expect(dismissed).not.toHaveBeenCalled();
-  });
-
-  it('emits dismissed on the native dialog close', async () => {
-    await renderDialog();
-    slowDialogExit();
-
-    (screen.getByRole('dialog') as HTMLDialogElement).close();
-
-    expect(dismissed).not.toHaveBeenCalled();
-    await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
-  });
-
-  it('reads an optional average cost', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-    await screen.findByRole('option', { name: /Northwind PEA/ });
-
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
-    await user.type(screen.getByTestId('holding-add-average-cost'), '24,12');
-    await user.click(screen.getByTestId('holding-add-submit'));
-
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/holdings'));
-    expect(request.request.body).toEqual({ accountId: 'a1', instrumentId: 'i1', quantity: 10, averageCost: 24.12 });
-    request.flush({});
+    expect(request.request.body).toEqual({
+      accountId: 'a1',
+      quantity: 8,
+      averageCost: 1000,
+      instrument: { priceSource: 'MANUAL', name: 'Northwind Private Equity', assetClass: 'BOND', price: 1135 },
+    });
+    request.flush({ id: 'h9' });
+    await vi.waitFor(() => expect(saved).toHaveBeenCalledWith({ id: 'h9' }));
   });
 
-  it('falls back to a blank subline for a catalogue instrument with no ISIN', async () => {
+  it('says the account already holds the title, until another account is chosen', async () => {
     const user = userEvent.setup();
-    await render(HoldingAddDialog, {
-      on: { saved, dismissed },
-      imports: [getTranslocoTestingModule()],
-      providers: [
-        HoldingChanges,
-        provideZonelessChangeDetection(),
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        { provide: LOCALE_ID, useValue: 'en-GB' },
-        provideTranslocoScope('holdings'),
-      ],
+    await renderDialog('a1');
+    await searchMsci(user);
+    await user.click(await screen.findByTestId('holding-add-tracked-title'));
+    await user.type(screen.getByTestId('holding-add-quantity'), '3');
+    await user.click(screen.getByTestId('holding-add-submit'));
+
+    expect(await screen.findByTestId('holding-add-error')).toHaveTextContent('holdings.add.duplicate');
+
+    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a2');
+    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-error')).not.toBeInTheDocument());
+  });
+
+  it('says when the line was refused', async () => {
+    const user = userEvent.setup();
+    await renderDialog('a2');
+    await searchMsci(user);
+    await user.click(await screen.findByTestId('holding-add-online-candidate'));
+    await user.type(screen.getByTestId('holding-add-quantity'), '3');
+    await user.click(screen.getByTestId('holding-add-submit'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush(null, {
+      status: 422,
+      statusText: 'Unprocessable',
     });
-    httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/accounts').flush(accounts);
-    httpTesting.expectOne('/api/instruments').flush([{ ...instruments[0], isin: null }]);
-    httpTesting.expectOne('/api/holdings').flush([]);
 
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-
-    expect(screen.getByTestId('holding-add-quantity')).toBeInTheDocument();
+    expect(await screen.findByTestId('holding-add-error')).toHaveTextContent('holdings.add.error');
+    expect(saved).not.toHaveBeenCalled();
   });
 
   it('dismisses from the Cancel button', async () => {
     const user = userEvent.setup();
     await renderDialog();
-    slowDialogExit();
 
     await user.click(screen.getByTestId('holding-add-cancel'));
 
-    expect(dismissed).not.toHaveBeenCalled();
     await vi.waitFor(() => expect(dismissed).toHaveBeenCalledTimes(1));
-  });
-
-  it('preselects the first account when none is given', async () => {
-    await renderDialog();
-
-    await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
-  });
-
-  it('shows the line count of a catalogue result, and the picked title with its class and source', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    const result = await screen.findByTestId('holding-add-catalog-candidate');
-
-    expect(result).toHaveTextContent('holdings.add.noLine');
-
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-    await user.click(result);
-
-    expect(screen.getByText('LU1681043599 · enums.assetClass.ETF · enums.priceSource.YAHOO')).toBeInTheDocument();
-  });
-
-  it('says no other title was found online when only the catalogue answered', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-
-    expect(await screen.findByText('holdings.add.noOtherOnline')).toBeInTheDocument();
-  });
-
-  it('shows the trial price note, and the latent gain once a cost is typed', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-
-    await user.type(screen.getByTestId('holding-add-query'), 'ishares world');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
-      { name: 'iShares Core MSCI World', source: 'YAHOO', sourceRef: 'EUNL.DE', assetClass: 'ETF', probePrice: 100 },
-    ]);
-    await user.click(await screen.findByTestId('holding-add-online-candidate'));
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
-    await user.type(screen.getByTestId('holding-add-average-cost'), '80');
-
-    expect(screen.getByText(/holdings.add.trialPrice/)).toBeInTheDocument();
-    expect(screen.getByTestId('holding-add-value-at-probe')).toHaveTextContent('holdings.add.gainAtProbe');
-  });
-
-  it('falls back to a blank exchange for an online candidate with none', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-
-    await user.type(screen.getByTestId('holding-add-query'), 'ishares world');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
-      { name: 'iShares Core MSCI World', source: 'YAHOO', sourceRef: 'EUNL.DE', assetClass: 'ETF', probePrice: 97.84 },
-    ]);
-    await user.click(await screen.findByTestId('holding-add-online-candidate'));
-
-    expect(screen.getByText(/EUNL.DE/)).toBeInTheDocument();
-  });
-
-  it('shows a generic error when creating the holding itself fails', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-    await screen.findByRole('option', { name: /Northwind PEA/ });
-
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'msci');
-    await user.click(await screen.findByTestId('holding-add-catalog-candidate'));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
-    await user.click(screen.getByTestId('holding-add-submit'));
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush(null, {
-      status: 500,
-      statusText: 'Server error',
-    });
-
-    expect(await screen.findByTestId('holding-add-error')).toHaveTextContent('holdings.add.error');
-  });
-
-  it('shows the instrument-specific error when creating the instrument fails', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-    await screen.findByRole('option', { name: /Northwind PEA/ });
-
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'zzz');
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-    await user.click(await screen.findByTestId('holding-add-create-manual'));
-    await user.selectOptions(screen.getByTestId('holding-add-asset-class'), 'ETF');
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
-    await user.click(screen.getByTestId('holding-add-submit'));
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush(null, {
-      status: 500,
-      statusText: 'Server error',
-    });
-
-    expect(await screen.findByTestId('holding-add-error')).toHaveTextContent('holdings.add.instrumentError');
-  });
-
-  it('requires an asset class for a manual creation, with no default, and sends it to the API', async () => {
-    const user = userEvent.setup();
-    await renderDialog();
-    await screen.findByRole('option', { name: /Northwind PEA/ });
-
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'zzz');
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve').flush([]));
-    await user.click(await screen.findByTestId('holding-add-create-manual'));
-    await user.type(screen.getByTestId('holding-add-quantity'), '10');
-
-    expect(screen.getByTestId('holding-add-asset-class')).toHaveValue('');
-    expect(screen.getByTestId('holding-add-submit')).toBeDisabled();
-
-    await user.selectOptions(screen.getByTestId('holding-add-asset-class'), 'CRYPTO');
-    expect(screen.getByTestId('holding-add-submit')).toBeEnabled();
-
-    await user.click(screen.getByTestId('holding-add-submit'));
-
-    const request = await vi.waitFor(() => httpTesting.expectOne('/api/instruments'));
-    expect(request.request.body).toMatchObject({ assetClass: 'CRYPTO' });
-    request.flush({ id: 'i2', name: 'zzz', assetClass: 'CRYPTO', priceSource: 'MANUAL' });
-
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({});
+    expect(saved).not.toHaveBeenCalled();
   });
 });

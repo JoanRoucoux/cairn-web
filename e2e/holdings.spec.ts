@@ -8,11 +8,11 @@ test.describe('holdings list', () => {
     await page.goto('/holdings');
   });
 
-  test('opens the add dialog and focuses the safe action first', async ({ page }) => {
+  test('opens the add dialog on the search field', async ({ page }) => {
     await page.getByTestId('add-holding-desktop').click();
 
     await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
-    await expect(page.getByTestId('holding-add-account')).toBeFocused();
+    await expect(page.getByTestId('holding-add-query')).toBeFocused();
   });
 
   test('closes the dialog on Escape and hands focus back to the trigger', async ({ page }) => {

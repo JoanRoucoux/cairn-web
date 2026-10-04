@@ -32,13 +32,17 @@ export type ClassCounts = { total: number; byClass: Record<AssetClass, number> }
 
 export type ClassSummary = { valueEur: number; share: number; accounts: number };
 
-export const CLASS_ORDER: readonly AssetClass[] = ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'CASH'];
+export const CLASS_ORDER: readonly AssetClass[] = ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'BOND', 'OTHER', 'CASH'];
+
+export const CLASSES_SHOWN_WHEN_HELD: readonly AssetClass[] = ['BOND', 'OTHER'];
 
 export const SLUG_BY_CLASS: Record<AssetClass, string> = {
   ETF: 'etf',
   FUND: 'fonds',
   EQUITY: 'actions',
   CRYPTO: 'crypto',
+  BOND: 'obligations',
+  OTHER: 'autre',
   CASH: 'liquidites',
 };
 
@@ -206,7 +210,15 @@ export class HoldingListStore {
   });
 
   readonly classCounts = computed<ClassCounts>(() => {
-    const byClass: Record<AssetClass, number> = { ETF: 0, FUND: 0, EQUITY: 0, CRYPTO: 0, CASH: 0 };
+    const byClass: Record<AssetClass, number> = {
+      ETF: 0,
+      FUND: 0,
+      EQUITY: 0,
+      CRYPTO: 0,
+      BOND: 0,
+      OTHER: 0,
+      CASH: 0,
+    };
     let total = 0;
 
     for (const group of this.#allGroups()) {

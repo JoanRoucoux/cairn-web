@@ -72,9 +72,6 @@ describe('HoldingDetailPage figures', () => {
       await Promise.resolve();
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    httpTesting
-      .match((request) => request.url === '/api/instruments/i1')
-      .forEach((request) => request.flush({ description: 'ETF.' }));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush(quotes));
 
     return fixture.debugElement.query(By.directive(HoldingDetailPage)).componentInstance as HoldingDetailPage;

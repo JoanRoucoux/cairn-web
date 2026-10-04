@@ -126,7 +126,6 @@ describe('HoldingListPage', () => {
     expect(screen.getByTestId('holding-add-dialog')).toBeInTheDocument();
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
     await vi.waitFor(() =>
       httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
     );
@@ -139,7 +138,6 @@ describe('HoldingListPage', () => {
 
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
     await vi.waitFor(() =>
       httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
     );
@@ -157,21 +155,16 @@ describe('HoldingListPage', () => {
 
     await user.click(screen.getByTestId('add-holding-desktop'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
     await vi.waitFor(() =>
       httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
     );
-    await screen.findByRole('option', { name: /Northwind PEA/ });
-
-    await user.selectOptions(screen.getByTestId('holding-add-account'), 'a1');
-    await user.type(screen.getByTestId('holding-add-query'), 'zzz');
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([]);
-    await user.click(await screen.findByTestId('holding-add-create-manual'));
-    await user.selectOptions(screen.getByTestId('holding-add-asset-class'), 'ETF');
+    await user.click(screen.getByTestId('holding-add-manual-link'));
+    await user.type(screen.getByTestId('holding-add-manual-name'), 'Northwind Private Equity');
+    await user.type(screen.getByTestId('holding-add-manual-price'), '100');
+    await user.selectOptions(await screen.findByTestId('holding-add-account'), 'a1');
     await user.type(screen.getByTestId('holding-add-quantity'), '10');
     await user.click(screen.getByTestId('holding-add-submit'));
 
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({ id: 'i9' });
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush({ id: 'h9' });
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());
 
@@ -275,7 +268,6 @@ describe('HoldingListPage', () => {
     expect(screen.getByTestId('holding-add-dialog')).toBeInTheDocument();
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(accounts));
-    await vi.waitFor(() => httpTesting.expectOne('/api/instruments').flush([]));
     await vi.waitFor(() =>
       httpTesting.expectOne((request) => request.url === '/api/holdings' && request.method === 'GET').flush([]),
     );

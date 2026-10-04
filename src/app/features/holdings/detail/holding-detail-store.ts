@@ -16,7 +16,6 @@ import { map } from 'rxjs';
 
 import type { QuoteResponse } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
-import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 import { QuoteService } from '@core/api-client/quote/quote.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
@@ -30,7 +29,6 @@ const isoToday = (): string => new Date().toISOString().slice(0, 10);
 @Injectable()
 export class HoldingDetailStore {
   #holdingsApiClient = inject(HoldingService);
-  #instrumentsApiClient = inject(InstrumentService);
   #quotesApiClient = inject(QuoteService);
   #route = inject(ActivatedRoute);
   #changes = inject(HoldingChanges);
@@ -47,11 +45,6 @@ export class HoldingDetailStore {
   readonly holding = computed(() =>
     this.holdings.hasValue() ? this.holdings.value().find((candidate) => candidate.id === this.holdingId()) : undefined,
   );
-
-  readonly instrument = rxResource({
-    params: () => this.holding()?.instrumentId,
-    stream: ({ params }) => this.#instrumentsApiClient.getInstrument(params),
-  });
 
   readonly quotes = rxResource({
     params: () => {
