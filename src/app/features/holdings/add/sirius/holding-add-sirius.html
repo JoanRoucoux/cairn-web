@@ -1,13 +1,11 @@
 <button
-  class="self-start"
+  class="-mt-2 -mb-1 -ml-1.5 self-start"
   data-testid="holding-add-back"
-  size="slim"
+  size="inline"
   type="button"
-  ui-button
-  variant="ghost"
+  ui-back-link
   (click)="back.emit()"
 >
-  <svg aria-hidden="true" lucideChevronLeft [size]="18" [strokeWidth]="1.75" />
   {{ 'holdings.add.backToSearch' | transloco }}
 </button>
 
@@ -35,6 +33,4 @@
   />
 </ui-field>
 
-<ui-alert data-testid="holding-add-sirius-note" variant="warning">{{
-  'holdings.add.sirius.note' | transloco
-}}</ui-alert>
+<ui-alert data-testid="holding-add-sirius-note" variant="info">{{ 'holdings.add.sirius.note' | transloco }}</ui-alert>

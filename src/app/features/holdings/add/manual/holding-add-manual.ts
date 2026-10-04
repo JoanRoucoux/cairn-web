@@ -1,11 +1,10 @@
 import { Component, input, output } from '@angular/core';
 
-import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
 import { UiField } from '@joanroucoux/cairn-ui/field';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { UiSelect } from '@joanroucoux/cairn-ui/select';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideChevronLeft } from '@lucide/angular';
 
 import type { AssetClass } from '@core/api-client/cairnAPI.schemas';
 
@@ -13,7 +12,7 @@ const MANUAL_CLASSES: readonly AssetClass[] = ['EQUITY', 'ETF', 'FUND', 'CRYPTO'
 
 @Component({
   selector: 'app-holding-add-manual',
-  imports: [LucideChevronLeft, TranslocoPipe, UiButton, UiField, UiInput, UiSelect],
+  imports: [TranslocoPipe, UiBackLink, UiField, UiInput, UiSelect],
   templateUrl: './holding-add-manual.html',
   host: { class: 'flex flex-col gap-4' },
 })

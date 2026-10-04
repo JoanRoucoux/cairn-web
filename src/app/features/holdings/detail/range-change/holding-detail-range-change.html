@@ -1,0 +1,11 @@
+@if (change(); as change) {
+  <div class="text-label flex items-baseline gap-1.5 leading-[normal] tabular-nums" data-testid="range-change">
+    <ui-delta size="inherit" [unknownLabel]="'holdings.unknown' | transloco" [value]="change.amount">
+      <ui-amount currency="EUR" signed whenMasked="hide" [value]="change.amount" />
+      @if (change.ratio !== null) {
+        <app-amount-separator /> {{ change.ratio | ratio: { signed: true, decimals: 2 } }}
+      }
+    </ui-delta>
+    <span class="text-(--muted-foreground)">{{ 'holdings.detail.rangeChange.' + range() | transloco }}</span>
+  </div>
+}

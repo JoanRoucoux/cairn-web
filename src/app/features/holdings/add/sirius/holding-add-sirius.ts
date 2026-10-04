@@ -1,11 +1,10 @@
 import { Component, computed, input, output } from '@angular/core';
 
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
-import { UiButton } from '@joanroucoux/cairn-ui/button';
+import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
 import { UiField } from '@joanroucoux/cairn-ui/field';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideChevronLeft } from '@lucide/angular';
 
 import { pluralKey } from '@shared/format/plural-key';
 
@@ -15,7 +14,7 @@ const ISIN_LENGTH = 12;
 
 @Component({
   selector: 'app-holding-add-sirius',
-  imports: [LucideChevronLeft, TranslocoPipe, UiAlert, UiButton, UiField, UiInput],
+  imports: [TranslocoPipe, UiAlert, UiBackLink, UiField, UiInput],
   templateUrl: './holding-add-sirius.html',
   host: { class: 'flex flex-col gap-4' },
 })

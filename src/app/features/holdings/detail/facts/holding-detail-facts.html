@@ -1,6 +1,6 @@
 <ui-card padding="rows" surface="max-lg">
   <dl uiFacts [ruled]="desktop()">
-    <div size="auto" ui-fact [label]="'holdings.columns.quantity' | transloco">
+    <div size="auto" ui-fact [label]="'holdings.columns.quantity' | transloco" [uiHighlight]="flash()">
       <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
     </div>
     @if (holding().averageCost === null || holding().averageCost === undefined) {
@@ -9,11 +9,12 @@
         ui-fact
         [label]="'holdings.averageCost' | transloco"
         [sub]="'holdings.detail.firstBuyFixes' | transloco"
+        [uiHighlight]="flash()"
       >
         {{ 'holdings.detail.unknownCost' | transloco }}
       </div>
     } @else {
-      <div size="auto" ui-fact [label]="'holdings.averageCost' | transloco">
+      <div size="auto" ui-fact [label]="'holdings.averageCost' | transloco" [uiHighlight]="flash()">
         <ui-amount currency="EUR" [value]="holding().averageCost" />
       </div>
     }

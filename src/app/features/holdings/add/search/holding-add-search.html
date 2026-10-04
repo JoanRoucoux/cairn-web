@@ -28,37 +28,19 @@
 @if (showResults()) {
   <ui-card border="hairline" class="flex flex-col" data-testid="holding-add-results" padding="xs" variant="inset">
     @if (showTracked()) {
-      <div
-        class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)"
-        data-testid="holding-add-tracked-heading"
-      >
-        <span>{{ 'holdings.add.tracked.heading' | transloco }}</span
-        >&ngsp;
-        <span>{{ 'holdings.add.tracked.nature' | transloco }}</span>
-      </div>
-      <ui-async
-        variant="inline"
+      <ui-result-group
+        data-testid="holding-add-tracked"
         [errorMessage]="'holdings.add.tracked.error' | transloco"
+        [hint]="'holdings.add.tracked.nature' | transloco"
+        [label]="'holdings.add.tracked.heading' | transloco"
         [retryLabel]="'holdings.add.tracked.retry' | transloco"
         [state]="trackedState()"
         (retry)="retriedTracked.emit()"
       >
-        <div
-          asyncLoading
-          class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
-          data-testid="holding-add-tracked-loading"
-          role="status"
-        >
-          <span class="sr-only">{{ 'holdings.add.tracked.loading' | transloco }}</span>
-          <div class="flex justify-between gap-3">
-            <span class="block w-50"><ui-skeleton [height]="16" /></span>
-            <span class="block w-16"><ui-skeleton [height]="16" /></span>
-          </div>
-        </div>
         @for (title of tracked(); track title.instrumentId) {
           <app-holding-add-tracked [title]="title" (picked)="pickedTracked.emit($event)" />
         }
-      </ui-async>
+      </ui-result-group>
     }
 
     @for (group of groups(); track group.source) {
@@ -86,18 +68,16 @@
 }
 
 <div class="flex flex-col">
-  <button data-testid="holding-add-sirius-link" padding="none" type="button" ui-row (click)="siriusOpened.emit()">
+  <button data-testid="holding-add-sirius-link" trailing="chevron" type="button" ui-row (click)="siriusOpened.emit()">
     <span class="flex min-w-0 flex-1 flex-col">
       <span class="text-label font-medium">{{ 'holdings.add.siriusLink' | transloco }}</span>
       <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.siriusLinkSub' | transloco }}</span>
     </span>
-    <svg aria-hidden="true" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
   </button>
-  <button data-testid="holding-add-manual-link" padding="none" type="button" ui-row (click)="manualOpened.emit()">
+  <button data-testid="holding-add-manual-link" trailing="chevron" type="button" ui-row (click)="manualOpened.emit()">
     <span class="flex min-w-0 flex-1 flex-col">
       <span class="text-label font-medium">{{ 'holdings.add.manualLink' | transloco }}</span>
       <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.manualLinkSub' | transloco }}</span>
     </span>
-    <svg aria-hidden="true" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
   </button>
 </div>

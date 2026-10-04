@@ -137,23 +137,105 @@ describe('HoldingDetailPage navigation', () => {
     expect(await screen.findByTestId('holding-detail-back')).toHaveAttribute('href', '/holdings?classe=etf');
   });
 
-  it('fades out beside the list on desktop', async () => {
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn((query: string) => ({
-        matches: query === '(min-width: 1024px)',
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-      })),
+  describe('on desktop', () => {
+    beforeEach(() =>
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn((query: string) => ({
+          matches: query === '(min-width: 1024px)',
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        })),
+      ),
     );
-    const page = await open([]);
 
-    expect(page['panelLeave']()).toBe('ui-leave-fade');
+    const drawer = (): HTMLDialogElement =>
+      document.querySelector('ui-drawer[data-testid="holding-drawer"] dialog') as HTMLDialogElement;
+
+    it('opens the line in a drawer named by an h2 heading, with its account and envelope', async () => {
+      await open(['holdings']);
+
+      expect(drawer()).toHaveAttribute('open');
+      expect(await screen.findByRole('heading', { level: 2, name: 'BNP Paribas Easy S&P 500' })).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
+      expect(drawer()).toHaveTextContent('Northwind PEA · enums.accountType.PEA');
+      expect(screen.queryByTestId('holding-detail-back')).not.toBeInTheDocument();
+    });
+
+    it('goes back to the list once the drawer has closed', async () => {
+      await open(['holdings']);
+      const back = vi.spyOn(TestBed.inject(Location), 'back').mockImplementation(() => undefined);
+
+      drawer().dispatchEvent(new Event('cancel', { cancelable: true }));
+
+      expect(drawer()).not.toHaveAttribute('open');
+      await vi.waitFor(() => expect(back).toHaveBeenCalledOnce());
+    });
+
+    it('closes the drawer from its cross', async () => {
+      await open([]);
+
+      screen.getByRole('button', { name: 'holdings.detail.close' }).click();
+
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
+    });
+
+    it('closes the drawer once its line is deleted, then goes back to the list', async () => {
+      await open([]);
+
+      screen.getByTestId('holding-delete').click();
+      (await screen.findByTestId('holding-delete-confirm')).click();
+      (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1'))).flush(null, {
+        status: 204,
+        statusText: 'No Content',
+      });
+
+      await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/holdings'));
+      expect(document.querySelector('ui-drawer')).toBeNull();
+    });
+
+    it('keeps the drawer open under a dialog it opened, and after that dialog closes', async () => {
+      await open([]);
+
+      screen.getByTestId('holding-buy').click();
+      const buy = (await screen.findByTestId('holding-buy-dialog')).querySelector('dialog')!;
+
+      expect(buy).toHaveAttribute('open');
+      expect(drawer()).toHaveAttribute('open');
+
+      buy.dispatchEvent(new Event('cancel', { cancelable: true }));
+
+      await vi.waitFor(() => expect(screen.queryByTestId('holding-buy-dialog')).not.toBeInTheDocument());
+      expect(drawer()).toHaveAttribute('open');
+      expect(TestBed.inject(Router).url).toBe('/holdings/h1');
+    });
+
+    it('names the drawer while the line is still loading', async () => {
+      await render(TestHost, {
+        imports: [getTranslocoTestingModule()],
+        routes: [{ path: 'holdings/:holdingId', component: HoldingDetailPage }],
+        initialRoute: 'holdings/h1',
+        providers: [
+          HoldingChanges,
+          provideZonelessChangeDetection(),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: LOCALE_ID, useValue: 'en-GB' },
+          provideTranslocoScope('holdings'),
+        ],
+      });
+      httpTesting = TestBed.inject(HttpTestingController);
+      await settle();
+
+      expect(drawer()).toHaveAttribute('aria-label', 'holdings.detail.panel');
+      (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush([]);
+    });
   });
 
-  it('plays no panel motion on a phone, where the page cross-fades instead', async () => {
-    const page = await open([]);
+  it('keeps the detail a page of its own on a phone, headed by an h1', async () => {
+    await open([]);
 
-    expect(page['panelLeave']()).toBeNull();
+    expect(await screen.findByRole('heading', { level: 1, name: 'BNP Paribas Easy S&P 500' })).toBeInTheDocument();
+    expect(document.querySelector('ui-drawer')).toBeNull();
   });
 });

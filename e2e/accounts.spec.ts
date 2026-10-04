@@ -133,7 +133,7 @@ test.describe('accounts', () => {
     );
   });
 
-  test('lands on the lines of the account with its group heading focused', async ({ page }) => {
+  test('opens the lines filtered on the account, the account chosen in the selector', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
@@ -142,8 +142,9 @@ test.describe('accounts', () => {
     await link.click();
 
     await expect(page).toHaveURL(/\/holdings\?compte=/);
-    await expect(page.locator('h2[data-group-heading]:focus')).toBeVisible();
-    await expect(page.locator('h2[data-group-heading]:focus')).toContainText('Northwind PEA');
+    await expect(page.getByTestId('account-group')).toHaveCount(1);
+    await expect(page.getByTestId('account-group')).toContainText('Northwind PEA');
+    await expect(page.getByTestId('account-filter')).toContainText('Northwind PEA');
   });
 
   test('summarises the accounts with their count and total above the table', async ({ page }) => {

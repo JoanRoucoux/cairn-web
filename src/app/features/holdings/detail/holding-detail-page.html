@@ -4,170 +4,164 @@
   </a>
 </ng-template>
 
-<article
-  class="fixed inset-x-0 top-0 bottom-(--tab-bar-height) z-30 overflow-y-auto bg-(--background) px-4 lg:static lg:z-auto lg:overflow-visible lg:bg-transparent lg:p-0"
-  [class.pb-25]="holding()"
->
-  @if (holding(); as holding) {
-    <ui-card surface="lg">
-      <div class="flex flex-col gap-4 lg:gap-6">
-        <div class="-mx-2 -mb-3 flex h-(--header-height) shrink-0 items-center justify-between lg:hidden">
-          <ng-container [ngTemplateOutlet]="back" />
-          <button
-            aria-label="{{ 'holdings.detail.menu' | transloco }}"
-            data-testid="holding-menu-trigger-mobile"
-            size="icon"
-            type="button"
-            ui-button
-            variant="ghost"
-            [uiMenuTrigger]="menu"
-          >
-            <svg lucideEllipsis [size]="22" [strokeWidth]="1.75" />
-          </button>
-        </div>
-
-        <ui-menu #menu [label]="'holdings.detail.menu' | transloco" [width]="200">
-          <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
-            <svg lucidePencil [size]="18" [strokeWidth]="1.75" />
-            {{ 'holdings.edit.open' | transloco }}
-          </button>
-          <button data-testid="holding-delete" destructive type="button" uiMenuItem (click)="openDelete()">
-            <svg lucideTrash [size]="18" [strokeWidth]="1.75" />
-            {{ 'holdings.delete.open' | transloco }}
-          </button>
-        </ui-menu>
-
-        <div class="flex items-start justify-between gap-3 px-1 lg:px-0">
-          <div class="flex min-w-0 flex-col gap-0.5">
-            <h1 appFocusOnInit class="text-title m-0 font-semibold text-pretty outline-none" tabindex="-1">
-              {{ holding.instrumentName }}
-            </h1>
-            <span class="text-label text-(--muted-foreground) lg:leading-[normal]">
-              {{ holding.accountName }} &middot; {{ 'enums.accountType.' + holding.accountType | transloco }}
-            </span>
-          </div>
-          <div class="-mt-1 -mr-2 max-lg:hidden">
-            <a
-              aria-label="{{ 'holdings.detail.close' | transloco }}"
-              queryParamsHandling="preserve"
-              routerLink="/holdings"
-              size="icon-sm"
-              ui-button
-              variant="quiet-glow"
-            >
-              <svg lucideX [size]="20" [strokeWidth]="1.75" />
-            </a>
-          </div>
-        </div>
-
-        <ui-card class="lg:contents" surface="max-lg">
-          <div class="flex flex-col gap-5 lg:contents">
-            <app-holding-detail-figures [holding]="holding" />
-
-            @if (!isCash()) {
-              <app-holding-detail-actions
-                [foreign]="foreignCurrency() !== undefined"
-                [menu]="menu"
-                (buy)="buyOpen.set(true)"
-                (sell)="sellOpen.set(true)"
-              />
-            }
-
-            @if (priced()) {
-              <div class="flex flex-col gap-3">
-                @if (rangeChange(); as change) {
-                  <div
-                    class="text-label flex items-baseline gap-1.5 leading-[normal] tabular-nums"
-                    data-testid="range-change"
-                  >
-                    <ui-delta size="inherit" [unknownLabel]="'holdings.unknown' | transloco" [value]="change.amount">
-                      <ui-amount currency="EUR" signed whenMasked="hide" [value]="change.amount" />
-                      @if (change.ratio !== null) {
-                        <app-amount-separator /> {{ change.ratio | ratio: { signed: true, decimals: 2 } }}
-                      }
-                    </ui-delta>
-                    <span class="text-(--muted-foreground)">{{
-                      'holdings.detail.rangeChange.' + shownRange() | transloco
-                    }}</span>
-                  </div>
-                }
-                <ui-async
-                  [errorMessage]="'holdings.chartErrorMessage' | transloco"
-                  [errorTitle]="'holdings.chartErrorTitle' | transloco"
-                  [retryLabel]="'holdings.retry' | transloco"
-                  [state]="chartState()"
-                  (retry)="retryQuotes()"
-                >
-                  <div class="h-[179px] lg:h-[169px]">
-                    <ui-line-chart
-                      axisTicks="3"
-                      [axisFormat]="chart().axis"
-                      [deltaFormat]="chart().delta"
-                      [label]="'holdings.chartLabel' | transloco"
-                      [points]="points()"
-                      [rangeKey]="shownRange()"
-                      [startLabel]="startLabel()"
-                      [timeColumnLabel]="'chart.time' | transloco"
-                      [timeFormat]="chart().time"
-                      [tooltipDelta]="false"
-                      [tooltipFormat]="tooltipFormat()"
-                      [valueColumnLabel]="'chart.value' | transloco"
-                      [valueFormat]="chart().value"
-                    />
-                  </div>
-                </ui-async>
-                <ui-segmented
-                  class="block w-full"
-                  size="sm"
-                  [label]="'chart.rangeLabel' | transloco"
-                  [options]="rangeOptions()"
-                  [value]="range()"
-                  (valueChange)="setRange($event)"
-                />
-              </div>
-            } @else {
-              <p class="text-label text-(--muted-foreground)" data-testid="no-quote-yet">
-                {{ noQuoteKey() | transloco: { currency: foreignCurrency() } }}
-              </p>
-            }
-          </div>
-        </ui-card>
-
-        <app-holding-detail-facts [holding]="holding" [priceSourceLabel]="priceSourceLabel()" />
-        @if (holding.description) {
-          <app-holding-detail-description [description]="holding.description" [externalUrl]="holding.externalUrl" />
-        }
-
-        <app-holding-detail-quote-action [needsQuote]="needsQuote()" (enterQuote)="onEnterQuote()" />
-      </div>
-    </ui-card>
-
-    @if (tradable()) {
-      <app-holding-detail-bar (buy)="buyOpen.set(true)" (sell)="sellOpen.set(true)" />
-    }
-
-    <app-holding-detail-dialogs
-      [buyOpen]="buyOpen()"
-      [deleteOpen]="deleteOpen()"
-      [editOpen]="editOpen()"
-      [holding]="holding"
-      [pricingInstrument]="pricingInstrument()"
-      [sellOpen]="sellOpen()"
-      (bought)="buyOpen.set(false)"
-      (buyDismissed)="buyOpen.set(false)"
-      (deleteDismissed)="deleteOpen.set(false)"
-      (deleted)="onDeleted($event)"
-      (editDismissed)="editOpen.set(false)"
-      (edited)="editOpen.set(false)"
-      (quoteDismissed)="onQuoteDismissed()"
-      (quoteSaved)="onQuoteSaved()"
-      (sellDismissed)="sellOpen.set(false)"
-      (sold)="onSold($event)"
-    />
-  } @else {
-    <div class="-mx-2 flex h-(--header-height) shrink-0 items-center lg:hidden">
+<ng-template #content let-holding>
+  @if (!desktop()) {
+    <div class="-mx-2 -mb-3 flex h-(--header-height) shrink-0 items-center justify-between">
       <ng-container [ngTemplateOutlet]="back" />
+      <button
+        aria-label="{{ 'holdings.detail.menu' | transloco }}"
+        data-testid="holding-menu-trigger-mobile"
+        size="icon"
+        type="button"
+        ui-button
+        variant="ghost"
+        [uiMenuTrigger]="menu"
+      >
+        <svg lucideEllipsis [size]="22" [strokeWidth]="1.75" />
+      </button>
     </div>
-    <app-holding-detail-missing [state]="missingState()" />
+
+    <div class="flex min-w-0 flex-col gap-0.5 px-1">
+      <h1 appFocusOnInit class="text-title m-0 font-semibold text-pretty outline-none" tabindex="-1">
+        {{ holding.instrumentName }}
+      </h1>
+      <span class="text-label text-(--muted-foreground)">{{ drawerDescription() }}</span>
+    </div>
   }
-</article>
+
+  <ui-menu #menu [label]="'holdings.detail.menu' | transloco" [width]="200">
+    <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
+      <svg lucidePencil [size]="18" [strokeWidth]="1.75" />
+      {{ 'holdings.edit.open' | transloco }}
+    </button>
+    <button data-testid="holding-delete" destructive type="button" uiMenuItem (click)="openDelete()">
+      <svg lucideTrash [size]="18" [strokeWidth]="1.75" />
+      {{ 'holdings.delete.open' | transloco }}
+    </button>
+  </ui-menu>
+
+  <ui-card class="lg:contents" surface="max-lg">
+    <div class="flex flex-col gap-5 lg:contents">
+      <app-holding-detail-figures [holding]="holding" [uiHighlight]="flash()" />
+
+      @if (!isCash()) {
+        <app-holding-detail-actions
+          [foreign]="foreignCurrency() !== undefined"
+          [menu]="menu"
+          (buy)="buyOpen.set(true)"
+          (sell)="sellOpen.set(true)"
+        />
+      }
+
+      @if (priced()) {
+        <div class="flex flex-col gap-3">
+          <app-holding-detail-range-change [change]="rangeChange()" [range]="shownRange()" />
+          <ui-async
+            [errorMessage]="'holdings.chartErrorMessage' | transloco"
+            [errorTitle]="'holdings.chartErrorTitle' | transloco"
+            [retryLabel]="'holdings.retry' | transloco"
+            [state]="chartState()"
+            (retry)="retryQuotes()"
+          >
+            <div class="h-[179px] lg:h-[169px]">
+              <ui-line-chart
+                axisTicks="3"
+                [axisFormat]="chart().axis"
+                [deltaFormat]="chart().delta"
+                [label]="'holdings.chartLabel' | transloco"
+                [points]="points()"
+                [rangeKey]="shownRange()"
+                [startLabel]="startLabel()"
+                [timeColumnLabel]="'chart.time' | transloco"
+                [timeFormat]="chart().time"
+                [tooltipDelta]="false"
+                [tooltipFormat]="tooltipFormat()"
+                [valueColumnLabel]="'chart.value' | transloco"
+                [valueFormat]="chart().value"
+              />
+            </div>
+          </ui-async>
+          <ui-segmented
+            class="block w-full"
+            size="sm"
+            [label]="'chart.rangeLabel' | transloco"
+            [options]="rangeOptions()"
+            [value]="range()"
+            (valueChange)="setRange($event)"
+          />
+        </div>
+      } @else {
+        <p class="text-label text-(--muted-foreground)" data-testid="no-quote-yet">
+          {{ noQuoteKey() | transloco: { currency: foreignCurrency() } }}
+        </p>
+      }
+    </div>
+  </ui-card>
+
+  <app-holding-detail-facts [flash]="flash()" [holding]="holding" [priceSourceLabel]="priceSourceLabel()" />
+  @if (holding.description) {
+    <app-holding-detail-description [description]="holding.description" [externalUrl]="holding.externalUrl" />
+  }
+
+  <app-holding-detail-quote-action [needsQuote]="needsQuote()" (enterQuote)="onEnterQuote()" />
+</ng-template>
+
+@if (desktop()) {
+  <ui-drawer
+    data-testid="holding-drawer"
+    [closeLabel]="'holdings.detail.close' | transloco"
+    [description]="drawerDescription()"
+    [heading]="holding()?.instrumentName"
+    [label]="drawerLabel()"
+    [open]="drawerOpen()"
+    (closed)="onDrawerClosed()"
+    (dismissed)="drawerOpen.set(false)"
+  >
+    @if (holding(); as holding) {
+      <ng-container [ngTemplateOutlet]="content" [ngTemplateOutletContext]="{ $implicit: holding }" />
+    } @else {
+      <app-holding-detail-missing [state]="missingState()" />
+    }
+  </ui-drawer>
+} @else {
+  <article
+    class="fixed inset-x-0 top-0 bottom-(--tab-bar-height) z-30 overflow-y-auto bg-(--background) px-4"
+    [class.pb-25]="holding()"
+  >
+    @if (holding(); as holding) {
+      <div class="flex flex-col gap-4">
+        <ng-container [ngTemplateOutlet]="content" [ngTemplateOutletContext]="{ $implicit: holding }" />
+      </div>
+
+      @if (tradable()) {
+        <app-holding-detail-bar (buy)="buyOpen.set(true)" (sell)="sellOpen.set(true)" />
+      }
+    } @else {
+      <div class="-mx-2 flex h-(--header-height) shrink-0 items-center">
+        <ng-container [ngTemplateOutlet]="back" />
+      </div>
+      <app-holding-detail-missing [state]="missingState()" />
+    }
+  </article>
+}
+
+@if (holding(); as holding) {
+  <app-holding-detail-dialogs
+    [buyOpen]="buyOpen()"
+    [deleteOpen]="deleteOpen()"
+    [editOpen]="editOpen()"
+    [holding]="holding"
+    [pricingInstrument]="pricingInstrument()"
+    [sellOpen]="sellOpen()"
+    (bought)="buyOpen.set(false)"
+    (buyDismissed)="buyOpen.set(false)"
+    (deleteDismissed)="deleteOpen.set(false)"
+    (deleted)="onDeleted($event)"
+    (editDismissed)="editOpen.set(false)"
+    (edited)="editOpen.set(false)"
+    (quoteDismissed)="onQuoteDismissed()"
+    (quoteSaved)="onQuoteSaved()"
+    (sellDismissed)="sellOpen.set(false)"
+    (sold)="onSold($event)"
+  />
+}

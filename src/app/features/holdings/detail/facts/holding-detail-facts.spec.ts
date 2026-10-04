@@ -30,20 +30,24 @@ describe('HoldingDetailFacts', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('rules the list with a hairline from the desktop breakpoint, and follows the viewport', async () => {
-    let listener: () => void = () => undefined;
+    const listeners: ((event: { matches: boolean }) => void)[] = [];
     const query = {
       matches: true,
-      addEventListener: (_: string, callback: () => void) => (listener = callback),
+      addEventListener: (_: string, callback: (event: { matches: boolean }) => void) => listeners.push(callback),
       removeEventListener: () => undefined,
     };
-    vi.stubGlobal('matchMedia', () => query);
+    vi.stubGlobal('matchMedia', (media: string) =>
+      media === '(min-width: 1024px)'
+        ? query
+        : { matches: false, addEventListener: () => undefined, removeEventListener: () => undefined },
+    );
     await renderFacts();
     const list = (await screen.findByText('holdings.columns.quantity')).closest('dl')!;
 
     expect(list.className).toContain('inset_0_1px_0');
 
     query.matches = false;
-    listener();
+    listeners.forEach((listener) => listener(query));
 
     await vi.waitFor(() => expect(list.className).not.toContain('inset_0_1px_0'));
   });

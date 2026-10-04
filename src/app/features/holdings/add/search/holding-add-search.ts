@@ -1,16 +1,16 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
 import { type FilterChipOption, UiFilterChips } from '@joanroucoux/cairn-ui/filter-chips';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
+import { UiResultGroup } from '@joanroucoux/cairn-ui/result-group';
 import { UiRow } from '@joanroucoux/cairn-ui/row';
-import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideChevronRight, LucideSearch } from '@lucide/angular';
+import { LucideSearch } from '@lucide/angular';
 
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
 
@@ -24,18 +24,16 @@ import { HoldingAddTracked } from './tracked/holding-add-tracked';
   imports: [
     HoldingAddGroup,
     HoldingAddTracked,
-    LucideChevronRight,
     LucideSearch,
     TranslocoPipe,
-    UiAsync,
     UiButton,
     UiCard,
     UiField,
     UiFieldLeading,
     UiFilterChips,
     UiInput,
+    UiResultGroup,
     UiRow,
-    UiSkeleton,
   ],
   templateUrl: './holding-add-search.html',
   host: { class: 'flex flex-col gap-4' },

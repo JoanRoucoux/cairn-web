@@ -4,7 +4,6 @@ import { mockApi } from './fixtures/api';
 import { LoginPageObject } from './pages/login-page';
 import { ProfilePageObject } from './pages/profile-page';
 
-const SECOND_ACCOUNT = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaab';
 const FIRST_HOLDING = '11111111-1111-1111-1111-111111111111';
 
 type TransitionRecord = { skipped: boolean };
@@ -93,54 +92,21 @@ test.describe('navigation motion', () => {
 
       await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(leftAt);
     });
-
-    test('lands on the group of ?compte= at once and highlights its header', async ({ page }) => {
-      await page.goto(`/holdings?compte=${SECOND_ACCOUNT}`);
-
-      const header = page.locator(`[data-account-id="${SECOND_ACCOUNT}"]`).locator('header');
-      await expect(header).toBeVisible();
-      await expect
-        .poll(() => header.evaluate((element) => element.getAnimations().length), { intervals: [10] })
-        .toBeGreaterThan(0);
-
-      const top = await header.evaluate((element) => element.getBoundingClientRect().top);
-
-      expect(top).toBeGreaterThanOrEqual(0);
-      expect(top).toBeLessThan(60);
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-    });
   });
 
-  test('fades the detail panel out beside the list on desktop, without a view transition', async ({ page }) => {
+  test('opens and closes the detail drawer on desktop without a view transition', async ({ page }) => {
     await page.goto('/holdings');
     await page.locator('table [data-holding-id]').first().click();
 
-    const panel = page.locator('main aside app-holding-detail-page');
+    const drawer = page.getByTestId('holding-drawer').locator('dialog');
 
-    await expect(panel).toBeVisible();
+    await expect(drawer).toBeVisible();
 
-    await page.getByRole('link', { name: /Fermer|Close/ }).click();
+    await page.getByRole('button', { name: /Fermer le détail|Close the detail/ }).click();
 
-    await expect(panel).toHaveClass(/ui-leave-fade/);
-    await expect(panel.getByRole('heading')).toBeVisible();
-    await expect(panel).toHaveCount(0);
+    await expect(drawer).toBeHidden();
+    await expect(page).toHaveURL(/\/holdings$/);
     expect(await playedTransitions(page)).toBe(0);
-  });
-
-  test('lands on the group of ?compte= at once on desktop and highlights its band', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 400 });
-    await page.goto(`/holdings?compte=${SECOND_ACCOUNT}`);
-
-    const cell = page.locator(`tbody[data-account-id="${SECOND_ACCOUNT}"] td[ui-group-cell]`);
-    await expect(cell).toBeVisible();
-    await expect
-      .poll(() => cell.evaluate((element) => element.firstElementChild!.getAnimations().length), { intervals: [10] })
-      .toBeGreaterThan(0);
-
-    const top = await cell.evaluate((element) => element.getBoundingClientRect().top);
-
-    expect(top).toBeGreaterThanOrEqual(0);
-    expect(top).toBeLessThan(80);
   });
 
   test('keeps the class filter active on arrival without highlighting a group', async ({ page }) => {

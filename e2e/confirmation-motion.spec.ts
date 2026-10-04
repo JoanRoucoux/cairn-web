@@ -97,7 +97,7 @@ test.describe('after a change on desktop', () => {
         (await motion(page)).filter((entry) => entry.name === 'backgroundColor').map((entry) => entry.tag),
       )
       .toContain('TD');
-    const highlighted = (await motion(page)).filter((entry) => entry.name === 'backgroundColor');
+    const highlighted = (await motion(page)).filter((entry) => entry.name === 'backgroundColor' && entry.tag === 'TD');
     expect(highlighted.every((entry) => entry.text.includes('Amundi MSCI World'))).toBe(true);
 
     const viewport = page.viewportSize()!;
@@ -135,7 +135,7 @@ test.describe('after a change on desktop', () => {
     const saved = page.waitForResponse((response) => response.url().endsWith('/buy'));
     await page.getByTestId('holding-buy-submit').click();
     await saved;
-    await page.getByRole('link', { name: 'Close the detail' }).click();
+    await page.keyboard.press('Escape');
 
     await expect(page).toHaveURL(/\/holdings$/);
     await expect(toast(page)).toHaveText('Purchase saved');

@@ -1,27 +1,26 @@
 import { Location, NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject, signal, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
-import { UI_AMOUNT_MASKED, UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
 import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
 import { UiBackLink } from '@joanroucoux/cairn-ui/back-link';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
-import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { UiDrawer } from '@joanroucoux/cairn-ui/drawer';
 import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
 import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucideTrash, LucideX } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideTrash } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
-import { AmountSeparator } from '@shared/format/amount-separator';
-import { RatioPipe } from '@shared/format/ratio-pipe';
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { foreignCurrencyOf } from '../foreign-currency';
@@ -34,12 +33,12 @@ import { HoldingDetailFigures } from './figures/holding-detail-figures';
 import { HoldingDetailStore } from './holding-detail-store';
 import { HoldingDetailMissing } from './missing/holding-detail-missing';
 import { HoldingDetailQuoteAction } from './quote-action/holding-detail-quote-action';
+import { HoldingDetailRangeChange } from './range-change/holding-detail-range-change';
 import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-detail-page',
   imports: [
-    AmountSeparator,
     FocusOnInit,
     HoldingDetailActions,
     HoldingDetailBar,
@@ -49,20 +48,18 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     HoldingDetailFigures,
     HoldingDetailMissing,
     HoldingDetailQuoteAction,
+    HoldingDetailRangeChange,
     LucideEllipsis,
     LucidePencil,
     LucideTrash,
-    LucideX,
     NgTemplateOutlet,
-    RatioPipe,
-    RouterLink,
     TranslocoPipe,
-    UiAmount,
     UiAsync,
     UiBackLink,
     UiButton,
     UiCard,
-    UiDelta,
+    UiDrawer,
+    UiHighlight,
     UiLineChart,
     UiMenu,
     UiMenuItem,
@@ -71,10 +68,7 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
   ],
   templateUrl: './holding-detail-page.html',
   providers: [HoldingDetailStore],
-  host: {
-    class: 'block',
-    '[animate.leave]': 'panelLeave()',
-  },
+  host: { class: 'block' },
 })
 export class HoldingDetailPage {
   #store = inject(HoldingDetailStore);
@@ -85,10 +79,12 @@ export class HoldingDetailPage {
   #locale = inject(LOCALE_ID);
   #masked = inject(UI_AMOUNT_MASKED);
 
-  readonly #desktop = injectDesktop();
   readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
-  protected readonly panelLeave = computed(() => (this.#desktop() ? 'ui-leave-fade' : null));
+  protected readonly desktop = injectDesktop();
+  protected readonly drawerOpen = signal(true);
+  protected readonly flash = this.#store.flash;
 
   protected readonly listHref = computed(() =>
     this.#router.serializeUrl(this.#router.createUrlTree(['/holdings'], { queryParams: this.#queryParams() })),
@@ -163,6 +159,22 @@ export class HoldingDetailPage {
   protected readonly editOpen = signal(false);
   protected readonly deleteOpen = signal(false);
 
+  protected readonly drawerLabel = computed(() => {
+    this.#translocoEvents();
+
+    return this.#transloco.translate('holdings.detail.panel');
+  });
+
+  protected readonly drawerDescription = computed(() => {
+    this.#language.activeLang();
+
+    const holding = this.holding();
+
+    return holding
+      ? `${holding.accountName} · ${this.#transloco.translate(`enums.accountType.${holding.accountType}`)}`
+      : undefined;
+  });
+
   protected readonly priceSourceLabel = computed(() => {
     this.#language.activeLang();
     return this.#transloco.translate(`enums.priceSource.${this.holding()?.priceSource}`);
@@ -215,6 +227,10 @@ export class HoldingDetailPage {
     this.deleteOpen.set(true);
   }
 
+  protected onDrawerClosed(): void {
+    this.backToList();
+  }
+
   protected onBack(event: MouseEvent): void {
     if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
       return;
@@ -225,7 +241,13 @@ export class HoldingDetailPage {
   }
 
   private leaveIfStillOn(holdingId: string): void {
-    if (this.#store.holdingId() === holdingId) {
+    if (this.#store.holdingId() !== holdingId) {
+      return;
+    }
+
+    if (this.desktop()) {
+      this.drawerOpen.set(false);
+    } else {
       this.backToList();
     }
   }
