@@ -36,7 +36,7 @@
         } @else {
           <span class="text-(--subtle-foreground)">&mdash;</span>
         }
-        <span class="text-(--muted-foreground)">{{ periodKey() | transloco }}</span>
+        <span class="text-(--muted-foreground)">{{ period().key | transloco: period().params }}</span>
       }
     </div>
 
@@ -70,6 +70,7 @@
             tooltip="auto"
             [axisFormat]="formats().axis"
             [deltaFormat]="formats().delta"
+            [deltaSuffix]="'portfolio.curve.sinceStart' | transloco"
             [label]="chartLabelKey() | transloco: chartLabelParams()"
             [points]="points()"
             [rangeKey]="shownRange() ?? range()"
@@ -82,7 +83,10 @@
         </div>
 
         @if (reconstructed()) {
-          <p class="text-caption mt-2 text-(--subtle-foreground)" data-testid="reconstructed-note">
+          <p
+            class="text-caption lg:text-label mt-3 text-(--subtle-foreground) lg:mt-4 lg:tracking-normal"
+            data-testid="reconstructed-note"
+          >
             {{ 'portfolio.curve.reconstructed' | transloco }}
           </p>
         }

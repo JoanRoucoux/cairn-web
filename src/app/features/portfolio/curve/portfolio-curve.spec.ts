@@ -28,6 +28,7 @@ const renderCurve = (
     rangeChangeEur: number | undefined;
     rangeChangeRatio: number | null | undefined;
     reconstructed: boolean;
+    since: string | null;
   }> = {},
 ): ReturnType<typeof render> =>
   render(PortfolioCurve, {
@@ -126,6 +127,19 @@ describe('PortfolioCurve', () => {
 
     await vi.waitFor(() => expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument());
     expect(screen.queryByText('portfolio.curve.period.1m')).not.toBeInTheDocument();
+  });
+
+  it('should name the date of the first point on the Max range', async () => {
+    await renderCurve({ range: 'max', since: 'March 2019' });
+
+    expect(await screen.findByText('portfolio.curve.period.since')).toBeInTheDocument();
+  });
+
+  it('should follow each change in the tooltip with the start of the range', async () => {
+    const { fixture } = await renderCurve();
+    const chart = fixture.debugElement.query(By.directive(UiLineChart)).componentInstance as UiLineChart;
+
+    expect(chart.deltaSuffix()).toBe('portfolio.curve.sinceStart');
   });
 
   it('should offer the six ranges', async () => {

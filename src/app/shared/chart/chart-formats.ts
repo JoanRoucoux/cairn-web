@@ -10,12 +10,16 @@ export type ChartFormats = {
 };
 
 export const chartFormats = (locale: string, masked: boolean, range: ChartRange): ChartFormats => {
-  const timeFormat =
-    range === '1d'
-      ? new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
-      : new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/Paris' });
-
   const zone = 'Europe/Paris';
+  const timeOptions: Record<ChartRange, Intl.DateTimeFormatOptions> = {
+    '1d': { hour: '2-digit', minute: '2-digit', timeZone: zone },
+    '7d': { weekday: 'short', day: 'numeric', month: 'short', timeZone: zone },
+    '1m': { day: 'numeric', month: 'short', timeZone: zone },
+    '1y': { day: 'numeric', month: 'short', year: 'numeric', timeZone: zone },
+    '5y': { month: 'long', year: 'numeric', timeZone: zone },
+    max: { month: 'long', year: 'numeric', timeZone: zone },
+  };
+  const timeFormat = new Intl.DateTimeFormat(locale, timeOptions[range]);
   const axisOptions: Record<ChartRange, Intl.DateTimeFormatOptions> = {
     '1d': { hour: '2-digit', minute: '2-digit', timeZone: zone },
     '7d': { weekday: 'short', day: 'numeric', timeZone: zone },

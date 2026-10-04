@@ -45,4 +45,18 @@ describe('chartFormats', () => {
   ] as const)('should label the %s %s axis like the mockup', (locale, range, expected) => {
     expect(chartFormats(locale, false, range).axis(at)).toBe(expected);
   });
+
+  it.each([
+    ['fr-FR', '1d', '09:00'],
+    ['fr-FR', '7d', 'ven. 25 sept.'],
+    ['fr-FR', '1m', '25 sept.'],
+    ['fr-FR', '1y', '25 sept. 2026'],
+    ['fr-FR', '5y', 'septembre 2026'],
+    ['fr-FR', 'max', 'septembre 2026'],
+    ['en-GB', '7d', 'Fri 25 Sept'],
+    ['en-GB', '1y', '25 Sept 2026'],
+    ['en-GB', 'max', 'September 2026'],
+  ] as const)('should date the %s %s tooltip like the mockup', (locale, range, expected) => {
+    expect(chartFormats(locale, false, range).time(at)).toBe(expected);
+  });
 });

@@ -32,13 +32,15 @@
     "error": "The curve could not be loaded",
     "empty": "No history yet for this period.",
     "reconstructed": "Reconstructed curve: today's composition applied to past prices, not the value measured at the time.",
+    "sinceStart": "since the beginning",
     "period": {
       "1d": "today",
       "7d": "over 7 days",
       "1m": "over 1 month",
       "1y": "over 1 year",
       "5y": "over 5 years",
-      "max": "since the beginning"
+      "max": "since the beginning",
+      "since": "since {{date}}"
     }
   },
   "envelopes": {

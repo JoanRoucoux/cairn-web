@@ -13,6 +13,8 @@ import type { ChartRange } from '@shared/chart/chart-range';
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
+import { periodLabel } from '../period-label';
+
 @Component({
   selector: 'app-portfolio-envelopes',
   imports: [AmountSeparator, RatioPipe, TranslocoPipe, UiAmount, UiAsync, UiDelta, UiMeter, UiSkeleton],
@@ -22,9 +24,10 @@ export class PortfolioEnvelopes {
   readonly state = input.required<AsyncState>();
   readonly envelopes = input<EnvelopePerformanceResponse[]>([]);
   readonly range = input.required<ChartRange>();
+  readonly since = input<string | null>(null);
   readonly retry = output<void>();
 
   protected readonly skeletonWidths = [70, 93, 116, 89, 112, 85, 108];
 
-  protected readonly periodKey = computed(() => `portfolio.curve.period.${this.range()}`);
+  protected readonly period = computed(() => periodLabel(this.range(), this.since()));
 }

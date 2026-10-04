@@ -56,6 +56,12 @@ export class PortfolioPage {
 
   protected readonly chartFormats = computed(() => chartFormats(this.#locale, this.#masked(), this.shownRange()));
 
+  protected readonly since = computed(() => {
+    const first = this.points()[0];
+
+    return this.shownRange() === 'max' && first ? this.chartFormats().time(first.t) : null;
+  });
+
   protected setRange(value: ChartRange): void {
     this.#store.range.set(value);
   }

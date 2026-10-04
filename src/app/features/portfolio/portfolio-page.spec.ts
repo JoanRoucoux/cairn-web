@@ -2,16 +2,19 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
-import { render, screen } from '@testing-library/angular';
+import { type RenderResult, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import type { HistoryResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
+import { PortfolioCurve } from './curve/portfolio-curve';
+import { PortfolioEnvelopes } from './envelopes/portfolio-envelopes';
 import { PortfolioPage } from './portfolio-page';
 import { PortfolioStore } from './portfolio-store';
 
@@ -71,8 +74,8 @@ describe('PortfolioPage', () => {
       request.flush(history),
     respondToHoldings: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
       request.flush(holdings),
-  ): Promise<void> => {
-    await render(PortfolioPage, {
+  ): Promise<RenderResult<PortfolioPage>> => {
+    const rendered = await render(PortfolioPage, {
       imports: [getTranslocoTestingModule()],
       providers: [
         provideZonelessChangeDetection(),
@@ -91,6 +94,8 @@ describe('PortfolioPage', () => {
     await vi.waitFor(() =>
       respondToPerformance(httpTesting.expectOne((request) => request.url === '/api/portfolio/performance')),
     );
+
+    return rendered;
   };
 
   afterEach(() => httpTesting.verify());
@@ -202,6 +207,58 @@ describe('PortfolioPage', () => {
       expect(pending).toHaveLength(1);
       pending[0]?.flush({ ...performance, range: 'max' });
     });
+  });
+
+  it('should date the Max range from its first point, on the curve and on the envelopes', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderPage();
+    const since = (type: typeof PortfolioCurve | typeof PortfolioEnvelopes): string | null =>
+      (fixture.debugElement.query(By.directive(type)).componentInstance as PortfolioCurve | PortfolioEnvelopes).since();
+
+    expect(since(PortfolioCurve)).toBeNull();
+
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne((request) => request.url === '/api/history')
+        .flush({
+          ...history,
+          points: [
+            { date: '2019-03-01', totalEur: 80000 },
+            { date: '2026-08-21', totalEur: 152318.64 },
+          ],
+        }),
+    );
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne((request) => request.url === '/api/portfolio/performance')
+        .flush({ ...performance, range: 'max' }),
+    );
+
+    await vi.waitFor(() => expect(since(PortfolioCurve)).toBe('March 2019'));
+    expect(since(PortfolioEnvelopes)).toBe('March 2019');
+  });
+
+  it('should leave the Max range undated while it has no point', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderPage();
+
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.max' }));
+    await vi.waitFor(() => httpTesting.expectOne((request) => request.url === '/api/history').flush(emptyHistory));
+    await vi.waitFor(() =>
+      httpTesting
+        .expectOne((request) => request.url === '/api/portfolio/performance')
+        .flush({ ...performance, range: 'max' }),
+    );
+
+    await vi.waitFor(() =>
+      expect(
+        (fixture.debugElement.query(By.directive(PortfolioEnvelopes)).componentInstance as PortfolioEnvelopes).range(),
+      ).toBe('max'),
+    );
+    expect(
+      (fixture.debugElement.query(By.directive(PortfolioEnvelopes)).componentInstance as PortfolioEnvelopes).since(),
+    ).toBeNull();
   });
 
   it('should retry only the history call when the curve alone failed', async () => {
