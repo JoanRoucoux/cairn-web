@@ -43,6 +43,7 @@
       "YAHOO": "Yahoo Finance",
       "COINGECKO": "CoinGecko",
       "SG_SIRIUS": "SG Sirius",
+      "AMUNDI": "Amundi",
       "MANUAL": "Saisie manuelle"
     },
     "accountType": {
