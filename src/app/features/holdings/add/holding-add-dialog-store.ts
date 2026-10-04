@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
@@ -52,7 +51,6 @@ export class HoldingAddDialogStore {
     defaultValue: [],
   });
 
-  readonly replaceHoldingId = signal<string | null>(null);
   readonly query = signal('');
   readonly accountId = signal('');
   readonly quantityText = signal('');
@@ -69,16 +67,11 @@ export class HoldingAddDialogStore {
   readonly submitting = signal(false);
   readonly error = signal(false);
   readonly instrumentError = signal(false);
-  readonly duplicate = signal(false);
 
   #created: { picked: PickedInstrument; id: string } | undefined;
   #debounceHandle: ReturnType<typeof setTimeout> | undefined;
 
   readonly #knownHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
-
-  readonly #ownInstrumentId = computed(
-    () => this.#knownHoldings().find((holding) => holding.id === this.replaceHoldingId())?.instrumentId,
-  );
 
   readonly #lineCounts = computed(() => {
     const counts = new Map<string, number>();
@@ -112,13 +105,9 @@ export class HoldingAddDialogStore {
       return [];
     }
 
-    const own = this.#ownInstrumentId();
-
-    return (this.instruments.hasValue() ? this.instruments.value() : [])
-      .filter((instrument) => instrument.id !== own)
-      .filter((instrument) =>
-        normalizeSearch(`${instrument.name} ${instrument.isin ?? ''} ${instrument.symbol ?? ''}`).includes(query),
-      );
+    return (this.instruments.hasValue() ? this.instruments.value() : []).filter((instrument) =>
+      normalizeSearch(`${instrument.name} ${instrument.isin ?? ''} ${instrument.symbol ?? ''}`).includes(query),
+    );
   });
 
   readonly catalogState = computed<AsyncState>(() => {
@@ -165,14 +154,6 @@ export class HoldingAddDialogStore {
       quantity > 0
     );
   });
-
-  start(query: string): void {
-    this.query.set(query);
-
-    if (query.trim().length >= MIN_ONLINE_QUERY) {
-      void this.searchOnline(query.trim());
-    }
-  }
 
   onQueryChange(value: string): void {
     this.query.set(value);
@@ -266,39 +247,6 @@ export class HoldingAddDialogStore {
       );
     } catch {
       this.error.set(true);
-
-      return null;
-    } finally {
-      this.submitting.set(false);
-    }
-  }
-
-  async replaceWith(picked: PickedInstrument): Promise<HoldingResponse | null> {
-    const holdingId = this.replaceHoldingId();
-
-    if (holdingId === null) {
-      return null;
-    }
-
-    this.submitting.set(true);
-    this.error.set(false);
-    this.instrumentError.set(false);
-    this.duplicate.set(false);
-
-    try {
-      const instrumentId = await this.#instrumentIdFor(picked);
-
-      if (instrumentId === undefined) {
-        return null;
-      }
-
-      return await firstValueFrom(this.#holdingsApiClient.changeHoldingInstrument(holdingId, { instrumentId }));
-    } catch (failure) {
-      if (failure instanceof HttpErrorResponse && failure.status === 422) {
-        this.duplicate.set(true);
-      } else {
-        this.error.set(true);
-      }
 
       return null;
     } finally {

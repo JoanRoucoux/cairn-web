@@ -1,4 +1,4 @@
-import { Component, booleanAttribute, computed, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
@@ -48,8 +48,6 @@ export class HoldingAddSearch {
   readonly searchingOnline = input.required<boolean>();
   readonly onlineError = input.required<boolean>();
   readonly onlineSearched = input.required<boolean>();
-  readonly replacing = input(false, { transform: booleanAttribute });
-  readonly busyKey = input<string | null>(null);
 
   readonly queryInput = output<Event>();
   readonly pickedCatalog = output<InstrumentResponse>();
@@ -65,9 +63,6 @@ export class HoldingAddSearch {
   );
   protected readonly onlineState = computed<AsyncState>(() =>
     this.onlineLoading() ? 'loading' : this.onlineError() ? 'error' : 'ready',
-  );
-  protected readonly notFoundKey = computed(() =>
-    this.replacing() ? 'holdings.replace.notFound' : 'holdings.add.notFound',
   );
   protected readonly typedIsin = computed(() => isinOf(this.query()));
 

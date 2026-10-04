@@ -3,7 +3,6 @@
   size="dense"
   type="button"
   ui-row
-  [busy]="busy()"
   [unavailable]="foreign() !== undefined"
   (click)="picked.emit(candidate())"
 >

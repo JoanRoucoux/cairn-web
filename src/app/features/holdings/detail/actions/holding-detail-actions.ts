@@ -17,9 +17,8 @@ export class HoldingDetailActions {
 
   readonly buy = output<void>();
   readonly sell = output<void>();
-  readonly changeListing = output<void>();
 
   protected readonly columns = computed(() =>
-    this.foreign() ? 'lg:grid-cols-[1fr_auto]' : 'lg:grid-cols-[1fr_1fr_auto]',
+    this.foreign() ? 'lg:grid-cols-[auto] lg:justify-end' : 'lg:grid-cols-[1fr_1fr_auto]',
   );
 }
