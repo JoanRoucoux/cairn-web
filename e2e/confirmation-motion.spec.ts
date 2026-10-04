@@ -80,7 +80,7 @@ test.describe('after a change on desktop', () => {
     await expect(row(page, AMUNDI_ID)).toContainText('83,277.60');
   });
 
-  test('closes the purchase, confirms it bottom right, then highlights the line with its new value', async ({
+  test('closes the purchase, confirms it at the bottom of the content area, then highlights the line', async ({
     page,
   }) => {
     await page.getByTestId('holding-buy').click();
@@ -101,8 +101,9 @@ test.describe('after a change on desktop', () => {
     expect(highlighted.every((entry) => entry.text.includes('Amundi MSCI World'))).toBe(true);
 
     const viewport = page.viewportSize()!;
+    const sidebar = await box(page.locator('aside').filter({ has: page.getByRole('navigation') }));
     const placed = await box(toast(page));
-    expect(Math.round(viewport.width - placed.right)).toBe(24);
+    expect((placed.left + placed.right) / 2).toBeCloseTo((sidebar.right + viewport.width) / 2, 0);
     expect(Math.round(viewport.height - placed.bottom)).toBe(24);
   });
 
@@ -289,5 +290,29 @@ test.describe('after a change on the profile', () => {
 
     await expect(toast(page)).toHaveText('7 holdings imported');
     await expect(page.getByTestId('import-report')).toHaveCount(0);
+  });
+
+  test('reports a failed import in an error toast that stays until its cross is clicked', async ({ page }) => {
+    await page.route('**/api/portfolio/import', (route) =>
+      route.fulfill({
+        status: 400,
+        contentType: 'application/problem+json',
+        json: { status: 400, detail: 'Missing column quantity' },
+      }),
+    );
+    await page.goto('/profile');
+
+    await page.getByTestId('import-file').setInputFiles({
+      name: 'portfolio.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from('account;accountType\n'),
+    });
+
+    await expect(toast(page)).toHaveText('Import failed: Missing column quantity');
+    await expect(page.getByTestId('import-rejections')).toHaveCount(0);
+
+    await page.getByRole('status').getByRole('button', { name: 'Close' }).click();
+
+    await expect(toast(page)).toHaveCount(0);
   });
 });

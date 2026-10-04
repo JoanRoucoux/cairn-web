@@ -151,7 +151,7 @@ describe('ProfilePage import and export', () => {
     expect(opened).toHaveBeenCalled();
   });
 
-  it('should say so when the import could not be sent at all', async () => {
+  it('should raise an error toast when the import fails without a reason', async () => {
     const user = userEvent.setup();
     await renderPage();
 
@@ -162,8 +162,29 @@ describe('ProfilePage import and export', () => {
       statusText: 'Server Error',
     });
 
-    expect(await screen.findByTestId('import-failed')).toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(TestBed.inject(UiToasts).toast()).toEqual(
+        expect.objectContaining({ kind: 'error', text: 'profile.toasts.importFailed', closeLabel: 'dialog.close' }),
+      ),
+    );
     expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
+  });
+
+  it('should name the reason the server gives in the error toast', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+    const showError = vi.spyOn(TestBed.inject(UiToasts), 'showError');
+
+    await user.upload(screen.getByTestId('import-file'), csvFile());
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
+      { status: 400, detail: 'Missing column quantity' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    await vi.waitFor(() =>
+      expect(showError).toHaveBeenCalledExactlyOnceWith('profile.toasts.importFailedBecause', 'dialog.close'),
+    );
   });
 
   it('should send nothing when the file picker is dismissed', async () => {

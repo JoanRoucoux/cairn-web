@@ -23,7 +23,6 @@
   "importing": "Importing...",
   "importTemplate": "Download the CSV template",
   "importTemplateHint": "The columns the import expects",
-  "importFailed": "The import could not be sent. Try again.",
   "importRejected": "Nothing was imported. Fix these {{count}} line(s) and try again.",
   "importLine": "Line",
   "importReason": "Reason",
@@ -95,6 +94,8 @@
     "passkeyAdded": "Passkey added",
     "passkeyDeleted": "Passkey deleted",
     "imported_one": "{{count}} holding imported",
-    "imported_other": "{{count}} holdings imported"
+    "imported_other": "{{count}} holdings imported",
+    "importFailed": "Import failed",
+    "importFailedBecause": "Import failed: {{reason}}"
   }
 }

@@ -174,7 +174,7 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('account-form-submit')).toBeEnabled();
   });
 
-  test('creates an account and sees it in the list', async ({ page }) => {
+  test('creates an account, sees it highlighted in the list and confirms it', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
@@ -186,6 +186,10 @@ test.describe('accounts', () => {
 
     await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeHidden();
     await expect(accounts.rowFor('Wise EUR')).toBeVisible();
+    await expect
+      .poll(() => accounts.rowFor('Wise EUR').evaluate((row) => row.getAnimations({ subtree: true }).length))
+      .toBeGreaterThan(0);
+    await expect(page.locator('ui-toaster > div')).toHaveText('Account added');
   });
 
   test('renames an account and sees the change in the list', async ({ page }) => {

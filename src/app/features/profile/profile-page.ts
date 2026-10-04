@@ -18,7 +18,7 @@ import { LucideChevronRight, LucideDownload, LucideFileText, LucideLogOut, Lucid
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
-import { injectToast } from '@shared/feedback/toast';
+import { injectErrorToast, injectToast } from '@shared/feedback/toast';
 import { pluralKey } from '@shared/format/plural-key';
 
 import { ProfilePasskeyDeleteDialog } from './passkey-delete-dialog/profile-passkey-delete-dialog';
@@ -63,6 +63,7 @@ export class ProfilePage {
   readonly #injector = inject(Injector);
   #signIn = inject(SignInRedirect);
   #toast = injectToast();
+  #errorToast = injectErrorToast();
 
   protected readonly identityState = this.#store.identityState;
   protected readonly identityShown = delayedState(this.identityState);
@@ -83,7 +84,6 @@ export class ProfilePage {
   #importStore = inject(PortfolioImportStore);
   protected readonly importing = this.#importStore.importing;
   protected readonly rejections = this.#importStore.rejections;
-  protected readonly failed = this.#importStore.failed;
 
   #themeLabels = translateSignal(THEME_PREFERENCES.map((value) => `theme.${value}`));
 
@@ -119,12 +119,16 @@ export class ProfilePage {
       return;
     }
 
-    const report = await this.#importStore.importFile(file);
+    const outcome = await this.#importStore.importFile(file);
 
-    if (report) {
-      const count = report.holdingsCreated + report.holdingsUpdated;
+    if (outcome.kind === 'imported') {
+      const count = outcome.report.holdingsCreated + outcome.report.holdingsUpdated;
 
       this.#toast(pluralKey('profile.toasts.imported', count), { count });
+    } else if (outcome.kind === 'failed') {
+      const key = outcome.reason ? 'profile.toasts.importFailedBecause' : 'profile.toasts.importFailed';
+
+      this.#errorToast(key, { reason: outcome.reason });
     }
   }
 

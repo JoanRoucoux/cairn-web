@@ -135,7 +135,7 @@ describe('AccountFormDialog', () => {
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts'));
     expect(request.request.body).toEqual({ name: 'Contoso Trading', type: 'CTO', institution: '' });
-    request.flush({});
+    request.flush({ id: 'a3' });
   });
 
   it('labels the primary action Save when editing', async () => {
@@ -144,7 +144,7 @@ describe('AccountFormDialog', () => {
     expect(screen.getByTestId('account-form-submit')).toHaveTextContent('accounts.form.submit');
   });
 
-  it('should emit savedForm once the account is accepted', async () => {
+  it('should emit savedForm with the saved account once it is accepted', async () => {
     const user = userEvent.setup();
     await renderDialog();
     slowDialogExit();
@@ -155,8 +155,8 @@ describe('AccountFormDialog', () => {
     await user.click(screen.getByTestId('account-form-submit'));
     await vi.waitFor(() => expectSubmitting(screen.getByTestId('account-form-submit')));
 
-    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({}));
-    await vi.waitFor(() => expect(savedForm).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({ id: 'a3' }));
+    await vi.waitFor(() => expect(savedForm).toHaveBeenCalledExactlyOnceWith('a3'));
     expect(dismissed).not.toHaveBeenCalled();
   });
 

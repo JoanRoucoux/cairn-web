@@ -7,6 +7,7 @@ import { UiBadge } from '@joanroucoux/cairn-ui/badge';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -45,6 +46,7 @@ import { AccountUncounted } from './uncounted/account-uncounted';
     UiBadge,
     UiCard,
     UiButton,
+    UiHighlight,
     UiMenu,
     UiMenuItem,
     UiMenuTrigger,
@@ -76,6 +78,7 @@ export class AccountListPage {
   protected readonly formOpen = signal(false);
   protected readonly accountToEdit = signal<AccountFormTarget | undefined>(undefined);
   protected readonly accountToDelete = signal<AccountView | undefined>(undefined);
+  protected readonly addedAccountId = signal<string | null>(null);
 
   protected onAdd(): void {
     this.accountToEdit.set(undefined);
@@ -87,7 +90,10 @@ export class AccountListPage {
     this.formOpen.set(true);
   }
 
-  protected onFormSaved(): void {
+  protected onFormSaved(accountId: string): void {
+    if (!this.accountToEdit()) {
+      this.addedAccountId.set(accountId);
+    }
     this.formOpen.set(false);
     this.#store.retry();
   }

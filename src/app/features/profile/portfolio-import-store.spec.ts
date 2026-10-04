@@ -36,13 +36,10 @@ describe('PortfolioImportStore', () => {
     request.flush({ accountsCreated: 1, instrumentsCreated: 2, holdingsCreated: 3, holdingsUpdated: 4 });
 
     expect(await imported).toEqual({
-      accountsCreated: 1,
-      instrumentsCreated: 2,
-      holdingsCreated: 3,
-      holdingsUpdated: 4,
+      kind: 'imported',
+      report: { accountsCreated: 1, instrumentsCreated: 2, holdingsCreated: 3, holdingsUpdated: 4 },
     });
     expect(store.rejections()).toEqual([]);
-    expect(store.failed()).toBe(false);
     expect(store.importing()).toBe(false);
   });
 
@@ -61,10 +58,9 @@ describe('PortfolioImportStore', () => {
       { status: 422, statusText: 'Unprocessable Content' },
     );
 
-    expect(await imported).toBeNull();
+    expect(await imported).toEqual({ kind: 'rejected' });
     expect(store.rejections()).toHaveLength(2);
     expect(store.rejections()[0]).toMatchObject({ line: 2, code: 'UNKNOWN_ACCOUNT_TYPE', value: 'PEAA' });
-    expect(store.failed()).toBe(false);
   });
 
   it('should report a failure that is not a rejection', async () => {
@@ -75,9 +71,41 @@ describe('PortfolioImportStore', () => {
       statusText: 'Server Error',
     });
 
-    expect(await imported).toBeNull();
-    expect(store.failed()).toBe(true);
+    expect(await imported).toEqual({ kind: 'failed', reason: null });
     expect(store.rejections()).toEqual([]);
+    expect(store.importing()).toBe(false);
+  });
+
+  it('should pass on the reason the server gives for a failure', async () => {
+    const imported = store.importFile(new File([CSV], 'portfolio.csv'));
+
+    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
+      { status: 400, detail: ' The file is not UTF-8 ' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(await imported).toEqual({ kind: 'failed', reason: 'The file is not UTF-8' });
+  });
+
+  it.each([{ status: 400 }, { status: 400, detail: '  ' }])(
+    'should give no reason when the problem %o has no detail',
+    async (body) => {
+      const imported = store.importFile(new File([CSV], 'portfolio.csv'));
+
+      (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(body, {
+        status: 400,
+        statusText: 'Bad Request',
+      });
+
+      expect(await imported).toEqual({ kind: 'failed', reason: null });
+    },
+  );
+
+  it('should give no reason when the file cannot be read', async () => {
+    const file = new File([CSV], 'portfolio.csv');
+    vi.spyOn(file, 'text').mockRejectedValue(new DOMException('Unreadable', 'NotReadableError'));
+
+    expect(await store.importFile(file)).toEqual({ kind: 'failed', reason: null });
     expect(store.importing()).toBe(false);
   });
 
@@ -89,21 +117,21 @@ describe('PortfolioImportStore', () => {
       { status: 422, statusText: 'Unprocessable Content' },
     );
 
-    await imported;
+    expect(await imported).toEqual({ kind: 'failed', reason: null });
     expect(store.rejections()).toEqual([]);
-    expect(store.failed()).toBe(true);
   });
-  it('should clear the previous outcome when a new file is imported', async () => {
+
+  it('should clear the previous rejections when a new file is imported', async () => {
     const first = store.importFile(new File([CSV], 'portfolio.csv'));
-    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(null, {
-      status: 500,
-      statusText: 'Server Error',
-    });
+    (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
+      { status: 422, errors: [{ line: 5, code: 'ZERO_QUANTITY' }] },
+      { status: 422, statusText: 'Unprocessable Content' },
+    );
     await first;
 
     const second = store.importFile(new File([CSV], 'portfolio.csv'));
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'));
-    expect(store.failed()).toBe(false);
+    expect(store.rejections()).toEqual([]);
     request.flush({ accountsCreated: 0, instrumentsCreated: 0, holdingsCreated: 0, holdingsUpdated: 1 });
     await second;
   });

@@ -7,8 +7,14 @@ import type {
   ImportErrorResponse,
   ImportRejectionResponse,
   ImportReportResponse,
+  ProblemDetail,
 } from '@core/api-client/cairnAPI.schemas';
 import { PortfolioService } from '@core/api-client/portfolio/portfolio.service';
+
+export type ImportOutcome =
+  | { readonly kind: 'imported'; readonly report: ImportReportResponse }
+  | { readonly kind: 'rejected' }
+  | { readonly kind: 'failed'; readonly reason: string | null };
 
 @Injectable()
 export class PortfolioImportStore {
@@ -16,12 +22,10 @@ export class PortfolioImportStore {
 
   readonly importing = signal(false);
   readonly rejections = signal<ImportErrorResponse[]>([]);
-  readonly failed = signal(false);
 
-  async importFile(file: File): Promise<ImportReportResponse | null> {
+  async importFile(file: File): Promise<ImportOutcome> {
     this.importing.set(true);
     this.rejections.set([]);
-    this.failed.set(false);
 
     try {
       const report = await firstValueFrom(
@@ -30,16 +34,16 @@ export class PortfolioImportStore {
           headers: new HttpHeaders({ 'Content-Type': 'text/csv' }),
         }),
       );
-      return report;
+      return { kind: 'imported', report };
     } catch (error) {
       const rejected = rejectionOf(error);
       if (rejected) {
         this.rejections.set(rejected);
-      } else {
-        this.failed.set(true);
+
+        return { kind: 'rejected' };
       }
 
-      return null;
+      return { kind: 'failed', reason: reasonOf(error) };
     } finally {
       this.importing.set(false);
     }
@@ -54,4 +58,10 @@ function rejectionOf(error: unknown): ImportErrorResponse[] | null {
   const body = error.error as ImportRejectionResponse | null;
 
   return body?.errors?.length ? body.errors : null;
+}
+
+function reasonOf(error: unknown): string | null {
+  const detail = error instanceof HttpErrorResponse ? (error.error as ProblemDetail | null)?.detail?.trim() : null;
+
+  return detail || null;
 }

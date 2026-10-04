@@ -51,11 +51,11 @@ export class AccountFormDialog {
   #store = inject(AccountFormDialogStore);
 
   readonly account = input<AccountFormTarget | undefined>(undefined);
-  readonly savedForm = output<void>();
+  readonly savedForm = output<string>();
   readonly dismissed = output<void>();
 
   #toast = injectToast();
-  readonly #outcome = injectDialogOutcome<void>(() =>
+  readonly #outcome = injectDialogOutcome<string>(() =>
     this.#toast(this.account() ? 'accounts.toasts.updated' : 'accounts.toasts.created'),
   );
 
@@ -103,15 +103,17 @@ export class AccountFormDialog {
     const result = this.#outcome.settle();
 
     if (result) {
-      this.savedForm.emit();
+      this.savedForm.emit(result.value);
     } else {
       this.dismissed.emit();
     }
   }
 
   protected async confirm(): Promise<void> {
-    if (await this.#store.save(this.account()?.id)) {
-      this.#outcome.succeed();
+    const saved = await this.#store.save(this.account()?.id);
+
+    if (saved) {
+      this.#outcome.succeed(saved);
     }
   }
 }

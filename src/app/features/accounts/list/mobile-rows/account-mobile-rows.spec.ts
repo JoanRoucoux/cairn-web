@@ -5,6 +5,7 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
+import { recordMotion } from '@shared/testing/motion';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import type { AccountView } from '../account-list-store';
@@ -34,9 +35,10 @@ describe('AccountMobileRows', () => {
   const renderRows = async (
     accounts: AccountView[] = [account],
     langs: Record<string, Record<string, string>> = {},
+    added: string | null = null,
   ): Promise<void> => {
     await render(AccountMobileRows, {
-      inputs: { accounts },
+      inputs: { accounts, added },
       on: { edit, remove },
       imports: [getTranslocoTestingModule({ langs: { en: {}, 'accounts/en': {}, ...langs } })],
       providers: [
@@ -51,6 +53,15 @@ describe('AccountMobileRows', () => {
   afterEach(() => {
     edit.mockClear();
     remove.mockClear();
+  });
+
+  it('should highlight the account just added, and no other', async () => {
+    const motion = recordMotion();
+
+    await renderRows([account, savings], {}, 'a2');
+
+    await vi.waitFor(() => expect(motion.highlighted).toEqual([screen.getAllByTestId('account-link-mobile')[1]]));
+    motion.restore();
   });
 
   it('should show a row with no separator for a blank institution, and the empty hint', async () => {
