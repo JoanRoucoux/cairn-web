@@ -105,6 +105,7 @@ describe('HoldingListStore account filter', () => {
     expect(store.accountName()).toBeNull();
     expect(store.foldLocked()).toBe(false);
     expect(store.knownAccountIds()).toEqual(['a1', 'a2', 'a3']);
+    expect(store.accountsReady()).toBe(true);
   });
 
   it('should keep only the account of ?compte=, with its name, and lock the folds', async () => {
@@ -143,10 +144,23 @@ describe('HoldingListStore account filter', () => {
     expect(store.securitiesAccount()).toBe('a2');
   });
 
-  it('should name nothing for an account neither call knows yet', async () => {
-    await open({ compte: 'a9' }, [], 'pending');
+  it('should filter on nothing for an id no holding carries while the accounts load, and keep it in the URL', async () => {
+    await open({ compte: 'a9' }, holdings, 'pending');
 
+    expect(store.account()).toBeNull();
     expect(store.accountName()).toBeNull();
+    expect(store.unknownAccountParam()).toBe(false);
+    expect(store.accountsReady()).toBe(false);
+    expect(store.groups()).toHaveLength(3);
+  });
+
+  it('should list every account for an id no holding carries once the accounts failed', async () => {
+    await open({ compte: 'a9' }, holdings, 'error');
+
+    expect(store.account()).toBeNull();
+    expect(store.unknownAccountParam()).toBe(false);
+    expect(store.accountsReady()).toBe(false);
+    expect(store.groups()).toHaveLength(3);
   });
 
   it('should keep ?compte= when the accounts fail, never pruning on a failure', async () => {

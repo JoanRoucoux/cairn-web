@@ -59,6 +59,7 @@
       [active]="account() !== null"
       [clearLabel]="'holdings.accountFilter.clear' | transloco"
       [contextLabel]="'holdings.accountFilter.label' | transloco"
+      [disabled]="!accountsReady()"
       (cleared)="chooseAccount(null)"
     >
       {{ accountName() ?? ('holdings.accountFilter.all' | transloco) }}
@@ -85,7 +86,7 @@
 </div>
 
 <div class="mt-4" [class.max-lg:hidden]="selectedHoldingId() !== undefined">
-  <ui-card data-testid="holdings-list" padding="none" surface="lg">
+  <ui-card data-testid="holdings-list" padding="none" surface="lg" tabindex="-1">
     <div class="lg:px-4 lg:pt-2 lg:pb-3">
       <ui-async
         align="auto"
@@ -131,7 +132,6 @@
             <tbody
               app-holding-account-group
               [collapsed]="!expanded(group.accountId)"
-              [expanded]="expanded(group.accountId)"
               [flash]="flash()"
               [group]="group"
               [selectedHoldingId]="selectedHoldingId()"

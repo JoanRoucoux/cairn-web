@@ -16,7 +16,6 @@ import { HoldingAccountGroup } from './holding-account-group';
     <tbody
       app-holding-account-group
       [collapsed]="!expanded()"
-      [expanded]="expanded()"
       [group]="group()"
       [toggleDisabled]="toggleDisabled()"
       (expandedChange)="expandedChange.emit($event)"

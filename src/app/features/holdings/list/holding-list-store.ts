@@ -96,14 +96,22 @@ export class HoldingListStore {
       return null;
     }
 
-    return !this.#accountsKnown() || this.#accountList().some((account) => account.id === id) ? id : null;
+    const known = this.#accountsKnown()
+      ? this.#accountList().some((account) => account.id === id)
+      : this.#allGroups().some((group) => group.accountId === id);
+
+    return known ? id : null;
   });
+
+  readonly accountsReady = this.#accountsKnown;
 
   readonly knownAccountIds = computed(() =>
     this.#accountsKnown() ? this.#accountList().map((account) => account.id) : null,
   );
 
-  readonly unknownAccountParam = computed(() => this.accountParam() !== null && this.account() === null);
+  readonly unknownAccountParam = computed(
+    () => this.#accountsKnown() && this.accountParam() !== null && this.account() === null,
+  );
 
   readonly accountOptions = computed<AccountOption[]>(() =>
     this.#accountList().map((account) => ({ id: account.id, name: account.name })),
@@ -115,8 +123,7 @@ export class HoldingListStore {
     return id === null
       ? null
       : (this.#accountList().find((account) => account.id === id)?.name ??
-          this.#allGroups().find((group) => group.accountId === id)?.accountName ??
-          null);
+          this.#allGroups().find((group) => group.accountId === id)!.accountName);
   });
 
   readonly securitiesAccount = computed(() => {

@@ -88,6 +88,46 @@ test.describe('the detail drawer', () => {
     await expectClosedOnTheRow(page);
   });
 
+  const animated = (locator: Locator): Promise<number> =>
+    locator.evaluate((element) => element.getAnimations({ subtree: true }).length);
+
+  test('stays open after Modifier, its amounts and the row updated and highlighted', async ({ page }) => {
+    await openDrawer(page);
+    const figures = page.getByTestId('holding-drawer').locator('app-holding-detail-figures');
+    const row = page.locator('tr').filter({ has: page.locator(`[data-holding-id="${AMUNDI_ID}"]`) });
+
+    await page.getByTestId('holding-menu-trigger-desktop').click();
+    await page.getByTestId('holding-edit').click();
+    await page.getByTestId('holding-edit-quantity').fill('300');
+    await page.getByTestId('holding-edit-submit').click();
+
+    await expect(page.getByTestId('holding-edit-dialog')).toHaveCount(0);
+    await expect(drawer(page)).toBeVisible();
+    await expect(figures).toContainText('123,060.00');
+    await expect.poll(() => animated(figures), { intervals: [10] }).toBeGreaterThan(0);
+    await expect(row).toContainText('123,060.00');
+    await expect.poll(() => animated(row), { intervals: [10] }).toBeGreaterThan(0);
+  });
+
+  test('stays open after Saisir un cours, its amounts and the row updated and highlighted', async ({ page }) => {
+    const unpriced = '33333333-3333-3333-3333-333333333333';
+    await page.locator(`table [data-holding-id="${unpriced}"]`).click();
+    await expect(drawer(page)).toBeVisible();
+    const figures = page.getByTestId('holding-drawer').locator('app-holding-detail-figures');
+    const row = page.locator('tr').filter({ has: page.locator(`[data-holding-id="${unpriced}"]`) });
+
+    await page.getByTestId('holding-drawer').getByTestId('enter-quote').click();
+    await page.getByTestId('manual-quote-price').fill('12.5');
+    await page.getByTestId('manual-quote-submit').click();
+
+    await expect(page.getByTestId('manual-quote-dialog')).toHaveCount(0);
+    await expect(drawer(page)).toBeVisible();
+    await expect(figures).toContainText('2,537.50');
+    await expect.poll(() => animated(figures), { intervals: [10] }).toBeGreaterThan(0);
+    await expect(row).toContainText('2,537.50');
+    await expect.poll(() => animated(row), { intervals: [10] }).toBeGreaterThan(0);
+  });
+
   test('stays open after a purchase, its amounts updated and highlighted', async ({ page }) => {
     await openDrawer(page);
     const figures = page.getByTestId('holding-drawer').locator('app-holding-detail-figures');

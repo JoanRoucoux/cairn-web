@@ -30,7 +30,12 @@
       <tbody>
         @if (state() === 'ready') {
           @for (account of accounts(); track account.id) {
-            <tr data-testid="account-row" uiTr [uiHighlight]="account.id === addedAccountId() ? account.id : null">
+            <tr
+              data-testid="account-row"
+              uiTr
+              [attr.data-account-id]="account.id"
+              [uiHighlight]="account.id === addedAccountId() ? account.id : null"
+            >
               <td primary uiTd>
                 <a
                   data-testid="account-link"

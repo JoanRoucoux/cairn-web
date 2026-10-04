@@ -1,4 +1,4 @@
-import { Component, booleanAttribute, computed, input, output } from '@angular/core';
+import { Component, booleanAttribute, computed, inject, input, output } from '@angular/core';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiFlipItem, UiHighlight } from '@joanroucoux/cairn-ui/motion';
@@ -40,16 +40,18 @@ import { HoldingAccountGroupRow } from './row/holding-account-group-row';
   },
 })
 export class HoldingAccountGroup {
+  readonly #body = inject(UiGroup);
+
   readonly group = input.required<AccountGroup>();
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly flash = input<HoldingChange | null>(null);
-  readonly expanded = input(true, { transform: booleanAttribute });
   readonly toggleDisabled = input(false, { transform: booleanAttribute });
 
   readonly editCash = output<string>();
   readonly enterQuote = output<HoldingResponse>();
   readonly expandedChange = output<boolean>();
 
+  protected readonly expanded = computed(() => !this.#body.collapsed());
   protected readonly bodyId = computed(() => `holdings-group-${this.group().accountId}`);
 
   protected readonly cashRowKeys = cashRowKeys;

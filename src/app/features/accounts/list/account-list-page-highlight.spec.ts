@@ -42,10 +42,18 @@ describe('AccountListPage highlight', () => {
       .flush({ totalEur: 0, unvaluedCount: 0, nonEurCount: 0, byAssetClass: [], byAccount: [], holdings });
   };
 
-  beforeEach(() => (motion = recordMotion()));
+  beforeEach(() => {
+    motion = recordMotion();
+    vi.spyOn(Element.prototype, 'getAnimations').mockImplementation(function (this: Element) {
+      return motion.highlighted.some((element) => this.contains(element))
+        ? [{ effect: { getKeyframes: () => [{ backgroundColor: 'var(--soft)' }] } } as unknown as Animation]
+        : [];
+    });
+  });
 
   afterEach(() => {
     motion.restore();
+    vi.restoreAllMocks();
     httpTesting.verify();
   });
 
@@ -53,9 +61,11 @@ describe('AccountListPage highlight', () => {
     const user = userEvent.setup();
     await renderPage([northwind], []);
     const rowsWhenConfirmed: number[] = [];
-    vi.spyOn(TestBed.inject(UiToasts), 'show').mockImplementation(() =>
-      rowsWhenConfirmed.push(screen.queryAllByText('Livret A').length),
-    );
+    let highlightedWhenConfirmed = 0;
+    vi.spyOn(TestBed.inject(UiToasts), 'show').mockImplementation(() => {
+      highlightedWhenConfirmed = motion.highlighted.length;
+      rowsWhenConfirmed.push(screen.queryAllByText('Livret A').length);
+    });
 
     await user.click(screen.getByTestId('account-add'));
     await user.type(screen.getByTestId('account-form-name'), 'Livret A');
@@ -76,6 +86,7 @@ describe('AccountListPage highlight', () => {
     );
     await vi.waitFor(() => expect(rowsWhenConfirmed).toHaveLength(1));
     expect(rowsWhenConfirmed[0]).toBeGreaterThan(0);
+    expect(highlightedWhenConfirmed).toBeGreaterThan(0);
   });
 
   it('should hold the confirmation until the list has reloaded', async () => {

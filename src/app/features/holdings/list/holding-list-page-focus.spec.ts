@@ -31,14 +31,32 @@ const holdings = [
     marketValueEur: 22515.47,
     stale: false,
   },
+  {
+    id: 'h2',
+    accountId: 'a2',
+    accountName: 'Contoso Trading',
+    accountType: 'CTO',
+    instrumentName: 'Woodgrove Industries',
+    assetClass: 'EQUITY',
+    quantity: 10,
+    price: 50,
+    marketValueEur: 500,
+    stale: false,
+  },
 ];
 
-const accounts = [{ id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' }];
+const accounts = [
+  { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' },
+  { id: 'a2', name: 'Contoso Trading', type: 'CTO', institution: 'Contoso Bank' },
+];
 
 describe('HoldingListPage focus', () => {
   let httpTesting: HttpTestingController;
 
-  const closeDetail = async (visible: 'card' | 'table' | 'none', removed = false): Promise<HTMLElement> => {
+  const closeDetail = async (
+    visible: 'card' | 'table' | 'none',
+    removed: 'none' | 'own' | 'other' | 'list' = 'none',
+  ): Promise<HTMLElement> => {
     const { fixture } = await render(TestHost, {
       imports: [getTranslocoTestingModule()],
       routes: [{ path: '', component: HoldingListPage, children: [{ path: ':holdingId', component: StubDetail }] }],
@@ -66,10 +84,14 @@ describe('HoldingListPage focus', () => {
       Object.defineProperty(shown, 'offsetParent', { value: host });
     }
 
-    if (removed) {
-      const heading = host.querySelector<HTMLElement>('table [data-account-id="a1"] h2 button')!;
+    if (removed !== 'none') {
+      const band = removed === 'own' ? 'a1' : 'a2';
 
-      Object.defineProperty(heading, 'offsetParent', { value: host });
+      if (removed !== 'list') {
+        const heading = host.querySelector<HTMLElement>(`table [data-account-id="${band}"] h2 button`)!;
+
+        Object.defineProperty(heading, 'offsetParent', { value: host });
+      }
       TestBed.inject(HoldingChanges).removed('h1');
     }
 
@@ -94,10 +116,24 @@ describe('HoldingListPage focus', () => {
   });
 
   it('moves focus to the band of its account once the closed line was deleted or sold out', async () => {
-    const row = await closeDetail('table', true);
+    const row = await closeDetail('table', 'own');
 
     expect(row).not.toHaveFocus();
     expect(within(document.querySelector('table')!).getByRole('button', { name: /^Northwind PEA/ })).toHaveFocus();
+    httpTesting.expectOne('/api/holdings').flush([]);
+  });
+
+  it('moves focus to the next account band when the deleted line emptied its own group', async () => {
+    await closeDetail('table', 'other');
+
+    expect(within(document.querySelector('table')!).getByRole('button', { name: /^Contoso Trading/ })).toHaveFocus();
+    httpTesting.expectOne('/api/holdings').flush([]);
+  });
+
+  it('moves focus to the list once no band is left', async () => {
+    await closeDetail('table', 'list');
+
+    expect(screen.getByTestId('holdings-list')).toHaveFocus();
     httpTesting.expectOne('/api/holdings').flush([]);
   });
 

@@ -17,7 +17,6 @@ import { HoldingAccountGroup } from './holding-account-group';
     <tbody
       app-holding-account-group
       [collapsed]="!expanded()"
-      [expanded]="expanded()"
       [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"

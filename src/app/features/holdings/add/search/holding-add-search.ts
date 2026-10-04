@@ -8,7 +8,7 @@ import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
 import { type FilterChipOption, UiFilterChips } from '@joanroucoux/cairn-ui/filter-chips';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { UiResultGroup } from '@joanroucoux/cairn-ui/result-group';
-import { UiRow } from '@joanroucoux/cairn-ui/row';
+import { UiRow, UiRowGroup } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideSearch } from '@lucide/angular';
 
@@ -34,6 +34,7 @@ import { HoldingAddTracked } from './tracked/holding-add-tracked';
     UiInput,
     UiResultGroup,
     UiRow,
+    UiRowGroup,
   ],
   templateUrl: './holding-add-search.html',
   host: { class: 'flex flex-col gap-4' },

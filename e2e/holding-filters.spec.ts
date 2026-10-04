@@ -91,17 +91,32 @@ for (const viewport of viewports) {
       await page.goto('/holdings');
       await expect(groups(page)).toHaveCount(6);
 
-      await header(page, 'Northwind PEA').click();
-      const slides = await page.evaluate(
+      const sampled = page.evaluate(
         () =>
-          document.getAnimations().filter((animation) => {
-            const target = (animation.effect as KeyframeEffect | null)?.target;
+          new Promise<{ inHeader: number; elsewhere: string[] }>((resolve) => {
+            const seen = new Set<Animation>();
+            const start = performance.now();
+            const sample = (): void => {
+              document.getAnimations().forEach((animation) => seen.add(animation));
+              if (performance.now() - start < 400) {
+                requestAnimationFrame(sample);
+                return;
+              }
+              const targets = [...seen].map((animation) => (animation.effect as KeyframeEffect | null)?.target);
+              resolve({
+                inHeader: targets.filter((target) => target?.closest('h2')).length,
+                elsewhere: targets.filter((target) => target && !target.closest('h2')).map((target) => target!.tagName),
+              });
+            };
 
-            return target instanceof Element && !target.closest('h2');
-          }).length,
+            requestAnimationFrame(sample);
+          }),
       );
+      await header(page, 'Northwind PEA').click();
+      const slides = await sampled;
 
-      expect(slides).toBe(0);
+      expect(slides.inHeader).toBeGreaterThan(0);
+      expect(slides.elsewhere).toEqual([]);
     });
 
     test('reopens every account under a search, a class or the chosen account, memory kept', async ({ page }) => {

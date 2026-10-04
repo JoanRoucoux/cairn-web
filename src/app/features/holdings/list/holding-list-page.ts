@@ -88,6 +88,7 @@ export class HoldingListPage {
   protected readonly account = this.#store.account;
   protected readonly accountName = this.#store.accountName;
   protected readonly accountOptions = this.#store.accountOptions;
+  protected readonly accountsReady = this.#store.accountsReady;
   protected readonly foldLocked = this.#store.foldLocked;
   protected readonly classSummary = this.#store.classSummary;
   protected readonly flash = this.#store.flash;
@@ -261,12 +262,18 @@ export class HoldingListPage {
   #focusInList({ holdingId, accountId }: { holdingId: string; accountId: string | undefined }): void {
     const host = this.#host.nativeElement;
     const visible = (element: HTMLElement): boolean => element.offsetParent !== null;
-    const removed = this.#changes.lastRemoved()?.id === holdingId;
-    const row = removed
-      ? undefined
-      : [...host.querySelectorAll<HTMLElement>(`[data-holding-id="${holdingId}"]`)].find(visible);
-    const heading = [...host.querySelectorAll<HTMLElement>(`[data-account-id="${accountId}"] h2 button`)].find(visible);
+    const first = (selector: string): HTMLElement | undefined =>
+      [...host.querySelectorAll<HTMLElement>(selector)].find(visible);
 
-    (row ?? heading)?.focus();
+    if (this.#changes.lastRemoved()?.id !== holdingId) {
+      first(`[data-holding-id="${holdingId}"]`)?.focus();
+      return;
+    }
+
+    (
+      first(`[data-account-id="${accountId}"] h2 button`) ??
+      first('[data-account-id] h2 button') ??
+      host.querySelector<HTMLElement>('[data-testid="holdings-list"]')
+    )?.focus();
   }
 }

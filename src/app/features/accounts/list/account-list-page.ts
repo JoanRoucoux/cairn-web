@@ -1,4 +1,4 @@
-import { Component, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
@@ -13,6 +13,7 @@ import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
+import { afterHighlight } from '@shared/feedback/after-highlight';
 import { injectToast } from '@shared/feedback/toast';
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { RatioPipe } from '@shared/format/ratio-pipe';
@@ -82,6 +83,7 @@ export class AccountListPage {
   protected readonly addedAccountId = signal<string | null>(null);
   readonly #unannounced = signal<string | null>(null);
   #toast = injectToast();
+  #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   constructor() {
     afterRenderEffect(() => {
@@ -90,7 +92,15 @@ export class AccountListPage {
       if (added !== null && (this.state() === 'error' || this.accounts().some((account) => account.id === added))) {
         untracked(() => {
           this.#unannounced.set(null);
-          setTimeout(() => this.#toast('accounts.toasts.created'));
+
+          if (this.state() === 'error') {
+            this.#toast('accounts.toasts.created');
+          } else {
+            afterHighlight(
+              () => [...this.#host.nativeElement.querySelectorAll(`[data-account-id="${added}"]`)],
+              () => this.#toast('accounts.toasts.created'),
+            );
+          }
         });
       }
     });

@@ -1,6 +1,6 @@
 <div class="flex flex-col">
   @for (account of accounts(); track account.id) {
-    <div data-testid="account-row-mobile">
+    <div data-testid="account-row-mobile" [attr.data-account-id]="account.id">
       <div uiRowItem>
         <a
           data-testid="account-link-mobile"

@@ -92,6 +92,50 @@ describe('HoldingListPage account filter and folding', () => {
     localStorage.clear();
   });
 
+  describe('the account pill before the accounts are known', () => {
+    const openWithAccounts = async (initialRoute: string, answer: 'pending' | 'error'): Promise<void> => {
+      await render(TestHost, {
+        imports: [getTranslocoTestingModule({ langs: { ...translations, fr: {}, 'holdings/fr': {} } })],
+        routes: [{ path: '', component: HoldingListPage }],
+        initialRoute,
+        providers: [
+          HoldingChanges,
+          provideZonelessChangeDetection(),
+          provideHttpClient(),
+          provideHttpClientTesting(),
+          { provide: LOCALE_ID, useValue: 'en-GB' },
+          provideTranslocoScope('holdings'),
+        ],
+      });
+      httpTesting = TestBed.inject(HttpTestingController);
+      httpTesting.expectOne('/api/holdings').flush(holdings);
+      const accountsCall = httpTesting.expectOne('/api/accounts');
+
+      if (answer === 'error') {
+        accountsCall.flush(null, { status: 500, statusText: 'Server Error' });
+      }
+      await screen.findAllByTestId('account-group');
+    };
+
+    afterEach(() => httpTesting.match('/api/accounts').forEach((request) => request.flush(accounts)));
+
+    it('should be disabled while the accounts load, listing every account for an id no line carries', async () => {
+      await openWithAccounts('/?compte=nope', 'pending');
+
+      expect(within(pill()).getByRole('button', { name: 'All accounts' })).toBeDisabled();
+      expect(list().getAllByText('FCPE Actions').length).toBeGreaterThan(0);
+      expect(list().getAllByText('Amundi MSCI World').length).toBeGreaterThan(0);
+      expect(url()).toBe('/?compte=nope');
+    });
+
+    it('should stay disabled once the accounts failed, still filtering on an account a line carries', async () => {
+      await openWithAccounts('/?compte=a2', 'error');
+
+      expect(within(pill()).getByRole('button', { name: /Woodgrove Savings Plan/ })).toBeDisabled();
+      expect(list().queryByText('Amundi MSCI World')).not.toBeInTheDocument();
+    });
+  });
+
   describe('the account pill', () => {
     it('should head the chips row outside the class group, at rest on every account', async () => {
       await open();
