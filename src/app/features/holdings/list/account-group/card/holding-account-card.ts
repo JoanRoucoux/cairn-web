@@ -1,9 +1,10 @@
-import { Component, input, output } from '@angular/core';
+import { Component, booleanAttribute, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiDelta } from '@joanroucoux/cairn-ui/delta';
+import { UiGroupHeader } from '@joanroucoux/cairn-ui/group-header';
 import { UiFlipItem, UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { UiRow } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -19,12 +20,11 @@ import type { HoldingChange } from '../../../holding-changes';
 import { isMissing } from '../../../is-missing';
 import type { AccountGroup } from '../../holding-list-store';
 import { cashRowKeys } from '../group-count';
-import { HoldingAccountMeta } from './meta/holding-account-meta';
+import { injectGroupMeta } from '../group-meta';
 
 @Component({
   selector: 'app-holding-account-card',
   imports: [
-    HoldingAccountMeta,
     RatioPipe,
     RouterLink,
     ShortDatePipe,
@@ -33,6 +33,7 @@ import { HoldingAccountMeta } from './meta/holding-account-meta';
     UiCard,
     UiDelta,
     UiFlipItem,
+    UiGroupHeader,
     UiHighlight,
     UiRow,
   ],
@@ -45,10 +46,15 @@ import { HoldingAccountMeta } from './meta/holding-account-meta';
 })
 export class HoldingAccountCard {
   readonly group = input.required<AccountGroup>();
-  readonly highlight = input<object | null>(null);
   readonly flash = input<HoldingChange | null>(null);
+  readonly expanded = input(true, { transform: booleanAttribute });
+  readonly toggleDisabled = input(false, { transform: booleanAttribute });
 
   readonly editCash = output<string>();
+  readonly expandedChange = output<boolean>();
+
+  protected readonly bodyId = computed(() => `holdings-card-${this.group().accountId}`);
+  protected readonly meta = injectGroupMeta(this.group);
 
   protected readonly decimalPlaces = decimalPlaces;
   protected readonly cashRowKeys = cashRowKeys;

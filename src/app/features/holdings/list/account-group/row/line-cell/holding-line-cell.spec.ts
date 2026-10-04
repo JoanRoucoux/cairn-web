@@ -22,11 +22,11 @@ const manual = {
   stale: false,
 } as HoldingResponse;
 
-const subsOf = async (holding: HoldingResponse, compact = false): Promise<string[]> => {
+const subsOf = async (holding: HoldingResponse): Promise<string[]> => {
   const { container } = await render(
-    '<table><tbody><tr><td app-holding-line-cell [compact]="compact" [holding]="holding"></td></tr></tbody></table>',
+    '<table><tbody><tr><td app-holding-line-cell [holding]="holding"></td></tr></tbody></table>',
     {
-      componentProperties: { holding, compact },
+      componentProperties: { holding },
       imports: [HoldingLineCell, getTranslocoTestingModule()],
       providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
     },
@@ -50,15 +50,16 @@ describe('HoldingLineCell', () => {
     expect(desktop).toBe('FR0013280799 · enums.assetClass.FUND');
   });
 
-  it('says Saisie manuelle instead of the class in the compact table', async () => {
-    expect(await subsOf(manual, true)).toEqual(['enums.priceSource.MANUAL']);
+  it('keeps one subtitle, without the narrow quantity line, for an unpriced line', async () => {
+    expect(await subsOf({ ...manual, price: null })).toEqual([
+      'FR0013280799 · enums.assetClass.FUND · enums.priceSource.MANUAL',
+    ]);
   });
 
-  it('keeps the class in the compact table for a fetched price', async () => {
-    expect(await subsOf({ ...manual, priceSource: 'AMUNDI' }, true)).toEqual(['enums.assetClass.FUND']);
-  });
-
-  it('lets a missing quote win over Saisie manuelle in the compact table', async () => {
-    expect(await subsOf({ ...manual, price: null }, true)).toEqual(['holdings.noQuote']);
+  it('adds the foreign caption under a line quoted in another currency', async () => {
+    expect(await subsOf({ ...manual, priceSource: 'YAHOO', priceCurrency: 'USD' })).toEqual([
+      'FR0013280799 · enums.assetClass.FUND',
+      'holdings.foreignQuote',
+    ]);
   });
 });

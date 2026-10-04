@@ -1,14 +1,14 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ApplicationRef, Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
+import { Component, LOCALE_ID, provideZonelessChangeDetection, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { type Event, NavigationEnd, Router, RouterOutlet, Scroll } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 
 import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
 import { TRANSLOCO_LOADER, TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
-import { type Subject, map, timer } from 'rxjs';
+import { map, timer } from 'rxjs';
 
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -101,6 +101,7 @@ describe('HoldingListPage class filter', () => {
   };
 
   const chip = (name: RegExp | string): HTMLElement => screen.getByRole('button', { name });
+  const list = (): ReturnType<typeof within> => within(screen.getByTestId('holdings-list'));
 
   beforeEach(() => masked.set(false));
 
@@ -156,7 +157,7 @@ describe('HoldingListPage class filter', () => {
 
     await user.click(chip(/^ETF/));
 
-    await vi.waitFor(() => expect(screen.queryByText('Woodgrove Savings Plan')).not.toBeInTheDocument());
+    await vi.waitFor(() => expect(list().queryByText('Woodgrove Savings Plan')).not.toBeInTheDocument());
 
     expect(chip(/^ETF/)).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('class-summary')).toHaveTextContent('ETF · €4,000.00 · 66.7% of wealth, in 1 account');
@@ -203,7 +204,7 @@ describe('HoldingListPage class filter', () => {
     await open('/?classe=fonds');
 
     expect(await screen.findByRole('button', { name: /^Funds/ })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByText('Northwind PEA')).not.toBeInTheDocument();
+    expect(list().queryByText('Northwind PEA')).not.toBeInTheDocument();
   });
 
   it('should say accounts in the plural from two accounts on', async () => {
@@ -276,108 +277,5 @@ describe('HoldingListPage class filter', () => {
     await user.type(screen.getByTestId('holdings-search'), 'zzz');
 
     expect(await screen.findByText('Nothing matches "zzz"')).toBeInTheDocument();
-  });
-
-  const routerScrolls = (): void =>
-    (TestBed.inject(Router).events as Subject<Event>).next(new Scroll(new NavigationEnd(1, '/', '/'), null, null));
-
-  describe('arriving on ?compte=', () => {
-    const scrolled: Element[] = [];
-    const animated: Element[] = [];
-    const order: string[] = [];
-    const animate = Object.getOwnPropertyDescriptor(Element.prototype, 'animate')!;
-
-    beforeEach(() => {
-      scrolled.length = 0;
-      animated.length = 0;
-      order.length = 0;
-      vi.spyOn(HTMLElement.prototype, 'offsetParent', 'get').mockReturnValue(document.body);
-      Object.defineProperty(Element.prototype, 'scrollIntoView', {
-        configurable: true,
-        value: vi.fn(function (this: Element) {
-          scrolled.push(this);
-          order.push('scroll');
-        }),
-      });
-      Object.defineProperty(Element.prototype, 'animate', {
-        configurable: true,
-        value: vi.fn(function (this: Element) {
-          animated.push(this);
-          order.push('highlight');
-
-          return { cancel: vi.fn() };
-        }),
-      });
-    });
-
-    afterEach(() => {
-      Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
-      Object.defineProperty(Element.prototype, 'animate', animate);
-    });
-
-    it('should wait for the router to place the page before landing', async () => {
-      await open('/?compte=a2');
-      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
-
-      expect(scrolled).toHaveLength(0);
-      expect(animated).toHaveLength(0);
-    });
-
-    it('should place the group at once, focus its heading without scrolling, then highlight its header', async () => {
-      const focus = vi.spyOn(HTMLElement.prototype, 'focus');
-      const scrollTo = vi.spyOn(window, 'scrollTo');
-      await open('/?compte=a2');
-      const headings = await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
-
-      routerScrolls();
-
-      await vi.waitFor(() => expect(headings).toContain(document.activeElement));
-      expect(scrolled).toHaveLength(1);
-      expect((scrolled[0] as HTMLElement).dataset['accountId']).toBe('a2');
-      expect(scrollIntoViewArgs()).toEqual({ block: 'start', behavior: 'auto' });
-      expect(focus).toHaveBeenCalledWith({ preventScroll: true });
-      await vi.waitFor(() => expect(animated.length).toBeGreaterThan(0));
-      expect(order[0]).toBe('scroll');
-      expect(
-        animated.every((element) => element.closest('[data-account-id]')?.getAttribute('data-account-id') === 'a2'),
-      ).toBe(true);
-      expect(scrollTo).not.toHaveBeenCalled();
-      expect(screen.getAllByRole('heading', { name: 'Northwind PEA' }).length).toBeGreaterThan(0);
-      expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
-    });
-
-    it('should not highlight the header again when a filter rebuilds the groups', async () => {
-      const user = userEvent.setup();
-      await open('/?compte=a2');
-      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
-      routerScrolls();
-      await vi.waitFor(() => expect(animated.length).toBeGreaterThan(0));
-      const played = animated.length;
-
-      await user.click(chip(/^Funds/));
-      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
-      await user.click(chip(/^All/));
-      await screen.findAllByRole('heading', { name: 'Northwind PEA' });
-
-      expect(animated).toHaveLength(played);
-    });
-
-    it('should ignore a ?compte= that matches no account: no scroll, no focus, no highlight', async () => {
-      await open('/?compte=nope');
-      await screen.findAllByRole('heading', { name: 'Woodgrove Savings Plan' });
-      routerScrolls();
-      TestBed.tick();
-      await TestBed.inject(ApplicationRef).whenStable();
-
-      expect(screen.getAllByRole('heading', { name: 'Woodgrove Savings Plan' }).length).toBeGreaterThan(0);
-      expect(chip(/^All/)).toHaveAttribute('aria-pressed', 'true');
-      expect(scrolled).toEqual([]);
-      expect(animated).toEqual([]);
-      expect(document.activeElement).toBe(document.body);
-      expect(within(document.body).queryByRole('alert')).not.toBeInTheDocument();
-    });
-
-    const scrollIntoViewArgs = (): unknown =>
-      (Element.prototype.scrollIntoView as ReturnType<typeof vi.fn>).mock.calls[0]?.[0];
   });
 });

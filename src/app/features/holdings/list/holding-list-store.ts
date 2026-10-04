@@ -32,6 +32,8 @@ export type ClassCounts = { total: number; byClass: Record<AssetClass, number> }
 
 export type ClassSummary = { valueEur: number; share: number; accounts: number };
 
+export type AccountOption = { id: string; name: string };
+
 export const CLASS_ORDER: readonly AssetClass[] = ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'BOND', 'OTHER', 'CASH'];
 
 export const CLASSES_SHOWN_WHEN_HELD: readonly AssetClass[] = ['BOND', 'OTHER'];
@@ -85,7 +87,52 @@ export class HoldingListStore {
     defaultValue: [],
   });
 
-  readonly filterKey = computed(() => `${this.search()}|${this.assetClass() ?? ''}`);
+  readonly #accountsKnown = computed(() => this.accounts.status() === 'resolved' || this.accounts.status() === 'local');
+
+  readonly account = computed(() => {
+    const id = this.accountParam();
+
+    if (!id) {
+      return null;
+    }
+
+    return !this.#accountsKnown() || this.#accountList().some((account) => account.id === id) ? id : null;
+  });
+
+  readonly knownAccountIds = computed(() =>
+    this.#accountsKnown() ? this.#accountList().map((account) => account.id) : null,
+  );
+
+  readonly unknownAccountParam = computed(() => this.accountParam() !== null && this.account() === null);
+
+  readonly accountOptions = computed<AccountOption[]>(() =>
+    this.#accountList().map((account) => ({ id: account.id, name: account.name })),
+  );
+
+  readonly accountName = computed(() => {
+    const id = this.account();
+
+    return id === null
+      ? null
+      : (this.#accountList().find((account) => account.id === id)?.name ??
+          this.#allGroups().find((group) => group.accountId === id)?.accountName ??
+          null);
+  });
+
+  readonly securitiesAccount = computed(() => {
+    const id = this.account();
+    const type =
+      this.#accountList().find((account) => account.id === id)?.type ??
+      this.#allGroups().find((group) => group.accountId === id)?.accountType;
+
+    return type === 'SAVINGS' ? null : id;
+  });
+
+  readonly foldLocked = computed(
+    () => normalizeSearch(this.search().trim()) !== '' || this.assetClass() !== null || this.account() !== null,
+  );
+
+  readonly filterKey = computed(() => `${this.search()}|${this.assetClass() ?? ''}|${this.account() ?? ''}`);
 
   readonly #flash = linkedSignal<string, HoldingChange | null>({ source: this.filterKey, computation: () => null });
   readonly flash = this.#flash.asReadonly();
@@ -236,8 +283,11 @@ export class HoldingListStore {
   readonly groups = computed<AccountGroup[]>(() => {
     const search = normalizeSearch(this.search().trim());
     const assetClass = this.assetClass();
+    const account = this.account();
     const filterKey = this.filterKey();
-    const all = this.#allGroups().map((group) => ({ ...group, key: `${group.accountId}|${filterKey}` }));
+    const all = this.#allGroups()
+      .filter((group) => account === null || group.accountId === account)
+      .map((group) => ({ ...group, key: `${group.accountId}|${filterKey}` }));
 
     if (search === '' && assetClass === null) {
       return all;

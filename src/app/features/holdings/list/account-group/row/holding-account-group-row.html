@@ -1,26 +1,31 @@
-<td app-holding-line-cell primary uiTd [compact]="compact()" [holding]="holding()" [open]="open()"></td>
-@if (!compact()) {
-  <td numeric secondary uiTd>
-    <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
-  </td>
-  <td numeric secondary uiTd>
-    <ui-amount [value]="holding().averageCost" />
-  </td>
-  <td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
-}
+<td app-holding-line-cell primary uiTd [holding]="holding()" [open]="open()"></td>
+<td numeric secondary uiTd>
+  <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
+</td>
+<td numeric secondary uiTd>
+  <ui-amount [value]="holding().averageCost" />
+</td>
+<td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
 <td class="font-medium" numeric uiTd>
   @if (foreign()) {
     <span class="text-(--subtle-foreground)"><ui-amount currency="EUR" [value]="holding().marketValueEur" /></span>
   } @else {
     <ui-amount currency="EUR" [value]="holding().marketValueEur" />
   }
-  @if (unpriced() && !compact()) {
-    <app-holding-enter-quote narrow (entered)="enterQuote.emit(holding())" />
-  }
 </td>
-@if (!compact()) {
-  <td numeric uiTd>
-    @if (hasGain()) {
+<td numeric uiTd>
+  @if (hasGain()) {
+    <div class="flex justify-end">
+      <ui-delta
+        size="inherit"
+        weight="regular"
+        [unknownLabel]="'holdings.unknown' | transloco"
+        [value]="holding().unrealizedGainEur"
+      >
+        <ui-amount currency="EUR" signed [value]="holding().unrealizedGainEur" />
+      </ui-delta>
+    </div>
+    @if (hasGainRatio()) {
       <div class="flex justify-end">
         <ui-delta
           size="inherit"
@@ -28,26 +33,14 @@
           [unknownLabel]="'holdings.unknown' | transloco"
           [value]="holding().unrealizedGainEur"
         >
-          <ui-amount currency="EUR" signed [value]="holding().unrealizedGainEur" />
+          <span tone="inherit" uiCellSub>{{
+            holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 }
+          }}</span>
         </ui-delta>
       </div>
-      @if (hasGainRatio()) {
-        <div class="flex justify-end">
-          <ui-delta
-            size="inherit"
-            weight="regular"
-            [unknownLabel]="'holdings.unknown' | transloco"
-            [value]="holding().unrealizedGainEur"
-          >
-            <span tone="inherit" uiCellSub>{{
-              holding().unrealizedGainRatio | ratio: { signed: true, decimals: 2 }
-            }}</span>
-          </ui-delta>
-        </div>
-      }
     }
-  </td>
-}
+  }
+</td>
 <td numeric uiTd>
   @if (!holding().stale && !unknownDay()) {
     <ui-delta

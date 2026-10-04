@@ -40,9 +40,10 @@ const group = {
 const renderCard = (
   input: Partial<AccountGroup> = {},
   flash: HoldingChange | null = null,
+  fold: { expanded?: boolean; toggleDisabled?: boolean } = {},
 ): ReturnType<typeof render<HoldingAccountCard>> =>
   render(HoldingAccountCard, {
-    inputs: { group: { ...group, ...input }, flash },
+    inputs: { group: { ...group, ...input }, flash, ...fold },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
@@ -50,7 +51,7 @@ const renderCard = (
 describe('HoldingAccountCard', () => {
   it('should put the name, the meta and the total in a header outside the card', async () => {
     const { container } = await renderCard();
-    const header = container.querySelector('header')!;
+    const header = container.querySelector('ui-group-header')!;
 
     expect(header).toHaveTextContent('Woodgrove Savings Plan');
     expect(header).toHaveTextContent('Woodgrove Bank');
@@ -58,10 +59,51 @@ describe('HoldingAccountCard', () => {
     expect(container.querySelector('ui-card')!.contains(header)).toBe(false);
   });
 
+  it('should make the header a button inside the heading that folds the card', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderCard();
+    const emitted = vi.fn();
+    fixture.componentInstance.expandedChange.subscribe(emitted);
+    const button = await screen.findByRole('button', { name: /^Woodgrove Savings Plan/ });
+
+    expect(button.closest('h2')).not.toBeNull();
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(button).toHaveAttribute('aria-controls', 'holdings-card-a1');
+    expect(document.getElementById('holdings-card-a1')?.tagName).toBe('UI-CARD');
+
+    await user.click(button);
+
+    expect(emitted).toHaveBeenCalledWith(false);
+  });
+
+  it('should hide the card of a folded account and keep its rows in the DOM', async () => {
+    await renderCard({}, null, { expanded: false });
+
+    expect(await screen.findByRole('button', { name: /^Woodgrove Savings Plan/ })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(document.getElementById('holdings-card-a1')).toHaveAttribute('hidden');
+    expect(screen.getByTestId('holding-row-mobile')).toBeInTheDocument();
+  });
+
+  it('should keep the header inert while a filter holds the account open', async () => {
+    const user = userEvent.setup();
+    const { fixture } = await renderCard({}, null, { toggleDisabled: true });
+    const emitted = vi.fn();
+    fixture.componentInstance.expandedChange.subscribe(emitted);
+    const button = await screen.findByRole('button', { name: /^Woodgrove Savings Plan/ });
+
+    await user.click(button);
+
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
   it('should add the lines left out to the meta, apart by reason', async () => {
     const { container } = await renderCard({ unvaluedCount: 1, nonEurCount: 2 });
 
-    expect(container.querySelector('header')).toHaveTextContent(
+    expect(container.querySelector('ui-group-header')).toHaveTextContent(
       'holdings.lineCount_one · holdings.uncounted.noQuote_one · holdings.uncounted.nonEur_other',
     );
   });
@@ -69,7 +111,7 @@ describe('HoldingAccountCard', () => {
   it('should add nothing to the meta when every line is counted or the list is filtered', async () => {
     const { container } = await renderCard({ unvaluedCount: 1, filtered: { accountValueEur: 1, rowCount: 1 } });
 
-    expect(container.querySelector('header')).not.toHaveTextContent('uncounted');
+    expect(container.querySelector('ui-group-header')).not.toHaveTextContent('uncounted');
   });
 
   it('should show the quantity times the quote and the unrealized ratio on a line', async () => {
@@ -159,16 +201,16 @@ describe('HoldingAccountCard', () => {
     it('should name its balance date in the meta, never a line count', async () => {
       const { container } = await renderCard({ ...savings, balanceAt: '2026-09-12T08:00:00Z' });
 
-      expect(container.querySelector('header')).toHaveTextContent(
+      expect(container.querySelector('ui-group-header')).toHaveTextContent(
         'enums.accountType.SAVINGS · Woodgrove Bank · holdings.balanceMeta',
       );
-      expect(container.querySelector('header')).not.toHaveTextContent('lineCount');
+      expect(container.querySelector('ui-group-header')).not.toHaveTextContent('lineCount');
     });
 
     it('should say neither a date nor a count while the balance was never set', async () => {
       const { container } = await renderCard({ ...savings, institution: '' });
 
-      expect(container.querySelector('app-holding-account-meta')).toHaveTextContent(
+      expect(container.querySelector('ui-group-header .text-label')).toHaveTextContent(
         /^\s*enums\.accountType\.SAVINGS\s*$/,
       );
     });
@@ -222,7 +264,7 @@ describe('HoldingAccountCard', () => {
     it('should highlight nothing when no line of the account changed', async () => {
       await renderCard({}, { id: 'elsewhere', at: 1 });
 
-      expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: /^Woodgrove Savings Plan/ })).toBeInTheDocument();
       expect(motion.highlighted).toEqual([]);
     });
 

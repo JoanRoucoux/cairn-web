@@ -35,6 +35,11 @@
     "label": "Filter by asset class",
     "all": "All"
   },
+  "accountFilter": {
+    "label": "Account",
+    "all": "All accounts",
+    "clear": "Remove the account filter"
+  },
   "classSummary": {
     "share_one": "· {{share}} of your wealth, in {{count}} account",
     "share_other": "· {{share}} of your wealth, in {{count}} accounts"
@@ -195,7 +200,6 @@
       "heading": "Already tracked",
       "nature": "in your holdings",
       "priceCaption": "last price",
-      "loading": "Searching your holdings",
       "error": "The catalogue did not answer.",
       "retry": "Retry"
     },
@@ -213,7 +217,6 @@
     "quotedIn": "quoted in {{currency}}",
     "unavailable": "Unavailable",
     "euroOnly": "Cairn only tracks euros",
-    "searching": "Searching {{source}}",
     "sourceEmpty": "No result from {{source}}.",
     "sourceError": "{{source}} is not answering right now.",
     "retry": "Retry",

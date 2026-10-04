@@ -170,12 +170,12 @@ describe('HoldingListStore after a change', () => {
 
     store.search.set('fcpe');
 
-    expect(store.groups().map((group) => group.key)).toEqual(['a2|fcpe|']);
+    expect(store.groups().map((group) => group.key)).toEqual(['a2|fcpe||']);
 
     store.search.set('');
     store.assetClass.set('ETF');
 
-    expect(store.groups().map((group) => group.key)).toEqual(['a1||ETF']);
+    expect(store.groups().map((group) => group.key)).toEqual(['a1||ETF|']);
   });
 
   it('should forget the named holding once the search or the class changes', async () => {
