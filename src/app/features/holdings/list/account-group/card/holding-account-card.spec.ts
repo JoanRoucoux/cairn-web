@@ -81,6 +81,20 @@ describe('HoldingAccountCard', () => {
     expect(row).toHaveAttribute('href', '/holdings/h3');
   });
 
+  it('should say Saisie manuelle before the quantity of a manually priced line, never on an unvalued one', async () => {
+    await renderCard({ holdings: [{ ...holding, priceSource: 'MANUAL' } as never] });
+
+    expect(await screen.findByTestId('holding-row-mobile')).toHaveTextContent(
+      'enums.priceSource.MANUAL · 412.5 × €289.11',
+    );
+  });
+
+  it('should leave Saisie manuelle out when the manual line has no quote yet', async () => {
+    await renderCard({ holdings: [{ ...holding, priceSource: 'MANUAL', price: null, marketValueEur: null } as never] });
+
+    expect(await screen.findByTestId('holding-row-mobile')).not.toHaveTextContent('enums.priceSource.MANUAL');
+  });
+
   it('should say the average cost is unknown when there is no ratio', async () => {
     await renderCard({ holdings: [{ ...holding, unrealizedGainRatio: null } as never] });
 

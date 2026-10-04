@@ -18,8 +18,12 @@ describe('global labels', () => {
       ETF: 'ETF',
       FUND: 'Fonds',
       CRYPTO: 'Crypto',
+      BOND: 'Obligations',
+      OTHER: 'Autre',
       CASH: 'Liquidités',
     });
     expect(en.enums.assetClass.ETF).toBe('ETF');
+    expect(en.enums.assetClass.BOND).toBe('Bonds');
+    expect(en.enums.assetClass.OTHER).toBe('Other');
   });
 });

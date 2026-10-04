@@ -23,14 +23,20 @@
       [label]="'holdings.columns.price' | transloco"
       [sub]="
         holding().priceAsOf
-          ? (priceSubKey() | transloco: { date: holding().priceAsOf | shortDate, time: quoteTime() }) +
-            ' · ' +
-            priceSourceLabel()
-          : undefined
+          ? (priceSubKey() | transloco: { date: holding().priceAsOf | shortDate, time: quoteTime() })
+          : ('holdings.noQuote' | transloco)
       "
       [subTone]="holding().stale ? 'stale' : 'subtle'"
     >
       <ui-amount [currency]="holding().priceCurrency ?? 'EUR'" [value]="holding().price" />
+    </div>
+    <div
+      size="auto"
+      ui-fact
+      [label]="'holdings.detail.priceSource' | transloco"
+      [sub]="holding().priceSource === 'MANUAL' ? ('holdings.detail.noAutomaticQuote' | transloco) : undefined"
+    >
+      {{ priceSourceLabel() }}
     </div>
     <div
       size="auto"

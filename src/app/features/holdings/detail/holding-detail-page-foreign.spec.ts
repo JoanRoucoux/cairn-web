@@ -71,10 +71,6 @@ describe('HoldingDetailPage on a line quoted in another currency', () => {
 
   const flushSideRequests = async (): Promise<void> => {
     httpTesting
-      .match((request) => request.url === '/api/instruments/i1')
-      .filter((request) => !request.cancelled)
-      .forEach((request) => request.flush({ description: '' }));
-    httpTesting
       .match((request) => request.url.includes('/quotes'))
       .filter((request) => !request.cancelled)
       .forEach((request) => request.flush([]));

@@ -150,12 +150,14 @@ describe('AllocationPage', () => {
     ['FUND', 'fonds'],
     ['EQUITY', 'actions'],
     ['CRYPTO', 'crypto'],
+    ['BOND', 'obligations'],
+    ['OTHER', 'autre'],
     ['CASH', 'liquidites'],
   ])('should link the %s class row to the %s slug and navigate on a plain click', async (assetClass, slug) => {
     const user = userEvent.setup();
     await renderPage({
       totalEur: 100,
-      items: ['ETF', 'FUND', 'EQUITY', 'CRYPTO', 'CASH'].map((code) => ({
+      items: [...new Set([assetClass, 'ETF', 'FUND', 'EQUITY', 'CASH'])].map((code) => ({
         assetClass: code,
         valueEur: 20,
         share: 0.2,

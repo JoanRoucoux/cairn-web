@@ -68,7 +68,6 @@ describe('HoldingDetailStore', () => {
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
-    httpTesting.match((request) => request.url === '/api/instruments/i2').forEach((request) => request.flush({}));
 
     expect(store.holding()?.instrumentName).toBe('Amundi MSCI World Swap');
   });
@@ -87,7 +86,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     await settle();
     httpTesting
       .match((request) => request.url.includes('/quotes'))
@@ -103,7 +101,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     await settle();
     httpTesting
       .match((request) => request.url.includes('/quotes'))
@@ -124,7 +121,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     await settle();
     httpTesting
       .match((request) => request.url.includes('/quotes'))
@@ -144,7 +140,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
 
@@ -160,7 +155,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
 
@@ -176,7 +170,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
 
@@ -315,7 +308,6 @@ describe('HoldingDetailStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/holdings').flush(holdings);
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     await settle();
     httpTesting
       .match((request) => request.url.includes('/quotes'))
@@ -327,7 +319,6 @@ describe('HoldingDetailStore', () => {
     await settle();
 
     expect(store.points()).toEqual([]);
-    httpTesting.match((request) => request.url === '/api/instruments/i2').forEach((request) => request.flush({}));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
   });

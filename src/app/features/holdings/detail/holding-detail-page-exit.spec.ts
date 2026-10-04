@@ -47,7 +47,6 @@ describe('HoldingDetailPage during the exit of a dialog', () => {
 
   const flushDetail = async (): Promise<void> => {
     await settle();
-    httpTesting.match((request) => request.url === '/api/instruments/i1').forEach((request) => request.flush({}));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
   };

@@ -70,9 +70,6 @@ describe('HoldingDetailPage navigation', () => {
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush([holding]);
     await settle();
-    httpTesting
-      .match((request) => request.url === '/api/instruments/i1')
-      .forEach((request) => request.flush({ description: 'ETF tracking the S&P 500.' }));
     httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
     await settle();
 

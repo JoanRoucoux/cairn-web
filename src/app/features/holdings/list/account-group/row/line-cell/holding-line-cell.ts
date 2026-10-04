@@ -26,4 +26,5 @@ export class HoldingLineCell {
   protected readonly decimalPlaces = decimalPlaces;
   protected readonly foreignCurrency = computed(() => foreignCurrencyOf(this.holding()));
   protected readonly unpriced = computed(() => isMissing(this.holding().price));
+  protected readonly manual = computed(() => this.holding().priceSource === 'MANUAL');
 }

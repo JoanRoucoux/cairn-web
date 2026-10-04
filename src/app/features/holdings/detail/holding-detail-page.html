@@ -134,10 +134,8 @@
         </ui-card>
 
         <app-holding-detail-facts [holding]="holding" [priceSourceLabel]="priceSourceLabel()" />
-        @if (instrumentDetail(); as detail) {
-          @if (detail.description) {
-            <app-holding-detail-description [description]="detail.description" [externalUrl]="detail.externalUrl" />
-          }
+        @if (holding.description) {
+          <app-holding-detail-description [description]="holding.description" [externalUrl]="holding.externalUrl" />
         }
 
         <app-holding-detail-quote-action [needsQuote]="needsQuote()" (enterQuote)="onEnterQuote()" />

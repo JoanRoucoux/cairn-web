@@ -111,7 +111,7 @@ describe('HoldingListStore class filter', () => {
   it('should count the lines of each class and the cash rows with the savings balances as liquidities', async () => {
     await open();
 
-    expect(store.classCounts().byClass).toEqual({ ETF: 2, FUND: 1, EQUITY: 1, CRYPTO: 1, CASH: 4 });
+    expect(store.classCounts().byClass).toEqual({ ETF: 2, FUND: 1, EQUITY: 1, CRYPTO: 1, BOND: 0, OTHER: 0, CASH: 4 });
   });
 
   it('should keep the counts when a search or a class narrows the list', async () => {

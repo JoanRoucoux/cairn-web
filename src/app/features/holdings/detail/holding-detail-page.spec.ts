@@ -42,6 +42,8 @@ const holding = {
   stale: false,
 };
 
+const described = { description: 'ETF tracking the S&P 500.', externalUrl: 'https://example.test/ese' };
+
 describe('HoldingDetailPage', () => {
   let httpTesting: HttpTestingController;
 
@@ -53,12 +55,15 @@ describe('HoldingDetailPage', () => {
     }
   };
 
+  const flushQuotes = (): void =>
+    httpTesting
+      .match((request) => request.url.includes('/quotes'))
+      .filter((request) => !request.cancelled)
+      .forEach((request) => request.flush([]));
+
   const renderPage = async (
     holdingId = 'h1',
-    instrument: { description: string; externalUrl?: string } = {
-      description: 'ETF tracking the S&P 500.',
-      externalUrl: 'https://example.test/ese',
-    },
+    instrument: { description: string; externalUrl?: string } = described,
     fixtureHolding: Record<string, unknown> = holding,
     translations = getTranslocoTestingModule(),
   ): Promise<HoldingDetailPage> => {
@@ -79,12 +84,9 @@ describe('HoldingDetailPage', () => {
       ],
     });
     httpTesting = TestBed.inject(HttpTestingController);
-    httpTesting.expectOne('/api/holdings').flush([fixtureHolding]);
+    httpTesting.expectOne('/api/holdings').flush([{ ...fixtureHolding, ...instrument }]);
     await settle();
-    httpTesting
-      .match((request) => request.url === '/api/instruments/i1')
-      .forEach((request) => request.flush(instrument));
-    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    flushQuotes();
     await settle();
 
     return fixture.debugElement.query(By.directive(HoldingDetailPage)).componentInstance as HoldingDetailPage;
@@ -202,7 +204,7 @@ describe('HoldingDetailPage', () => {
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.quoteSaved');
     httpTesting.expectOne('/api/holdings').flush([manualHolding]);
     await settle();
-    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    flushQuotes();
     await settle();
   });
 
@@ -241,7 +243,7 @@ describe('HoldingDetailPage', () => {
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.edited');
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
-    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    flushQuotes();
     await settle();
   });
 
@@ -281,7 +283,7 @@ describe('HoldingDetailPage', () => {
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.bought');
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
-    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    flushQuotes();
     await settle();
   });
 
@@ -344,7 +346,7 @@ describe('HoldingDetailPage', () => {
     TestBed.inject(UiToasts).dismiss();
     httpTesting.expectOne('/api/holdings').flush([holding]);
     await settle();
-    httpTesting.match((request) => request.url.includes('/quotes')).forEach((request) => request.flush([]));
+    flushQuotes();
     await settle();
 
     await user.click(screen.getByTestId('holding-sell-bar'));

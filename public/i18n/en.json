@@ -34,6 +34,8 @@
       "ETF": "ETF",
       "FUND": "Fund",
       "CRYPTO": "Crypto",
+      "BOND": "Bonds",
+      "OTHER": "Other",
       "CASH": "Cash"
     },
     "priceSource": {

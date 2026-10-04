@@ -114,10 +114,28 @@ describe('HoldingDetailFacts', () => {
     expect(row).toHaveTextContent('—');
   });
 
-  it('omits the quote line when there is no quote', async () => {
+  it('says there is no quote yet instead of a date', async () => {
     await renderFacts({ priceAsOf: null, price: null });
-    await screen.findByText('holdings.columns.price');
+    const row = (await screen.findByText('holdings.columns.price')).parentElement!;
 
+    expect(row).toHaveTextContent('holdings.noQuote');
     expect(screen.queryByText(/holdings.(detail.quote|staleLate)/)).not.toBeInTheDocument();
+  });
+
+  it('dates the quote without naming its source, which has a row of its own', async () => {
+    await renderFacts();
+    const price = (await screen.findByText('holdings.columns.price')).parentElement!;
+    const source = screen.getByText('holdings.detail.priceSource').parentElement!;
+
+    expect(price).not.toHaveTextContent('Yahoo');
+    expect(source).toHaveTextContent('Yahoo');
+    expect(source).not.toHaveTextContent('holdings.detail.noAutomaticQuote');
+  });
+
+  it('says a manual price is never fetched automatically', async () => {
+    await renderFacts({ priceSource: 'MANUAL' });
+    const source = (await screen.findByText('holdings.detail.priceSource')).parentElement!;
+
+    expect(source).toHaveTextContent('holdings.detail.noAutomaticQuote');
   });
 });

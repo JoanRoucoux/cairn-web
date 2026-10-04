@@ -40,6 +40,9 @@
             } @else if (unpriced(holding)) {
               {{ 'holdings.noQuoteToEnter' | transloco }}
             } @else {
+              @if (holding.priceSource === 'MANUAL') {
+                {{ 'enums.priceSource.MANUAL' | transloco }} &middot;
+              }
               <ui-amount [fractionDigits]="decimalPlaces(holding.quantity)" [value]="holding.quantity" />
               &times;
               <ui-amount [currency]="holding.priceCurrency ?? 'EUR'" [value]="holding.price" />
