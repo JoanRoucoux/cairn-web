@@ -22,7 +22,6 @@ import { HoldingAccountGroup } from './holding-account-group';
       [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
-      (changeListing)="changeListing.emit($event)"
       (editCash)="editCash.emit($event)"
       (enterQuote)="enterQuote.emit($event)"
     ></tbody>
@@ -35,7 +34,6 @@ class TestHost {
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
-  readonly changeListing = output<unknown>();
 }
 
 const holding = {

@@ -210,12 +210,6 @@
     "unavailableSub": "Coté en {{currency}}. Cairn ne suit que les cotations en euros.",
     "unavailable": "indisponible"
   },
-  "replace": {
-    "open": "Changer de cotation",
-    "title": "Changer de cotation",
-    "duplicate": "Ce compte détient déjà cette cotation.",
-    "notFound": "Aucune cotation en euros trouvée pour « {{query}} »."
-  },
   "foreignQuote": "Coté en {{currency}}, non compté",
   "toasts": {
     "bought": "Achat enregistré",
@@ -224,7 +218,6 @@
     "deleted": "Ligne supprimée",
     "added": "Ligne ajoutée",
     "balanceSaved": "Solde modifié",
-    "quoteSaved": "Cours enregistré",
-    "listingChanged": "Cotation changée"
+    "quoteSaved": "Cours enregistré"
   }
 }

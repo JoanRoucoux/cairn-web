@@ -6,15 +6,7 @@
   <td numeric secondary uiTd>
     <ui-amount [value]="holding().averageCost" />
   </td>
-  <td
-    app-holding-quote-cell
-    numeric
-    secondary
-    uiTd
-    [holding]="holding()"
-    (changeListing)="changeListing.emit($event)"
-    (enterQuote)="enterQuote.emit($event)"
-  ></td>
+  <td app-holding-quote-cell numeric secondary uiTd [holding]="holding()" (enterQuote)="enterQuote.emit($event)"></td>
 }
 <td class="font-medium" numeric uiTd>
   @if (foreign()) {

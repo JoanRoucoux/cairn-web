@@ -55,15 +55,13 @@ describe('HoldingListPage add query param', () => {
     httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
   });
 
-  it('opens the add dialog with the search of the q param and the default account, then clears both params', async () => {
-    await open('/?add=&q=zzz');
+  it('opens the add dialog on the default account when the add query param is empty', async () => {
+    await open('/?add=');
 
     expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
-    await vi.waitFor(() => expect(screen.getByTestId('holding-add-query')).toHaveValue('zzz'));
     await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
     httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
-    httpTesting.match('/api/instruments/resolve').forEach((request) => request.flush([]));
 
     await userEvent.setup().click(screen.getByTestId('holding-add-cancel'));
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());

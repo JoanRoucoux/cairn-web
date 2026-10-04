@@ -65,10 +65,6 @@ export class HoldingListStore {
 
   readonly addParam = computed(() => this.#queryParamMap()?.get('add') ?? null);
 
-  readonly balanceParam = computed(() => this.#queryParamMap()?.get('balance') ?? null);
-
-  readonly queryParam = computed(() => this.#queryParamMap()?.get('q') ?? '');
-
   readonly accountParam = computed(() => this.#queryParamMap()?.get('compte') ?? null);
 
   readonly assetClass = linkedSignal<AssetClass | null>(
