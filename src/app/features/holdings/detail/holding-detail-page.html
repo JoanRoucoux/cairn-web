@@ -26,13 +26,7 @@
           </button>
         </div>
 
-        <ui-menu #menu [label]="'holdings.detail.menu' | transloco" [width]="208">
-          @if (foreignCurrency()) {
-            <button data-testid="holding-change-listing-menu" type="button" uiMenuItem (click)="openListing()">
-              <svg lucideRefreshCw [size]="18" [strokeWidth]="1.75" />
-              {{ 'holdings.replace.open' | transloco }}
-            </button>
-          }
+        <ui-menu #menu [label]="'holdings.detail.menu' | transloco" [width]="200">
           <button data-testid="holding-edit" type="button" uiMenuItem (click)="openEdit()">
             <svg lucidePencil [size]="18" [strokeWidth]="1.75" />
             {{ 'holdings.edit.open' | transloco }}
@@ -75,7 +69,6 @@
                 [foreign]="foreignCurrency() !== undefined"
                 [menu]="menu"
                 (buy)="buyOpen.set(true)"
-                (changeListing)="listingOpen.set(true)"
                 (sell)="sellOpen.set(true)"
               />
             }
@@ -147,12 +140,7 @@
           }
         }
 
-        <app-holding-detail-quote-action
-          [foreign]="foreignCurrency() !== undefined"
-          [needsQuote]="needsQuote()"
-          (changeListing)="listingOpen.set(true)"
-          (enterQuote)="onEnterQuote()"
-        />
+        <app-holding-detail-quote-action [needsQuote]="needsQuote()" (enterQuote)="onEnterQuote()" />
       </div>
     </ui-card>
 
@@ -165,7 +153,6 @@
       [deleteOpen]="deleteOpen()"
       [editOpen]="editOpen()"
       [holding]="holding"
-      [listingOpen]="listingOpen()"
       [pricingInstrument]="pricingInstrument()"
       [sellOpen]="sellOpen()"
       (bought)="buyOpen.set(false)"
@@ -174,8 +161,6 @@
       (deleted)="onDeleted($event)"
       (editDismissed)="editOpen.set(false)"
       (edited)="editOpen.set(false)"
-      (listingChanged)="listingOpen.set(false)"
-      (listingDismissed)="listingOpen.set(false)"
       (quoteDismissed)="onQuoteDismissed()"
       (quoteSaved)="onQuoteSaved()"
       (sellDismissed)="sellOpen.set(false)"

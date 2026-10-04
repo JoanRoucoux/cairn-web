@@ -8,7 +8,7 @@ import { instrument as buildInstrument, unvaluedInstrument as buildUnvaluedInstr
 import { buildUsdHolding } from './non-eur-holding';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
-import { buyHolding, changeHoldingInstrument, resolveInstrument, sellHolding } from './trading';
+import { buyHolding, resolveInstrument, sellHolding } from './trading';
 import { getPasskeys, getSession, mockWebauthn } from './webauthn';
 
 const holding = {
@@ -271,33 +271,6 @@ const createInstrument: Handler = (route) => {
   return route.fulfill({ status: 201, json: saved });
 };
 
-const updateInstrument: Handler = (route, [, id]) => {
-  const existing = instruments.find((candidate) => candidate.id === id);
-
-  if (!existing) {
-    return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
-  }
-
-  Object.assign(existing, route.request().postDataJSON());
-
-  return route.fulfill({ json: existing });
-};
-
-const deleteInstrument: Handler = (route, [, id]) => {
-  const index = instruments.findIndex((candidate) => candidate.id === id);
-
-  if (index === -1) {
-    return route.fulfill({ status: 404, json: { message: `unknown instrument: ${id}` } });
-  }
-
-  instruments.splice(index, 1);
-  holdings
-    .filter((candidate) => candidate.instrumentId === id)
-    .forEach((candidate) => holdings.splice(holdings.indexOf(candidate), 1));
-
-  return route.fulfill({ status: 204 });
-};
-
 // First match wins, so a more specific path must come before a broader one.
 const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'DELETE', path: new RegExp('^/api/session/passkeys/.+$'), handle: deletePasskey },
@@ -305,17 +278,10 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'POST', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: recordQuote },
   { method: 'POST', path: new RegExp('^/api/instruments/resolve$'), handle: resolveInstrument },
   { method: 'GET', path: new RegExp('^/api/instruments/([^/]+)$'), handle: getInstrument },
-  { method: 'PUT', path: new RegExp('^/api/instruments/([^/]+)$'), handle: updateInstrument },
-  { method: 'DELETE', path: new RegExp('^/api/instruments/([^/]+)$'), handle: deleteInstrument },
   { method: 'POST', path: new RegExp('^/api/instruments$'), handle: createInstrument },
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/buy$'), handle: buyHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/sell$'), handle: sellHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
-  {
-    method: 'PUT',
-    path: new RegExp('^/api/holdings/([^/]+)/instrument$'),
-    handle: changeHoldingInstrument(holdings, allInstruments),
-  },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalanceHandler },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)$'), handle: updateAccount },
   { method: 'DELETE', path: new RegExp('^/api/accounts/([^/]+)$'), handle: deleteAccount },

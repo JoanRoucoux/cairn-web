@@ -14,8 +14,7 @@
   "hideAmounts": "Masquer les montants",
   "hideAmountsHint": "Pour montrer l'application à quelqu'un. Les montants deviennent •••• € sur tous les écrans ; les pourcentages restent visibles.",
   "manageData": {
-    "title": "Données",
-    "instruments": "Instruments"
+    "title": "Données"
   },
   "export": "Exporter le portefeuille",
   "exportHint": "Toutes les lignes en CSV, au cours du jour",
@@ -24,7 +23,6 @@
   "importing": "Import en cours...",
   "importTemplate": "Télécharger le modèle CSV",
   "importTemplateHint": "Les colonnes attendues par l'import",
-  "instrumentsHint": "Le catalogue des titres suivis",
   "importFailed": "L'import n'a pas pu être envoyé. Réessayez.",
   "importRejected": "Rien n'a été importé. Corrigez ces {{count}} ligne(s) puis réessayez.",
   "importLine": "Ligne",

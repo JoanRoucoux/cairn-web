@@ -73,7 +73,7 @@ describe('onViewTransitionCreated', () => {
   it.each([
     ['/holdings', '/holdings/h1'],
     ['/holdings/h1', '/holdings'],
-    ['/profile', '/instruments'],
+    ['/profile', '/'],
     ['/nowhere', '/'],
     ['/', '/profile'],
   ])('keeps the cross-fade from %s to %s', (from, to) => {
@@ -93,13 +93,13 @@ describe('onViewTransitionCreated', () => {
   it('keeps the cross-fade away from holdings on desktop', () => {
     mockMedia({ [DESKTOP]: true });
 
-    expect(navigate(['/profile'], ['/instruments']).skipTransition).not.toHaveBeenCalled();
+    expect(navigate(['/profile'], ['/']).skipTransition).not.toHaveBeenCalled();
     expect(navigate(['/holdings/h1'], ['/profile']).skipTransition).not.toHaveBeenCalled();
   });
 
   it('skips every transition under reduced motion', () => {
     mockMedia({ [REDUCED]: true });
 
-    expect(navigate(['/profile'], ['/instruments']).skipTransition).toHaveBeenCalledOnce();
+    expect(navigate(['/profile'], ['/']).skipTransition).toHaveBeenCalledOnce();
   });
 });

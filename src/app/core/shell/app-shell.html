@@ -26,12 +26,6 @@
     >
       <div class="mx-auto flex h-full max-w-[1120px] items-center justify-between lg:gap-6">
         <div class="flex items-center gap-2">
-          @if (headerBack(); as back) {
-            <a class="max-lg:hidden" data-testid="header-back" size="sm" ui-back-link [routerLink]="back.path">{{
-              back.labelKey | transloco
-            }}</a>
-            <span aria-hidden="true" class="text-(--subtle-foreground) max-lg:hidden">/</span>
-          }
           @if (headerKey(); as key) {
             <h1 class="text-heading font-semibold" [class.max-lg:hidden]="mobileHeaderHidden()">
               {{ key | transloco }}

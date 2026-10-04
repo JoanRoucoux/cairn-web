@@ -49,7 +49,6 @@
     [open]="holding.id === selectedHoldingId()"
     [selected]="holding.id === selectedHoldingId()"
     [uiHighlight]="flash()?.id === holding.id ? flash() : null"
-    (changeListing)="changeListing.emit($event)"
     (enterQuote)="enterQuote.emit($event)"
   ></tr>
 }

@@ -1,9 +1,7 @@
-import { Component, type Signal, booleanAttribute, computed, input, linkedSignal, output } from '@angular/core';
+import { Component, type Signal, booleanAttribute, input, linkedSignal, output } from '@angular/core';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { HoldingAddDialog } from '../../add/holding-add-dialog';
-import { listingQueryOf } from '../../foreign-currency';
 import { ManualQuoteDialog } from '../../manual-quote/manual-quote-dialog';
 import { HoldingBuyDialog } from '../buy-dialog/holding-buy-dialog';
 import { HoldingDeleteDialog } from '../delete-dialog/holding-delete-dialog';
@@ -13,14 +11,7 @@ import type { SellResult } from '../sell-dialog/holding-sell-dialog-store';
 
 @Component({
   selector: 'app-holding-detail-dialogs',
-  imports: [
-    HoldingAddDialog,
-    HoldingBuyDialog,
-    HoldingDeleteDialog,
-    HoldingEditDialog,
-    HoldingSellDialog,
-    ManualQuoteDialog,
-  ],
+  imports: [HoldingBuyDialog, HoldingDeleteDialog, HoldingEditDialog, HoldingSellDialog, ManualQuoteDialog],
   templateUrl: './holding-detail-dialogs.html',
 })
 export class HoldingDetailDialogs {
@@ -31,14 +22,11 @@ export class HoldingDetailDialogs {
   readonly sellOpen = input(false, { transform: booleanAttribute });
   readonly editOpen = input(false, { transform: booleanAttribute });
   readonly deleteOpen = input(false, { transform: booleanAttribute });
-  readonly listingOpen = input(false, { transform: booleanAttribute });
 
   protected readonly buyHolding = this.#heldWhile(this.buyOpen);
   protected readonly sellHolding = this.#heldWhile(this.sellOpen);
   protected readonly editHolding = this.#heldWhile(this.editOpen);
   protected readonly deleteHolding = this.#heldWhile(this.deleteOpen);
-  protected readonly listingHolding = this.#heldWhile(this.listingOpen);
-  protected readonly listingQuery = computed(() => listingQueryOf(this.listingHolding()));
 
   readonly quoteSaved = output<void>();
   readonly quoteDismissed = output<void>();
@@ -50,8 +38,6 @@ export class HoldingDetailDialogs {
   readonly editDismissed = output<void>();
   readonly deleted = output<string>();
   readonly deleteDismissed = output<void>();
-  readonly listingChanged = output<void>();
-  readonly listingDismissed = output<void>();
 
   #heldWhile(open: Signal<boolean>): Signal<HoldingResponse> {
     return linkedSignal<{ open: boolean; holding: HoldingResponse }, HoldingResponse>({

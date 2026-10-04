@@ -132,6 +132,23 @@ test.describe('holdings list', () => {
     await expect(page.getByTestId('holding-cash-amount')).toHaveAttribute('aria-invalid', 'true');
   });
 
+  test('edits the balance of a savings account from its Lignes row', async ({ page }) => {
+    const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
+    await livretA.getByTestId('edit-cash').click();
+
+    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
+    await expect(page.getByRole('dialog')).toContainText('Balance of Livret A');
+    await expect(page.getByTestId('holding-cash-amount')).toHaveValue('20000');
+
+    await page.getByTestId('holding-cash-amount').fill('0');
+    await expect(page.getByText('0 removes the line.')).toHaveCount(0);
+    await page.getByTestId('holding-cash-submit').click();
+
+    await expect(page.locator('ui-toaster > div')).toHaveText('Balance updated');
+    await expect(livretA.getByTestId('cash-row')).toContainText('0.00');
+    await expect(livretA.getByTestId('cash-row')).toContainText('Entered on');
+  });
+
   test('pluralizes a one-line account in the singular', async ({ page }) => {
     const cto = page.getByTestId('account-group').filter({ hasText: 'Contoso Trading' });
 

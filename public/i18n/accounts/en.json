@@ -53,7 +53,6 @@
   },
   "noLine": "No holdings",
   "balanceAt": "Balance as of {{date}}",
-  "editBalance": "Edit the balance",
   "rowEmptyCompact": "No holdings. Add a holding or import a CSV.",
   "rowEmptyImport": "Import a CSV",
   "nameLabel": "Account name",

@@ -5,7 +5,6 @@ import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 
 import { AmountVisibility } from '@core/amounts/amount-visibility';
 import type { PasskeyResponse } from '@core/api-client/cairnAPI.schemas';
-import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 import { SessionService } from '@core/api-client/session/session.service';
 import { LanguageStore } from '@core/i18n/language-store';
 import { SessionStore } from '@core/session/session-store';
@@ -38,7 +37,6 @@ export class ProfileStore {
   #theme = inject(ThemeStore);
   #language = inject(LanguageStore);
   #amountVisibility = inject(AmountVisibility);
-  #instrumentsApiClient = inject(InstrumentService);
   #sessionApiClient = inject(SessionService);
 
   #dateFormat = new Intl.DateTimeFormat(inject(LOCALE_ID), {
@@ -46,10 +44,6 @@ export class ProfileStore {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  });
-
-  readonly #instruments = rxResource({
-    stream: () => this.#instrumentsApiClient.listInstruments(),
   });
 
   readonly #passkeys = rxResource({
@@ -72,8 +66,6 @@ export class ProfileStore {
   readonly language = this.#language.activeLang;
   readonly availableLanguages = this.#language.availableLangs;
   readonly hideAmounts = this.#amountVisibility.hidden;
-
-  readonly instrumentCount = computed(() => (this.#instruments.hasValue() ? this.#instruments.value().length : null));
 
   readonly passkeys = computed<PasskeyView[]>(() => {
     const now = new Date();

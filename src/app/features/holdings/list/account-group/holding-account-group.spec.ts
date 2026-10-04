@@ -20,7 +20,6 @@ import { HoldingAccountGroup } from './holding-account-group';
       [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
-      (changeListing)="changeListing.emit($event)"
       (editCash)="editCash.emit($event)"
       (enterQuote)="enterQuote.emit($event)"
     ></tbody>
@@ -33,7 +32,6 @@ class TestHost {
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
-  readonly changeListing = output<unknown>();
 }
 
 const holding = {
@@ -287,25 +285,12 @@ describe('HoldingAccountGroup', () => {
       expect(await screen.findByText('holdings.foreignQuote')).toBeInTheDocument();
     });
 
-    it('should offer to change the listing from the Cours column and emit the line', async () => {
-      const user = userEvent.setup();
-      const { fixture } = await renderGroup({ holdings: [usd as never] });
-      const changed = vi.fn();
-      fixture.componentInstance.changeListing.subscribe(changed);
+    it('should offer no action on the Cours column of a line quoted in another currency', async () => {
+      await renderGroup({ holdings: [usd as never] });
 
-      const button = await screen.findByTestId('change-listing');
-      expect(button).toHaveTextContent('holdings.replace.open');
+      const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
+      expect(cells[3]!.querySelector('button')).toBeNull();
       expect(screen.queryByTestId('enter-quote')).not.toBeInTheDocument();
-      await user.click(button);
-
-      expect(changed).toHaveBeenCalledWith(expect.objectContaining({ id: 'h3' }));
-    });
-
-    it('should offer no change of listing for a line quoted in euros', async () => {
-      await renderGroup({ holdings: [{ ...usd, priceCurrency: 'EUR' } as never] });
-
-      await screen.findByTestId('holding-row');
-      expect(screen.queryByTestId('change-listing')).not.toBeInTheDocument();
     });
   });
 

@@ -1,15 +1,4 @@
-@if (foreign()) {
-  <button
-    class="lg:hidden"
-    data-testid="holding-change-listing-mobile"
-    type="button"
-    ui-button
-    variant="outline"
-    (click)="changeListing.emit()"
-  >
-    {{ 'holdings.replace.open' | transloco }}
-  </button>
-} @else if (needsQuote()) {
+@if (needsQuote()) {
   <button data-testid="enter-quote" type="button" ui-button variant="outline" (click)="enterQuote.emit()">
     {{ 'holdings.manualQuote.open' | transloco }}
   </button>

@@ -370,10 +370,9 @@ describe('HoldingListStore', () => {
     expect(store.groups()).toEqual([]);
   });
 
-  it('should read the add param and nothing else from the query', async () => {
+  it('should have no add param when the query carries none', async () => {
     await load();
 
     expect(store.addParam()).toBeNull();
-    expect(store.balanceParam()).toBeNull();
   });
 });

@@ -38,7 +38,6 @@ export class HoldingAccountGroupRow {
   readonly open = input(false, { transform: booleanAttribute });
 
   readonly enterQuote = output<HoldingResponse>();
-  readonly changeListing = output<HoldingResponse>();
 
   protected readonly decimalPlaces = decimalPlaces;
   protected readonly foreign = computed(() => foreignCurrencyOf(this.holding()) !== undefined);

@@ -29,7 +29,6 @@ import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.sche
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
-import { listingQueryOf } from '../foreign-currency';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
@@ -120,17 +119,8 @@ export class HoldingListPage {
   protected readonly chipValue = computed(() => this.assetClass() ?? ALL);
 
   protected readonly quoteTarget = signal<HoldingResponse | undefined>(undefined);
-  protected readonly listingTarget = signal<HoldingResponse | undefined>(undefined);
   protected readonly addOpen = signal(false);
-  protected readonly addDialogOpen = computed(() => this.addOpen() || this.listingTarget() !== undefined);
-  protected readonly replaceHoldingId = computed(() => this.listingTarget()?.id ?? null);
-  protected readonly listingQuery = computed(() => {
-    const target = this.listingTarget();
-
-    return target ? listingQueryOf(target) : this.searchedQuery();
-  });
   protected readonly presetAccountId = signal<string | null>(null);
-  protected readonly searchedQuery = signal('');
   protected readonly accountToEditCashFor = signal<string | undefined>(undefined);
   protected readonly groupToEditCashFor = computed(() =>
     this.groups().find((group) => group.accountId === this.accountToEditCashFor()),
@@ -196,25 +186,10 @@ export class HoldingListPage {
 
       if (account !== null) {
         this.presetAccountId.set(account || null);
-        this.searchedQuery.set(this.#store.queryParam());
         this.addOpen.set(true);
         void this.#router.navigate([], {
           relativeTo: this.#route,
-          queryParams: { add: null, q: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true,
-        });
-      }
-    });
-
-    effect(() => {
-      const account = this.#store.balanceParam();
-
-      if (account) {
-        this.accountToEditCashFor.set(account);
-        void this.#router.navigate([], {
-          relativeTo: this.#route,
-          queryParams: { balance: null },
+          queryParams: { add: null },
           queryParamsHandling: 'merge',
           replaceUrl: true,
         });
@@ -264,8 +239,6 @@ export class HoldingListPage {
   protected onAddDismissed(): void {
     this.addOpen.set(false);
     this.presetAccountId.set(null);
-    this.searchedQuery.set('');
-    this.listingTarget.set(undefined);
   }
 
   protected onQuoteSaved(): void {

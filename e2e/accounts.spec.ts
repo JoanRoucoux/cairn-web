@@ -101,33 +101,17 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('holding-add-account')).toHaveValue(accountId);
   });
 
-  test('offers the balance edit first in the menu of a savings account only, and opens its dialog in Lignes', async ({
+  test('holds only Modifier le compte and Supprimer le compte in the menu, on a savings account too', async ({
     page,
   }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
-    await accounts.openMenuFor('Northwind PEA');
-    await expect(page.getByRole('menuitem', { name: 'Edit the balance' })).toHaveCount(0);
-    await page.keyboard.press('Escape');
-
-    await accounts.openMenuFor('Livret A');
-    await expect(page.getByRole('menuitem').first()).toHaveText('Edit the balance');
-    await page.getByTestId('account-edit-balance').click();
-
-    await expect(page).toHaveURL(/\/holdings$/);
-    await expect(page.getByTestId('holding-cash-dialog').locator('dialog')).toBeVisible();
-    await expect(page.getByRole('dialog')).toContainText('Balance of Livret A');
-    await expect(page.getByTestId('holding-cash-amount')).toHaveValue('20000');
-
-    await page.getByTestId('holding-cash-amount').fill('0');
-    await expect(page.getByText('0 removes the line.')).toHaveCount(0);
-    await page.getByTestId('holding-cash-submit').click();
-
-    await expect(page.locator('ui-toaster > div')).toHaveText('Balance updated');
-    const livretA = page.getByTestId('account-group').filter({ hasText: 'Livret A' });
-    await expect(livretA.getByTestId('cash-row')).toContainText('0.00');
-    await expect(livretA.getByTestId('cash-row')).toContainText('Entered on');
+    for (const name of ['Northwind PEA', 'Livret A']) {
+      await accounts.openMenuFor(name);
+      await expect(page.getByRole('menuitem')).toHaveText(['Edit account', 'Delete account']);
+      await page.keyboard.press('Escape');
+    }
   });
 
   test('keeps a savings account out of the add-a-line account picker', async ({ page }) => {

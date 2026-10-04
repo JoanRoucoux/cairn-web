@@ -55,17 +55,6 @@
           [heading]="account.name"
           [label]="'accounts.actions' | transloco: { name: account.name }"
         >
-          @if (account.type === 'SAVINGS') {
-            <button
-              data-testid="account-edit-balance-mobile"
-              type="button"
-              uiMenuItem
-              (click)="editBalance.emit(account)"
-            >
-              <svg lucideWallet [strokeWidth]="1.75" />
-              {{ 'accounts.editBalance' | transloco }}
-            </button>
-          }
           <button data-testid="account-edit-mobile" type="button" uiMenuItem (click)="edit.emit(account)">
             <svg lucidePencil [strokeWidth]="1.75" />
             {{ 'accounts.edit' | transloco }}

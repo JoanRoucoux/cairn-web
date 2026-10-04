@@ -57,19 +57,16 @@ The data shown is fictional.
 
 ## Screens
 
-| Route                        | Screen          | What it shows                                                             |
-| ---------------------------- | --------------- | ------------------------------------------------------------------------- |
-| `/`                          | Portfolio       | Net worth, value curve, envelopes and movers.                             |
-| `/allocation`                | Allocation      | The breakdown by asset class and by account.                              |
-| `/holdings`                  | Holdings        | Every holding, grouped by account, with search and an asset class filter. |
-| `/holdings/:holdingId`       | Holding detail  | One holding beside the list: figures, facts, trades and quote actions.    |
-| `/accounts`                  | Accounts        | The accounts (envelopes), their totals, and create, edit and delete.      |
-| `/instruments`               | Instruments     | The catalog of tracked instruments, with search.                          |
-| `/instruments/new`           | Add instrument  | The instrument form, with an ISIN or name lookup.                         |
-| `/instruments/:instrumentId` | Edit instrument | The same form, to edit or delete an instrument.                           |
-| `/profile`                   | Profile         | Theme, language, hide amounts, CSV import and export, passkeys, sign out. |
-| `/login`                     | Sign in         | Passkey first, with a password fallback.                                  |
-| any other URL                | Not found       | The 404 page.                                                             |
+| Route                  | Screen         | What it shows                                                             |
+| ---------------------- | -------------- | ------------------------------------------------------------------------- |
+| `/`                    | Portfolio      | Net worth, value curve, envelopes and movers.                             |
+| `/allocation`          | Allocation     | The breakdown by asset class and by account.                              |
+| `/holdings`            | Holdings       | Every holding, grouped by account, with search and an asset class filter. |
+| `/holdings/:holdingId` | Holding detail | One holding beside the list: figures, facts, trades and quote actions.    |
+| `/accounts`            | Accounts       | The accounts (envelopes), their totals, and create, edit and delete.      |
+| `/profile`             | Profile        | Theme, language, hide amounts, CSV import and export, passkeys, sign out. |
+| `/login`               | Sign in        | Passkey first, with a password fallback.                                  |
+| any other URL          | Not found      | The 404 page.                                                             |
 
 ## Getting started
 
@@ -111,7 +108,7 @@ src/app/
   shared/     Reusable presentation and test helpers (charts, dialogs, forms,
               formatting, layout). Imports neither core nor features.
   features/   One folder per business feature: portfolio, holdings, accounts,
-              instruments, profile and login. Each one has a <feature>-routes.ts,
+              profile and login. Each one has a <feature>-routes.ts,
               which is its public API, and one folder per screen.
 ```
 

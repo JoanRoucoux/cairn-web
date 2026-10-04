@@ -83,17 +83,6 @@
                     <svg lucideEllipsis [size]="18" [strokeWidth]="1.75" />
                   </button>
                   <ui-menu #menu [label]="'accounts.actions' | transloco: { name: account.name }" [width]="218">
-                    @if (account.type === 'SAVINGS') {
-                      <button
-                        data-testid="account-edit-balance"
-                        type="button"
-                        uiMenuItem
-                        (click)="onEditBalance(account)"
-                      >
-                        <svg lucideWallet [strokeWidth]="1.75" />
-                        {{ 'accounts.editBalance' | transloco }}
-                      </button>
-                    }
                     <button data-testid="account-edit" type="button" uiMenuItem (click)="onEdit(account)">
                       <svg lucidePencil [strokeWidth]="1.75" />
                       {{ 'accounts.edit' | transloco }}
@@ -146,7 +135,6 @@
         class="lg:hidden"
         [accounts]="accounts()"
         (edit)="onEdit($event)"
-        (editBalance)="onEditBalance($event)"
         (remove)="accountToDelete.set($event)"
       />
     }

@@ -53,7 +53,6 @@
   },
   "noLine": "Aucune ligne",
   "balanceAt": "Solde au {{date}}",
-  "editBalance": "Modifier le solde",
   "rowEmptyCompact": "Aucune ligne. Ajoutez un titre ou importez un CSV.",
   "rowEmptyImport": "Importer un CSV",
   "nameLabel": "Nom du compte",

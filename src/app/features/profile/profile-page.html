@@ -128,22 +128,6 @@
           <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
         </a>
 
-        <a data-testid="manage-instruments" padding="sm" routerLink="/instruments" size="xl" ui-row>
-          <span uiRowTile>
-            <svg lucideBook [size]="18" [strokeWidth]="1.75" />
-          </span>
-          <span class="flex min-w-0 flex-1 flex-col text-left">
-            <span class="text-body font-medium">{{ 'profile.manageData.instruments' | transloco }}</span>
-            <span class="text-caption text-(--subtle-foreground)">{{ 'profile.instrumentsHint' | transloco }}</span>
-          </span>
-          @if (instrumentCount() !== null) {
-            <span class="text-label text-(--muted-foreground)" data-testid="instrument-count">{{
-              instrumentCount()
-            }}</span>
-          }
-          <svg class="flex-none text-(--subtle-foreground)" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
-        </a>
-
         <input
           #fileInput
           accept=".csv,text/csv"

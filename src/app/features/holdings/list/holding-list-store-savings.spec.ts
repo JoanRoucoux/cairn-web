@@ -37,14 +37,14 @@ describe('HoldingListStore savings accounts', () => {
   let store: HoldingListStore;
   let httpTesting: HttpTestingController;
 
-  const load = async (holdings: unknown[], queryParams: Record<string, string> = {}): Promise<void> => {
+  const load = async (holdings: unknown[]): Promise<void> => {
     TestBed.configureTestingModule({
       providers: [
         HoldingChanges,
         provideZonelessChangeDetection(),
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap(queryParams)) } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({})) } },
         HoldingListStore,
       ],
     });
@@ -86,11 +86,5 @@ describe('HoldingListStore savings accounts', () => {
     await load([]);
 
     expect(store.groups().map((group) => group.accountName)).toEqual(['Livret A']);
-  });
-
-  it('should expose the balance query param', async () => {
-    await load([], { balance: 'a3' });
-
-    expect(store.balanceParam()).toBe('a3');
   });
 });

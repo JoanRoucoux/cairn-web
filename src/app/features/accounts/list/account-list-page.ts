@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
@@ -10,7 +10,7 @@ import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash, LucideWallet } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { RatioPipe } from '@shared/format/ratio-pipe';
@@ -36,7 +36,6 @@ import { AccountUncounted } from './uncounted/account-uncounted';
     LucidePencil,
     LucidePlus,
     LucideTrash,
-    LucideWallet,
     RatioPipe,
     RouterLink,
     ShortDatePipe,
@@ -62,7 +61,6 @@ import { AccountUncounted } from './uncounted/account-uncounted';
 })
 export class AccountListPage {
   #store = inject(AccountListStore);
-  #router = inject(Router);
 
   protected readonly accounts = this.#store.accounts;
   protected readonly totalEur = this.#store.totalEur;
@@ -87,10 +85,6 @@ export class AccountListPage {
   protected onEdit(account: AccountView): void {
     this.accountToEdit.set(account);
     this.formOpen.set(true);
-  }
-
-  protected onEditBalance(account: AccountView): void {
-    void this.#router.navigate(['/holdings'], { queryParams: { balance: account.id } });
   }
 
   protected onFormSaved(): void {

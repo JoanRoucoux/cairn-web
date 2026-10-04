@@ -210,12 +210,6 @@
     "unavailableSub": "Quoted in {{currency}}. Cairn only tracks quotes in euros.",
     "unavailable": "unavailable"
   },
-  "replace": {
-    "open": "Change listing",
-    "title": "Change listing",
-    "duplicate": "This account already holds this listing.",
-    "notFound": "No euro listing found for \"{{query}}\"."
-  },
   "foreignQuote": "Quoted in {{currency}}, not counted",
   "toasts": {
     "bought": "Purchase saved",
@@ -224,7 +218,6 @@
     "deleted": "Holding deleted",
     "added": "Holding added",
     "balanceSaved": "Balance updated",
-    "quoteSaved": "Price saved",
-    "listingChanged": "Listing changed"
+    "quoteSaved": "Price saved"
   }
 }

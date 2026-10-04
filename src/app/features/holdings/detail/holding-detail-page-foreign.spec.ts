@@ -4,12 +4,10 @@ import { Component, LOCALE_ID, provideZonelessChangeDetection } from '@angular/c
 import { TestBed } from '@angular/core/testing';
 import { RouterOutlet } from '@angular/router';
 
-import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import { slowDialogExit } from '@shared/testing/dialog-exit';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingChanges } from '../holding-changes';
@@ -95,116 +93,32 @@ describe('HoldingDetailPage on a line quoted in another currency', () => {
     expect(screen.queryByText('holdings.averageCostUnknownShort')).not.toBeInTheDocument();
   });
 
-  it('hides Buy and Sell on the page and in the action bar', async () => {
+  it('hides Buy and Sell on the page and in the action bar, leaving only the menu', async () => {
     await renderPage();
-    await screen.findByTestId('holding-change-listing');
+    await screen.findByTestId('holding-menu-trigger-desktop');
 
     expect(screen.queryByTestId('holding-buy')).not.toBeInTheDocument();
     expect(screen.queryByTestId('holding-sell')).not.toBeInTheDocument();
     expect(screen.queryByTestId('holding-buy-bar')).not.toBeInTheDocument();
     expect(screen.queryByTestId('holding-sell-bar')).not.toBeInTheDocument();
-  });
-
-  it('offers the change of listing in the menu, on the desktop actions and below the facts on iPhone', async () => {
-    await renderPage();
-
-    expect(await screen.findByTestId('holding-change-listing')).toHaveTextContent('holdings.replace.open');
-    expect(screen.getByTestId('holding-change-listing-mobile')).toHaveClass('lg:hidden');
-    expect(screen.getByTestId('holding-change-listing-menu')).toHaveTextContent('holdings.replace.open');
     expect(screen.queryByTestId('enter-quote')).not.toBeInTheDocument();
   });
 
-  it.each(['holding-change-listing', 'holding-change-listing-mobile', 'holding-change-listing-menu'])(
-    'opens the search on the ISIN from %s, then moves the line, reloads and confirms',
-    async (trigger) => {
-      const user = userEvent.setup();
-      await renderPage();
-
-      if (trigger.endsWith('menu')) {
-        await user.click(screen.getByTestId('holding-menu-trigger-mobile'));
-      }
-
-      await user.click(await screen.findByTestId(trigger));
-
-      expect(await screen.findByTestId('holding-add-query')).toHaveValue('IE00B4L5Y983');
-      httpTesting.expectOne('/api/accounts').flush([]);
-      httpTesting.expectOne('/api/instruments').flush([]);
-      httpTesting.expectOne('/api/holdings').flush([]);
-      (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
-        {
-          name: 'iShares Core MSCI World',
-          source: 'YAHOO',
-          sourceRef: 'IWDA.AS',
-          assetClass: 'ETF',
-          exchange: 'Euronext Amsterdam',
-          probePrice: 97.91,
-          currency: 'EUR',
-        },
-      ]);
-
-      await user.click(await screen.findByTestId('holding-add-online-candidate'));
-      (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({ id: 'i9' });
-      (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/instrument'))).flush({ id: 'h1' });
-
-      await vi.waitFor(() => expect(screen.queryByTestId('holding-add-query')).not.toBeInTheDocument());
-      expect(TestBed.inject(HoldingChanges).lastTouched()?.id).toBe('h1');
-      expect(TestBed.inject(UiToasts).toast()?.text).toBe('holdings.toasts.listingChanged');
-      httpTesting.expectOne('/api/holdings').flush([{ ...usdHolding, priceCurrency: 'EUR', marketValueEur: 1000 }]);
-      await settle();
-      await flushSideRequests();
-    },
-  );
-
-  it('keeps the search of the line it opened with while the moved line reloads under its exit', async () => {
+  it('offers only Modifier and Supprimer la ligne in a 200 px menu', async () => {
     const user = userEvent.setup();
     await renderPage();
 
-    await user.click(await screen.findByTestId('holding-change-listing'));
-    httpTesting.expectOne('/api/accounts').flush([]);
-    httpTesting.expectOne('/api/instruments').flush([]);
-    httpTesting.expectOne('/api/holdings').flush([]);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([
-      { name: 'iShares Core MSCI World', source: 'YAHOO', sourceRef: 'IWDA.AS', assetClass: 'ETF', currency: 'EUR' },
-    ]);
-    slowDialogExit(400);
+    await user.click(await screen.findByTestId('holding-menu-trigger-mobile'));
 
-    await user.click(await screen.findByTestId('holding-add-online-candidate'));
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments'))).flush({ id: 'i9' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings/h1/instrument'))).flush({ id: 'h1' });
-    (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush([
-      { ...usdHolding, instrumentId: 'i9', isin: null, symbol: 'IWDA.AS', priceCurrency: 'EUR', marketValueEur: 1000 },
-    ]);
-    await settle();
-
-    expect(screen.getByTestId('holding-add-query')).toHaveValue('IE00B4L5Y983');
-    httpTesting
-      .match((request) => request.url === '/api/instruments/i9' || request.url.includes('/quotes'))
-      .filter((request) => !request.cancelled)
-      .forEach((request) => request.flush(request.request.url.includes('/quotes') ? [] : {}));
-    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-query')).not.toBeInTheDocument());
-  });
-
-  it('closes the search without moving anything when dismissed', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    await user.click(await screen.findByTestId('holding-change-listing'));
-    httpTesting.expectOne('/api/accounts').flush([]);
-    httpTesting.expectOne('/api/instruments').flush([]);
-    httpTesting.expectOne('/api/holdings').flush([]);
-    (await vi.waitFor(() => httpTesting.expectOne('/api/instruments/resolve'))).flush([]);
-
-    await user.click(await screen.findByTestId('holding-add-cancel'));
-
-    await vi.waitFor(() => expect(screen.queryByTestId('holding-add-query')).not.toBeInTheDocument());
-    expect(TestBed.inject(HoldingChanges).lastTouched()).toBeNull();
+    expect(screen.getByRole('menu', { hidden: true }).querySelectorAll('button')).toHaveLength(2);
+    expect(document.querySelector('ui-menu')!.getAttribute('style')).toContain('200px');
+    expect(screen.getByTestId('holding-edit')).toBeInTheDocument();
+    expect(screen.getByTestId('holding-delete')).toBeInTheDocument();
   });
 
   it('keeps Buy, Sell and the chart for a line quoted in euros', async () => {
     await renderPage({ ...usdHolding, priceCurrency: 'EUR', marketValueEur: 1123.6 });
 
     expect(await screen.findByTestId('holding-buy')).toBeInTheDocument();
-    expect(screen.queryByTestId('holding-change-listing')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('holding-change-listing-menu')).not.toBeInTheDocument();
   });
 });

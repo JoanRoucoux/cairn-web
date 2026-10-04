@@ -40,7 +40,6 @@ describe('ProfilePage loading states', () => {
   it('should show the identity while the passkeys load, with placeholders for them only', async () => {
     await renderPage();
     await flushCall(httpTesting, '/api/session', session);
-    await flushCall(httpTesting, '/api/instruments', []);
 
     expect(await screen.findByTestId('identity')).toBeInTheDocument();
     expect(screen.queryByTestId('revoke-passkey')).not.toBeInTheDocument();
@@ -54,7 +53,6 @@ describe('ProfilePage loading states', () => {
     await renderPage();
     await flushCall(httpTesting, '/api/session', session);
     await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
-    await flushCall(httpTesting, '/api/instruments', []);
 
     expect(await screen.findByText('profile.passkeysErrorTitle')).toBeInTheDocument();
     expect(screen.getByTestId('identity')).toBeInTheDocument();
@@ -70,7 +68,6 @@ describe('ProfilePage loading states', () => {
     await renderPage();
     await flushCall(httpTesting, '/api/session', null, { status: 500 });
     await flushCall(httpTesting, '/api/session/passkeys', passkeys);
-    await flushCall(httpTesting, '/api/instruments', []);
 
     expect(await screen.findByTestId('current-passkey')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'profile.title' })).toBeInTheDocument();

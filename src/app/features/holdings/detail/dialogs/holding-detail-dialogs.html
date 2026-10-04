@@ -31,12 +31,3 @@
     (dismissed)="deleteDismissed.emit()"
   />
 }
-
-@if (listingOpen()) {
-  <app-holding-add-dialog
-    [initialQuery]="listingQuery()"
-    [replaceHoldingId]="listingHolding().id"
-    (dismissed)="listingDismissed.emit()"
-    (saved)="listingChanged.emit()"
-  />
-}

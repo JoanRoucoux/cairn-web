@@ -13,7 +13,7 @@ import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
 import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
 import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideEllipsis, LucidePencil, LucideRefreshCw, LucideTrash, LucideX } from '@lucide/angular';
+import { LucideEllipsis, LucidePencil, LucideTrash, LucideX } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
 
@@ -51,7 +51,6 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
     HoldingDetailQuoteAction,
     LucideEllipsis,
     LucidePencil,
-    LucideRefreshCw,
     LucideTrash,
     LucideX,
     NgTemplateOutlet,
@@ -130,7 +129,9 @@ export class HoldingDetailPage {
   protected readonly needsQuote = computed(() => {
     const holding = this.holding()!;
 
-    return holding.priceSource === 'MANUAL' || (holding.price ?? null) === null;
+    return (
+      this.foreignCurrency() === undefined && (holding.priceSource === 'MANUAL' || (holding.price ?? null) === null)
+    );
   });
 
   protected readonly isCash = computed(() => this.holding()?.assetClass === 'CASH');
@@ -167,7 +168,6 @@ export class HoldingDetailPage {
   protected readonly sellOpen = signal(false);
   protected readonly editOpen = signal(false);
   protected readonly deleteOpen = signal(false);
-  protected readonly listingOpen = signal(false);
 
   protected readonly priceSourceLabel = computed(() => {
     this.#language.activeLang();
@@ -214,11 +214,6 @@ export class HoldingDetailPage {
   protected openEdit(): void {
     this.menu().close();
     this.editOpen.set(true);
-  }
-
-  protected openListing(): void {
-    this.menu().close();
-    this.listingOpen.set(true);
   }
 
   protected openDelete(): void {

@@ -39,7 +39,7 @@ describe('ProfileStore', () => {
   let store: ProfileStore;
   let httpTesting: HttpTestingController;
 
-  const settle = (instruments: object[] = []): Promise<void> => settleProfile(httpTesting, { passkeys, instruments });
+  const settle = (): Promise<void> => settleProfile(httpTesting, { passkeys });
 
   beforeEach(() => {
     localStorage.clear();
@@ -77,14 +77,6 @@ describe('ProfileStore', () => {
     await settle();
 
     expect(store.availableLanguages).toEqual(['fr', 'en']);
-  });
-
-  it('should count the instruments, and know nothing until they load', async () => {
-    expect(store.instrumentCount()).toBeNull();
-
-    await settle([{}, {}]);
-
-    expect(store.instrumentCount()).toBe(2);
   });
 
   it('should view each passkey with its badge, provider and creation date', async () => {
@@ -229,7 +221,6 @@ describe('ProfileStore', () => {
 
     store.passkeyAdded();
     await flushCall(httpTesting, '/api/session/passkeys', [...passkeys, newKey('bmV3')]);
-    await flushCall(httpTesting, '/api/instruments', []);
 
     expect(store.passkeys()).toHaveLength(passkeys.length + 1);
     expect([...store.addedPasskeyIds()]).toEqual([]);
@@ -238,7 +229,6 @@ describe('ProfileStore', () => {
   it('should name no passkey when one is added while the list is in error', async () => {
     await flushCall(httpTesting, '/api/session', session);
     await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
-    await flushCall(httpTesting, '/api/instruments', []);
     await TestBed.inject(ApplicationRef).whenStable();
 
     store.passkeyAdded();
@@ -262,7 +252,6 @@ describe('ProfileStore', () => {
     expect(store.passkeysState()).toBe('loading');
 
     await flushCall(httpTesting, '/api/session/passkeys', passkeys);
-    await flushCall(httpTesting, '/api/instruments', []);
   });
 
   it('should keep the identity ready when the passkeys fail, then recover on reload', async () => {
@@ -273,7 +262,6 @@ describe('ProfileStore', () => {
       signInMethod: 'PASSKEY',
     });
     await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
-    await flushCall(httpTesting, '/api/instruments', []);
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.identityState()).toBe('ready');

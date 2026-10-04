@@ -13,14 +13,7 @@ import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { UiSwitch } from '@joanroucoux/cairn-ui/switch';
 import { UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
-import {
-  LucideBook,
-  LucideChevronRight,
-  LucideDownload,
-  LucideFileText,
-  LucideLogOut,
-  LucideUpload,
-} from '@lucide/angular';
+import { LucideChevronRight, LucideDownload, LucideFileText, LucideLogOut, LucideUpload } from '@lucide/angular';
 
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
@@ -41,7 +34,6 @@ import { type PasskeyView, ProfileStore } from './profile-store';
     UiAvatar,
     UiBackLink,
     UiCard,
-    LucideBook,
     LucideChevronRight,
     LucideDownload,
     LucideFileText,
@@ -84,7 +76,6 @@ export class ProfilePage {
   protected readonly systemScheme = this.#store.systemScheme;
   protected readonly language = this.#store.language;
   protected readonly hideAmounts = this.#store.hideAmounts;
-  protected readonly instrumentCount = this.#store.instrumentCount;
 
   protected readonly passkeyDialogOpen = signal(false);
   protected readonly passkeyToDelete = signal<PasskeyView | undefined>(undefined);

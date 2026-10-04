@@ -8,7 +8,6 @@ const screens = [
   '/allocation',
   '/profile',
   '/accounts',
-  '/instruments',
 ];
 
 for (const screen of screens) {

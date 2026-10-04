@@ -155,15 +155,50 @@ test.describe('busy dialog', () => {
 });
 
 test.describe('skeleton rule', () => {
-  test('shows no skeleton for a call under 150 ms', async ({ page }) => {
+  type Probe = { armed: boolean; seen: boolean };
+
+  const watchSkeletons = (page: Page): Promise<void> =>
+    page.addInitScript(() => {
+      const probe = { armed: false, seen: false };
+      (window as unknown as { skeletonProbe: Probe }).skeletonProbe = probe;
+      new MutationObserver(() => {
+        if (probe.armed && document.querySelector('ui-skeleton')) {
+          probe.seen = true;
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
+
+  const skeletonSeen = (page: Page): Promise<boolean> =>
+    page.evaluate(() => (window as unknown as { skeletonProbe: Probe }).skeletonProbe.seen);
+
+  const answerAccounts = async (page: Page, milliseconds: number): Promise<void> => {
     await mockApi(page);
-    await page.route('**/api/instruments', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    await page.route('**/api/accounts', async (route) => {
+      await page.evaluate(() => {
+        (window as unknown as { skeletonProbe: Probe }).skeletonProbe.armed = true;
+      });
+      if (milliseconds > 0) {
+        await new Promise((resolve) => setTimeout(resolve, milliseconds));
+      }
       await route.fallback();
     });
-    await page.goto('/instruments');
-    await expect(page.getByTestId('add-instrument')).toBeVisible();
-    await expect(page.getByTestId('instruments-count-skeleton')).toHaveCount(0);
-    await expect(page.getByTestId('instrument-row').first()).toBeVisible();
+  };
+
+  test('shows no skeleton for a call answered at once', async ({ page }) => {
+    await watchSkeletons(page);
+    await answerAccounts(page, 0);
+    await page.goto('/accounts');
+    await expect(page.getByTestId('account-row').first()).toBeVisible();
+
+    expect(await skeletonSeen(page)).toBe(false);
+  });
+
+  test('shows the skeleton for a slower call, so the probe can fail', async ({ page }) => {
+    await watchSkeletons(page);
+    await answerAccounts(page, 600);
+    await page.goto('/accounts');
+    await expect(page.getByTestId('account-row').first()).toBeVisible();
+
+    expect(await skeletonSeen(page)).toBe(true);
   });
 });

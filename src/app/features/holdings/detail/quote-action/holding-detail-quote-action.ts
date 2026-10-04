@@ -10,9 +10,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
   host: { class: 'contents' },
 })
 export class HoldingDetailQuoteAction {
-  readonly foreign = input(false, { transform: booleanAttribute });
   readonly needsQuote = input(false, { transform: booleanAttribute });
 
-  readonly changeListing = output<void>();
   readonly enterQuote = output<void>();
 }

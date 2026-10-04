@@ -59,43 +59,6 @@ export const resolveInstrument: Handler = (route) => {
   });
 };
 
-type MovableHolding = TradableHolding & {
-  accountId: string;
-  instrumentId: string;
-  instrumentName: string;
-  priceCurrency: string;
-};
-
-type Listing = { id: string; name: string };
-
-export const changeHoldingInstrument =
-  (holdings: MovableHolding[], instruments: () => Listing[]): Handler =>
-  (route, [, id]) => {
-    const holding = holdings.find((candidate) => candidate.id === id);
-    const { instrumentId } = route.request().postDataJSON() as { instrumentId: string };
-    const target = instruments().find((candidate) => candidate.id === instrumentId);
-
-    if (!holding || !target) {
-      return route.fulfill({ status: 404, json: { message: 'unknown holding or instrument' } });
-    }
-
-    if (
-      holdings.some((candidate) => candidate.accountId === holding.accountId && candidate.instrumentId === instrumentId)
-    ) {
-      return route.fulfill({ status: 422, json: { message: 'the account already holds this instrument' } });
-    }
-
-    Object.assign(holding, {
-      instrumentId,
-      instrumentName: target.name,
-      priceCurrency: 'EUR',
-      price: 412.3,
-      marketValueEur: holding.quantity * 412.3,
-    });
-
-    return route.fulfill({ json: holding });
-  };
-
 export const buyHolding =
   (holdings: TradableHolding[]): Handler =>
   (route, [, id]) => {

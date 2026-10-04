@@ -1,4 +1,4 @@
-import { Component, booleanAttribute, computed, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiRow } from '@joanroucoux/cairn-ui/row';
@@ -15,7 +15,6 @@ import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.sche
 export class HoldingAddCandidate {
   readonly candidate = input.required<InstrumentCandidateResponse>();
   readonly sub = input.required<string>();
-  readonly busy = input(false, { transform: booleanAttribute });
 
   readonly picked = output<InstrumentCandidateResponse>();
 

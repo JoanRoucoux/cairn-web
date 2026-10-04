@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { Router, provideRouter } from '@angular/router';
+import { provideRouter } from '@angular/router';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen } from '@testing-library/angular';
@@ -13,7 +13,6 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { AccountListPage } from './account-list-page';
 import { AccountListStore } from './account-list-store';
 
-const northwind = { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' };
 const livretA = { id: 'a2', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
 
 describe('AccountListPage savings accounts', () => {
@@ -74,33 +73,21 @@ describe('AccountListPage savings accounts', () => {
     expect(screen.queryByTestId('account-empty-hint')).not.toBeInTheDocument();
   });
 
-  it('should offer to edit the balance from the menu and lead to Lignes on that account', async () => {
-    const user = userEvent.setup();
-    await renderPage([livretA, northwind], [cash]);
-
-    const [trigger] = await screen.findAllByTestId('account-menu-trigger');
-    await user.click(trigger!);
-    await user.click(screen.getByTestId('account-edit-balance'));
-
-    expect(TestBed.inject(Router).url).toBe('/holdings?balance=a2');
-  });
-
-  it('should lead to Lignes on that account from the iPhone menu too', async () => {
+  it('should keep the balance out of the menu of a savings account, desktop and iPhone', async () => {
     const user = userEvent.setup();
     await renderPage([livretA], [cash]);
 
-    await user.click(await screen.findByTestId('account-menu-trigger-mobile'));
-    await user.click(screen.getByTestId('account-edit-balance-mobile'));
-
-    expect(TestBed.inject(Router).url).toBe('/holdings?balance=a2');
-  });
-
-  it('should offer the balance edit on no other account', async () => {
-    const user = userEvent.setup();
-    await renderPage([northwind], []);
-
     await user.click(await screen.findByTestId('account-menu-trigger'));
+    await user.click(await screen.findByTestId('account-menu-trigger-mobile'));
 
-    expect(screen.queryByTestId('account-edit-balance')).not.toBeInTheDocument();
+    const items = (selector: string): (string | null)[] =>
+      [...document.querySelectorAll(selector)].map((item) => item.getAttribute('data-testid'));
+
+    expect(items('ui-menu button[uiMenuItem]')).toEqual([
+      'account-edit',
+      'account-delete',
+      'account-edit-mobile',
+      'account-delete-mobile',
+    ]);
   });
 });
