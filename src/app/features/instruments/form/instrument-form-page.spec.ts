@@ -117,7 +117,13 @@ describe('InstrumentFormPage', () => {
 
     const select = screen.getByTestId('instrument-price-source') as HTMLSelectElement;
 
-    expect([...select.options].map((option) => option.value)).toEqual(['YAHOO', 'COINGECKO', 'SG_SIRIUS', 'MANUAL']);
+    expect([...select.options].map((option) => option.value)).toEqual([
+      'YAHOO',
+      'COINGECKO',
+      'SG_SIRIUS',
+      'AMUNDI',
+      'MANUAL',
+    ]);
   });
 
   it('values a portfolio in euros and offers no other currency', async () => {
