@@ -30,7 +30,6 @@ const savings: AccountView = { ...account, id: 'a2', name: 'Livret A', type: 'SA
 describe('AccountMobileRows', () => {
   const edit = vi.fn();
   const remove = vi.fn();
-  const editBalance = vi.fn();
 
   const renderRows = async (
     accounts: AccountView[] = [account],
@@ -38,7 +37,7 @@ describe('AccountMobileRows', () => {
   ): Promise<void> => {
     await render(AccountMobileRows, {
       inputs: { accounts },
-      on: { edit, remove, editBalance },
+      on: { edit, remove },
       imports: [getTranslocoTestingModule({ langs: { en: {}, 'accounts/en': {}, ...langs } })],
       providers: [
         provideZonelessChangeDetection(),
@@ -52,7 +51,6 @@ describe('AccountMobileRows', () => {
   afterEach(() => {
     edit.mockClear();
     remove.mockClear();
-    editBalance.mockClear();
   });
 
   it('should show a row with no separator for a blank institution, and the empty hint', async () => {
@@ -125,16 +123,13 @@ describe('AccountMobileRows', () => {
     expect(screen.queryByTestId('account-empty-hint-mobile')).not.toBeInTheDocument();
   });
 
-  it('should open the balance first in the menu of a savings account, and nowhere else', async () => {
+  it('should keep the balance out of the menu of a savings account', async () => {
     const user = userEvent.setup();
-    await renderRows([savings, account]);
+    await renderRows([savings]);
 
-    const [savingsTrigger, otherTrigger] = screen.getAllByTestId('account-menu-trigger-mobile');
-    await user.click(savingsTrigger!);
-    await user.click(screen.getByTestId('account-edit-balance-mobile'));
-    await user.click(otherTrigger!);
+    await user.click(screen.getByTestId('account-menu-trigger-mobile'));
 
-    expect(editBalance).toHaveBeenCalledWith(savings);
-    expect(screen.getAllByTestId('account-edit-balance-mobile')).toHaveLength(1);
+    expect(screen.getByTestId('account-edit-mobile')).toBeInTheDocument();
+    expect(screen.queryByTestId('account-edit-balance-mobile')).not.toBeInTheDocument();
   });
 });
