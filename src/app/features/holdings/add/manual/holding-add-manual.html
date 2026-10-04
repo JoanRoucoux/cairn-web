@@ -1,0 +1,61 @@
+<button
+  class="self-start"
+  data-testid="holding-add-back"
+  size="slim"
+  type="button"
+  ui-button
+  variant="ghost"
+  (click)="back.emit()"
+>
+  <svg aria-hidden="true" lucideChevronLeft [size]="18" [strokeWidth]="1.75" />
+  {{ 'holdings.add.backToSearch' | transloco }}
+</button>
+
+<div class="flex flex-col gap-0.5">
+  <h3 class="text-body m-0 font-semibold">{{ 'holdings.add.manual.title' | transloco }}</h3>
+  <p class="text-label text-pretty text-(--muted-foreground)">{{ 'holdings.add.manual.intro' | transloco }}</p>
+</div>
+
+<ui-field [label]="'holdings.add.manual.name' | transloco">
+  <input
+    autocomplete="off"
+    data-testid="holding-add-manual-name"
+    maxlength="160"
+    size="lg"
+    type="text"
+    uiInput
+    [value]="name()"
+    (input)="nameInput.emit($event)"
+  />
+</ui-field>
+
+<div class="grid grid-cols-2 gap-3">
+  <ui-field class="min-w-0" [label]="'holdings.add.manual.assetClass' | transloco">
+    <select
+      data-testid="holding-add-manual-class"
+      size="lg"
+      uiSelect
+      [value]="assetClass()"
+      (change)="assetClassChange.emit($event)"
+    >
+      @for (option of classes; track option) {
+        <option [selected]="option === assetClass()" [value]="option">
+          {{ 'enums.assetClass.' + option | transloco }}
+        </option>
+      }
+    </select>
+  </ui-field>
+  <ui-field class="min-w-0" unit="€" [label]="'holdings.add.manual.price' | transloco">
+    <input
+      autocomplete="off"
+      data-testid="holding-add-manual-price"
+      enterkeyhint="done"
+      inputmode="decimal"
+      size="lg"
+      type="text"
+      uiInput
+      [value]="priceText()"
+      (input)="priceInput.emit($event)"
+    />
+  </ui-field>
+</div>

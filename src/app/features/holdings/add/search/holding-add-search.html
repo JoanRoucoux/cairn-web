@@ -1,137 +1,103 @@
-<div class="flex flex-col gap-1.5">
-  <ui-field [label]="'holdings.add.title2' | transloco">
+<div class="flex flex-col gap-2">
+  <ui-field labelHidden [label]="'holdings.add.searchLabel' | transloco">
     <span uiFieldLeading><svg lucideSearch [size]="18" [strokeWidth]="1.75" /></span>
     <input
       autocomplete="off"
       data-testid="holding-add-query"
+      maxlength="64"
       size="lg"
       type="search"
       uiInput
-      [placeholder]="'holdings.add.titlePlaceholder' | transloco"
+      [placeholder]="'holdings.add.placeholder.' + filter() | transloco"
       [value]="query()"
       (input)="queryInput.emit($event)"
     />
   </ui-field>
+  <ui-filter-chips
+    data-testid="holding-add-sources"
+    [ariaLabel]="'holdings.add.sourcesLabel' | transloco"
+    [options]="filterOptions()"
+    [value]="filter()"
+    (valueChange)="chooseFilter($event)"
+  />
+  <p class="text-label text-pretty text-(--muted-foreground)" data-testid="holding-add-help">
+    {{ 'holdings.add.help.' + filter() | transloco }}
+  </p>
+</div>
 
-  @if (showResults()) {
-    <ui-card border="hairline" class="mt-1 flex flex-col" padding="xs" variant="inset">
-      @if (catalogState() !== 'ready' || catalogResults().length > 0) {
-        <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
-          {{ 'holdings.add.catalogHeading' | transloco }}
-        </div>
-        <ui-async
-          variant="inline"
-          [errorMessage]="'holdings.add.catalogError' | transloco"
-          [retryLabel]="'holdings.add.catalogRetry' | transloco"
-          [state]="catalogState()"
-          (retry)="retriedCatalog.emit()"
+@if (showResults()) {
+  <ui-card border="hairline" class="flex flex-col" data-testid="holding-add-results" padding="xs" variant="inset">
+    @if (showTracked()) {
+      <div
+        class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)"
+        data-testid="holding-add-tracked-heading"
+      >
+        <span>{{ 'holdings.add.tracked.heading' | transloco }}</span
+        >&ngsp;
+        <span>{{ 'holdings.add.tracked.nature' | transloco }}</span>
+      </div>
+      <ui-async
+        variant="inline"
+        [errorMessage]="'holdings.add.tracked.error' | transloco"
+        [retryLabel]="'holdings.add.tracked.retry' | transloco"
+        [state]="trackedState()"
+        (retry)="retriedTracked.emit()"
+      >
+        <div
+          asyncLoading
+          class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
+          data-testid="holding-add-tracked-loading"
+          role="status"
         >
-          <div
-            asyncLoading
-            class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
-            data-testid="holding-add-catalog-loading"
-            role="status"
-          >
-            <span class="sr-only">{{ 'holdings.add.catalogLoading' | transloco }}</span>
-            <div class="flex justify-between gap-3">
-              <span class="block w-55"><ui-skeleton [height]="16" /></span>
-              <span class="block w-16"><ui-skeleton [height]="16" /></span>
-            </div>
+          <span class="sr-only">{{ 'holdings.add.tracked.loading' | transloco }}</span>
+          <div class="flex justify-between gap-3">
+            <span class="block w-50"><ui-skeleton [height]="16" /></span>
+            <span class="block w-16"><ui-skeleton [height]="16" /></span>
           </div>
-          @for (result of catalogResults(); track result.instrument.id) {
-            <button
-              data-testid="holding-add-catalog-candidate"
-              size="dense"
-              type="button"
-              ui-row
-              [unavailable]="result.foreignCurrency !== undefined"
-              (click)="pickedCatalog.emit(result.instrument)"
-            >
-              <span class="flex min-w-0 flex-1 flex-col">
-                <span class="text-body truncate font-medium">{{ result.instrument.name }}</span>
-                <span class="text-caption text-(--subtle-foreground)">
-                  @if (result.instrument.isin || result.instrument.symbol; as reference) {
-                    {{ reference }} &middot;
-                  }
-                  {{ 'enums.assetClass.' + result.instrument.assetClass | transloco }}
-                </span>
-                @if (result.foreignCurrency; as currency) {
-                  <span class="text-caption text-pretty text-(--subtle-foreground)">{{
-                    'holdings.add.unavailableSub' | transloco: { currency }
-                  }}</span>
-                }
-              </span>
-              @if (result.foreignCurrency) {
-                <span class="text-caption flex-none text-(--subtle-foreground)">{{
-                  'holdings.add.unavailable' | transloco
-                }}</span>
-              } @else if (result.lineCount !== null) {
-                <span class="text-caption flex-none text-(--muted-foreground)">
-                  {{ lineCountKey(result.lineCount) | transloco: { count: result.lineCount } }}
-                </span>
-              }
-            </button>
-          }
-        </ui-async>
-      }
+        </div>
+        @for (title of tracked(); track title.instrumentId) {
+          <app-holding-add-tracked [title]="title" (picked)="pickedTracked.emit($event)" />
+        }
+      </ui-async>
+    }
 
-      @if (showOnline()) {
-        <div class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)">
-          {{ 'holdings.add.onlineHeading' | transloco }}
-        </div>
-        <ui-async
-          variant="inline"
-          [errorMessage]="'holdings.add.onlineError' | transloco"
-          [retryLabel]="'holdings.add.onlineRetry' | transloco"
-          [state]="onlineState()"
-          (retry)="retried.emit()"
-        >
-          <div
-            asyncLoading
-            class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
-            data-testid="holding-add-online-loading"
-            role="status"
-          >
-            <span class="sr-only">{{ 'holdings.add.onlineSearching' | transloco }}</span>
-            <div class="flex justify-between gap-3">
-              <span class="block w-55"><ui-skeleton [height]="16" /></span>
-              <span class="block w-16"><ui-skeleton [height]="16" /></span>
-            </div>
-            <div class="flex justify-between gap-3">
-              <span class="block w-45"><ui-skeleton [height]="16" /></span>
-              <span class="block w-16"><ui-skeleton [height]="16" /></span>
-            </div>
-          </div>
-          @if (candidates().length > 0) {
-            @for (candidate of candidates(); track candidate.sourceRef) {
-              <app-holding-add-candidate
-                [candidate]="candidate"
-                [sub]="candidateSub(candidate)"
-                (picked)="pickedOnline.emit($event)"
-              />
-            }
-          } @else if (catalogResults().length > 0) {
-            <div class="text-label px-2.5 pt-1.5 pb-2.5 text-(--muted-foreground)">
-              {{ 'holdings.add.noOtherOnline' | transloco }}
-            </div>
-          } @else {
-            <div class="flex flex-col items-start gap-2 px-2.5 pt-1.5 pb-2.5">
-              <p class="text-label text-(--muted-foreground)">
-                {{ 'holdings.add.notFound' | transloco: { query: query() } }}
-              </p>
-              <button
-                data-testid="holding-add-create-manual"
-                type="button"
-                ui-button
-                variant="outline"
-                (click)="pickedManual.emit()"
-              >
-                {{ 'holdings.add.createManual' | transloco }}
-              </button>
-            </div>
-          }
-        </ui-async>
-      }
-    </ui-card>
-  }
+    @for (group of groups(); track group.source) {
+      <app-holding-add-group
+        [group]="group"
+        (picked)="pickedCandidate.emit($event)"
+        (retried)="retried.emit(group.source)"
+      />
+    }
+
+    @if (noneFound()) {
+      <p class="text-label px-2.5 py-3 text-pretty text-(--muted-foreground)" data-testid="holding-add-none-found">
+        {{ 'holdings.add.noneFound' | transloco: { query: query().trim() } }}
+      </p>
+    }
+
+    @if (narrowed()) {
+      <div class="px-1.5 pb-2">
+        <button data-testid="holding-add-search-all" type="button" ui-button variant="outline" (click)="searchAll()">
+          {{ 'holdings.add.searchAll' | transloco }}
+        </button>
+      </div>
+    }
+  </ui-card>
+}
+
+<div class="flex flex-col">
+  <button data-testid="holding-add-sirius-link" padding="none" type="button" ui-row (click)="siriusOpened.emit()">
+    <span class="flex min-w-0 flex-1 flex-col">
+      <span class="text-label font-medium">{{ 'holdings.add.siriusLink' | transloco }}</span>
+      <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.siriusLinkSub' | transloco }}</span>
+    </span>
+    <svg aria-hidden="true" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
+  </button>
+  <button data-testid="holding-add-manual-link" padding="none" type="button" ui-row (click)="manualOpened.emit()">
+    <span class="flex min-w-0 flex-1 flex-col">
+      <span class="text-label font-medium">{{ 'holdings.add.manualLink' | transloco }}</span>
+      <span class="text-caption text-(--subtle-foreground)">{{ 'holdings.add.manualLinkSub' | transloco }}</span>
+    </span>
+    <svg aria-hidden="true" lucideChevronRight [size]="16" [strokeWidth]="1.75" />
+  </button>
 </div>

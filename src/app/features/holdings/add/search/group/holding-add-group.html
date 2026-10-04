@@ -1,0 +1,45 @@
+@let source = 'enums.priceSource.' + group().source | transloco;
+<div
+  class="text-caption px-2.5 pt-2.5 pb-1 font-medium text-(--subtle-foreground)"
+  data-testid="holding-add-group-heading"
+>
+  <span>{{ source }}</span
+  >&ngsp;
+  <span>{{ 'holdings.add.nature.' + group().source | transloco }}</span>
+</div>
+@if (group().state === 'short') {
+  <p class="text-label px-2.5 pt-1.5 pb-2.5 text-pretty text-(--muted-foreground)">
+    {{ 'holdings.add.amundiNeedsIsin' | transloco }}
+  </p>
+} @else {
+  <ui-async
+    variant="inline"
+    [errorMessage]="'holdings.add.sourceError' | transloco: { source }"
+    [retryLabel]="'holdings.add.retry' | transloco"
+    [state]="state()"
+    (retry)="retried.emit()"
+  >
+    <div
+      asyncLoading
+      class="flex flex-col gap-3.5 px-2.5 pt-2.5 pb-3"
+      data-testid="holding-add-group-loading"
+      role="status"
+    >
+      <span class="sr-only">{{ 'holdings.add.searching' | transloco: { source } }}</span>
+      <div class="flex justify-between gap-3">
+        <span class="block w-50"><ui-skeleton [height]="16" /></span>
+        <span class="block w-16"><ui-skeleton [height]="16" /></span>
+      </div>
+      <div class="flex justify-between gap-3">
+        <span class="block w-40"><ui-skeleton [height]="16" /></span>
+        <span class="block w-16"><ui-skeleton [height]="16" /></span>
+      </div>
+    </div>
+    <p asyncEmpty class="text-label px-2.5 pt-1.5 pb-2.5 text-(--muted-foreground)">
+      {{ 'holdings.add.sourceEmpty' | transloco: { source } }}
+    </p>
+    @for (candidate of group().candidates; track candidate.sourceRef) {
+      <app-holding-add-candidate [candidate]="candidate" (picked)="picked.emit($event)" />
+    }
+  </ui-async>
+}

@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { type AsyncState } from '@joanroucoux/cairn-ui/async';
@@ -7,25 +7,30 @@ import { firstValueFrom, map } from 'rxjs';
 import { AccountService } from '@core/api-client/account/account.service';
 import type {
   AssetClass,
+  CreateHoldingRequest,
   HoldingResponse,
   InstrumentCandidateResponse,
-  InstrumentResponse,
+  SearchableSource,
 } from '@core/api-client/cairnAPI.schemas';
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
-import { normalizeSearch } from '@shared/format/normalize-search';
 import { parseDecimal } from '@shared/format/parse-decimal';
 
-import { isinOf } from './isin';
+import { compactIsin, isIsin } from './isin';
+import { type SourceResult, groupsFor, trackedIdsFound, trackedMatches, trackedTitlesOf } from './result-groups';
+import { type SourceFilter, planSearch, resultKey } from './search-plan';
 
 const SEARCH_DEBOUNCE_MS = 300;
-const MIN_ONLINE_QUERY = 3;
 
-export type PickedInstrument =
-  | { kind: 'catalog'; instrument: InstrumentResponse }
-  | { kind: 'online'; candidate: InstrumentCandidateResponse }
-  | { kind: 'manual'; name: string };
+export type AddMode = 'search' | 'sirius' | 'manual';
+
+export type PickedTitle =
+  { kind: 'tracked'; title: HoldingResponse } | { kind: 'online'; candidate: InstrumentCandidateResponse };
+
+export type AddError = 'failed' | 'duplicate';
+
+type TitleChoice = Pick<CreateHoldingRequest, 'instrumentId' | 'instrument'>;
 
 @Injectable()
 export class HoldingAddDialogStore {
@@ -41,180 +46,175 @@ export class HoldingAddDialogStore {
     defaultValue: [],
   });
 
-  readonly instruments = rxResource({
-    stream: () => this.#instrumentsApiClient.listInstruments(),
-    defaultValue: [],
-  });
-
   readonly holdings = rxResource({
     stream: () => this.#holdingsApiClient.listHoldings(),
     defaultValue: [],
   });
 
   readonly query = signal('');
+  readonly filter = signal<SourceFilter>('ALL');
+  readonly mode = signal<AddMode>('search');
+  readonly picked = signal<PickedTitle | undefined>(undefined);
+
+  readonly siriusIsinText = signal('');
+  readonly manualName = signal('');
+  readonly manualClass = signal<AssetClass>('OTHER');
+  readonly manualPriceText = signal('');
+
   readonly accountId = signal('');
   readonly quantityText = signal('');
   readonly averageCostText = signal('');
 
-  readonly picked = signal<PickedInstrument | undefined>(undefined);
-  readonly assetClass = signal<AssetClass | undefined>(undefined);
-
-  readonly candidates = signal<InstrumentCandidateResponse[]>([]);
-  readonly searchingOnline = signal(false);
-  readonly onlineError = signal(false);
-  readonly onlineSearched = signal(false);
-
   readonly submitting = signal(false);
-  readonly error = signal(false);
-  readonly instrumentError = signal(false);
+  readonly error = signal<AddError | null>(null);
 
-  #created: { picked: PickedInstrument; id: string } | undefined;
+  readonly #results = signal<ReadonlyMap<string, SourceResult>>(new Map());
   #debounceHandle: ReturnType<typeof setTimeout> | undefined;
 
+  constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.#debounceHandle));
+  }
+
   readonly #knownHoldings = computed(() => (this.holdings.hasValue() ? this.holdings.value() : []));
+  readonly #titles = computed(() => trackedTitlesOf(this.#knownHoldings()));
+  readonly #plan = computed(() => planSearch(this.query(), this.filter()));
 
-  readonly #lineCounts = computed(() => {
-    const counts = new Map<string, number>();
+  readonly showResults = computed(() => this.#plan().length > 0);
 
-    for (const holding of this.holdings.value()) {
-      counts.set(holding.instrumentId, (counts.get(holding.instrumentId) ?? 0) + 1);
-    }
+  readonly groups = computed(() =>
+    groupsFor(this.#plan(), this.#results(), new Set(this.#titles().map((title) => title.instrumentId)), this.filter()),
+  );
 
-    return counts;
-  });
+  readonly tracked = computed(() =>
+    this.showResults()
+      ? trackedMatches(this.#titles(), this.query(), this.filter(), trackedIdsFound(this.#plan(), this.#results()))
+      : [],
+  );
 
-  foreignCurrencyOf(instrument: InstrumentResponse): string | undefined {
-    const quoted = this.#knownHoldings().find((holding) => holding.instrumentId === instrument.id)?.priceCurrency;
-    const currency = quoted ?? instrument.currency;
-
-    return currency !== 'EUR' ? currency : undefined;
-  }
-
-  lineCountOf(instrumentId: string): number | null {
+  readonly trackedState = computed<AsyncState>(() => {
     const status = this.holdings.status();
-
-    return status === 'resolved' || status === 'reloading' || status === 'local'
-      ? (this.#lineCounts().get(instrumentId) ?? 0)
-      : null;
-  }
-
-  readonly filteredCatalog = computed(() => {
-    const query = normalizeSearch(this.query().trim());
-
-    if (!query) {
-      return [];
-    }
-
-    return (this.instruments.hasValue() ? this.instruments.value() : []).filter((instrument) =>
-      normalizeSearch(`${instrument.name} ${instrument.isin ?? ''} ${instrument.symbol ?? ''}`).includes(query),
-    );
-  });
-
-  readonly catalogState = computed<AsyncState>(() => {
-    const status = this.instruments.status();
 
     return status === 'error' ? 'error' : status === 'loading' ? 'loading' : 'ready';
   });
 
+  readonly noneFound = computed(
+    () =>
+      this.showResults() &&
+      this.filter() === 'ALL' &&
+      this.trackedState() === 'ready' &&
+      this.tracked().length === 0 &&
+      this.groups().length === 0,
+  );
+
+  readonly narrowed = computed(() => {
+    const [group] = this.groups();
+
+    return this.filter() !== 'ALL' && group?.state === 'ready' && group.candidates.length === 0;
+  });
+
+  readonly siriusIsin = computed(() => compactIsin(this.siriusIsinText()));
+  readonly manualPrice = computed(() => parseDecimal(this.manualPriceText()));
   readonly quantity = computed(() => parseDecimal(this.quantityText()));
   readonly averageCost = computed(() => parseDecimal(this.averageCostText()));
 
-  readonly probePrice = computed(() => {
+  readonly titleReady = computed(() => {
+    switch (this.mode()) {
+      case 'sirius':
+        return isIsin(this.siriusIsinText());
+      case 'manual':
+        return this.manualName().trim() !== '' && (this.manualPrice() ?? 0) > 0;
+      default:
+        return this.picked() !== undefined;
+    }
+  });
+
+  readonly #unitPrice = computed(() => {
     const picked = this.picked();
 
-    return picked?.kind === 'online' ? (picked.candidate.probePrice ?? null) : null;
+    if (this.mode() === 'manual') {
+      return this.manualPrice();
+    }
+
+    if (this.mode() === 'sirius' || picked === undefined) {
+      return null;
+    }
+
+    if (picked.kind === 'online') {
+      return picked.candidate.probePrice ?? null;
+    }
+
+    return picked.title.priceCurrency === 'EUR' ? (picked.title.price ?? null) : null;
   });
 
-  readonly valueAtProbe = computed(() => {
+  readonly value = computed(() => {
     const quantity = this.quantity();
-    const price = this.probePrice();
+    const price = this.#unitPrice();
 
-    return quantity !== null && quantity > 0 && price !== null ? quantity * price : null;
-  });
-
-  readonly gainAtProbe = computed(() => {
-    const quantity = this.quantity();
-    const price = this.probePrice();
-    const cost = this.averageCost();
-
-    return quantity !== null && quantity > 0 && price !== null && cost !== null && cost > 0
-      ? quantity * (price - cost)
-      : null;
+    return this.titleReady() && quantity !== null && quantity > 0 && price !== null ? quantity * price : null;
   });
 
   readonly valid = computed(() => {
     const quantity = this.quantity();
-    const picked = this.picked();
 
-    return (
-      picked !== undefined &&
-      (picked.kind !== 'manual' || this.assetClass() !== undefined) &&
-      this.accountId() !== '' &&
-      quantity !== null &&
-      quantity > 0
-    );
+    return this.titleReady() && this.accountId() !== '' && quantity !== null && quantity > 0;
   });
 
   onQueryChange(value: string): void {
     this.query.set(value);
-    this.picked.set(undefined);
-    this.candidates.set([]);
-    this.onlineSearched.set(false);
-    this.onlineError.set(false);
 
     if (this.#debounceHandle !== undefined) {
       clearTimeout(this.#debounceHandle);
     }
 
-    const trimmed = value.trim();
-
-    if (trimmed.length < MIN_ONLINE_QUERY) {
-      return;
-    }
-
-    this.#debounceHandle = setTimeout(() => void this.searchOnline(trimmed), SEARCH_DEBOUNCE_MS);
+    this.#debounceHandle = setTimeout(() => {
+      this.#debounceHandle = undefined;
+      this.#searchMissing();
+    }, SEARCH_DEBOUNCE_MS);
   }
 
-  reloadCatalog(): void {
-    this.instruments.reload();
-  }
+  chooseFilter(filter: SourceFilter): void {
+    this.filter.set(filter);
 
-  async searchOnline(query: string = this.query().trim()): Promise<void> {
-    if (!query) {
-      return;
-    }
-
-    this.searchingOnline.set(true);
-    this.onlineError.set(false);
-
-    try {
-      const candidates = await firstValueFrom(this.#instrumentsApiClient.resolveInstrument({ query }));
-      this.candidates.set(candidates);
-    } catch {
-      this.onlineError.set(true);
-    } finally {
-      this.searchingOnline.set(false);
-      this.onlineSearched.set(true);
+    if (this.#debounceHandle === undefined) {
+      this.#searchMissing();
     }
   }
 
-  pickCatalog(instrument: InstrumentResponse): void {
-    this.picked.set({ kind: 'catalog', instrument });
+  retry(source: SearchableSource): void {
+    const query = this.#plan().find((planned) => planned.source === source)?.query;
+
+    if (query) {
+      void this.#search(source, query);
+    }
   }
 
-  pickOnline(candidate: InstrumentCandidateResponse): void {
+  retryTracked(): void {
+    this.holdings.reload();
+  }
+
+  pickTracked(title: HoldingResponse): void {
+    this.picked.set({ kind: 'tracked', title });
+    this.error.set(null);
+  }
+
+  pickCandidate(candidate: InstrumentCandidateResponse): void {
     this.picked.set({ kind: 'online', candidate });
-  }
-
-  pickManual(): void {
-    this.picked.set({ kind: 'manual', name: this.query().trim() });
-    this.assetClass.set(undefined);
+    this.error.set(null);
   }
 
   unpick(): void {
     this.picked.set(undefined);
-    this.assetClass.set(undefined);
-    this.#created = undefined;
+    this.error.set(null);
+  }
+
+  openMode(mode: AddMode): void {
+    this.mode.set(mode);
+    this.error.set(null);
+  }
+
+  chooseAccount(accountId: string): void {
+    this.accountId.set(accountId);
+    this.error.set(null);
   }
 
   async save(): Promise<HoldingResponse | null> {
@@ -222,31 +222,26 @@ export class HoldingAddDialogStore {
       return null;
     }
 
-    const picked = this.picked() as PickedInstrument;
-    const accountId = this.accountId();
-    const quantity = this.quantity() as number;
+    if (this.#alreadyHeld()) {
+      this.error.set('duplicate');
+
+      return null;
+    }
 
     this.submitting.set(true);
-    this.error.set(false);
-    this.instrumentError.set(false);
+    this.error.set(null);
 
     try {
-      const instrumentId = await this.#instrumentIdFor(picked);
-
-      if (instrumentId === undefined) {
-        return null;
-      }
-
       return await firstValueFrom(
         this.#holdingsApiClient.createHolding({
-          accountId,
-          instrumentId,
-          quantity,
+          accountId: this.accountId(),
+          quantity: this.quantity() as number,
           averageCost: this.averageCost(),
+          ...this.#titleChoice(),
         }),
       );
     } catch {
-      this.error.set(true);
+      this.error.set('failed');
 
       return null;
     } finally {
@@ -254,47 +249,98 @@ export class HoldingAddDialogStore {
     }
   }
 
-  async #instrumentIdFor(picked: PickedInstrument): Promise<string | undefined> {
-    if (picked.kind === 'catalog') {
-      return picked.instrument.id;
+  #searchMissing(): void {
+    for (const { source, query } of this.#plan()) {
+      if (query !== null && !this.#results().has(resultKey(source, query))) {
+        void this.#search(source, query);
+      }
     }
+  }
 
-    if (this.#created?.picked === picked) {
-      return this.#created.id;
-    }
+  async #search(source: SearchableSource, query: string): Promise<void> {
+    const key = resultKey(source, query);
+    const store = (result: SourceResult): void => this.#results.update((results) => new Map(results).set(key, result));
+
+    store({ state: 'loading', candidates: [] });
 
     try {
-      const created = await firstValueFrom(
-        this.#instrumentsApiClient.createInstrument(
-          picked.kind === 'online'
-            ? {
-                name: picked.candidate.name,
-                isin: picked.candidate.isin ?? isinOf(this.query()),
-                currency: picked.candidate.currency ?? 'EUR',
-                assetClass: picked.candidate.assetClass,
-                priceSource: picked.candidate.source,
-                sourceRef: picked.candidate.sourceRef,
-                symbol: picked.candidate.symbol ?? null,
-              }
-            : {
-                name: picked.name,
-                isin: null,
-                currency: 'EUR',
-                assetClass: this.assetClass() as AssetClass,
-                priceSource: 'MANUAL',
-                sourceRef: null,
-              },
-        ),
-      );
-
-      this.#created = { picked, id: created.id };
-
-      return created.id;
+      store({
+        state: 'ready',
+        candidates: await firstValueFrom(this.#instrumentsApiClient.searchInstruments({ source, query })),
+      });
     } catch {
-      this.instrumentError.set(true);
-      this.error.set(true);
-
-      return undefined;
+      store({ state: 'error', candidates: [] });
     }
+  }
+
+  #alreadyHeld(): boolean {
+    const held = this.#knownHoldings().filter((holding) => holding.accountId === this.accountId());
+    const picked = this.picked();
+
+    if (this.mode() === 'sirius') {
+      return held.some((holding) => holding.priceSource === 'SG_SIRIUS' && holding.sourceRef === this.siriusIsin());
+    }
+
+    if (this.mode() === 'manual' || picked === undefined) {
+      return false;
+    }
+
+    return picked.kind === 'tracked'
+      ? held.some((holding) => holding.instrumentId === picked.title.instrumentId)
+      : held.some(
+          (holding) =>
+            holding.priceSource === picked.candidate.source && holding.sourceRef === picked.candidate.sourceRef,
+        );
+  }
+
+  #titleChoice(): TitleChoice {
+    const picked = this.picked() as PickedTitle;
+
+    if (this.mode() === 'sirius') {
+      return { instrument: { priceSource: 'SG_SIRIUS', assetClass: 'FUND', isin: this.siriusIsin() } };
+    }
+
+    if (this.mode() === 'manual') {
+      return {
+        instrument: {
+          priceSource: 'MANUAL',
+          name: this.manualName().trim(),
+          assetClass: this.manualClass(),
+          price: this.manualPrice(),
+        },
+      };
+    }
+
+    if (picked.kind === 'online') {
+      const { candidate } = picked;
+
+      return {
+        instrument: {
+          priceSource: candidate.source,
+          name: candidate.name,
+          assetClass: candidate.assetClass,
+          sourceRef: candidate.sourceRef,
+          isin: candidate.isin ?? null,
+          symbol: candidate.symbol ?? null,
+          currency: candidate.currency ?? null,
+        },
+      };
+    }
+
+    const { title } = picked;
+
+    return title.priceSource === 'MANUAL' || !title.sourceRef
+      ? { instrumentId: title.instrumentId }
+      : {
+          instrument: {
+            priceSource: title.priceSource,
+            name: title.instrumentName,
+            assetClass: title.assetClass,
+            sourceRef: title.sourceRef,
+            isin: title.isin ?? null,
+            symbol: title.symbol ?? null,
+            currency: title.priceCurrency ?? null,
+          },
+        };
   }
 }

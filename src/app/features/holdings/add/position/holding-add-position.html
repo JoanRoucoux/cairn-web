@@ -1,0 +1,56 @@
+<div animate.enter="ui-enter-fade" class="flex flex-col gap-4" data-testid="holding-add-fields">
+  <ui-field [label]="'holdings.add.account' | transloco">
+    <select
+      data-testid="holding-add-account"
+      size="lg"
+      uiSelect
+      [value]="accountId()"
+      (change)="accountChange.emit($event)"
+    >
+      @for (account of accountOptions(); track account.id) {
+        <option [selected]="account.id === accountId()" [value]="account.id">{{ account.label }}</option>
+      }
+    </select>
+  </ui-field>
+
+  <div class="grid grid-cols-2 gap-3">
+    <ui-field class="min-w-0" unit="parts" [label]="'holdings.add.quantity' | transloco">
+      <input
+        autocomplete="off"
+        data-testid="holding-add-quantity"
+        enterkeyhint="done"
+        inputmode="decimal"
+        size="lg"
+        type="text"
+        uiInput
+        [value]="quantityText()"
+        (input)="quantityInput.emit($event)"
+      />
+    </ui-field>
+    <ui-field
+      class="min-w-0"
+      unit="€"
+      [label]="'holdings.add.averageCost' | transloco"
+      [optional]="'holdings.add.averageCostOptional' | transloco"
+    >
+      <input
+        autocomplete="off"
+        data-testid="holding-add-average-cost"
+        enterkeyhint="done"
+        inputmode="decimal"
+        size="lg"
+        type="text"
+        uiInput
+        [value]="averageCostText()"
+        (input)="averageCostInput.emit($event)"
+      />
+    </ui-field>
+  </div>
+
+  @if (value() !== null) {
+    <p class="text-label -mt-1.5 text-(--muted-foreground) tabular-nums" data-testid="holding-add-value">
+      {{ (manual() ? 'holdings.add.valueAtManual' : 'holdings.add.valueAtProbe') | transloco }}
+      <ui-amount currency="EUR" [value]="value()" />
+    </p>
+  }
+</div>

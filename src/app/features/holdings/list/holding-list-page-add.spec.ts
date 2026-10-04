@@ -44,6 +44,14 @@ describe('HoldingListPage add query param', () => {
     }
   };
 
+  const openManualEntry = async (): Promise<void> => {
+    const user = userEvent.setup();
+
+    await user.click(screen.getByTestId('holding-add-manual-link'));
+    await user.type(screen.getByTestId('holding-add-manual-name'), 'Northwind Private Equity');
+    await user.type(screen.getByTestId('holding-add-manual-price'), '100');
+  };
+
   afterEach(() => httpTesting.verify());
 
   it('opens the add dialog with the account of the add query param, then clears it', async () => {
@@ -51,8 +59,8 @@ describe('HoldingListPage add query param', () => {
 
     expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
+    await openManualEntry();
     await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
-    httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
   });
 
   it('opens the add dialog on the default account when the add query param is empty', async () => {
@@ -60,8 +68,8 @@ describe('HoldingListPage add query param', () => {
 
     expect(await screen.findByTestId('holding-add-dialog')).toBeInTheDocument();
     await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
+    await openManualEntry();
     await vi.waitFor(() => expect(screen.getByTestId('holding-add-account')).toHaveValue('a1'));
-    httpTesting.match('/api/instruments').forEach((request) => request.flush([]));
 
     await userEvent.setup().click(screen.getByTestId('holding-add-cancel'));
     await vi.waitFor(() => expect(screen.queryByTestId('holding-add-dialog')).not.toBeInTheDocument());

@@ -81,7 +81,7 @@
   "delete": {
     "open": "Supprimer la ligne",
     "title": "Supprimer cette ligne",
-    "description": "{{name}} sera retirée de votre portefeuille. Ses cours sont conservés.",
+    "description": "{{name}} sera retirée de votre portefeuille.",
     "cancel": "Annuler",
     "submit": "Supprimer",
     "error": "Cette ligne n'a pas pu être supprimée."
@@ -108,7 +108,9 @@
       "5y": "sur 5 ans",
       "max": "depuis l'achat"
     },
-    "panel": "Détail de la ligne"
+    "panel": "Détail de la ligne",
+    "priceSource": "Source du cours",
+    "noAutomaticQuote": "Aucune cotation automatique"
   },
   "noQuoteYet": "Aucune cotation pour cet instrument.",
   "cash": {
@@ -174,41 +176,94 @@
   "add": {
     "title": "Ajouter une ligne",
     "account": "Compte",
-    "title2": "Titre",
-    "titlePlaceholder": "Nom ou ISIN",
-    "catalogHeading": "Dans le catalogue",
-    "catalogError": "Le catalogue n'a pas répondu.",
-    "catalogRetry": "Réessayer le catalogue",
-    "catalogLoading": "Recherche dans le catalogue",
-    "onlineHeading": "Nouveau titre, trouvé en ligne",
-    "onlineError": "La recherche en ligne n'a pas répondu.",
-    "onlineRetry": "Réessayer",
-    "notFound": "Aucun titre trouvé pour « {{query}} ». Vérifiez l'ISIN, ou créez le titre avec un cours saisi à la main.",
-    "createManual": "Créer avec un cours manuel",
-    "assetClass": "Classe",
-    "chooseAssetClass": "Choisir une classe",
+    "searchLabel": "Rechercher un titre",
+    "sourcesLabel": "Où chercher",
+    "allSources": "Toutes",
+    "placeholder": {
+      "ALL": "Nom, symbole ou ISIN",
+      "YAHOO": "Nom, ticker ou ISIN",
+      "COINGECKO": "Nom ou symbole",
+      "AMUNDI": "ISIN à 12 caractères"
+    },
+    "help": {
+      "ALL": "Cairn cherche chez Yahoo Finance et CoinGecko, et chez Amundi pour un ISIN.",
+      "YAHOO": "Actions et ETF cotés. Ex. : Air Liquide, CW8.PA, IE00B4L5Y983.",
+      "COINGECKO": "Cryptomonnaies. Ex. : solana, SOL.",
+      "AMUNDI": "Fonds d'épargne salariale et retraite (Amundi, SG Gestion). Par ISIN uniquement."
+    },
+    "tracked": {
+      "heading": "Déjà suivi",
+      "nature": "dans vos lignes",
+      "priceCaption": "dernier cours",
+      "loading": "Recherche dans vos lignes",
+      "error": "Le catalogue n'a pas répondu.",
+      "retry": "Réessayer"
+    },
+    "nature": {
+      "YAHOO": "cours en continu",
+      "COINGECKO": "crypto, prix en euros en continu",
+      "AMUNDI": "valeur liquidative quotidienne"
+    },
+    "priceCaption": {
+      "YAHOO": "cours d'essai",
+      "COINGECKO": "prix en euros",
+      "AMUNDI": "valeur liquidative"
+    },
+    "navOn": "VL du {{date}}",
+    "quotedIn": "coté en {{currency}}",
+    "unavailable": "Indisponible",
+    "euroOnly": "Cairn ne suit que l'euro",
+    "searching": "Recherche chez {{source}}",
+    "sourceEmpty": "Aucun résultat chez {{source}}.",
+    "sourceError": "{{source}} ne répond pas pour le moment.",
+    "retry": "Réessayer",
+    "amundiNeedsIsin": "Saisissez un ISIN complet, 12 caractères : Amundi ne cherche pas par nom.",
+    "noneFound": "Aucun titre trouvé pour « {{query}} ». Un produit structuré SG ou un titre sans cotation s'ajoute avec les liens ci-dessous.",
+    "searchAll": "Chercher dans toutes les sources",
+    "siriusLink": "Produit structuré SG Sirius",
+    "siriusLinkSub": "Pas de recherche : saisir l'ISIN",
+    "manualLink": "Saisir à la main",
+    "manualLinkSub": "Pour un titre sans source, cours saisi par vous",
+    "backToSearch": "Retour à la recherche",
+    "sirius": {
+      "title": "Produit structuré SG Sirius",
+      "intro": "SG Sirius ne permet pas de recherche. Saisissez l'ISIN figurant sur votre relevé.",
+      "isin": "ISIN",
+      "example": "Ex. : XS2381234567",
+      "count_one": "{{count}} caractère sur 12",
+      "count_other": "{{count}} caractères sur 12",
+      "invalid": "Ce n'est pas un ISIN valide : 2 lettres, 9 caractères, 1 chiffre.",
+      "valid": "Format valide",
+      "note": "Cairn ne peut pas vérifier cet ISIN avant l'ajout. Le cours arrivera au prochain relevé SG Sirius ; si l'ISIN est faux, la ligne restera sans cours."
+    },
+    "manual": {
+      "title": "Saisie manuelle",
+      "intro": "Pour un titre sans source : son cours ne bougera que quand vous le saisirez.",
+      "name": "Nom",
+      "assetClass": "Classe",
+      "price": "Cours"
+    },
     "newBadge": "Nouveau",
-    "newNote": "Le titre sera ajouté au catalogue.",
     "change": "Changer",
+    "sourceLine": {
+      "YAHOO": "cours en continu",
+      "COINGECKO": "prix en euros en continu",
+      "AMUNDI": "valeur liquidative",
+      "AMUNDI_ON": "valeur liquidative du {{date}}",
+      "tracked": "déjà suivi dans vos lignes"
+    },
+    "trial": "essai",
     "quantity": "Quantité",
     "averageCost": "PRU",
     "averageCostOptional": "(facultatif)",
     "valueAtProbe": "Valeur au cours d'essai",
+    "valueAtManual": "Valeur au cours saisi",
     "submit": "Ajouter la ligne",
     "submitNew": "Créer le titre et ajouter la ligne",
+    "submitSirius": "Ajouter avec cet ISIN",
     "error": "Cette ligne n'a pas pu être ajoutée.",
-    "instrumentError": "Ce titre n'a pas pu être créé.",
-    "noLine": "Aucune ligne",
-    "lineCount_one": "{{count}} ligne",
-    "lineCount_other": "{{count}} lignes",
-    "trialPriceCaption": "cours d'essai",
-    "trialPrice": "Cours d'essai",
-    "noOtherOnline": "Aucun autre titre trouvé en ligne.",
-    "onlineSearching": "Recherche en ligne",
-    "gainAtProbe": "plus-value latente",
-    "cancel": "Annuler",
-    "unavailableSub": "Coté en {{currency}}. Cairn ne suit que les cotations en euros.",
-    "unavailable": "indisponible"
+    "duplicate": "Ce compte détient déjà ce titre.",
+    "cancel": "Annuler"
   },
   "foreignQuote": "Coté en {{currency}}, non compté",
   "toasts": {
