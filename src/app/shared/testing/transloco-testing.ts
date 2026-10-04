@@ -14,8 +14,6 @@ export const getTranslocoTestingModule = (
       'portfolio/fr': {},
       'holdings/en': {},
       'holdings/fr': {},
-      'instruments/en': {},
-      'instruments/fr': {},
       'accounts/en': {},
       'accounts/fr': {},
       'profile/en': {},

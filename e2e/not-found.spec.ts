@@ -33,6 +33,18 @@ for (const viewport of [
   });
 }
 
+for (const path of ['/instruments', '/instruments/new', '/instruments/11111111-1111-1111-1111-111111111111']) {
+  test(`shows the 404 page on a direct load of ${path}`, async ({ page }) => {
+    await mockApi(page);
+    await page.goto(path);
+
+    await expect(page).toHaveURL(path);
+    await expect(page.getByText('Error 404')).toBeVisible();
+    await expect(page.locator('nav')).toHaveCount(0);
+    await expect(page.locator('main a[href="/"]')).toBeVisible();
+  });
+}
+
 test('renders for a signed-out visitor without bouncing through sign-in', async ({ page }) => {
   await mockApi(page);
   await page.route('**/api/session', (route) => route.fulfill({ status: 401, json: { message: 'unauthenticated' } }));

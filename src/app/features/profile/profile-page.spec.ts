@@ -94,12 +94,6 @@ describe('ProfilePage', () => {
     expect(await screen.findByTestId('back-link')).toHaveAttribute('href', '/');
   });
 
-  it('should show how many instruments the catalogue holds', async () => {
-    await renderPage();
-
-    expect(await screen.findByTestId('instrument-count')).toHaveTextContent('3');
-  });
-
   it('should explain which scheme the device is on when following it', async () => {
     await renderPage(
       getTranslocoTestingModule({
@@ -230,13 +224,6 @@ describe('ProfilePage', () => {
     await user.click(await screen.findByRole('radio', { name: 'profile.theme.dark' }));
 
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-  });
-
-  it('should link out to the instrument catalog, accounts having moved to the navigation', async () => {
-    await renderPage();
-
-    expect(await screen.findByTestId('manage-instruments')).toHaveAttribute('href', '/instruments');
-    expect(screen.queryByTestId('manage-accounts')).not.toBeInTheDocument();
   });
 
   it('should reflect and change the stored hide-amounts preference', async () => {

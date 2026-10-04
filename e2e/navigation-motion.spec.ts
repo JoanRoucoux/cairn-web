@@ -62,7 +62,7 @@ test.describe('navigation motion', () => {
     expect(await playedTransitions(page)).toBe(0);
   });
 
-  for (const path of ['/profile', '/instruments', `/holdings/${FIRST_HOLDING}`, '/nowhere']) {
+  for (const path of ['/profile', '/accounts', `/holdings/${FIRST_HOLDING}`, '/nowhere']) {
     test(`starts no view transition on a direct load of ${path}`, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState('networkidle');

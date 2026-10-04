@@ -54,9 +54,8 @@ export const flushCall = async (
 
 export const settleProfile = async (
   http: HttpTestingController,
-  data: { session?: object; passkeys?: object[]; instruments?: object[] } = {},
+  data: { session?: object; passkeys?: object[] } = {},
 ): Promise<void> => {
   await flushCall(http, '/api/session', (data.session ?? session) as object);
   await flushCall(http, '/api/session/passkeys', data.passkeys ?? passkeys);
-  await flushCall(http, '/api/instruments', data.instruments ?? [{}, {}, {}]);
 };

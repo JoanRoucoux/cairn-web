@@ -14,8 +14,7 @@
   "hideAmounts": "Hide amounts",
   "hideAmountsHint": "For showing the application to someone. Amounts become •••• € on every screen; percentages stay visible.",
   "manageData": {
-    "title": "Data",
-    "instruments": "Instruments"
+    "title": "Data"
   },
   "export": "Export the portfolio",
   "exportHint": "Every holding as CSV, at today's price",
@@ -24,7 +23,6 @@
   "importing": "Importing...",
   "importTemplate": "Download the CSV template",
   "importTemplateHint": "The columns the import expects",
-  "instrumentsHint": "The catalog of tracked instruments",
   "importFailed": "The import could not be sent. Try again.",
   "importRejected": "Nothing was imported. Fix these {{count}} line(s) and try again.",
   "importLine": "Line",

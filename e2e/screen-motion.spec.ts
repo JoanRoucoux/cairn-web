@@ -157,13 +157,12 @@ test.describe('busy dialog', () => {
 test.describe('skeleton rule', () => {
   test('shows no skeleton for a call under 150 ms', async ({ page }) => {
     await mockApi(page);
-    await page.route('**/api/instruments', async (route) => {
+    await page.route('**/api/accounts', async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       await route.fallback();
     });
-    await page.goto('/instruments');
-    await expect(page.getByTestId('add-instrument')).toBeVisible();
-    await expect(page.getByTestId('instruments-count-skeleton')).toHaveCount(0);
-    await expect(page.getByTestId('instrument-row').first()).toBeVisible();
+    await page.goto('/accounts');
+    await expect(page.getByTestId('account-row').first()).toBeVisible();
+    await expect(page.locator('ui-skeleton')).toHaveCount(0);
   });
 });
