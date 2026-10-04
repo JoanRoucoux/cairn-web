@@ -308,7 +308,7 @@ test.describe('after a change on the profile', () => {
       buffer: Buffer.from('account;accountType\n'),
     });
 
-    await expect(toast(page)).toHaveText('Import failed: Missing column quantity');
+    await expect(toast(page)).toHaveText('Import failed');
     await expect(page.getByTestId('import-rejections')).toHaveCount(0);
 
     await page.getByRole('status').getByRole('button', { name: 'Close' }).click();

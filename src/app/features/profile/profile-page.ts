@@ -126,9 +126,7 @@ export class ProfilePage {
 
       this.#toast(pluralKey('profile.toasts.imported', count), { count });
     } else if (outcome.kind === 'failed') {
-      const key = outcome.reason ? 'profile.toasts.importFailedBecause' : 'profile.toasts.importFailed';
-
-      this.#errorToast(key, { reason: outcome.reason });
+      this.#errorToast('profile.toasts.importFailed');
     }
   }
 

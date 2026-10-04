@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
@@ -13,6 +13,7 @@ import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
+import { injectToast } from '@shared/feedback/toast';
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
@@ -79,6 +80,21 @@ export class AccountListPage {
   protected readonly accountToEdit = signal<AccountFormTarget | undefined>(undefined);
   protected readonly accountToDelete = signal<AccountView | undefined>(undefined);
   protected readonly addedAccountId = signal<string | null>(null);
+  readonly #unannounced = signal<string | null>(null);
+  #toast = injectToast();
+
+  constructor() {
+    afterRenderEffect(() => {
+      const added = this.#unannounced();
+
+      if (added !== null && (this.state() === 'error' || this.accounts().some((account) => account.id === added))) {
+        untracked(() => {
+          this.#unannounced.set(null);
+          setTimeout(() => this.#toast('accounts.toasts.created'));
+        });
+      }
+    });
+  }
 
   protected onAdd(): void {
     this.accountToEdit.set(undefined);
@@ -93,6 +109,7 @@ export class AccountListPage {
   protected onFormSaved(accountId: string): void {
     if (!this.accountToEdit()) {
       this.addedAccountId.set(accountId);
+      this.#unannounced.set(accountId);
     }
     this.formOpen.set(false);
     this.#store.retry();

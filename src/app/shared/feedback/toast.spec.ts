@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 import { TRANSLOCO_LOADER, provideTranslocoScope } from '@jsverse/transloco';
-import { Subject, of } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -63,6 +63,27 @@ describe('injectToast', () => {
     scope.complete();
 
     expect(TestBed.inject(UiToasts).toast()?.text).toBe('Saved');
+  });
+
+  it('still shows the message, untranslated, when its scope fails to load', () => {
+    TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule({ preloadLangs: false, translocoConfig: { failedRetries: 0 } })],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideTranslocoScope('profile'),
+        {
+          provide: TRANSLOCO_LOADER,
+          useValue: {
+            getTranslation: (path: string) => (path.includes('/') ? throwError(() => new Error('offline')) : of({})),
+          },
+        },
+      ],
+    });
+    const toast = TestBed.runInInjectionContext(() => injectToast());
+
+    toast('profile.toasts.saved');
+
+    expect(TestBed.inject(UiToasts).toast()?.text).toMatch(/profile\.toasts\.saved$/);
   });
 });
 

@@ -71,41 +71,27 @@ describe('PortfolioImportStore', () => {
       statusText: 'Server Error',
     });
 
-    expect(await imported).toEqual({ kind: 'failed', reason: null });
+    expect(await imported).toEqual({ kind: 'failed' });
     expect(store.rejections()).toEqual([]);
     expect(store.importing()).toBe(false);
   });
 
-  it('should pass on the reason the server gives for a failure', async () => {
+  it('should keep the server wording out of a failure', async () => {
     const imported = store.importFile(new File([CSV], 'portfolio.csv'));
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
-      { status: 400, detail: ' The file is not UTF-8 ' },
-      { status: 400, statusText: 'Bad Request' },
+      { status: 502, detail: 'Yahoo search failed: connect timed out' },
+      { status: 502, statusText: 'Bad Gateway' },
     );
 
-    expect(await imported).toEqual({ kind: 'failed', reason: 'The file is not UTF-8' });
+    expect(await imported).toEqual({ kind: 'failed' });
   });
 
-  it.each([{ status: 400 }, { status: 400, detail: '  ' }])(
-    'should give no reason when the problem %o has no detail',
-    async (body) => {
-      const imported = store.importFile(new File([CSV], 'portfolio.csv'));
-
-      (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(body, {
-        status: 400,
-        statusText: 'Bad Request',
-      });
-
-      expect(await imported).toEqual({ kind: 'failed', reason: null });
-    },
-  );
-
-  it('should give no reason when the file cannot be read', async () => {
+  it('should report a failure when the file cannot be read', async () => {
     const file = new File([CSV], 'portfolio.csv');
     vi.spyOn(file, 'text').mockRejectedValue(new DOMException('Unreadable', 'NotReadableError'));
 
-    expect(await store.importFile(file)).toEqual({ kind: 'failed', reason: null });
+    expect(await store.importFile(file)).toEqual({ kind: 'failed' });
     expect(store.importing()).toBe(false);
   });
 
@@ -117,7 +103,7 @@ describe('PortfolioImportStore', () => {
       { status: 422, statusText: 'Unprocessable Content' },
     );
 
-    expect(await imported).toEqual({ kind: 'failed', reason: null });
+    expect(await imported).toEqual({ kind: 'failed' });
     expect(store.rejections()).toEqual([]);
   });
 

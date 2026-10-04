@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
 import { UiToasts } from '@joanroucoux/cairn-ui/toast';
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TranslocoService, provideTranslocoScope } from '@jsverse/transloco';
 import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
@@ -151,7 +151,7 @@ describe('ProfilePage import and export', () => {
     expect(opened).toHaveBeenCalled();
   });
 
-  it('should raise an error toast when the import fails without a reason', async () => {
+  it('should raise an error toast when the import fails', async () => {
     const user = userEvent.setup();
     await renderPage();
 
@@ -170,21 +170,24 @@ describe('ProfilePage import and export', () => {
     expect(screen.queryByTestId('import-rejections')).not.toBeInTheDocument();
   });
 
-  it('should name the reason the server gives in the error toast', async () => {
+  it('should translate only its own wording, never the reason the server gives', async () => {
     const user = userEvent.setup();
     await renderPage();
     const showError = vi.spyOn(TestBed.inject(UiToasts), 'showError');
+    const translate = vi.spyOn(TestBed.inject(TranslocoService), 'translate');
 
     await user.upload(screen.getByTestId('import-file'), csvFile());
 
     (await vi.waitFor(() => httpTesting.expectOne('/api/portfolio/import'))).flush(
-      { status: 400, detail: 'Missing column quantity' },
-      { status: 400, statusText: 'Bad Request' },
+      { status: 502, detail: 'Yahoo search failed: connect timed out' },
+      { status: 502, statusText: 'Bad Gateway' },
     );
 
     await vi.waitFor(() =>
-      expect(showError).toHaveBeenCalledExactlyOnceWith('profile.toasts.importFailedBecause', 'dialog.close'),
+      expect(showError).toHaveBeenCalledExactlyOnceWith('profile.toasts.importFailed', 'dialog.close'),
     );
+    expect(translate).toHaveBeenCalledWith('profile.toasts.importFailed', undefined);
+    expect(translate.mock.calls.flat()).not.toContainEqual(expect.stringContaining('Yahoo'));
   });
 
   it('should send nothing when the file picker is dismissed', async () => {

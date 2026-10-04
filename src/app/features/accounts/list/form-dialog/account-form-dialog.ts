@@ -55,9 +55,11 @@ export class AccountFormDialog {
   readonly dismissed = output<void>();
 
   #toast = injectToast();
-  readonly #outcome = injectDialogOutcome<string>(() =>
-    this.#toast(this.account() ? 'accounts.toasts.updated' : 'accounts.toasts.created'),
-  );
+  readonly #outcome = injectDialogOutcome<string>(() => {
+    if (this.account()) {
+      this.#toast('accounts.toasts.updated');
+    }
+  });
 
   protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;

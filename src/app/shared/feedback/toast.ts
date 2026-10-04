@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 
 import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 import { TRANSLOCO_SCOPE, TranslocoService } from '@jsverse/transloco';
-import { type Observable, of, take } from 'rxjs';
+import { type Observable, catchError, of, take } from 'rxjs';
 
 export type ShowToast = (key: string, params?: Record<string, unknown>) => void;
 
@@ -16,7 +16,12 @@ const injectTranslated = (show: (text: string, transloco: TranslocoService) => v
     const scope = scopes.find((name) => key.startsWith(`${name}.`));
     const loaded: Observable<unknown> = scope ? transloco.load(`${scope}/${transloco.getActiveLang()}`) : of(null);
 
-    loaded.pipe(take(1)).subscribe(() => show(transloco.translate(key, params), transloco));
+    loaded
+      .pipe(
+        catchError(() => of(null)),
+        take(1),
+      )
+      .subscribe(() => show(transloco.translate(key, params), transloco));
   };
 };
 

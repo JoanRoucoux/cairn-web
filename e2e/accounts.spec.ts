@@ -174,7 +174,26 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('account-form-submit')).toBeEnabled();
   });
 
-  test('creates an account, sees it highlighted in the list and confirms it', async ({ page }) => {
+  test('creates an account, sees it highlighted in the list, then confirms it', async ({ page }) => {
+    await page.addInitScript(() => {
+      const log: { kind: string; at: number }[] = [];
+      const animate = Element.prototype.animate;
+
+      (window as unknown as { order: typeof log }).order = log;
+      Element.prototype.animate = function (this: Element, keyframes, options) {
+        const first = (Array.isArray(keyframes) ? keyframes[0] : keyframes) ?? {};
+        if ('backgroundColor' in first && this.closest('tr')?.textContent?.includes('Wise EUR')) {
+          log.push({ kind: 'highlight', at: performance.now() });
+        }
+
+        return animate.call(this, keyframes, options);
+      };
+      new MutationObserver(() => {
+        if (document.querySelector('ui-toaster > div') && !log.some((entry) => entry.kind === 'toast')) {
+          log.push({ kind: 'toast', at: performance.now() });
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
@@ -190,6 +209,10 @@ test.describe('accounts', () => {
       .poll(() => accounts.rowFor('Wise EUR').evaluate((row) => row.getAnimations({ subtree: true }).length))
       .toBeGreaterThan(0);
     await expect(page.locator('ui-toaster > div')).toHaveText('Account added');
+
+    const order = await page.evaluate(() => (window as unknown as { order: { kind: string; at: number }[] }).order);
+    expect(order.map((entry) => entry.kind)[0]).toBe('highlight');
+    expect(order.map((entry) => entry.kind)).toContain('toast');
   });
 
   test('renames an account and sees the change in the list', async ({ page }) => {

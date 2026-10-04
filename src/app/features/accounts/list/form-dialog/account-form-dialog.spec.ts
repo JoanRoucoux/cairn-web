@@ -157,6 +157,7 @@ describe('AccountFormDialog', () => {
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush({ id: 'a3' }));
     await vi.waitFor(() => expect(savedForm).toHaveBeenCalledExactlyOnceWith('a3'));
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
     expect(dismissed).not.toHaveBeenCalled();
   });
 

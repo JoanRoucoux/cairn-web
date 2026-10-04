@@ -95,7 +95,6 @@
     "passkeyDeleted": "Passkey deleted",
     "imported_one": "{{count}} holding imported",
     "imported_other": "{{count}} holdings imported",
-    "importFailed": "Import failed",
-    "importFailedBecause": "Import failed: {{reason}}"
+    "importFailed": "Import failed"
   }
 }

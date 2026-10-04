@@ -49,9 +49,13 @@ describe('AccountListPage highlight', () => {
     httpTesting.verify();
   });
 
-  it('should highlight the account just added once the list comes back', async () => {
+  it('should highlight the account just added, and confirm it once its row is drawn', async () => {
     const user = userEvent.setup();
     await renderPage([northwind], []);
+    const rowsWhenConfirmed: number[] = [];
+    vi.spyOn(TestBed.inject(UiToasts), 'show').mockImplementation(() =>
+      rowsWhenConfirmed.push(screen.queryAllByText('Livret A').length),
+    );
 
     await user.click(screen.getByTestId('account-add'));
     await user.type(screen.getByTestId('account-form-name'), 'Livret A');
@@ -70,6 +74,48 @@ describe('AccountListPage highlight', () => {
     expect(motion.highlighted.every((element) => element.closest('tr, a')?.textContent?.includes('Livret A'))).toBe(
       true,
     );
+    await vi.waitFor(() => expect(rowsWhenConfirmed).toHaveLength(1));
+    expect(rowsWhenConfirmed[0]).toBeGreaterThan(0);
+  });
+
+  it('should hold the confirmation until the list has reloaded', async () => {
+    const user = userEvent.setup();
+    await renderPage([northwind], []);
+
+    await user.click(screen.getByTestId('account-add'));
+    await user.type(screen.getByTestId('account-form-name'), 'Livret A');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.SAVINGS' }));
+    await user.click(screen.getByTestId('account-form-submit'));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(livretA));
+    const reload = await vi.waitFor(() => httpTesting.expectOne('/api/accounts'));
+
+    expect(TestBed.inject(UiToasts).toast()).toBeNull();
+
+    reload.flush([northwind, livretA]);
+    await vi
+      .waitFor(() => httpTesting.expectOne('/api/portfolio'))
+      .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
+
+    await vi.waitFor(() => expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.created'));
+  });
+
+  it('should still confirm the new account when the list fails to reload', async () => {
+    const user = userEvent.setup();
+    await renderPage([northwind], []);
+
+    await user.click(screen.getByTestId('account-add'));
+    await user.type(screen.getByTestId('account-form-name'), 'Livret A');
+    await user.click(screen.getByRole('radio', { name: 'enums.accountType.SAVINGS' }));
+    await user.click(screen.getByTestId('account-form-submit'));
+    await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(livretA));
+    await vi
+      .waitFor(() => httpTesting.expectOne('/api/accounts'))
+      .then((request) => request.flush(null, { status: 500, statusText: 'Server Error' }));
+    httpTesting
+      .match('/api/portfolio')
+      .forEach((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
+
+    await vi.waitFor(() => expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.created'));
   });
 
   it('should not highlight an account that was only edited', async () => {
