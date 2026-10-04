@@ -288,8 +288,8 @@ describe('HoldingAccountGroup', () => {
     it('should offer no action on the Cours column of a line quoted in another currency', async () => {
       await renderGroup({ holdings: [usd as never] });
 
-      await screen.findByTestId('holding-row');
-      expect(screen.queryByRole('button', { name: /listing|holdings.replace/ })).not.toBeInTheDocument();
+      const cells = (await screen.findByTestId('holding-row')).querySelectorAll('td');
+      expect(cells[3]!.querySelector('button')).toBeNull();
       expect(screen.queryByTestId('enter-quote')).not.toBeInTheDocument();
     });
   });

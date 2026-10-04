@@ -155,14 +155,42 @@ test.describe('busy dialog', () => {
 });
 
 test.describe('skeleton rule', () => {
-  test('shows no skeleton for a call under 150 ms', async ({ page }) => {
+  const watchSkeletons = (page: Page): Promise<void> =>
+    page.addInitScript(() => {
+      (window as unknown as { skeletonSeen: boolean }).skeletonSeen = false;
+      new MutationObserver(() => {
+        if (document.querySelector('ui-skeleton')) {
+          (window as unknown as { skeletonSeen: boolean }).skeletonSeen = true;
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
+
+  const skeletonSeen = (page: Page): Promise<boolean> =>
+    page.evaluate(() => (window as unknown as { skeletonSeen: boolean }).skeletonSeen);
+
+  const delayAccounts = async (page: Page, milliseconds: number): Promise<void> => {
     await mockApi(page);
     await page.route('**/api/accounts', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, milliseconds));
       await route.fallback();
     });
+  };
+
+  test('shows no skeleton for a call under 150 ms', async ({ page }) => {
+    await watchSkeletons(page);
+    await delayAccounts(page, 100);
     await page.goto('/accounts');
     await expect(page.getByTestId('account-row').first()).toBeVisible();
-    await expect(page.locator('ui-skeleton')).toHaveCount(0);
+
+    expect(await skeletonSeen(page)).toBe(false);
+  });
+
+  test('shows the skeleton for a slower call, so the probe can fail', async ({ page }) => {
+    await watchSkeletons(page);
+    await delayAccounts(page, 600);
+    await page.goto('/accounts');
+    await expect(page.getByTestId('account-row').first()).toBeVisible();
+
+    expect(await skeletonSeen(page)).toBe(true);
   });
 });

@@ -13,7 +13,6 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { AccountListPage } from './account-list-page';
 import { AccountListStore } from './account-list-store';
 
-const northwind = { id: 'a1', name: 'Northwind PEA', type: 'PEA', institution: 'Northwind Bank' };
 const livretA = { id: 'a2', name: 'Livret A', type: 'SAVINGS', institution: 'Woodgrove Bank' };
 
 describe('AccountListPage savings accounts', () => {
@@ -76,13 +75,19 @@ describe('AccountListPage savings accounts', () => {
 
   it('should keep the balance out of the menu of a savings account, desktop and iPhone', async () => {
     const user = userEvent.setup();
-    await renderPage([livretA, northwind], [cash]);
+    await renderPage([livretA], [cash]);
 
-    await user.click((await screen.findAllByTestId('account-menu-trigger'))[0]!);
-    await user.click((await screen.findAllByTestId('account-menu-trigger-mobile'))[0]!);
+    await user.click(await screen.findByTestId('account-menu-trigger'));
+    await user.click(await screen.findByTestId('account-menu-trigger-mobile'));
 
-    expect(screen.getAllByTestId(/^account-edit/)).not.toHaveLength(0);
-    expect(screen.queryByTestId('account-edit-balance')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('account-edit-balance-mobile')).not.toBeInTheDocument();
+    const items = (selector: string): (string | null)[] =>
+      [...document.querySelectorAll(selector)].map((item) => item.getAttribute('data-testid'));
+
+    expect(items('ui-menu button[uiMenuItem]')).toEqual([
+      'account-edit',
+      'account-delete',
+      'account-edit-mobile',
+      'account-delete-mobile',
+    ]);
   });
 });

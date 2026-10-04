@@ -129,7 +129,8 @@ describe('AccountMobileRows', () => {
 
     await user.click(screen.getByTestId('account-menu-trigger-mobile'));
 
-    expect(screen.getByTestId('account-edit-mobile')).toBeInTheDocument();
-    expect(screen.queryByTestId('account-edit-balance-mobile')).not.toBeInTheDocument();
+    expect(
+      [...document.querySelectorAll('ui-menu button[uiMenuItem]')].map((item) => item.getAttribute('data-testid')),
+    ).toEqual(['account-edit-mobile', 'account-delete-mobile']);
   });
 });

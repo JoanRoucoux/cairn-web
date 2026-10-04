@@ -104,13 +104,14 @@ describe('HoldingDetailPage on a line quoted in another currency', () => {
     expect(screen.queryByTestId('enter-quote')).not.toBeInTheDocument();
   });
 
-  it('offers only Modifier and Supprimer la ligne in the menu', async () => {
+  it('offers only Modifier and Supprimer la ligne in a 200 px menu', async () => {
     const user = userEvent.setup();
     await renderPage();
 
     await user.click(await screen.findByTestId('holding-menu-trigger-mobile'));
 
     expect(screen.getByRole('menu', { hidden: true }).querySelectorAll('button')).toHaveLength(2);
+    expect(document.querySelector('ui-menu')!.getAttribute('style')).toContain('200px');
     expect(screen.getByTestId('holding-edit')).toBeInTheDocument();
     expect(screen.getByTestId('holding-delete')).toBeInTheDocument();
   });
