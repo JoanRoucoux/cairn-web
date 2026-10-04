@@ -11,54 +11,6 @@ type TradableHolding = {
   marketValueEur: number | null;
 };
 
-const resolveCandidate = {
-  name: 'iShares Core MSCI World UCITS ETF',
-  source: 'YAHOO',
-  sourceRef: 'IWDA.AS',
-  assetClass: 'ETF',
-  exchange: 'Euronext Amsterdam',
-  probePrice: 97.91,
-  currency: 'EUR',
-};
-
-export const USD_HOLDING_ISIN = 'US46090E1038';
-
-const usdHoldingListings = [
-  {
-    name: 'Nasdaq 100 UCITS ETF',
-    source: 'YAHOO',
-    sourceRef: 'EQQQ.DE',
-    assetClass: 'ETF',
-    isin: USD_HOLDING_ISIN,
-    exchange: 'Xetra',
-    probePrice: 412.3,
-    currency: 'EUR',
-  },
-  {
-    name: 'Nasdaq 100 UCITS ETF USD',
-    source: 'YAHOO',
-    sourceRef: 'EQQQ.L',
-    assetClass: 'ETF',
-    isin: USD_HOLDING_ISIN,
-    exchange: 'London Stock Exchange',
-    probePrice: 480.1,
-    currency: 'USD',
-  },
-];
-
-export const resolveInstrument: Handler = (route) => {
-  const { query } = route.request().postDataJSON() as { query: string };
-  const normalized = query.trim().toLowerCase();
-
-  if (normalized === 'nonexistent') {
-    return route.fulfill({ json: [] });
-  }
-
-  return route.fulfill({
-    json: normalized === USD_HOLDING_ISIN.toLowerCase() ? usdHoldingListings : [resolveCandidate],
-  });
-};
-
 export const buyHolding =
   (holdings: TradableHolding[]): Handler =>
   (route, [, id]) => {

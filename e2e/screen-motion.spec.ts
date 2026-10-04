@@ -72,7 +72,7 @@ test.describe('add a line motion', () => {
     await page.getByTestId('holding-add-query').fill('Amundi MSCI World');
     await recordAnimations(page);
 
-    await page.getByTestId('holding-add-catalog-candidate').click();
+    await page.getByTestId('holding-add-tracked-title').click();
 
     await expect(page.getByTestId('holding-add-quantity')).toBeFocused();
     await expect.poll(() => started(page)).toContain('cairn-fade-in@holding-add-fields');
