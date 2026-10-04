@@ -137,7 +137,7 @@ describe('HoldingDetailPage navigation', () => {
     expect(await screen.findByTestId('holding-detail-back')).toHaveAttribute('href', '/holdings?classe=etf');
   });
 
-  it('slides in and fades out beside the list on desktop', async () => {
+  it('fades out beside the list on desktop', async () => {
     vi.stubGlobal(
       'matchMedia',
       vi.fn((query: string) => ({
@@ -148,14 +148,12 @@ describe('HoldingDetailPage navigation', () => {
     );
     const page = await open([]);
 
-    expect(page['panelEnter']()).toBe('ui-enter-panel');
     expect(page['panelLeave']()).toBe('ui-leave-fade');
   });
 
   it('plays no panel motion on a phone, where the page cross-fades instead', async () => {
     const page = await open([]);
 
-    expect(page['panelEnter']()).toBeNull();
     expect(page['panelLeave']()).toBeNull();
   });
 });

@@ -1,7 +1,6 @@
 <ui-dialog
   data-testid="profile-passkey-delete-dialog"
-  layout="confirm"
-  width="488px"
+  variant="confirm"
   [busy]="deleting()"
   [heading]="'profile.delete.title' | transloco: { label: passkey().label }"
   [open]="open()"

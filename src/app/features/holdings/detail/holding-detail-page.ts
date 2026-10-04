@@ -73,7 +73,6 @@ import type { SellResult } from './sell-dialog/holding-sell-dialog-store';
   providers: [HoldingDetailStore],
   host: {
     class: 'block',
-    '[animate.enter]': 'panelEnter()',
     '[animate.leave]': 'panelLeave()',
   },
 })
@@ -89,7 +88,6 @@ export class HoldingDetailPage {
   readonly #desktop = injectDesktop();
   readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
 
-  protected readonly panelEnter = computed(() => (this.#desktop() ? 'ui-enter-panel' : null));
   protected readonly panelLeave = computed(() => (this.#desktop() ? 'ui-leave-fade' : null));
 
   protected readonly listHref = computed(() =>

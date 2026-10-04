@@ -175,7 +175,7 @@ describe('AppShell', () => {
 
     TestBed.inject(UiToasts).show('Purchase saved');
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Purchase saved');
+    expect((await screen.findByText('Purchase saved')).closest('ui-toaster')).toHaveAttribute('role', 'status');
   });
 
   it('should give the skip link a target', async () => {

@@ -111,14 +111,13 @@ test.describe('navigation motion', () => {
     });
   });
 
-  test('slides the detail panel in and out beside the list on desktop, without a view transition', async ({ page }) => {
+  test('fades the detail panel out beside the list on desktop, without a view transition', async ({ page }) => {
     await page.goto('/holdings');
     await page.locator('table [data-holding-id]').first().click();
 
     const panel = page.locator('main aside app-holding-detail-page');
 
     await expect(panel).toBeVisible();
-    await expect(panel).toHaveClass(/ui-enter-panel/);
 
     await page.getByRole('link', { name: /Fermer|Close/ }).click();
 
