@@ -1,6 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, LOCALE_ID, computed, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 
 import { UI_AMOUNT_MASKED, UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
@@ -11,6 +10,7 @@ import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 
 import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
@@ -64,7 +64,7 @@ export class AllocationPage {
   #masked = inject(UI_AMOUNT_MASKED);
   #ratio = inject(RatioPipe);
 
-  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #translocoEvents = injectTranslationEvents();
   readonly #scopeLoaded = translateSignal('allocation.cashSubtitle');
 
   protected readonly summary = computed<AssetClassAllocationResponse | AccountAllocationResponse | undefined>(() => {

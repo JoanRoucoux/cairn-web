@@ -1,5 +1,4 @@
 import { Component, computed, inject, input, output } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
@@ -13,6 +12,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideSearch } from '@lucide/angular';
 
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import type { ResultGroup } from '../result-groups';
 import { SOURCE_FILTERS, type SourceFilter } from '../search-plan';
@@ -59,7 +59,7 @@ export class HoldingAddSearch {
   readonly manualOpened = output<void>();
 
   readonly #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$);
+  readonly #translocoEvents = injectTranslationEvents();
 
   protected readonly filterOptions = computed<FilterChipOption[]>(() => {
     this.#translocoEvents();

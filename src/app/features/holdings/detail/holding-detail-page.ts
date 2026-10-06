@@ -17,6 +17,7 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideTrash } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import { chartFormats } from '@shared/chart/chart-formats';
 import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
@@ -80,7 +81,7 @@ export class HoldingDetailPage {
   #masked = inject(UI_AMOUNT_MASKED);
 
   readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
-  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #translocoEvents = injectTranslationEvents();
 
   protected readonly desktop = injectDesktop();
   protected readonly drawerOpen = signal(true);

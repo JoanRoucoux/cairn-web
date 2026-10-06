@@ -18,6 +18,7 @@ import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import { injectDesktop } from '@shared/layout/desktop-media';
 
@@ -77,7 +78,7 @@ export class HoldingListPage {
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #translocoEvents = injectTranslationEvents();
 
   #allLabel = translateSignal('classFilter.all');
 
