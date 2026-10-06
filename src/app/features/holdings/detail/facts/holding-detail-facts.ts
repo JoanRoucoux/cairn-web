@@ -3,6 +3,7 @@ import { Component, LOCALE_ID, computed, inject, input } from '@angular/core';
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiFact, UiFacts } from '@joanroucoux/cairn-ui/fact';
+import { UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
@@ -15,13 +16,14 @@ const PARIS_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' })
 
 @Component({
   selector: 'app-holding-detail-facts',
-  imports: [ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiFact, UiFacts],
+  imports: [ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiFact, UiFacts, UiHighlight],
   templateUrl: './holding-detail-facts.html',
   host: { class: 'block' },
 })
 export class HoldingDetailFacts {
   readonly holding = input.required<HoldingResponse>();
   readonly priceSourceLabel = input.required<string>();
+  readonly flash = input<unknown>(null);
 
   readonly #locale = inject(LOCALE_ID);
 

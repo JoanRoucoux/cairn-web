@@ -1,38 +1,16 @@
-@let parts = metaParts(group());
 @let cash = cashRowKeys(group());
 <tr group uiFlipItem uiTr>
   <td
+    collapsible
+    colspan="7"
     size="lg"
     ui-group-cell
-    [attr.colspan]="compact() ? 3 : 7"
-    [meta]="
-      group().filtered
-        ? ('holdings.filteredMeta'
-          | transloco
-            : {
-                total: accountTotal(),
-                lines:
-                  filteredCount(group().filtered!.rowCount).key | transloco: filteredCount(group().filtered!.rowCount),
-              })
-        : ('enums.accountType.' + group().accountType | transloco) +
-          (group().institution ? ' · ' + group().institution : '') +
-          (parts.count
-            ? ' · ' + (parts.count.key | transloco: { count: parts.count.count, date: parts.count.date | shortDate })
-            : '') +
-          (parts.balance
-            ? ' · ' +
-              (parts.balance.key | transloco: { count: parts.balance.count, date: parts.balance.date | shortDate })
-            : '') +
-          (parts.unvalued
-            ? ' · ' +
-              (parts.unvalued.key | transloco: { count: parts.unvalued.count, date: parts.unvalued.date | shortDate })
-            : '') +
-          (parts.nonEur
-            ? ' · ' + (parts.nonEur.key | transloco: { count: parts.nonEur.count, date: parts.nonEur.date | shortDate })
-            : '')
-    "
+    [controls]="bodyId()"
+    [expanded]="expanded()"
+    [meta]="meta()"
     [name]="group().accountName"
-    [uiHighlight]="highlight()"
+    [toggleDisabled]="toggleDisabled()"
+    (expandedChange)="expandedChange.emit($event)"
   >
     <ui-amount currency="EUR" [value]="group().valueEur" />
   </td>
@@ -44,7 +22,6 @@
     interactive
     uiFlipItem
     uiTr
-    [compact]="compact()"
     [holding]="holding"
     [open]="holding.id === selectedHoldingId()"
     [selected]="holding.id === selectedHoldingId()"
@@ -74,17 +51,13 @@
         <span uiCellSub>{{ entered | transloco: { date: group().balanceAt | shortDate } }}</span>
       }
     </td>
-    @if (!compact()) {
-      <td numeric secondary uiTd></td>
-      <td numeric secondary uiTd></td>
-      <td numeric secondary uiTd></td>
-    }
+    <td numeric secondary uiTd></td>
+    <td numeric secondary uiTd></td>
+    <td numeric secondary uiTd></td>
     <td class="font-medium" numeric uiTd>
       <ui-amount currency="EUR" [value]="group().cashEur" />
     </td>
-    @if (!compact()) {
-      <td numeric uiTd></td>
-    }
+    <td numeric uiTd></td>
     <td numeric uiTd></td>
   </tr>
 }

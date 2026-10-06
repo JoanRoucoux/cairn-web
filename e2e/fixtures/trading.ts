@@ -69,3 +69,24 @@ export const sellHolding =
 
     return route.fulfill({ json: holding });
   };
+
+export const updateHolding =
+  (holdings: TradableHolding[]): Handler =>
+  (route, [, id]) => {
+    const holding = holdings.find((candidate) => candidate.id === id);
+
+    if (!holding) {
+      return route.fulfill({ status: 404, json: { message: `unknown holding: ${id}` } });
+    }
+
+    const { quantity, averageCost } = route.request().postDataJSON() as {
+      quantity: number;
+      averageCost: number | null;
+    };
+
+    holding.quantity = quantity;
+    holding.averageCost = averageCost;
+    holding.marketValueEur = holding.price === null ? null : quantity * holding.price;
+
+    return route.fulfill({ json: holding });
+  };

@@ -1,18 +1,18 @@
 import { Component, computed, inject, input, output } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 
-import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
 import { type FilterChipOption, UiFilterChips } from '@joanroucoux/cairn-ui/filter-chips';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
-import { UiRow } from '@joanroucoux/cairn-ui/row';
-import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
+import { UiResultGroup } from '@joanroucoux/cairn-ui/result-group';
+import { UiRow, UiRowGroup } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { LucideChevronRight, LucideSearch } from '@lucide/angular';
+import { LucideSearch } from '@lucide/angular';
 
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import type { ResultGroup } from '../result-groups';
 import { SOURCE_FILTERS, type SourceFilter } from '../search-plan';
@@ -24,18 +24,17 @@ import { HoldingAddTracked } from './tracked/holding-add-tracked';
   imports: [
     HoldingAddGroup,
     HoldingAddTracked,
-    LucideChevronRight,
     LucideSearch,
     TranslocoPipe,
-    UiAsync,
     UiButton,
     UiCard,
     UiField,
     UiFieldLeading,
     UiFilterChips,
     UiInput,
+    UiResultGroup,
     UiRow,
-    UiSkeleton,
+    UiRowGroup,
   ],
   templateUrl: './holding-add-search.html',
   host: { class: 'flex flex-col gap-4' },
@@ -60,7 +59,7 @@ export class HoldingAddSearch {
   readonly manualOpened = output<void>();
 
   readonly #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$);
+  readonly #translocoEvents = injectTranslationEvents();
 
   protected readonly filterOptions = computed<FilterChipOption[]>(() => {
     this.#translocoEvents();

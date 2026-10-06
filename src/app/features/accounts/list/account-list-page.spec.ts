@@ -307,11 +307,14 @@ describe('AccountListPage', () => {
 
     await vi
       .waitFor(() => httpTesting.expectOne('/api/accounts'))
-      .then((request) => request.flush([northwind, livretA]));
+      .then((request) => request.flush([northwind, livretA, { ...northwind, id: 'a3', name: 'CTO Bourso' }]));
     await vi
       .waitFor(() => httpTesting.expectOne('/api/portfolio'))
       .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
-    expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.created');
+    expect(await screen.findAllByText('CTO Bourso')).not.toHaveLength(0);
+    await vi.waitFor(() => expect(TestBed.inject(UiToasts).toast()?.text).toBe('accounts.toasts.created'), {
+      timeout: 3000,
+    });
   });
 
   it('should open the delete dialog from the row menu and reload once confirmed', async () => {

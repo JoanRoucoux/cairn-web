@@ -41,12 +41,13 @@ test.describe('add a line', () => {
     await page.getByTestId('holding-add-query').fill('msci');
 
     const results = page.getByTestId('holding-add-results');
-    await expect(results.getByTestId('holding-add-tracked-heading')).toHaveText(/Already tracked\s*in your holdings/);
+    await expect(results.getByRole('group', { name: 'Already tracked, in your holdings' })).toBeVisible();
     await expect(results.getByTestId('holding-add-tracked-title')).toHaveText([
       /^\s*Amundi MSCI World/,
       /^\s*iShares Core MSCI World/,
     ]);
-    await expect(results.getByTestId('holding-add-group-heading')).toHaveText([/Yahoo Finance\s*live price/]);
+    await expect(results.getByRole('group')).toHaveCount(2);
+    await expect(results.getByRole('group', { name: 'Yahoo Finance, live price' })).toBeVisible();
     await expect(results.getByTestId('holding-add-online-candidate')).toHaveCount(1);
     expect(searches.map(sourceOf).sort()).toEqual(['COINGECKO', 'YAHOO']);
 
@@ -91,7 +92,9 @@ test.describe('add a line', () => {
 
     await page.getByTestId('holding-add-query').fill('msci');
 
-    await expect(page.getByRole('status').filter({ hasText: 'Searching Yahoo Finance' })).toBeVisible();
+    await expect(
+      page.getByRole('group', { name: 'Yahoo Finance, live price' }).locator('[aria-busy="true"]'),
+    ).toBeVisible();
     await expect(page.getByText('Yahoo Finance is not answering right now.')).toBeVisible();
 
     await page.getByRole('button', { name: 'Retry' }).click();

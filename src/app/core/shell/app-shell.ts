@@ -44,6 +44,7 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
     UiToaster,
   ],
   templateUrl: './app-shell.html',
+  host: { class: 'lg:[--sidebar-width:15rem]' },
 })
 export class AppShell {
   #router = inject(Router);

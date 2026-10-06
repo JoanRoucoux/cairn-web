@@ -1,5 +1,4 @@
 import { Component, ElementRef, afterRenderEffect, computed, effect, inject, input, output } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
@@ -12,6 +11,7 @@ import type {
   InstrumentCandidateResponse,
   SearchableSource,
 } from '@core/api-client/cairnAPI.schemas';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { injectToast } from '@shared/feedback/toast';
@@ -87,7 +87,7 @@ export class HoldingAddDialog {
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$);
+  readonly #translocoEvents = injectTranslationEvents();
 
   protected readonly accountOptions = computed<AccountOption[]>(() => {
     this.#translocoEvents();

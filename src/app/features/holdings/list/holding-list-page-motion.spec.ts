@@ -84,6 +84,7 @@ describe('HoldingListPage navigation motion', () => {
 
     await TestBed.inject(Router).navigateByUrl('/holdings/h1');
     routerScrolls(null);
+    await Promise.resolve();
 
     expect(scrolledTo()).toEqual([{ top: 340, behavior: 'instant' }]);
   });
@@ -93,20 +94,22 @@ describe('HoldingListPage navigation motion', () => {
 
     await TestBed.inject(Router).navigateByUrl('/holdings/h1');
     routerScrolls([0, 120]);
+    await Promise.resolve();
 
     expect(scrolledTo()).toEqual([]);
   });
 
-  it('overlays the closing panel on the widened list, then hides the empty panel', async () => {
+  it('keeps the seven columns while a line is open, and hides the list only on a phone', async () => {
     await open();
-    const panel = screen.getByRole('complementary');
+    const list = screen.getByTestId('holdings-list').parentElement!;
 
-    expect(panel).toHaveClass('lg:col-start-1');
+    expect(list).not.toHaveClass('max-lg:hidden');
 
     await TestBed.inject(Router).navigateByUrl('/holdings/h1');
     TestBed.tick();
 
-    expect(panel).not.toHaveClass('lg:col-start-1');
-    expect(panel).toHaveClass('not-has-[app-holding-detail-page]:hidden');
+    expect(screen.getAllByRole('columnheader')).toHaveLength(7);
+    expect(list).toHaveClass('max-lg:hidden');
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
   });
 });

@@ -18,7 +18,6 @@ import { HoldingAccountGroup } from './holding-account-group';
   template: `<table>
     <tbody
       app-holding-account-group
-      [compact]="compact()"
       [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
@@ -29,7 +28,6 @@ import { HoldingAccountGroup } from './holding-account-group';
 })
 class TestHost {
   readonly group = input.required<AccountGroup>();
-  readonly compact = input(false);
   readonly flash = input<HoldingChange | null>(null);
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
@@ -74,12 +72,11 @@ const savings: Partial<AccountGroup> = {
 
 const renderGroup = (
   overrides: Partial<AccountGroup> = {},
-  compact = false,
   selectedHoldingId: string | undefined = undefined,
   flash: HoldingChange | null = null,
 ): ReturnType<typeof render<TestHost>> =>
   render(TestHost, {
-    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId, flash },
+    inputs: { group: { ...group, ...overrides }, selectedHoldingId, flash },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
@@ -92,14 +89,14 @@ describe('HoldingAccountGroup after a change', () => {
   afterEach(() => motion.restore());
 
   it('should highlight the cells of the line that just changed, and nothing else', async () => {
-    await renderGroup({}, false, undefined, { id: 'h3', at: 1 });
+    await renderGroup({}, undefined, { id: 'h3', at: 1 });
 
     await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
     expect(motion.highlighted.every((cell) => cell.closest('tr')?.querySelector('[data-holding-id="h3"]'))).toBe(true);
   });
 
   it('should highlight the cash line when its account balance just changed', async () => {
-    await renderGroup({}, false, undefined, { id: 'a1', at: 1 });
+    await renderGroup({}, undefined, { id: 'a1', at: 1 });
 
     await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
     expect(motion.highlighted.every((cell) => cell.closest('tr')?.getAttribute('data-testid') === 'cash-row')).toBe(
@@ -108,14 +105,14 @@ describe('HoldingAccountGroup after a change', () => {
   });
 
   it('should highlight nothing when no line of the account changed', async () => {
-    await renderGroup({}, false, undefined, { id: 'elsewhere', at: 1 });
+    await renderGroup({}, undefined, { id: 'elsewhere', at: 1 });
 
-    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /^Woodgrove Savings Plan/ })).toBeInTheDocument();
     expect(motion.highlighted).toEqual([]);
   });
 
   it('should highlight the balance row of a savings account whose balance just changed', async () => {
-    await renderGroup(savings, false, undefined, { id: 'a1', at: 1 });
+    await renderGroup(savings, undefined, { id: 'a1', at: 1 });
 
     await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
     expect(motion.highlighted.every((cell) => cell.closest('tr')?.getAttribute('data-testid') === 'cash-row')).toBe(
@@ -133,7 +130,7 @@ describe('HoldingAccountGroup in a sliding list', () => {
     const { fixture } = await renderGroup(savings);
 
     expect(flipItems(fixture)).toEqual([
-      screen.getByRole('heading', { name: 'Woodgrove Savings Plan' }).closest('tr'),
+      screen.getByRole('heading', { name: /^Woodgrove Savings Plan/ }).closest('tr'),
       screen.getByTestId('cash-row'),
     ]);
   });

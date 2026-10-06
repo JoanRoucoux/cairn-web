@@ -58,7 +58,7 @@
   "nameLabel": "Nom du compte",
   "optional": "(facultatif)",
   "toasts": {
-    "created": "Compte créé",
+    "created": "Compte ajouté",
     "updated": "Compte modifié",
     "deleted": "Compte supprimé"
   }

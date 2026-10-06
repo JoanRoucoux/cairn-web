@@ -8,7 +8,7 @@ import { buildUsdHolding } from './non-eur-holding';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
 import { buildSearchHandler } from './search';
-import { buyHolding, sellHolding } from './trading';
+import { buyHolding, sellHolding, updateHolding } from './trading';
 import { getPasskeys, getSession, mockWebauthn } from './webauthn';
 
 const holding = {
@@ -219,8 +219,20 @@ const listQuotes: Handler = (route, [, instrumentId]) => {
   });
 };
 
-const recordQuote: Handler = (route, [, instrumentId]) =>
-  route.fulfill({ status: 201, json: { instrumentId, ...(route.request().postDataJSON() as object) } });
+const recordQuote: Handler = (route, [, instrumentId]) => {
+  const quote = route.request().postDataJSON() as { asOf: string; price: number };
+
+  for (const priced of holdings.filter((candidate) => candidate.instrumentId === instrumentId)) {
+    Object.assign(priced, {
+      price: quote.price,
+      priceCurrency: 'EUR',
+      priceAsOf: quote.asOf,
+      marketValueEur: priced.quantity * quote.price,
+    });
+  }
+
+  return route.fulfill({ status: 201, json: { instrumentId, ...quote } });
+};
 
 type NewInstrument = {
   name?: string;
@@ -336,6 +348,7 @@ const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/buy$'), handle: buyHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings/([^/]+)/sell$'), handle: sellHolding(holdings) },
   { method: 'POST', path: new RegExp('^/api/holdings$'), handle: createHolding },
+  { method: 'PATCH', path: new RegExp('^/api/holdings/([^/]+)$'), handle: updateHolding(holdings) },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)/cash$'), handle: setCashBalanceHandler },
   { method: 'PUT', path: new RegExp('^/api/accounts/([^/]+)$'), handle: updateAccount },
   { method: 'DELETE', path: new RegExp('^/api/accounts/([^/]+)$'), handle: deleteAccount },

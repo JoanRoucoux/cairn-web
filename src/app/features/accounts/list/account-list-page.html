@@ -30,7 +30,12 @@
       <tbody>
         @if (state() === 'ready') {
           @for (account of accounts(); track account.id) {
-            <tr data-testid="account-row" uiTr>
+            <tr
+              data-testid="account-row"
+              uiTr
+              [attr.data-account-id]="account.id"
+              [uiHighlight]="account.id === addedAccountId() ? account.id : null"
+            >
               <td primary uiTd>
                 <a
                   data-testid="account-link"
@@ -134,6 +139,7 @@
       <app-account-mobile-rows
         class="lg:hidden"
         [accounts]="accounts()"
+        [added]="addedAccountId()"
         (edit)="onEdit($event)"
         (remove)="accountToDelete.set($event)"
       />
@@ -165,7 +171,11 @@
 </ui-card>
 
 @if (formOpen()) {
-  <app-account-form-dialog [account]="accountToEdit()" (dismissed)="onFormDismissed()" (savedForm)="onFormSaved()" />
+  <app-account-form-dialog
+    [account]="accountToEdit()"
+    (dismissed)="onFormDismissed()"
+    (savedForm)="onFormSaved($event)"
+  />
 }
 
 @if (accountToDelete(); as account) {

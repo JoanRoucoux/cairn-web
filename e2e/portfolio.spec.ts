@@ -57,6 +57,16 @@ test.describe('portfolio', () => {
     expect(history.url()).toContain('/api/history?');
   });
 
+  test('dates the Max range from the first point of its curve, on the curve and on the envelopes', async ({ page }) => {
+    const portfolio = new PortfolioPageObject(page);
+    await portfolio.goto();
+    await expect(portfolio.chart).toBeVisible();
+
+    await portfolio.pickRange('Max');
+
+    await expect(page.getByText(/^since [A-Z][a-z]+ \d{4}$/)).toHaveCount(2);
+  });
+
   for (const range of ['1Y', '5Y', 'Max']) {
     test(`never repeats an axis label on the ${range} range of a short history`, async ({ page }) => {
       const portfolio = new PortfolioPageObject(page);
@@ -85,6 +95,7 @@ test.describe('portfolio', () => {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 
     await expect(portfolio.tooltip).toBeVisible();
+    await expect(portfolio.tooltip).toContainText('since the beginning');
   });
 
   test('shows a tooltip on the curve when it has keyboard focus', async ({ page }) => {

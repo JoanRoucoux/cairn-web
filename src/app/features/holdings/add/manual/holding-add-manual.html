@@ -1,13 +1,11 @@
 <button
-  class="self-start"
+  class="-mt-2 -mb-1 -ml-1.5 self-start"
   data-testid="holding-add-back"
-  size="slim"
+  size="inline"
   type="button"
-  ui-button
-  variant="ghost"
+  ui-back-link
   (click)="back.emit()"
 >
-  <svg aria-hidden="true" lucideChevronLeft [size]="18" [strokeWidth]="1.75" />
   {{ 'holdings.add.backToSearch' | transloco }}
 </button>
 

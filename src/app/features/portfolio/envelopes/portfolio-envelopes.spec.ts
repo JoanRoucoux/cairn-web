@@ -63,6 +63,20 @@ describe('PortfolioEnvelopes', () => {
     expect((bar as HTMLElement).style.width).toBe('37.3%');
   });
 
+  it('should name the date of the first point on the Max range', async () => {
+    await render(PortfolioEnvelopes, {
+      imports: [getTranslocoTestingModule()],
+      inputs: { state: 'ready', envelopes, range: 'max', since: 'mars 2019' },
+      providers: [
+        provideZonelessChangeDetection(),
+        { provide: LOCALE_ID, useValue: 'fr-FR' },
+        { provide: UI_AMOUNT_MASKED, useValue: signal(false) },
+      ],
+    });
+
+    expect(await screen.findByText('portfolio.curve.period.since')).toBeInTheDocument();
+  });
+
   it('should show a skeleton while loading', async () => {
     await renderComponent('loading');
 

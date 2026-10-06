@@ -28,22 +28,22 @@ export class AccountFormDialogStore {
     this.#model.set(initialAccountDraft(account));
   }
 
-  async save(accountId?: string): Promise<boolean> {
+  async save(accountId?: string): Promise<string | null> {
     this.error.set(false);
     this.nameConflict.set(false);
     this.savingsConflict.set(false);
-    let saved = false;
+    let saved: string | null = null;
 
     await submit(this.form, async () => {
       try {
         const model = this.#model();
         const payload = { name: model.name, type: model.type, institution: model.institution.trim() };
-        await firstValueFrom(
+        const account = await firstValueFrom(
           accountId
             ? this.#accountsApiClient.updateAccount(accountId, payload)
             : this.#accountsApiClient.createAccount(payload),
         );
-        saved = true;
+        saved = account.id;
       } catch (err) {
         if (err instanceof HttpErrorResponse && err.status === 409) {
           this.nameConflict.set(true);

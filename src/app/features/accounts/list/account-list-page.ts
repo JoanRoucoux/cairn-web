@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
@@ -7,11 +7,14 @@ import { UiBadge } from '@joanroucoux/cairn-ui/badge';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
+import { UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
+import { afterHighlight } from '@shared/feedback/after-highlight';
+import { injectToast } from '@shared/feedback/toast';
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
@@ -45,6 +48,7 @@ import { AccountUncounted } from './uncounted/account-uncounted';
     UiBadge,
     UiCard,
     UiButton,
+    UiHighlight,
     UiMenu,
     UiMenuItem,
     UiMenuTrigger,
@@ -76,6 +80,31 @@ export class AccountListPage {
   protected readonly formOpen = signal(false);
   protected readonly accountToEdit = signal<AccountFormTarget | undefined>(undefined);
   protected readonly accountToDelete = signal<AccountView | undefined>(undefined);
+  protected readonly addedAccountId = signal<string | null>(null);
+  readonly #unannounced = signal<string | null>(null);
+  #toast = injectToast();
+  #host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    afterRenderEffect(() => {
+      const added = this.#unannounced();
+
+      if (added !== null && (this.state() === 'error' || this.accounts().some((account) => account.id === added))) {
+        untracked(() => {
+          this.#unannounced.set(null);
+
+          if (this.state() === 'error') {
+            this.#toast('accounts.toasts.created');
+          } else {
+            afterHighlight(
+              () => [...this.#host.nativeElement.querySelectorAll(`[data-account-id="${added}"]`)],
+              () => this.#toast('accounts.toasts.created'),
+            );
+          }
+        });
+      }
+    });
+  }
 
   protected onAdd(): void {
     this.accountToEdit.set(undefined);
@@ -87,7 +116,11 @@ export class AccountListPage {
     this.formOpen.set(true);
   }
 
-  protected onFormSaved(): void {
+  protected onFormSaved(accountId: string): void {
+    if (!this.accountToEdit()) {
+      this.addedAccountId.set(accountId);
+      this.#unannounced.set(accountId);
+    }
     this.formOpen.set(false);
     this.#store.retry();
   }

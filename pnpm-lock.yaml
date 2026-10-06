@@ -27,8 +27,8 @@ importers:
         specifier: 22.2.0
         version: 22.2.0(@angular/common@22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(@angular/platform-browser@22.2.0(@angular/common@22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2)))(rxjs@7.8.2)
       '@joanroucoux/cairn-ui':
-        specifier: 0.8.2
-        version: 0.8.2(@angular/common@22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))
+        specifier: 0.9.1
+        version: 0.9.1(@angular/common@22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))
       '@jsverse/transloco':
         specifier: 8.4.0
         version: 8.4.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2)(typescript@6.0.3)
@@ -993,8 +993,8 @@ packages:
       '@types/node':
         optional: true
 
-  '@joanroucoux/cairn-ui@0.8.2':
-    resolution: {integrity: sha512-96GktYRWImUePYfccr03tAkgBdAmzT9eOgwYpdr061lEFl8E+L5f8yedGVgSO7l6oJHGAtK3pU54QN6uLdofxA==}
+  '@joanroucoux/cairn-ui@0.9.1':
+    resolution: {integrity: sha512-EhaeMHu+fm5HtEAvjhTehwdQVh+mjJTzP+CSTwiHiWs5APMrwHei+bFkdcasdajxtxF6e0olJPz/8sbDo28uDA==}
     peerDependencies:
       '@angular/common': ^22.0.0
       '@angular/core': ^22.0.0
@@ -5265,7 +5265,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 26.1.1
 
-  '@joanroucoux/cairn-ui@0.8.2(@angular/common@22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))':
+  '@joanroucoux/cairn-ui@0.9.1(@angular/common@22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))':
     dependencies:
       '@angular/common': 22.2.0(@angular/core@22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2))(rxjs@7.8.2)
       '@angular/core': 22.2.0(@angular/compiler@22.2.0)(rxjs@7.8.2)

@@ -34,7 +34,7 @@ describe('AccountFormDialogStore', () => {
   afterEach(() => httpTesting.verify());
 
   it('should refuse an incomplete draft', async () => {
-    await expect(store.save()).resolves.toBe(false);
+    await expect(store.save()).resolves.toBeNull();
   });
 
   it('should create an account when no id is given', async () => {
@@ -44,9 +44,9 @@ describe('AccountFormDialogStore', () => {
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts'));
     expect(request.request.method).toBe('POST');
-    request.flush({});
+    request.flush({ id: 'a3' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toBe('a3');
   });
 
   it('should update an account when an id is given', async () => {
@@ -56,9 +56,9 @@ describe('AccountFormDialogStore', () => {
 
     const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts/a1'));
     expect(request.request.method).toBe('PUT');
-    request.flush({});
+    request.flush({ id: 'a1' });
 
-    await expect(saved).resolves.toBe(true);
+    await expect(saved).resolves.toBe('a1');
   });
 
   it('should prefill from an existing account', () => {
@@ -78,7 +78,7 @@ describe('AccountFormDialogStore', () => {
       statusText: 'Conflict',
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBeNull();
     expect(store.nameConflict()).toBe(true);
     expect(store.error()).toBe(false);
   });
@@ -93,7 +93,7 @@ describe('AccountFormDialogStore', () => {
       statusText: 'Unprocessable Entity',
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBeNull();
     expect(store.savingsConflict()).toBe(true);
     expect(store.error()).toBe(false);
     expect(store.nameConflict()).toBe(false);
@@ -116,7 +116,7 @@ describe('AccountFormDialogStore', () => {
       statusText: 'Server Error',
     });
 
-    await expect(saved).resolves.toBe(false);
+    await expect(saved).resolves.toBeNull();
     expect(store.error()).toBe(true);
     expect(store.nameConflict()).toBe(false);
   });

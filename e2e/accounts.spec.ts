@@ -133,7 +133,7 @@ test.describe('accounts', () => {
     );
   });
 
-  test('lands on the lines of the account with its group heading focused', async ({ page }) => {
+  test('opens the lines filtered on the account, the account chosen in the selector', async ({ page }) => {
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
@@ -142,8 +142,9 @@ test.describe('accounts', () => {
     await link.click();
 
     await expect(page).toHaveURL(/\/holdings\?compte=/);
-    await expect(page.locator('h2[data-group-heading]:focus')).toBeVisible();
-    await expect(page.locator('h2[data-group-heading]:focus')).toContainText('Northwind PEA');
+    await expect(page.getByTestId('account-group')).toHaveCount(1);
+    await expect(page.getByTestId('account-group')).toContainText('Northwind PEA');
+    await expect(page.getByTestId('account-filter')).toContainText('Northwind PEA');
   });
 
   test('summarises the accounts with their count and total above the table', async ({ page }) => {
@@ -174,7 +175,26 @@ test.describe('accounts', () => {
     await expect(page.getByTestId('account-form-submit')).toBeEnabled();
   });
 
-  test('creates an account and sees it in the list', async ({ page }) => {
+  test('creates an account, sees it highlighted in the list, then confirms it', async ({ page }) => {
+    await page.addInitScript(() => {
+      const log: { kind: string; at: number }[] = [];
+      const animate = Element.prototype.animate;
+
+      (window as unknown as { order: typeof log }).order = log;
+      Element.prototype.animate = function (this: Element, keyframes, options) {
+        const first = (Array.isArray(keyframes) ? keyframes[0] : keyframes) ?? {};
+        if ('backgroundColor' in first && this.closest('tr')?.textContent?.includes('Wise EUR')) {
+          log.push({ kind: 'highlight', at: performance.now() });
+        }
+
+        return animate.call(this, keyframes, options);
+      };
+      new MutationObserver(() => {
+        if (document.querySelector('ui-toaster > div') && !log.some((entry) => entry.kind === 'toast')) {
+          log.push({ kind: 'toast', at: performance.now() });
+        }
+      }).observe(document, { childList: true, subtree: true });
+    });
     const accounts = new AccountsPageObject(page);
     await accounts.goto();
 
@@ -186,6 +206,14 @@ test.describe('accounts', () => {
 
     await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeHidden();
     await expect(accounts.rowFor('Wise EUR')).toBeVisible();
+    await expect
+      .poll(() => accounts.rowFor('Wise EUR').evaluate((row) => row.getAnimations({ subtree: true }).length))
+      .toBeGreaterThan(0);
+    await expect(page.locator('ui-toaster > div')).toHaveText('Account added');
+
+    const order = await page.evaluate(() => (window as unknown as { order: { kind: string; at: number }[] }).order);
+    expect(order.map((entry) => entry.kind)[0]).toBe('highlight');
+    expect(order.map((entry) => entry.kind)).toContain('toast');
   });
 
   test('renames an account and sees the change in the list', async ({ page }) => {

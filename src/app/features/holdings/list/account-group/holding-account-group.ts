@@ -1,6 +1,6 @@
-import { Component, LOCALE_ID, booleanAttribute, computed, inject, input, output } from '@angular/core';
+import { Component, booleanAttribute, computed, inject, input, output } from '@angular/core';
 
-import { UI_AMOUNT_MASKED, UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiFlipItem, UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { UiCellSub, UiGroup, UiGroupCell, UiRowLink, UiTd, UiTr } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe } from '@jsverse/transloco';
@@ -11,7 +11,8 @@ import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 import type { HoldingChange } from '../../holding-changes';
 import type { AccountGroup } from '../holding-list-store';
-import { cashRowKeys, filteredCount, metaParts } from './group-count';
+import { cashRowKeys } from './group-count';
+import { injectGroupMeta } from './group-meta';
 import { HoldingAccountGroupRow } from './row/holding-account-group-row';
 
 @Component({
@@ -30,30 +31,29 @@ import { HoldingAccountGroupRow } from './row/holding-account-group-row';
     UiTr,
   ],
   templateUrl: './holding-account-group.html',
-  hostDirectives: [UiGroup],
+  hostDirectives: [{ directive: UiGroup, inputs: ['collapsed'] }],
   host: {
     class: 'scroll-mt-4',
     'data-testid': 'account-group',
     '[attr.data-account-id]': 'group().accountId',
+    '[id]': 'bodyId()',
   },
 })
 export class HoldingAccountGroup {
+  readonly #body = inject(UiGroup);
+
   readonly group = input.required<AccountGroup>();
-  readonly compact = input(false, { transform: booleanAttribute });
   readonly selectedHoldingId = input<string | undefined>(undefined);
-  readonly highlight = input<object | null>(null);
   readonly flash = input<HoldingChange | null>(null);
+  readonly toggleDisabled = input(false, { transform: booleanAttribute });
 
   readonly editCash = output<string>();
   readonly enterQuote = output<HoldingResponse>();
+  readonly expandedChange = output<boolean>();
 
-  readonly #locale = inject(LOCALE_ID);
-  readonly #masked = inject(UI_AMOUNT_MASKED);
+  protected readonly expanded = computed(() => !this.#body.collapsed());
+  protected readonly bodyId = computed(() => `holdings-group-${this.group().accountId}`);
 
   protected readonly cashRowKeys = cashRowKeys;
-  protected readonly filteredCount = filteredCount;
-  protected readonly metaParts = metaParts;
-  protected readonly accountTotal = computed(() =>
-    formatAmount(this.group().filtered?.accountValueEur, { locale: this.#locale, currency: 'EUR' }, this.#masked()),
-  );
+  protected readonly meta = injectGroupMeta(this.group);
 }

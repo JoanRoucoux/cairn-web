@@ -1,13 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  afterRenderEffect,
-  computed,
-  effect,
-  inject,
-  linkedSignal,
-  signal,
-} from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, NavigationStart, Router, RouterOutlet, Scroll } from '@angular/router';
 
@@ -17,7 +8,9 @@ import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiField, UiFieldLeading } from '@joanroucoux/cairn-ui/field';
 import { type FilterChipOption, UiFilterChips } from '@joanroucoux/cairn-ui/filter-chips';
 import { UiInput } from '@joanroucoux/cairn-ui/input';
+import { UiMenu, UiMenuItem } from '@joanroucoux/cairn-ui/menu';
 import { UiFlipItem, UiFlipList } from '@joanroucoux/cairn-ui/motion';
+import { UiSelectPill } from '@joanroucoux/cairn-ui/select-pill';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { UiTable, UiTh } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
@@ -25,15 +18,18 @@ import { LucidePlus } from '@lucide/angular';
 import { filter, map, startWith } from 'rxjs';
 
 import type { AssetClass, HoldingResponse } from '@core/api-client/cairnAPI.schemas';
+import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
 import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
 import { HoldingListEmpty } from './empty/holding-list-empty';
+import { FoldedAccounts } from './folded-accounts';
 import { CLASSES_SHOWN_WHEN_HELD, CLASS_ORDER, HoldingListStore, SLUG_BY_CLASS } from './holding-list-store';
 import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
 import { HoldingClassSummary } from './summary/holding-class-summary';
@@ -61,6 +57,9 @@ const ALL = 'ALL';
     UiFieldLeading,
     UiFilterChips,
     UiInput,
+    UiMenu,
+    UiMenuItem,
+    UiSelectPill,
     UiSkeleton,
     UiFlipItem,
     UiFlipList,
@@ -68,16 +67,18 @@ const ALL = 'ALL';
     UiTh,
   ],
   templateUrl: './holding-list-page.html',
-  providers: [HoldingListStore],
+  providers: [HoldingListStore, FoldedAccounts],
 })
 export class HoldingListPage {
   #store = inject(HoldingListStore);
+  #folded = inject(FoldedAccounts);
+  #changes = inject(HoldingChanges);
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   readonly #transloco = inject(TranslocoService);
-  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
+  readonly #translocoEvents = injectTranslationEvents();
 
   #allLabel = translateSignal('classFilter.all');
 
@@ -85,6 +86,11 @@ export class HoldingListPage {
   protected readonly groups = this.#store.groups;
   protected readonly search = this.#store.search;
   protected readonly assetClass = this.#store.assetClass;
+  protected readonly account = this.#store.account;
+  protected readonly accountName = this.#store.accountName;
+  protected readonly accountOptions = this.#store.accountOptions;
+  protected readonly accountsReady = this.#store.accountsReady;
+  protected readonly foldLocked = this.#store.foldLocked;
   protected readonly classSummary = this.#store.classSummary;
   protected readonly flash = this.#store.flash;
 
@@ -139,50 +145,27 @@ export class HoldingListPage {
     ),
   );
 
-  protected readonly compact = computed(() => this.selectedHoldingId() !== undefined);
+  readonly #selectedAccountId = computed(() => {
+    const selected = this.selectedHoldingId();
 
-  #wasCompact = false;
-  #lastSelected: string | undefined;
-  #landedOn: string | undefined;
-
-  protected readonly arrival = linkedSignal<string, { accountId: string } | null>({
-    source: this.#store.filterKey,
-    computation: () => null,
+    return this.holdings.hasValue()
+      ? this.holdings.value().find((holding) => holding.id === selected)?.accountId
+      : undefined;
   });
-  readonly #routerScrolled = signal(false);
+
+  #lastSelected: { holdingId: string; accountId: string | undefined } | undefined;
+  readonly #bandToFocus = signal<{ accountId: string | undefined } | null>(null);
 
   constructor() {
     let leftAt = 0;
 
     this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
-      if (event instanceof Scroll) {
-        this.#routerScrolled.set(true);
-      }
-
       if (event instanceof NavigationStart) {
         leftAt = window.scrollY;
       } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith('/holdings')) {
-        window.scrollTo({ top: leftAt, behavior: 'instant' });
-      }
-    });
+        const top = leftAt;
 
-    afterRenderEffect(() => {
-      const accountId = this.#store.accountParam();
-
-      if (!accountId || !this.#routerScrolled() || this.state() !== 'ready' || accountId === this.#landedOn) {
-        return;
-      }
-
-      const heading = [...this.#host.nativeElement.querySelectorAll<HTMLElement>('[data-account-id]')]
-        .filter((group) => group.dataset['accountId'] === accountId)
-        .map((group) => group.querySelector<HTMLElement>('h2[data-group-heading]'))
-        .find((candidate) => candidate?.offsetParent);
-
-      if (heading) {
-        this.#landedOn = accountId;
-        heading.closest('[data-account-id]')!.scrollIntoView({ block: 'start', behavior: 'auto' });
-        heading.focus({ preventScroll: true });
-        this.arrival.set({ accountId });
+        queueMicrotask(() => window.scrollTo({ top, behavior: 'instant' }));
       }
     });
 
@@ -192,36 +175,59 @@ export class HoldingListPage {
       if (account !== null) {
         this.presetAccountId.set(account || null);
         this.addOpen.set(true);
-        void this.#router.navigate([], {
-          relativeTo: this.#route,
-          queryParams: { add: null },
-          queryParamsHandling: 'merge',
-          replaceUrl: true,
-        });
+        this.#mergeQueryParams({ add: null });
       }
     });
 
     effect(() => {
-      const compact = this.compact();
+      const known = this.#store.knownAccountIds();
+
+      if (known) {
+        untracked(() => this.#folded.prune(known));
+      }
+    });
+
+    effect(() => {
+      if (this.#store.unknownAccountParam()) {
+        this.#mergeQueryParams({ compte: null });
+      }
+    });
+
+    afterRenderEffect(() => {
       const selected = this.selectedHoldingId();
+      const accountId = this.#selectedAccountId();
 
-      if (this.#wasCompact && !compact) {
-        const rows = [
-          ...this.#host.nativeElement.querySelectorAll<HTMLElement>(`[data-holding-id="${this.#lastSelected}"]`),
-        ];
+      const last = this.#lastSelected;
 
-        rows.find((row) => row.offsetParent !== null)?.focus();
+      if (selected === undefined && last) {
+        untracked(() => this.#focusInList(last));
       }
 
-      this.#wasCompact = compact;
-      this.#lastSelected = selected ?? this.#lastSelected;
+      this.#lastSelected =
+        selected === undefined
+          ? undefined
+          : { holdingId: selected, accountId: accountId ?? this.#lastSelected?.accountId };
+    });
+
+    afterRenderEffect(() => {
+      const band = this.#bandToFocus();
+      const status = this.holdings.status();
+
+      if (band && status !== 'loading' && status !== 'reloading') {
+        untracked(() => {
+          this.#bandToFocus.set(null);
+          this.#focusBand(band.accountId);
+        });
+      }
     });
   }
 
-  protected highlightFor(accountId: string): object | null {
-    const arrival = this.arrival();
+  protected expanded(accountId: string): boolean {
+    return this.foldLocked() || !this.#folded.isFolded(accountId);
+  }
 
-    return arrival?.accountId === accountId ? arrival : null;
+  protected setExpanded(accountId: string, expanded: boolean): void {
+    this.#folded.setFolded(accountId, !expanded);
   }
 
   protected onSearchInput(event: Event): void {
@@ -229,12 +235,16 @@ export class HoldingListPage {
   }
 
   protected onClassChange(value: string): void {
-    void this.#router.navigate([], {
-      relativeTo: this.#route,
-      queryParams: { classe: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] },
-      queryParamsHandling: 'merge',
-      replaceUrl: true,
-    });
+    this.#mergeQueryParams({ classe: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] });
+  }
+
+  protected chooseAccount(accountId: string | null): void {
+    this.#mergeQueryParams({ compte: accountId });
+  }
+
+  protected openAdd(): void {
+    this.presetAccountId.set(this.#store.securitiesAccount());
+    this.addOpen.set(true);
   }
 
   protected onAddSaved(): void {
@@ -252,5 +262,36 @@ export class HoldingListPage {
 
   protected onCashSaved(): void {
     this.accountToEditCashFor.set(undefined);
+  }
+
+  #mergeQueryParams(queryParams: Record<string, string | null>): void {
+    void this.#router.navigate([], {
+      relativeTo: this.#route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  #focusInList({ holdingId, accountId }: { holdingId: string; accountId: string | undefined }): void {
+    if (this.#changes.lastRemoved()?.id === holdingId) {
+      this.#bandToFocus.set({ accountId });
+    } else {
+      this.#firstVisible(`[data-holding-id="${holdingId}"]`)?.focus();
+    }
+  }
+
+  #focusBand(accountId: string | undefined): void {
+    (
+      this.#firstVisible(`[data-account-id="${accountId}"] h2 button`) ??
+      this.#firstVisible('[data-account-id] h2 button') ??
+      this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="holdings-search"]')
+    )?.focus();
+  }
+
+  #firstVisible(selector: string): HTMLElement | undefined {
+    return [...this.#host.nativeElement.querySelectorAll<HTMLElement>(selector)].find(
+      (element) => element.offsetParent !== null,
+    );
   }
 }

@@ -1,16 +1,16 @@
 @let cash = cashRowKeys(group());
-<header class="flex items-end justify-between gap-3 px-1 pt-3" [uiHighlight]="highlight()">
-  <div class="flex min-w-0 flex-col">
-    <h2 class="text-title m-0 font-semibold outline-none" data-group-heading tabindex="-1">
-      {{ group().accountName }}
-    </h2>
-    <app-holding-account-meta [group]="group()" />
-  </div>
-  <span class="text-title font-semibold whitespace-nowrap tabular-nums">
-    <ui-amount currency="EUR" [value]="group().valueEur" />
-  </span>
-</header>
-<ui-card clip padding="none">
+<ui-group-header
+  collapsible
+  [controls]="bodyId()"
+  [expanded]="expanded()"
+  [meta]="meta()"
+  [name]="group().accountName"
+  [toggleDisabled]="toggleDisabled()"
+  (expandedChange)="expandedChange.emit($event)"
+>
+  <ui-amount currency="EUR" [value]="group().valueEur" />
+</ui-group-header>
+<ui-card clip padding="none" [hidden]="!expanded()" [id]="bodyId()">
   <div class="flex flex-col px-2 py-1.5">
     @for (holding of group().holdings; track holding.id) {
       @let foreign = foreignCurrency(holding);

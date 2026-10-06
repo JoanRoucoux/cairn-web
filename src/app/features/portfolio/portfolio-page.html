@@ -20,6 +20,7 @@
             [rangeChangeRatio]="rangeChange()?.ratio"
             [reconstructed]="reconstructed()"
             [shownRange]="shownRange()"
+            [since]="since()"
             [startLabel]="'chart.startLabel' | transloco"
             [state]="curveState()"
             (rangeChange)="setRange($event)"
@@ -33,6 +34,7 @@
           <app-portfolio-envelopes
             [envelopes]="performance()?.byEnvelope ?? []"
             [range]="range()"
+            [since]="since()"
             [state]="envelopesState()"
             (retry)="retryEnvelopes()"
           />

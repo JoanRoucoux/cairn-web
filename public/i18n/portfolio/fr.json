@@ -32,13 +32,15 @@
     "error": "La courbe n'a pas pu être chargée",
     "empty": "Pas encore d'historique pour cette période.",
     "reconstructed": "Courbe reconstruite : la composition actuelle appliquée aux cours passés, pas la valeur mesurée à l'époque.",
+    "sinceStart": "depuis le début",
     "period": {
       "1d": "aujourd'hui",
       "7d": "sur 7 jours",
       "1m": "sur 1 mois",
       "1y": "sur 1 an",
       "5y": "sur 5 ans",
-      "max": "depuis le début"
+      "max": "depuis le début",
+      "since": "depuis {{date}}"
     }
   },
   "envelopes": {

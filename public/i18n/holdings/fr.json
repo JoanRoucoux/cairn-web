@@ -35,6 +35,11 @@
     "label": "Filtrer par classe d'actif",
     "all": "Toutes"
   },
+  "accountFilter": {
+    "label": "Compte",
+    "all": "Tous les comptes",
+    "clear": "Retirer le filtre de compte"
+  },
   "classSummary": {
     "share_one": "· {{share}} du patrimoine, dans {{count}} compte",
     "share_other": "· {{share}} du patrimoine, dans {{count}} comptes"
@@ -195,7 +200,6 @@
       "heading": "Déjà suivi",
       "nature": "dans vos lignes",
       "priceCaption": "dernier cours",
-      "loading": "Recherche dans vos lignes",
       "error": "Le catalogue n'a pas répondu.",
       "retry": "Réessayer"
     },
@@ -213,7 +217,6 @@
     "quotedIn": "coté en {{currency}}",
     "unavailable": "Indisponible",
     "euroOnly": "Cairn ne suit que l'euro",
-    "searching": "Recherche chez {{source}}",
     "sourceEmpty": "Aucun résultat chez {{source}}.",
     "sourceError": "{{source}} ne répond pas pour le moment.",
     "retry": "Réessayer",

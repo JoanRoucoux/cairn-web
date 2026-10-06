@@ -171,12 +171,14 @@ test.describe('holding detail', () => {
     await page.goto('/holdings');
   });
 
-  test('opens next to the list on desktop and reduces the table to three columns', async ({ page }) => {
+  test('opens in a drawer over the list on desktop and keeps the seven columns', async ({ page }) => {
     const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
     await northwind.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
-    await expect(page.getByTestId('holdings-list').getByRole('columnheader')).toHaveCount(3);
+    await expect(page.getByRole('dialog', { name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByTestId('holdings-list').locator('th')).toHaveCount(7);
   });
 
   test('keeps the search text when closing the detail', async ({ page }) => {
@@ -185,15 +187,16 @@ test.describe('holding detail', () => {
     await northwind.getByRole('link', { name: 'Amundi MSCI World' }).click();
     await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
 
-    await page.getByRole('link', { name: 'Close the detail' }).click();
+    await page.getByRole('button', { name: 'Close the detail' }).click();
 
+    await expect(page).toHaveURL(/\/holdings$/);
     await expect(page.getByTestId('holdings-search')).toHaveValue('amundi');
   });
 
   test('shows the stale price instead of a day change', async ({ page }) => {
     await page.goto('/holdings/22222222-2222-2222-2222-222222222222');
 
-    await expect(page.locator('aside').getByText(/price as of .*, late|cours du .*, en retard/i)).toBeVisible();
+    await expect(page.getByRole('dialog').getByText(/price as of .*, late|cours du .*, en retard/i)).toBeVisible();
   });
 
   test('shows Saisir un cours for a line with no quote yet', async ({ page }) => {
@@ -205,7 +208,7 @@ test.describe('holding detail', () => {
   test('opens the manual quote dialog and reloads once saved', async ({ page }) => {
     await page.goto('/holdings/33333333-3333-3333-3333-333333333333');
 
-    await page.getByTestId('enter-quote').click();
+    await page.getByTestId('holding-drawer').getByTestId('enter-quote').click();
     await page.getByTestId('manual-quote-price').fill('12.5');
     await page.getByTestId('manual-quote-submit').click();
 
@@ -224,7 +227,7 @@ test.describe('holding detail', () => {
     await page.goto('/holdings/11111111-1111-1111-1111-111111111111');
 
     await expect(page.getByRole('heading', { name: 'Amundi MSCI World' })).toBeVisible();
-    await expect(page.getByTestId('enter-quote')).toHaveCount(0);
+    await expect(page.getByTestId('holding-drawer').getByTestId('enter-quote')).toHaveCount(0);
   });
 
   test('keeps the shell header on Holdings, not Holding detail, once a line is open on desktop', async ({ page }) => {

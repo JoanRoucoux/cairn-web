@@ -1,7 +1,7 @@
 <div class="flex h-full flex-col gap-1 lg:gap-2">
   <div class="flex items-baseline justify-between gap-3 lg:px-2">
     <h2 class="text-title font-semibold text-(--foreground)">{{ 'portfolio.envelopes.title' | transloco }}</h2>
-    <span class="text-label text-(--muted-foreground)">{{ periodKey() | transloco }}</span>
+    <span class="text-label text-(--muted-foreground)">{{ period().key | transloco: period().params }}</span>
   </div>
 
   <ui-async

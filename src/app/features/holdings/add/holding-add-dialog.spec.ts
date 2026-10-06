@@ -122,12 +122,12 @@ describe('HoldingAddDialog', () => {
     await searchMsci(user);
 
     const results = await screen.findByTestId('holding-add-results');
-    const headings = within(results)
-      .getAllByTestId(/heading$/)
-      .map((heading) => heading.textContent?.trim());
-    expect(headings).toEqual([
-      expect.stringMatching(/holdings.add.tracked.heading\s+holdings.add.tracked.nature/),
-      expect.stringMatching(/enums.priceSource.YAHOO\s+holdings.add.nature.YAHOO/),
+    const groups = within(results)
+      .getAllByRole('group')
+      .map((group) => group.getAttribute('aria-label'));
+    expect(groups).toEqual([
+      'holdings.add.tracked.heading, holdings.add.tracked.nature',
+      'enums.priceSource.YAHOO, holdings.add.nature.YAHOO',
     ]);
     expect(screen.getByTestId('holding-add-tracked-title')).toHaveTextContent(
       /LU1681043599 · enums.assetClass.ETF · enums.priceSource.YAHOO.*€528.31.*holdings.add.tracked.priceCaption/,

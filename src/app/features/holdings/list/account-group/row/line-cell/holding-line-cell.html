@@ -7,45 +7,15 @@
 >
   {{ holding().instrumentName }}
 </a>
-@if (compact()) {
-  @if (foreignCurrency(); as currency) {
-    <span uiCellSub>{{ 'holdings.foreignQuote' | transloco: { currency } }}</span>
-  } @else if (holding().stale) {
-    <span tone="stale" uiCellSub>{{
-      'holdings.staleShort' | transloco: { date: holding().priceAsOf | shortDate }
-    }}</span>
-  } @else if (unpriced()) {
-    <span uiCellSub>{{ 'holdings.noQuote' | transloco }}</span>
-  } @else if (manual()) {
-    <span uiCellSub>{{ 'enums.priceSource.MANUAL' | transloco }}</span>
-  } @else {
-    <span uiCellSub>{{ 'enums.assetClass.' + holding().assetClass | transloco }}</span>
+<span uiCellSub>
+  @if (holding().isin || holding().symbol; as reference) {
+    {{ reference }} &middot;
   }
-} @else {
-  <span class="max-lg:hidden" uiCellSub>
-    @if (holding().isin || holding().symbol; as reference) {
-      {{ reference }} &middot;
-    }
-    {{ 'enums.assetClass.' + holding().assetClass | transloco }}
-    @if (manual()) {
-      &middot; {{ 'enums.priceSource.MANUAL' | transloco }}
-    }
-  </span>
-  <span narrow uiCellSub>
-    <ui-amount [fractionDigits]="decimalPlaces(holding().quantity)" [value]="holding().quantity" />
-    @if (!unpriced()) {
-      &times; <ui-amount [currency]="holding().priceCurrency ?? 'EUR'" [value]="holding().price" />
-    }
-    &middot; {{ 'holdings.averageCost' | transloco }} <ui-amount currency="EUR" [value]="holding().averageCost" />
-  </span>
-  @if (foreignCurrency(); as currency) {
-    <span uiCellSub>{{ 'holdings.foreignQuote' | transloco: { currency } }}</span>
+  {{ 'enums.assetClass.' + holding().assetClass | transloco }}
+  @if (manual()) {
+    &middot; {{ 'enums.priceSource.MANUAL' | transloco }}
   }
-  @if (holding().stale) {
-    <span narrow tone="stale" uiCellSub>{{
-      'holdings.staleLate' | transloco: { date: holding().priceAsOf | shortDate }
-    }}</span>
-  } @else if (unpriced()) {
-    <span narrow uiCellSub>{{ 'holdings.noQuoteToEnter' | transloco }}</span>
-  }
+</span>
+@if (foreignCurrency(); as currency) {
+  <span uiCellSub>{{ 'holdings.foreignQuote' | transloco: { currency } }}</span>
 }

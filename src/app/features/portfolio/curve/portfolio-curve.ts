@@ -15,6 +15,8 @@ import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
+import { periodLabel } from '../period-label';
+
 @Component({
   selector: 'app-portfolio-curve',
   imports: [
@@ -43,13 +45,14 @@ export class PortfolioCurve {
   readonly reconstructed = input(false);
   readonly formats = input.required<ChartFormats>();
   readonly startLabel = input.required<string>();
+  readonly since = input<string | null>(null);
   readonly retry = output<void>();
   readonly rangeChange = output<ChartRange>();
 
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
 
-  protected readonly periodKey = computed(() => `portfolio.curve.period.${this.shownRange() ?? this.range()}`);
+  protected readonly period = computed(() => periodLabel(this.shownRange() ?? this.range(), this.since()));
 
   protected readonly rangeOptions = computed<SegmentedOption[]>(() => {
     this.#language.activeLang();

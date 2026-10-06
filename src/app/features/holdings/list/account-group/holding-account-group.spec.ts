@@ -16,22 +16,26 @@ import { HoldingAccountGroup } from './holding-account-group';
   template: `<table>
     <tbody
       app-holding-account-group
-      [compact]="compact()"
+      [collapsed]="!expanded()"
       [flash]="flash()"
       [group]="group()"
       [selectedHoldingId]="selectedHoldingId()"
+      [toggleDisabled]="toggleDisabled()"
       (editCash)="editCash.emit($event)"
       (enterQuote)="enterQuote.emit($event)"
+      (expandedChange)="expandedChange.emit($event)"
     ></tbody>
   </table>`,
 })
 class TestHost {
   readonly group = input.required<AccountGroup>();
-  readonly compact = input(false);
+  readonly expanded = input(true);
+  readonly toggleDisabled = input(false);
   readonly flash = input<HoldingChange | null>(null);
   readonly selectedHoldingId = input<string | undefined>(undefined);
   readonly editCash = output<string>();
   readonly enterQuote = output<unknown>();
+  readonly expandedChange = output<boolean>();
 }
 
 const holding = {
@@ -65,12 +69,11 @@ const group = {
 
 const renderGroup = (
   overrides: Partial<AccountGroup> = {},
-  compact = false,
   selectedHoldingId: string | undefined = undefined,
-  flash: HoldingChange | null = null,
+  fold: { expanded?: boolean; toggleDisabled?: boolean } = {},
 ): ReturnType<typeof render<TestHost>> =>
   render(TestHost, {
-    inputs: { group: { ...group, ...overrides }, compact, selectedHoldingId, flash },
+    inputs: { group: { ...group, ...overrides }, selectedHoldingId, expanded: true, toggleDisabled: false, ...fold },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection(), provideRouter([]), { provide: LOCALE_ID, useValue: 'en-GB' }],
   });
@@ -79,7 +82,7 @@ describe('HoldingAccountGroup', () => {
   it('should open with a band naming the account, its envelope, its institution and its line count', async () => {
     await renderGroup();
 
-    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /^Woodgrove Savings Plan/ })).toBeInTheDocument();
     expect(screen.getByText(/enums\.accountType\.PEE/)).toHaveTextContent(
       'enums.accountType.PEE · Woodgrove Bank · holdings.lineCount_one',
     );
@@ -159,7 +162,7 @@ describe('HoldingAccountGroup', () => {
   it('should show the account total in the band', async () => {
     await renderGroup();
 
-    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /^Woodgrove Savings Plan/ })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell]')).toHaveTextContent('€60,926.00');
   });
 
@@ -227,12 +230,6 @@ describe('HoldingAccountGroup', () => {
     expect(row.textContent).toContain('holdings.manualQuote.open');
   });
 
-  it('should caption an unquoted line with no quote when the detail is open', async () => {
-    await renderGroup({ holdings: [{ ...holding, price: null, marketValueEur: null, stale: false } as never] }, true);
-
-    expect(await screen.findByText('holdings.noQuote')).toBeInTheDocument();
-  });
-
   it('should show no day change on a stale line and keep the stale date in the stale tone', async () => {
     await renderGroup({ holdings: [{ ...holding, dayChangeRatio: 0.01 } as never] });
     const row = await screen.findByTestId('holding-row');
@@ -252,11 +249,8 @@ describe('HoldingAccountGroup', () => {
     await user.click(await screen.findByTestId('enter-quote'));
 
     expect(entered).toHaveBeenCalledWith(expect.objectContaining({ id: 'h3' }));
-    await user.click(screen.getByTestId('enter-quote-narrow'));
-
-    expect(entered).toHaveBeenCalledTimes(2);
-    expect(screen.getByTestId('enter-quote-narrow')).toHaveClass('lg:hidden');
-    expect(screen.getByText('holdings.noQuoteToEnter')).toBeInTheDocument();
+    expect(screen.getAllByTestId('enter-quote')).toHaveLength(1);
+    expect(screen.queryByText('holdings.noQuoteToEnter')).not.toBeInTheDocument();
   });
 
   describe('a line quoted in another currency', () => {
@@ -279,12 +273,6 @@ describe('HoldingAccountGroup', () => {
       expect(screen.queryByText('holdings.noQuote')).not.toBeInTheDocument();
     });
 
-    it('should keep the caption in the line cell when the detail is open', async () => {
-      await renderGroup({ holdings: [usd as never] }, true);
-
-      expect(await screen.findByText('holdings.foreignQuote')).toBeInTheDocument();
-    });
-
     it('should offer no action on the Cours column of a line quoted in another currency', async () => {
       await renderGroup({ holdings: [usd as never] });
 
@@ -300,20 +288,21 @@ describe('HoldingAccountGroup', () => {
     expect(await screen.findByRole('link', { name: 'FCPE Actions' })).toHaveAttribute('href', '/holdings/h3');
   });
 
-  it('should show seven cells per row when not compact', async () => {
+  it('should show seven cells per row, the band spanning all of them', async () => {
     await renderGroup();
+
+    expect((await screen.findByTestId('holding-row')).querySelectorAll('td')).toHaveLength(7);
+    expect(document.querySelector('td[ui-group-cell]')).toHaveAttribute('colspan', '7');
+  });
+
+  it('should keep seven cells per row while a line is open', async () => {
+    await renderGroup({}, 'h3');
 
     expect((await screen.findByTestId('holding-row')).querySelectorAll('td')).toHaveLength(7);
   });
 
-  it('should keep three cells per row when compact', async () => {
-    await renderGroup({}, true);
-
-    expect((await screen.findByTestId('holding-row')).querySelectorAll('td')).toHaveLength(3);
-  });
-
   it('should mark the open row selected and current', async () => {
-    await renderGroup({}, false, 'h3');
+    await renderGroup({}, 'h3');
 
     expect(await screen.findByTestId('holding-row')).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('link', { name: 'FCPE Actions' })).toHaveAttribute('aria-current', 'true');
@@ -358,14 +347,14 @@ describe('HoldingAccountGroup under a class filter', () => {
   it('should read the account total and the number of rows in the meta instead of the envelope', async () => {
     await renderGroup({ filtered, valueEur: 60926 });
 
-    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /^Woodgrove Savings Plan/ })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell] span.truncate')).toHaveTextContent('holdings.filteredMeta');
   });
 
   it('should not repeat the lines left out in the filtered meta', async () => {
     await renderGroup({ filtered, unvaluedCount: 1 });
 
-    expect(await screen.findByRole('heading', { name: 'Woodgrove Savings Plan' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /^Woodgrove Savings Plan/ })).toBeInTheDocument();
     expect(document.querySelector('td[ui-group-cell]')).not.toHaveTextContent('uncounted');
   });
 

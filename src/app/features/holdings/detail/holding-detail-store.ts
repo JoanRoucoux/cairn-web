@@ -20,7 +20,7 @@ import { QuoteService } from '@core/api-client/quote/quote.service';
 
 import { type ChartRange, rangeStart } from '@shared/chart/chart-range';
 
-import { HoldingChanges } from '../holding-changes';
+import { type HoldingChange, HoldingChanges } from '../holding-changes';
 
 const EPOCH = '1900-01-01';
 
@@ -113,17 +113,40 @@ export class HoldingDetailStore {
     return { amount, ratio: first.v === 0 ? null : amount / first.v };
   });
 
+  readonly #flash = signal<HoldingChange | null>(null);
+  readonly flash = this.#flash.asReadonly();
+  readonly #pendingFlash = signal<HoldingChange | null>(null);
+
   #changesSeen = false;
 
   constructor() {
     effect(() => {
-      this.#changes.lastTouched();
+      const touched = this.#changes.lastTouched();
 
       if (this.#changesSeen) {
-        untracked(() => this.reload());
+        untracked(() => {
+          if (touched?.id === this.holdingId()) {
+            this.#pendingFlash.set(touched);
+          }
+          this.reload();
+        });
       }
 
       this.#changesSeen = true;
+    });
+
+    effect(() => {
+      const pending = this.#pendingFlash();
+      const status = this.holdings.status();
+
+      if (status === 'error') {
+        untracked(() => this.#pendingFlash.set(null));
+      } else if (pending && status === 'resolved' && this.#changes.lastRevealed() === pending) {
+        untracked(() => {
+          this.#flash.set(pending);
+          this.#pendingFlash.set(null);
+        });
+      }
     });
   }
 
