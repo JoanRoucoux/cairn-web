@@ -1,6 +1,6 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideZonelessChangeDetection } from '@angular/core';
+import { LOCALE_ID, provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -25,11 +25,38 @@ describe('HoldingCashStore', () => {
   it('should prefill the form with the current balance', () => {
     store.prefill(732.4);
 
-    expect(store.form.amount().value()).toBe(732.4);
+    expect(store.form.amount().value()).toBe('732.4');
+  });
+
+  it('should write the balance and read the amount the French way', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: LOCALE_ID, useValue: 'fr-FR' },
+        HoldingCashStore,
+      ],
+    });
+    store = TestBed.inject(HoldingCashStore);
+    httpTesting = TestBed.inject(HttpTestingController);
+
+    store.prefill(732.4);
+    expect(store.form.amount().value()).toBe('732,4');
+
+    store.form.amount().value.set('1 250,5');
+    const saved = store.save('account-1');
+
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/accounts/account-1/cash'));
+    expect(request.request.body).toEqual({ amount: 1250.5 });
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    await expect(saved).resolves.toBe(true);
   });
 
   it('should set the cash balance', async () => {
-    store.form.amount().value.set(500);
+    store.form.amount().value.set('500');
 
     const saved = store.save('account-1');
 
@@ -42,7 +69,7 @@ describe('HoldingCashStore', () => {
   });
 
   it('should report a generic failure', async () => {
-    store.form.amount().value.set(500);
+    store.form.amount().value.set('500');
 
     const saved = store.save('account-1');
 
@@ -56,7 +83,7 @@ describe('HoldingCashStore', () => {
   });
 
   it('should refuse a negative amount before it ever reaches the API', async () => {
-    store.form.amount().value.set(-10);
+    store.form.amount().value.set('-10');
 
     const saved = store.save('account-1');
 

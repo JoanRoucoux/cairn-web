@@ -1,8 +1,9 @@
 @if (blocking()) {
   <ui-async
     align="center"
-    class="flex min-h-63 flex-1 flex-col lg:min-h-93"
+    class="flex min-h-63 flex-1 flex-col"
     fill
+    [class.lg:min-h-93]="state() === 'error'"
     [errorMessage]="'portfolio.error.message' | transloco"
     [errorTitle]="'portfolio.curve.error' | transloco"
     [retryLabel]="'portfolio.error.retry' | transloco"
@@ -15,7 +16,7 @@
         <div class="w-55"><ui-skeleton [height]="20" /></div>
         <div class="w-75"><ui-skeleton [height]="36" /></div>
       </div>
-      <ui-skeleton class="min-h-[205px] flex-1 lg:min-h-75" shape="chart" />
+      <ui-skeleton class="min-h-50 flex-1 lg:min-h-75" shape="chart" />
       <div class="lg:hidden"><ui-skeleton [height]="44" /></div>
     </div>
   </ui-async>
@@ -84,7 +85,7 @@
 
         @if (reconstructed()) {
           <p
-            class="text-caption lg:text-label mt-3 text-(--subtle-foreground) lg:mt-4 lg:tracking-normal"
+            class="text-caption lg:text-label mt-3 text-(--subtle-foreground) lg:mt-4"
             data-testid="reconstructed-note"
           >
             {{ 'portfolio.curve.reconstructed' | transloco }}

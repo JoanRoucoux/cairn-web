@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterRenderEffect, effect, inject, input, output } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, computed, effect, inject, input, output } from '@angular/core';
 import { FormField } from '@angular/forms/signals';
 
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
@@ -11,13 +11,15 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
 import { injectToast } from '@shared/feedback/toast';
+import { parseDecimal } from '@shared/format/parse-decimal';
+import { DecimalInput } from '@shared/forms/decimal-input';
 
 import { type HoldingChange, HoldingChanges } from '../../holding-changes';
 import { HoldingCashStore } from './holding-cash-store';
 
 @Component({
   selector: 'app-holding-cash-dialog',
-  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
+  imports: [DecimalInput, FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-cash-dialog.html',
   providers: [HoldingCashStore],
 })
@@ -40,6 +42,7 @@ export class HoldingCashDialog {
 
   protected readonly open = this.#outcome.open;
   protected readonly form = this.#store.form;
+  protected readonly isZero = computed(() => parseDecimal(this.form.amount().value()) === 0);
   protected readonly error = this.#store.error;
 
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);

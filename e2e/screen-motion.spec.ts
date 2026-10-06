@@ -77,6 +77,56 @@ test.describe('add a line motion', () => {
     await expect(page.getByTestId('holding-add-quantity')).toBeFocused();
     await expect.poll(() => started(page)).toContain('cairn-fade-in@holding-add-fields');
   });
+
+  test('draws no skeleton while a query waits for its debounce, the answers appearing at once', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/holdings');
+    await page.getByTestId('add-holding-desktop').click();
+    await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
+    await recordAnimations(page);
+    const answered = page.waitForResponse('**/api/instruments/search?**');
+
+    await page.getByTestId('holding-add-query').fill('Amundi MSCI World');
+    await answered;
+
+    await expect(page.getByTestId('holding-add-tracked-title')).toBeVisible();
+    await page.waitForTimeout(200);
+    expect((await started(page)).filter((name) => name.startsWith('cairn-pulse'))).toEqual([]);
+  });
+
+  test('keeps the dialog height across a keystroke while the next query waits for its debounce', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/holdings');
+    await page.getByTestId('add-holding-desktop').click();
+    const dialog = page.getByTestId('holding-add-dialog').locator('dialog');
+    await expect(dialog).toBeVisible();
+    const query = page.getByTestId('holding-add-query');
+
+    await query.fill('solana');
+    await expect(page.getByTestId('holding-add-results')).toBeVisible();
+    await page.waitForTimeout(200);
+    const before = await dialog.boundingBox();
+
+    await query.pressSequentially('s', { delay: 0 });
+    await page.waitForTimeout(100);
+
+    expect((await dialog.boundingBox())?.height).toBe(before?.height);
+    await expect(page.getByTestId('holding-add-results')).toBeVisible();
+  });
+
+  test('shows the SG Sirius note without fading it in', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/holdings');
+    await page.getByTestId('add-holding-desktop').click();
+    await expect(page.getByTestId('holding-add-dialog').locator('dialog')).toBeVisible();
+    await recordAnimations(page);
+
+    await page.getByTestId('holding-add-sirius-link').click();
+
+    await expect(page.getByTestId('holding-add-sirius-note')).toBeVisible();
+    await page.waitForTimeout(200);
+    expect(await started(page)).not.toContain('cairn-fade-in@holding-add-sirius-note');
+  });
 });
 
 test.describe('theme switch', () => {

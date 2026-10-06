@@ -41,6 +41,9 @@ class ViewTransitionPolicy {
 
 export const onViewTransitionCreated = ({ transition, from, to }: ViewTransitionInfo): void => {
   if (inject(ViewTransitionPolicy).skips(from, to)) {
-    transition.skipTransition();
+    transition.ready.then(
+      () => transition.skipTransition(),
+      () => undefined,
+    );
   }
 };

@@ -9,15 +9,17 @@
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.manualQuote.asOf' | transloco">
-    <input data-testid="manual-quote-as-of" type="date" uiInput [formField]="form.asOf" />
+    <input data-testid="manual-quote-as-of" size="lg" type="date" uiInput [formField]="form.asOf" />
   </ui-field>
 
   <ui-field unit="€" [label]="'holdings.manualQuote.price' | transloco">
     <input
+      appDecimalInput
+      autocomplete="off"
       data-testid="manual-quote-price"
       inputmode="decimal"
-      step="0.0001"
-      type="number"
+      size="lg"
+      type="text"
       uiInput
       [formField]="form.price"
     />
@@ -30,6 +32,7 @@
   }
 
   <button
+    class="max-lg:hidden"
     data-testid="manual-quote-cancel"
     dialogActions
     type="button"

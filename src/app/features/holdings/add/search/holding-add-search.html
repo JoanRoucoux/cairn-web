@@ -25,7 +25,7 @@
   </p>
 </div>
 
-@if (showResults()) {
+@if (showResults() && hasResults()) {
   <ui-card border="hairline" class="flex flex-col" data-testid="holding-add-results" padding="xs" variant="inset">
     @if (showTracked()) {
       <ui-result-group
@@ -43,7 +43,7 @@
       </ui-result-group>
     }
 
-    @for (group of groups(); track group.source) {
+    @for (group of shownGroups(); track group.source) {
       <app-holding-add-group
         [group]="group"
         (picked)="pickedCandidate.emit($event)"

@@ -35,6 +35,7 @@
               uiTr
               [attr.data-account-id]="account.id"
               [uiHighlight]="account.id === addedAccountId() ? account.id : null"
+              (highlighted)="onHighlighted(true)"
             >
               <td primary uiTd>
                 <a
@@ -141,6 +142,7 @@
         [accounts]="accounts()"
         [added]="addedAccountId()"
         (edit)="onEdit($event)"
+        (highlighted)="onHighlighted(false)"
         (remove)="accountToDelete.set($event)"
       />
     }

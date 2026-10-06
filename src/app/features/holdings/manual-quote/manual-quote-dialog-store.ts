@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { QuoteService } from '@core/api-client/quote/quote.service';
 
+import { parseDecimal } from '@shared/format/parse-decimal';
 import { formMessages } from '@shared/forms/form-messages';
 
 import { initialManualQuote, manualQuoteSchema } from './manual-quote-form';
@@ -29,7 +30,10 @@ export class ManualQuoteDialogStore {
       try {
         const model = this.#model();
         await firstValueFrom(
-          this.#quotesApiClient.recordQuote(instrumentId, { asOf: model.asOf, price: model.price as number }),
+          this.#quotesApiClient.recordQuote(instrumentId, {
+            asOf: model.asOf,
+            price: parseDecimal(model.price) as number,
+          }),
         );
         saved = true;
       } catch {

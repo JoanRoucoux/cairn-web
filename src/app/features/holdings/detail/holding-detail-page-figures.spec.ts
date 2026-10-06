@@ -7,7 +7,7 @@ import { RouterOutlet } from '@angular/router';
 
 import { UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
 import { provideTranslocoScope } from '@jsverse/transloco';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, within } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
@@ -135,7 +135,23 @@ describe('HoldingDetailPage figures', () => {
   it('says the cost is unknown instead of a gain when there is no cost basis', async () => {
     await renderPage({ ...holding, unrealizedGainEur: null, averageCost: null });
 
-    expect(await screen.findByText('holdings.averageCostUnknownShort')).toBeInTheDocument();
+    expect(await screen.findByText('holdings.averageCostUnknownShort')).toHaveClass('font-medium');
+  });
+
+  it('shows a dash, not an unknown cost, when the cost is known but the line has no value', async () => {
+    await renderPage({ ...holding, unrealizedGainEur: null, unrealizedGainRatio: null, marketValueEur: null });
+    const unrealized = (await screen.findByText('holdings.detail.unrealized')).parentElement!;
+
+    expect(unrealized).not.toHaveTextContent('holdings.averageCostUnknownShort');
+    expect(within(unrealized).getByText('—')).toHaveClass('font-medium', 'text-(--subtle-foreground)');
+  });
+
+  it('draws no description block when the instrument has neither a description nor a link', async () => {
+    await renderPage({ ...holding, description: '', externalUrl: null });
+    await screen.findByText('holdings.detail.unrealized');
+
+    expect(screen.queryByRole('link', { name: /holdings.externalLink/ })).not.toBeInTheDocument();
+    expect(document.querySelector('app-holding-detail-description')).toBeNull();
   });
 
   it('shows the stale quote line instead of a day change', async () => {

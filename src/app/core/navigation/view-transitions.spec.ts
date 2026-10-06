@@ -31,11 +31,14 @@ const mockMedia = (matches: Record<string, boolean>): void => {
 const REDUCED = '(prefers-reduced-motion: reduce)';
 const DESKTOP = '(min-width: 1024px)';
 
-const navigate = (
+type FakeTransition = { ready: Promise<void>; skipTransition: ReturnType<typeof vi.fn> };
+
+const start = (
   from: [string, Record<string, string>?],
   to: [string, Record<string, string>?],
-): { skipTransition: ReturnType<typeof vi.fn> } => {
-  const transition = { skipTransition: vi.fn() };
+  ready: Promise<void> = Promise.resolve(),
+): FakeTransition => {
+  const transition = { ready, skipTransition: vi.fn() };
 
   TestBed.runInInjectionContext(() =>
     onViewTransitionCreated({
@@ -44,6 +47,17 @@ const navigate = (
       to: snapshot(...to),
     } as unknown as ViewTransitionInfo),
   );
+
+  return transition;
+};
+
+const navigate = async (
+  from: [string, Record<string, string>?],
+  to: [string, Record<string, string>?],
+): Promise<FakeTransition> => {
+  const transition = start(from, to);
+  await transition.ready;
+  await Promise.resolve();
 
   return transition;
 };
@@ -57,17 +71,19 @@ describe('onViewTransitionCreated', () => {
     ['/allocation', '/accounts'],
     ['/accounts', '/'],
     ['/accounts', '/holdings'],
-  ])('skips the swap between the shell destinations %s and %s', (from, to) => {
+  ])('skips the swap between the shell destinations %s and %s', async (from, to) => {
     mockMedia({});
 
-    expect(navigate([from], [to]).skipTransition).toHaveBeenCalledOnce();
+    expect((await navigate([from], [to])).skipTransition).toHaveBeenCalledOnce();
   });
 
-  it('skips a navigation that only changes query parameters', () => {
+  it('skips a navigation that only changes query parameters', async () => {
     mockMedia({});
 
-    expect(navigate(['/holdings'], ['/holdings', { classe: 'etf' }]).skipTransition).toHaveBeenCalledOnce();
-    expect(navigate(['/holdings/h1'], ['/holdings/h1', { classe: 'etf' }]).skipTransition).toHaveBeenCalledOnce();
+    expect((await navigate(['/holdings'], ['/holdings', { classe: 'etf' }])).skipTransition).toHaveBeenCalledOnce();
+    expect(
+      (await navigate(['/holdings/h1'], ['/holdings/h1', { classe: 'etf' }])).skipTransition,
+    ).toHaveBeenCalledOnce();
   });
 
   it.each([
@@ -76,30 +92,58 @@ describe('onViewTransitionCreated', () => {
     ['/profile', '/'],
     ['/nowhere', '/'],
     ['/', '/profile'],
-  ])('keeps the cross-fade from %s to %s', (from, to) => {
+  ])('keeps the cross-fade from %s to %s', async (from, to) => {
     mockMedia({});
 
-    expect(navigate([from], [to]).skipTransition).not.toHaveBeenCalled();
+    expect((await navigate([from], [to])).skipTransition).not.toHaveBeenCalled();
   });
 
-  it('skips the list and detail swap beside the panel on desktop', () => {
+  it('skips the list and detail swap beside the panel on desktop', async () => {
     mockMedia({ [DESKTOP]: true });
 
-    expect(navigate(['/holdings'], ['/holdings/h1']).skipTransition).toHaveBeenCalledOnce();
-    expect(navigate(['/holdings/h1'], ['/holdings/h2']).skipTransition).toHaveBeenCalledOnce();
-    expect(navigate(['/holdings/h1'], ['/holdings']).skipTransition).toHaveBeenCalledOnce();
+    expect((await navigate(['/holdings'], ['/holdings/h1'])).skipTransition).toHaveBeenCalledOnce();
+    expect((await navigate(['/holdings/h1'], ['/holdings/h2'])).skipTransition).toHaveBeenCalledOnce();
+    expect((await navigate(['/holdings/h1'], ['/holdings'])).skipTransition).toHaveBeenCalledOnce();
   });
 
-  it('keeps the cross-fade away from holdings on desktop', () => {
+  it('keeps the cross-fade away from holdings on desktop', async () => {
     mockMedia({ [DESKTOP]: true });
 
-    expect(navigate(['/profile'], ['/']).skipTransition).not.toHaveBeenCalled();
-    expect(navigate(['/holdings/h1'], ['/profile']).skipTransition).not.toHaveBeenCalled();
+    expect((await navigate(['/profile'], ['/'])).skipTransition).not.toHaveBeenCalled();
+    expect((await navigate(['/holdings/h1'], ['/profile'])).skipTransition).not.toHaveBeenCalled();
   });
 
-  it('skips every transition under reduced motion', () => {
+  it('skips every transition under reduced motion', async () => {
     mockMedia({ [REDUCED]: true });
 
-    expect(navigate(['/profile'], ['/']).skipTransition).toHaveBeenCalledOnce();
+    expect((await navigate(['/profile'], ['/'])).skipTransition).toHaveBeenCalledOnce();
+  });
+
+  it('waits for the transition to be ready before skipping it, so its ready promise never rejects', async () => {
+    mockMedia({});
+    let ready!: () => void;
+    const transition = start(['/'], ['/holdings'], new Promise<void>((resolve) => (ready = resolve)));
+    await Promise.resolve();
+
+    expect(transition.skipTransition).not.toHaveBeenCalled();
+
+    ready();
+    await transition.ready;
+    await Promise.resolve();
+
+    expect(transition.skipTransition).toHaveBeenCalledOnce();
+  });
+
+  it('leaves alone a transition that never gets ready', async () => {
+    mockMedia({});
+    const transition = start(
+      ['/'],
+      ['/holdings'],
+      Promise.reject(new DOMException('Duplicate name', 'InvalidStateError')),
+    );
+    await transition.ready.catch(() => undefined);
+    await Promise.resolve();
+
+    expect(transition.skipTransition).not.toHaveBeenCalled();
   });
 });

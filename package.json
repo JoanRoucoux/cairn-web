@@ -42,7 +42,7 @@
     "@angular/forms": "22.2.0",
     "@angular/platform-browser": "22.2.0",
     "@angular/router": "22.2.0",
-    "@joanroucoux/cairn-ui": "0.9.1",
+    "@joanroucoux/cairn-ui": "0.9.2",
     "@jsverse/transloco": "8.4.0",
     "@jsverse/transloco-persist-lang": "8.4.0",
     "@lucide/angular": "1.49.0",

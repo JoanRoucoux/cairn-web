@@ -8,14 +8,31 @@ import { ThemeStore } from './theme-store';
 describe('ThemeStore', () => {
   let root: HTMLElement;
 
-  const configure = (stored: string | null): ThemeStore => {
+  const fakeDocument = (defaultView: unknown): Partial<Document> => {
     root = document.createElement('html');
+    root.innerHTML = `<head>
+      <meta content="#f7f8f8" media="(prefers-color-scheme: light)" name="theme-color" />
+      <meta content="#0a0b0b" media="(prefers-color-scheme: dark)" name="theme-color" />
+    </head>`;
+
+    return {
+      documentElement: root,
+      defaultView: defaultView as Document['defaultView'],
+      querySelectorAll: ((selectors: string) => root.querySelectorAll(selectors)) as Document['querySelectorAll'],
+    };
+  };
+
+  const themeColors = (): string[] =>
+    Array.from(root.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'), (meta) => meta.content);
+
+  const configure = (stored: string | null): ThemeStore => {
+    const fake = fakeDocument(window);
     localStorage.clear();
     if (stored !== null) {
       localStorage.setItem('cairn.theme', stored);
     }
     TestBed.configureTestingModule({
-      providers: [{ provide: DOCUMENT, useValue: { documentElement: root, defaultView: window } }],
+      providers: [{ provide: DOCUMENT, useValue: fake }],
     });
 
     return TestBed.inject(ThemeStore);
@@ -61,6 +78,26 @@ describe('ThemeStore', () => {
     store.set('system');
 
     expect(root.hasAttribute('data-theme')).toBe(false);
+  });
+
+  it('should leave both theme-color metas on their own scheme for the system preference', () => {
+    configure(null);
+
+    expect(themeColors()).toEqual(['#f7f8f8', '#0a0b0b']);
+  });
+
+  it('should rewrite both theme-color metas with the forced scheme, and restore them for the system one', () => {
+    const store = configure('dark');
+
+    expect(themeColors()).toEqual(['#0a0b0b', '#0a0b0b']);
+
+    store.set('light');
+
+    expect(themeColors()).toEqual(['#f7f8f8', '#f7f8f8']);
+
+    store.set('system');
+
+    expect(themeColors()).toEqual(['#f7f8f8', '#0a0b0b']);
   });
 
   describe('switching without transitions', () => {
@@ -121,10 +158,10 @@ describe('ThemeStore', () => {
           addEventListener: (_: string, callback: typeof listener) => (listener = callback),
         }),
       };
-      root = document.createElement('html');
+      const fake = fakeDocument(defaultView);
       localStorage.clear();
       TestBed.configureTestingModule({
-        providers: [{ provide: DOCUMENT, useValue: { documentElement: root, defaultView } }],
+        providers: [{ provide: DOCUMENT, useValue: fake }],
       });
 
       return TestBed.inject(ThemeStore);

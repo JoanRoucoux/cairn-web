@@ -1,23 +1,21 @@
-import { type Schema, min, required, schema } from '@angular/forms/signals';
+import { type Schema, required, schema } from '@angular/forms/signals';
 
+import { nonNegativeDecimal } from '@shared/forms/decimal-field';
 import type { FormMessages } from '@shared/forms/form-messages';
 
 export type ManualQuote = {
   asOf: string;
-  price: number | null;
+  price: string;
 };
 
 export const initialManualQuote = (): ManualQuote => ({
   asOf: new Date().toISOString().slice(0, 10),
-  price: null,
+  price: '',
 });
 
-export const manualQuoteSchema = (messages: FormMessages): Schema<ManualQuote> => {
-  const belowMin = messages.min(0);
-
-  return schema((quote) => {
+export const manualQuoteSchema = (messages: FormMessages): Schema<ManualQuote> =>
+  schema((quote) => {
     required(quote.asOf, { message: () => messages.required() });
     required(quote.price, { message: () => messages.required() });
-    min(quote.price, 0, { message: () => belowMin() });
+    nonNegativeDecimal(quote.price, messages);
   });
-};

@@ -9,6 +9,18 @@
       </span>
     }
   </div>
+} @else {
+  <div class="mb-4 flex flex-col px-1 lg:px-0" data-testid="allocation-total-pending">
+    <p class="text-label lg:text-body lg:leading-[normal]">
+      @if (totalShown() === 'loading') {
+        <span class="inline-block w-44 align-middle" data-testid="allocation-total-skeleton"
+          ><ui-skeleton [height]="14"
+        /></span>
+      } @else {
+        &nbsp;
+      }
+    </p>
+  </div>
 }
 
 <div class="@container">

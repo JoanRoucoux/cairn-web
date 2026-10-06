@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
+import { Component, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { UiAmount } from '@joanroucoux/cairn-ui/amount';
@@ -13,11 +13,11 @@ import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
-import { afterHighlight } from '@shared/feedback/after-highlight';
 import { injectToast } from '@shared/feedback/toast';
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
+import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { AccountListStore, type AccountView } from './account-list-store';
 import { AccountDeleteDialog } from './delete-dialog/account-delete-dialog';
@@ -82,8 +82,9 @@ export class AccountListPage {
   protected readonly accountToDelete = signal<AccountView | undefined>(undefined);
   protected readonly addedAccountId = signal<string | null>(null);
   readonly #unannounced = signal<string | null>(null);
+  #awaitingHighlight = false;
   #toast = injectToast();
-  #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  #desktop = injectDesktop();
 
   constructor() {
     afterRenderEffect(() => {
@@ -96,14 +97,18 @@ export class AccountListPage {
           if (this.state() === 'error') {
             this.#toast('accounts.toasts.created');
           } else {
-            afterHighlight(
-              () => [...this.#host.nativeElement.querySelectorAll(`[data-account-id="${added}"]`)],
-              () => this.#toast('accounts.toasts.created'),
-            );
+            this.#awaitingHighlight = true;
           }
         });
       }
     });
+  }
+
+  protected onHighlighted(desktop: boolean): void {
+    if (this.#awaitingHighlight && desktop === this.#desktop()) {
+      this.#awaitingHighlight = false;
+      this.#toast('accounts.toasts.created');
+    }
   }
 
   protected onAdd(): void {

@@ -3,7 +3,7 @@ import { Component, LOCALE_ID, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { UI_AMOUNT_MASKED, UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
-import { type AsyncState, UiAsync } from '@joanroucoux/cairn-ui/async';
+import { type AsyncState, UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { type DonutSlice, UiDonut } from '@joanroucoux/cairn-ui/donut';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
@@ -90,6 +90,12 @@ export class AllocationPage {
       this.#store.accounts.isLoading(),
       !!this.#store.accounts.error(),
       this.#store.accounts.hasValue() && this.#store.accounts.value().items.length === 0,
+    ),
+  );
+
+  protected readonly totalShown = delayedState(
+    computed<AsyncState>(() =>
+      this.assetClassState() === 'loading' || this.accountState() === 'loading' ? 'loading' : 'error',
     ),
   );
 

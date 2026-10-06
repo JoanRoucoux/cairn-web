@@ -123,13 +123,12 @@ test.describe('holdings list', () => {
     await expect(northwind.getByTestId('cash-row')).toHaveText(/0[,.]00/);
   });
 
-  test('refuses a negative amount in the cash dialog', async ({ page }) => {
+  test('does not accept a minus sign in the cash dialog', async ({ page }) => {
     const northwind = page.getByTestId('account-group').filter({ hasText: 'Northwind PEA' });
     await northwind.getByTestId('edit-cash').click();
     await page.getByTestId('holding-cash-amount').fill('-10');
-    await page.getByTestId('holding-cash-submit').click();
 
-    await expect(page.getByTestId('holding-cash-amount')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByTestId('holding-cash-amount')).toHaveValue('10');
   });
 
   test('edits the balance of a savings account from its Lignes row', async ({ page }) => {
@@ -176,7 +175,7 @@ test.describe('holding detail', () => {
     await northwind.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
-    await expect(page.getByRole('dialog', { name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Holding detail' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Amundi MSCI World' })).toBeVisible();
     await expect(page.getByTestId('holdings-list').locator('th')).toHaveCount(7);
   });

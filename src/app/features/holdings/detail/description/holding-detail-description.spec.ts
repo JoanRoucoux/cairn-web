@@ -6,9 +6,12 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { HoldingDetailDescription } from './holding-detail-description';
 
-const renderDescription = (externalUrl: string | null): ReturnType<typeof render> =>
+const renderDescription = (
+  externalUrl: string | null,
+  description: string | null = 'An ETF.',
+): ReturnType<typeof render> =>
   render(HoldingDetailDescription, {
-    inputs: { description: 'An ETF.', externalUrl },
+    inputs: { description, externalUrl },
     imports: [getTranslocoTestingModule()],
     providers: [provideZonelessChangeDetection()],
   });
@@ -21,6 +24,13 @@ describe('HoldingDetailDescription', () => {
 
     expect(link).toHaveAttribute('href', 'https://www.amundietf.fr/fr/x');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('shows the link alone when there is no description', async () => {
+    const { container } = await renderDescription('https://www.amundietf.fr/fr/x', null);
+
+    expect(await screen.findByRole('link')).toBeInTheDocument();
+    expect(container.querySelector('p')).toBeNull();
   });
 
   it('shows only the description when there is no link, or an unreadable one', async () => {

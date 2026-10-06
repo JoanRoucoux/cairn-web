@@ -6,7 +6,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
 
-import type { ResultGroup } from '../../result-groups';
+import type { ShownGroup } from '../../result-groups';
 import { HoldingAddCandidate } from '../candidate/holding-add-candidate';
 
 @Component({
@@ -16,7 +16,7 @@ import { HoldingAddCandidate } from '../candidate/holding-add-candidate';
   host: { class: 'contents' },
 })
 export class HoldingAddGroup {
-  readonly group = input.required<ResultGroup>();
+  readonly group = input.required<ShownGroup>();
 
   readonly picked = output<InstrumentCandidateResponse>();
   readonly retried = output<void>();

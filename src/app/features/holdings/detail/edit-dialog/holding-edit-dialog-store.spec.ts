@@ -34,13 +34,13 @@ describe('HoldingEditDialogStore', () => {
   it('prefills the form with the holding', () => {
     store.prefill(holding);
 
-    expect(store.form.quantity().value()).toBe(676);
-    expect(store.form.averageCost().value()).toBe(26.654);
+    expect(store.form.quantity().value()).toBe('676');
+    expect(store.form.averageCost().value()).toBe('26.654');
   });
 
   it('updates the quantity and cost basis', async () => {
     store.prefill(holding);
-    store.form.quantity().value.set(700);
+    store.form.quantity().value.set('700');
 
     const saved = store.save('h1');
 

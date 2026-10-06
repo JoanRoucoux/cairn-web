@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal, output } from '@angular/core';
 
 import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
@@ -14,7 +14,7 @@ import { LucideSearch } from '@lucide/angular';
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
 import { injectTranslationEvents } from '@core/i18n/translation-events';
 
-import type { ResultGroup } from '../result-groups';
+import { type ResultGroup, type ShownGroup, isShown } from '../result-groups';
 import { SOURCE_FILTERS, type SourceFilter } from '../search-plan';
 import { HoldingAddGroup } from './group/holding-add-group';
 import { HoldingAddTracked } from './tracked/holding-add-tracked';
@@ -71,6 +71,24 @@ export class HoldingAddSearch {
   });
 
   protected readonly showTracked = computed(() => this.trackedState() !== 'ready' || this.tracked().length > 0);
+  readonly #waiting = computed(() => {
+    const groups = this.groups();
+
+    return groups.length > 0 && !groups.some(isShown);
+  });
+
+  protected readonly shownGroups = linkedSignal<{ shown: ShownGroup[]; waiting: boolean }, ShownGroup[]>({
+    source: () => ({ shown: this.groups().filter(isShown), waiting: this.#waiting() }),
+    computation: ({ shown, waiting }, previous) => (waiting ? (previous?.value ?? []) : shown),
+  });
+
+  protected readonly hasResults = linkedSignal<{ live: boolean; waiting: boolean }, boolean>({
+    source: () => ({
+      live: this.showTracked() || this.groups().some(isShown) || this.noneFound() || this.narrowed(),
+      waiting: this.#waiting(),
+    }),
+    computation: ({ live, waiting }, previous) => live || (waiting && (previous?.value ?? false)),
+  });
 
   protected chooseFilter(value: string): void {
     this.filterChange.emit(value as SourceFilter);

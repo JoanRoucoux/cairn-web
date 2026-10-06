@@ -9,9 +9,13 @@ export type SourceResult = { state: 'loading' | 'error' | 'ready'; candidates: I
 
 export type ResultGroup = {
   source: SearchableSource;
-  state: 'loading' | 'error' | 'ready' | 'short';
+  state: 'pending' | 'loading' | 'error' | 'ready' | 'short';
   candidates: InstrumentCandidateResponse[];
 };
+
+export type ShownGroup = ResultGroup & { state: Exclude<ResultGroup['state'], 'pending'> };
+
+export const isShown = (group: ResultGroup): group is ShownGroup => group.state !== 'pending';
 
 export const isForeign = (candidate: InstrumentCandidateResponse): boolean =>
   !!candidate.currency && candidate.currency !== 'EUR';
@@ -40,7 +44,7 @@ const groupOf = (
   const result = results.get(resultKey(source, query));
 
   if (result?.state !== 'ready') {
-    return { source, state: result?.state ?? 'loading', candidates: [] };
+    return { source, state: result?.state ?? 'pending', candidates: [] };
   }
 
   const shown = result.candidates.filter(

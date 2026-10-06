@@ -1,6 +1,13 @@
 import type { HoldingResponse, InstrumentCandidateResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { type SourceResult, groupsFor, trackedIdsFound, trackedMatches, trackedTitlesOf } from './result-groups';
+import {
+  type SourceResult,
+  groupsFor,
+  isShown,
+  trackedIdsFound,
+  trackedMatches,
+  trackedTitlesOf,
+} from './result-groups';
 import { type PlannedSource, resultKey } from './search-plan';
 
 const candidate = (overrides: Partial<InstrumentCandidateResponse> = {}): InstrumentCandidateResponse => ({
@@ -48,7 +55,7 @@ describe('trackedTitlesOf', () => {
 });
 
 describe('groupsFor', () => {
-  it('shows a group still loading, or not yet asked, as loading', () => {
+  it('shows a group loading once its request is sent, and pending before', () => {
     const groups = groupsFor(
       plan('YAHOO', 'COINGECKO'),
       results([['YAHOO', { state: 'loading', candidates: [] }]]),
@@ -56,7 +63,8 @@ describe('groupsFor', () => {
       'ALL',
     );
 
-    expect(groups.map((group) => group.state)).toEqual(['loading', 'loading']);
+    expect(groups.map((group) => group.state)).toEqual(['loading', 'pending']);
+    expect(groups.map(isShown)).toEqual([true, false]);
   });
 
   it('marks an Amundi search without an ISIN as short', () => {

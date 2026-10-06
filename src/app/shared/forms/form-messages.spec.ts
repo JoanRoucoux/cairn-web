@@ -24,7 +24,7 @@ describe('formMessages', () => {
     });
   });
 
-  it('translates the three validators this application uses', () => {
+  it('translates the validators this application uses', () => {
     TestBed.runInInjectionContext(() => {
       const messages = formMessages();
 

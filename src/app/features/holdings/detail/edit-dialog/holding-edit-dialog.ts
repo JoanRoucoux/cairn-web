@@ -13,13 +13,14 @@ import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
 import { injectToast } from '@shared/feedback/toast';
+import { DecimalInput } from '@shared/forms/decimal-input';
 
 import { type HoldingChange, HoldingChanges } from '../../holding-changes';
 import { HoldingEditDialogStore } from './holding-edit-dialog-store';
 
 @Component({
   selector: 'app-holding-edit-dialog',
-  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
+  imports: [DecimalInput, FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-edit-dialog.html',
   providers: [HoldingEditDialogStore],
 })

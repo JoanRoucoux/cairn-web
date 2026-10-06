@@ -63,7 +63,7 @@ describe('HoldingDetailPage', () => {
 
   const renderPage = async (
     holdingId = 'h1',
-    instrument: { description: string; externalUrl?: string } = described,
+    instrument: { description: string | null; externalUrl?: string | null } = described,
     fixtureHolding: Record<string, unknown> = holding,
     translations = getTranslocoTestingModule(),
   ): Promise<HoldingDetailPage> => {
@@ -370,12 +370,12 @@ describe('HoldingDetailPage', () => {
     expect(screen.queryByTestId('holding-sell-bar')).not.toBeInTheDocument();
   });
 
-  it('draws no description block when the instrument has none', async () => {
-    await renderPage('h1', { description: '', externalUrl: 'https://example.test/ese' });
+  it('links to the factsheet of an instrument that has no description', async () => {
+    await renderPage('h1', { description: null, externalUrl: 'https://example.test/ese' });
     await screen.findByRole('heading', { name: 'BNP Paribas Easy S&P 500' });
 
     expect(screen.queryByText('ETF tracking the S&P 500.')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /holdings.externalLink/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /holdings.externalLink/ })).toHaveAttribute('href', described.externalUrl);
   });
 
   it('moves focus to the detail heading when a line opens', async () => {

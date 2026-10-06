@@ -11,11 +11,29 @@
   (dismissed)="dismiss()"
 >
   <ui-field [label]="'holdings.edit.quantity' | transloco">
-    <input data-testid="holding-edit-quantity" step="0.000001" type="number" uiInput [formField]="form.quantity" />
+    <input
+      appDecimalInput
+      autocomplete="off"
+      data-testid="holding-edit-quantity"
+      inputmode="decimal"
+      size="lg"
+      type="text"
+      uiInput
+      [formField]="form.quantity"
+    />
   </ui-field>
 
   <ui-field [hint]="'holdings.edit.averageCostHint' | transloco" [label]="'holdings.edit.averageCost' | transloco">
-    <input data-testid="holding-edit-average-cost" step="0.0001" type="number" uiInput [formField]="form.averageCost" />
+    <input
+      appDecimalInput
+      autocomplete="off"
+      data-testid="holding-edit-average-cost"
+      inputmode="decimal"
+      size="lg"
+      type="text"
+      uiInput
+      [formField]="form.averageCost"
+    />
   </ui-field>
 
   @if (error()) {

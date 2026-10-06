@@ -42,6 +42,7 @@ export class AccountMobileRows {
   readonly added = input<string | null>(null);
   readonly edit = output<AccountView>();
   readonly remove = output<AccountView>();
+  readonly highlighted = output<void>();
 
   protected readonly linesLabel = linesLabel;
   protected readonly uncountedCaptions = uncountedCaptions;
