@@ -93,6 +93,7 @@ describe('PortfolioCurve', () => {
     expect(await screen.findByTestId('curve-loading')).toBeInTheDocument();
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
     expect(screen.queryByTestId('curve-range-loading')).not.toBeInTheDocument();
+    expect(document.querySelector('ui-async')).not.toHaveClass('lg:min-h-93');
   });
 
   it('should show only the error card on a blocking error, with a working retry', async () => {
@@ -102,6 +103,7 @@ describe('PortfolioCurve', () => {
     fixture.componentInstance.retry.subscribe(retried);
 
     expect(await screen.findByRole('alert')).toHaveTextContent('portfolio.curve.error');
+    expect(document.querySelector('ui-async')).toHaveClass('lg:min-h-93');
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
 

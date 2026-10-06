@@ -11,9 +11,15 @@ const DARK_QUERY = '(prefers-color-scheme: dark)';
 const isPreference = (value: string | null): value is ThemePreference =>
   value !== null && (THEME_PREFERENCES as readonly string[]).includes(value);
 
+type ThemeColor = { meta: HTMLMetaElement; scheme: ThemeScheme; content: string };
+
 @Injectable({ providedIn: 'root' })
 export class ThemeStore {
   #document = inject(DOCUMENT);
+  readonly #themeColors: ThemeColor[] = Array.from(
+    this.#document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'),
+    (meta) => ({ meta, scheme: meta.matches('[media*="dark"]') ? 'dark' : 'light', content: meta.content }),
+  );
   readonly #preference = signal<ThemePreference>(this.#read());
 
   readonly #systemScheme = signal<ThemeScheme>('light');
@@ -57,6 +63,11 @@ export class ThemeStore {
 
   #apply(preference: ThemePreference): void {
     const root = this.#document.documentElement;
+    const forced = this.#themeColors.find((color) => color.scheme === preference)?.content;
+
+    for (const color of this.#themeColors) {
+      color.meta.content = forced ?? color.content;
+    }
 
     if (preference === 'system') {
       root.removeAttribute('data-theme');

@@ -58,7 +58,7 @@ test.describe('navigation motion', () => {
     await expect(page).toHaveURL(/classe=etf/);
 
     expect((await transitions(page)).length).toBeGreaterThan(0);
-    expect(await playedTransitions(page)).toBe(0);
+    await expect.poll(() => playedTransitions(page)).toBe(0);
   });
 
   for (const path of ['/profile', '/accounts', `/holdings/${FIRST_HOLDING}`, '/nowhere']) {
@@ -106,7 +106,7 @@ test.describe('navigation motion', () => {
 
     await expect(drawer).toBeHidden();
     await expect(page).toHaveURL(/\/holdings$/);
-    expect(await playedTransitions(page)).toBe(0);
+    await expect.poll(() => playedTransitions(page)).toBe(0);
   });
 
   test('keeps the class filter active on arrival without highlighting a group', async ({ page }) => {

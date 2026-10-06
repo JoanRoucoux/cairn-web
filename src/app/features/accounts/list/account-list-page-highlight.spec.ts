@@ -44,34 +44,21 @@ describe('AccountListPage highlight', () => {
 
   beforeEach(() => {
     motion = recordMotion();
-    vi.spyOn(Element.prototype, 'getAnimations').mockImplementation(function (this: Element) {
-      return motion.highlighted.some((element) => this.contains(element))
-        ? [{ effect: { getKeyframes: () => [{ backgroundColor: 'var(--soft)' }] } } as unknown as Animation]
-        : [];
-    });
   });
 
   afterEach(() => {
     motion.restore();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     httpTesting.verify();
   });
 
-  it('should highlight the account just added, and confirm it once its row is drawn', async () => {
+  const addLivretA = async (): Promise<void> => {
     const user = userEvent.setup();
-    await renderPage([northwind], []);
-    const rowsWhenConfirmed: number[] = [];
-    let highlightedWhenConfirmed = 0;
-    vi.spyOn(TestBed.inject(UiToasts), 'show').mockImplementation(() => {
-      highlightedWhenConfirmed = motion.highlighted.length;
-      rowsWhenConfirmed.push(screen.queryAllByText('Livret A').length);
-    });
-
     await user.click(screen.getByTestId('account-add'));
     await user.type(screen.getByTestId('account-form-name'), 'Livret A');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.SAVINGS' }));
     await user.click(screen.getByTestId('account-form-submit'));
-
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(livretA));
     await vi
       .waitFor(() => httpTesting.expectOne('/api/accounts'))
@@ -79,14 +66,47 @@ describe('AccountListPage highlight', () => {
     await vi
       .waitFor(() => httpTesting.expectOne('/api/portfolio'))
       .then((request) => request.flush({ byAssetClass: [], byAccount: [], holdings: [] }));
+  };
 
-    await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(0));
+  const confirmations = (): Element[][] => {
+    const highlightedWhenConfirmed: Element[][] = [];
+    vi.spyOn(TestBed.inject(UiToasts), 'show').mockImplementation(() => {
+      highlightedWhenConfirmed.push([...motion.highlighted]);
+    });
+    return highlightedWhenConfirmed;
+  };
+
+  it('should highlight the account just added, and confirm it once the phone row flashes', async () => {
+    await renderPage([northwind], []);
+    const confirmed = confirmations();
+
+    await addLivretA();
+
+    await vi.waitFor(() => expect(confirmed).toHaveLength(1));
+    expect(confirmed[0]).toContain(
+      screen.getAllByTestId('account-link-mobile').find((link) => link.textContent?.includes('Livret A')),
+    );
+    await vi.waitFor(() => expect(motion.highlighted.length).toBeGreaterThan(1));
     expect(motion.highlighted.every((element) => element.closest('tr, a')?.textContent?.includes('Livret A'))).toBe(
       true,
     );
-    await vi.waitFor(() => expect(rowsWhenConfirmed).toHaveLength(1));
-    expect(rowsWhenConfirmed[0]).toBeGreaterThan(0);
-    expect(highlightedWhenConfirmed).toBeGreaterThan(0);
+    expect(confirmed).toHaveLength(1);
+  });
+
+  it('should confirm the account just added once the desktop row flashes', async () => {
+    vi.stubGlobal('matchMedia', () => ({
+      matches: true,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+    await renderPage([northwind], []);
+    const confirmed = confirmations();
+
+    await addLivretA();
+
+    await vi.waitFor(() => expect(confirmed).toHaveLength(1));
+    const row = screen.getAllByTestId('account-row').find((element) => element.textContent?.includes('Livret A'))!;
+    expect(confirmed[0]!.some((element) => row.contains(element))).toBe(true);
   });
 
   it('should hold the confirmation until the list has reloaded', async () => {

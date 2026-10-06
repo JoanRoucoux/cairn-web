@@ -277,6 +277,31 @@ describe('AllocationPage', () => {
 
     expect(await screen.findAllByRole('alert')).toHaveLength(2);
     expect(screen.queryByText('portfolio.allocation.total')).not.toBeInTheDocument();
+    expect(screen.getByTestId('allocation-total-pending')).toBeInTheDocument();
+    expect(screen.queryByTestId('allocation-total-skeleton')).not.toBeInTheDocument();
+  });
+
+  it('should keep the room of the total line, with a skeleton, while both calls load', async () => {
+    await render(AllocationPage, {
+      imports: [getTranslocoTestingModule()],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+        provideTranslocoScope('portfolio'),
+        AllocationStore,
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+
+    expect(await screen.findByTestId('allocation-total-skeleton')).toBeInTheDocument();
+
+    answer(CLASSES, classesBody);
+    answer(ACCOUNTS, accountsBody);
+
+    expect(await screen.findByText('portfolio.allocation.total')).toBeInTheDocument();
+    expect(screen.queryByTestId('allocation-total-pending')).not.toBeInTheDocument();
   });
 
   it('should show the empty state when a breakdown has no slice', async () => {

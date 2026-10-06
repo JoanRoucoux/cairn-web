@@ -10,6 +10,7 @@
           ui-row
           [queryParams]="{ compte: account.id }"
           [uiHighlight]="account.id === added() ? account.id : null"
+          (highlighted)="highlighted.emit()"
         >
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body truncate font-medium">{{ account.name }}</span>
