@@ -1,10 +1,11 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, LOCALE_ID, inject, signal } from '@angular/core';
 import { form, submit } from '@angular/forms/signals';
 
 import { firstValueFrom } from 'rxjs';
 
 import { AccountService } from '@core/api-client/account/account.service';
 
+import { parseDecimal } from '@shared/format/parse-decimal';
 import { formMessages } from '@shared/forms/form-messages';
 
 import { holdingCashDraftSchema, initialHoldingCashDraft } from './holding-cash-form';
@@ -12,6 +13,7 @@ import { holdingCashDraftSchema, initialHoldingCashDraft } from './holding-cash-
 @Injectable()
 export class HoldingCashStore {
   #accountsApiClient = inject(AccountService);
+  #locale = inject(LOCALE_ID);
 
   readonly #model = signal(initialHoldingCashDraft());
 
@@ -22,7 +24,7 @@ export class HoldingCashStore {
   readonly error = signal(false);
 
   prefill(balance: number): void {
-    this.#model.set(initialHoldingCashDraft(balance));
+    this.#model.set(initialHoldingCashDraft(balance, this.#locale));
   }
 
   async save(accountId: string): Promise<boolean> {
@@ -31,7 +33,7 @@ export class HoldingCashStore {
 
     await submit(this.form, async () => {
       try {
-        const amount = this.#model().amount as number;
+        const amount = parseDecimal(this.#model().amount) as number;
         await firstValueFrom(this.#accountsApiClient.setCashBalance(accountId, { amount }));
         saved = true;
       } catch {

@@ -54,8 +54,8 @@ describe('HoldingEditDialog', () => {
   it('prefills the quantity and average cost', async () => {
     await renderDialog();
 
-    expect(screen.getByTestId('holding-edit-quantity')).toHaveValue(676);
-    expect(screen.getByTestId('holding-edit-average-cost')).toHaveValue(26.654);
+    expect(screen.getByTestId('holding-edit-quantity')).toHaveValue('676');
+    expect(screen.getByTestId('holding-edit-average-cost')).toHaveValue('26.654');
   });
 
   it('emits dismissed on cancel', async () => {

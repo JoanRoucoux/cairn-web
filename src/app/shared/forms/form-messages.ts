@@ -9,6 +9,7 @@ export type FormMessages = {
   maxLength: (limit: number) => Signal<string>;
   min: (floor: number) => Signal<string>;
   positive: Signal<string>;
+  decimal: Signal<string>;
 };
 
 export const formMessages = (): FormMessages => {
@@ -26,5 +27,6 @@ export const formMessages = (): FormMessages => {
     maxLength: (limit) => translate('forms.maxLength', { limit }),
     min: (floor) => translate('forms.min', { floor }),
     positive: translate('forms.positive'),
+    decimal: translate('forms.decimal'),
   };
 };

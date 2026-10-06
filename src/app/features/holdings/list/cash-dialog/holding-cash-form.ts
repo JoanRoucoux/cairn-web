@@ -1,20 +1,18 @@
-import { type Schema, min, required, schema } from '@angular/forms/signals';
+import { type Schema, required, schema } from '@angular/forms/signals';
 
+import { decimalText, nonNegativeDecimal } from '@shared/forms/decimal-field';
 import type { FormMessages } from '@shared/forms/form-messages';
 
 export type HoldingCashDraft = {
-  amount: number | null;
+  amount: string;
 };
 
-export const initialHoldingCashDraft = (balance = 0): HoldingCashDraft => ({
-  amount: balance,
+export const initialHoldingCashDraft = (balance = 0, locale = 'en-GB'): HoldingCashDraft => ({
+  amount: decimalText(balance, locale),
 });
 
-export const holdingCashDraftSchema = (messages: FormMessages): Schema<HoldingCashDraft> => {
-  const belowMin = messages.min(0);
-
-  return schema((cash) => {
+export const holdingCashDraftSchema = (messages: FormMessages): Schema<HoldingCashDraft> =>
+  schema((cash) => {
     required(cash.amount, { message: () => messages.required() });
-    min(cash.amount, 0, { message: () => belowMin() });
+    nonNegativeDecimal(cash.amount, messages);
   });
-};

@@ -9,10 +9,18 @@
   (dismissed)="dismiss()"
 >
   <ui-field
-    [hint]="!savings() && form.amount().value() === 0 ? ('holdings.cash.zeroHint' | transloco) : ''"
+    [hint]="!savings() && isZero() ? ('holdings.cash.zeroHint' | transloco) : ''"
     [label]="'holdings.cash.amount' | transloco"
   >
-    <input data-testid="holding-cash-amount" step="0.01" type="number" uiInput [formField]="form.amount" />
+    <input
+      autocomplete="off"
+      data-testid="holding-cash-amount"
+      inputmode="decimal"
+      size="lg"
+      type="text"
+      uiInput
+      [formField]="form.amount"
+    />
   </ui-field>
 
   @if (error()) {
@@ -22,6 +30,7 @@
   }
 
   <button
+    class="max-lg:hidden"
     data-testid="holding-cash-cancel"
     dialogActions
     type="button"

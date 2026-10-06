@@ -65,7 +65,7 @@ describe('HoldingCashDialog', () => {
   it('should prefill the amount field with the current balance', async () => {
     await renderDialog(732.4);
 
-    expect(screen.getByTestId('holding-cash-amount')).toHaveValue(732.4);
+    expect(screen.getByTestId('holding-cash-amount')).toHaveValue('732.4');
   });
 
   it('should refuse a negative amount', async () => {

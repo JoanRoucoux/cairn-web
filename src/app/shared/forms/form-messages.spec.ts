@@ -16,6 +16,7 @@ describe('formMessages', () => {
                 maxLength: 'At most {{limit}}',
                 min: 'At least {{floor}}',
                 positive: 'Must be positive',
+                decimal: 'Must be a number',
               },
             },
           },
@@ -24,7 +25,7 @@ describe('formMessages', () => {
     });
   });
 
-  it('translates the three validators this application uses', () => {
+  it('translates the validators this application uses', () => {
     TestBed.runInInjectionContext(() => {
       const messages = formMessages();
 
@@ -32,6 +33,7 @@ describe('formMessages', () => {
       expect(messages.maxLength(280)()).toBe('At most 280');
       expect(messages.min(0)()).toBe('At least 0');
       expect(messages.positive()).toBe('Must be positive');
+      expect(messages.decimal()).toBe('Must be a number');
     });
   });
 });

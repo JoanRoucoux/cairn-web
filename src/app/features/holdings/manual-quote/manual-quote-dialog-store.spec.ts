@@ -32,7 +32,7 @@ describe('ManualQuoteDialogStore', () => {
   });
 
   it('should refuse a quote with no date', async () => {
-    store.form.price().value.set(33.3069);
+    store.form.price().value.set('33.3069');
     store.form.asOf().value.set('');
 
     await expect(store.save('i1')).resolves.toBe(false);
@@ -40,7 +40,7 @@ describe('ManualQuoteDialogStore', () => {
   });
 
   it('should post the quote for the instrument', async () => {
-    store.form.price().value.set(33.3069);
+    store.form.price().value.set('33.3069');
     store.form.asOf().value.set('2026-08-21');
 
     const saved = store.save('i1');
@@ -53,7 +53,7 @@ describe('ManualQuoteDialogStore', () => {
   });
 
   it('should report a failure instead of pretending it worked', async () => {
-    store.form.price().value.set(33.3069);
+    store.form.price().value.set('33.3069');
 
     const saved = store.save('i1');
 
