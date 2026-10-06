@@ -1,4 +1,6 @@
-<p class="text-label m-0 text-(--muted-foreground)">{{ description() }}</p>
+@if (description()) {
+  <p class="text-label m-0 text-(--muted-foreground)">{{ description() }}</p>
+}
 @if (domain()) {
   <a class="self-start" rel="noopener noreferrer" target="_blank" ui-external-link [href]="externalUrl()">
     {{ 'holdings.externalLink' | transloco: { domain: domain() } }}

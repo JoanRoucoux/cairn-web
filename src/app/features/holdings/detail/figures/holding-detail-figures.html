@@ -10,7 +10,13 @@
       <span class="flex gap-1.5">
         <span class="text-(--muted-foreground)">{{ 'holdings.detail.unrealized' | transloco }}</span>
         @if (holding().unrealizedGainEur === null || holding().unrealizedGainEur === undefined) {
-          <span class="text-(--muted-foreground)">{{ 'holdings.averageCostUnknownShort' | transloco }}</span>
+          @if (holding().averageCost === null || holding().averageCost === undefined) {
+            <span class="font-medium text-(--muted-foreground)">{{
+              'holdings.averageCostUnknownShort' | transloco
+            }}</span>
+          } @else {
+            <span class="font-medium text-(--subtle-foreground)">—</span>
+          }
         } @else {
           <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().unrealizedGainEur">
             <ui-amount currency="EUR" signed whenMasked="hide" [value]="holding().unrealizedGainEur" />

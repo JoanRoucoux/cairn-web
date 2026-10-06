@@ -85,10 +85,10 @@
   },
   "delete": {
     "open": "Delete this holding",
-    "title": "Delete this holding",
+    "title": "Delete this holding?",
     "description": "{{name}} will be removed from your portfolio.",
     "cancel": "Cancel",
-    "submit": "Delete",
+    "submit": "Delete holding",
     "error": "This holding could not be deleted."
   },
   "detail": {

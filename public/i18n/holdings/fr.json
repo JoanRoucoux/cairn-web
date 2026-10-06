@@ -85,10 +85,10 @@
   },
   "delete": {
     "open": "Supprimer la ligne",
-    "title": "Supprimer cette ligne",
+    "title": "Supprimer la ligne ?",
     "description": "{{name}} sera retirée de votre portefeuille.",
     "cancel": "Annuler",
-    "submit": "Supprimer",
+    "submit": "Supprimer la ligne",
     "error": "Cette ligne n'a pas pu être supprimée."
   },
   "detail": {

@@ -12,7 +12,8 @@ const backdropOf = (locator: Locator): Promise<string> =>
 const openDrawer = async (page: Page): Promise<void> => {
   await rowLink(page).click();
   await expect(drawer(page)).toBeVisible();
-  await expect(page.getByRole('dialog', { name: 'Amundi MSCI World' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Holding detail' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Amundi MSCI World' })).toBeVisible();
 };
 
 const expectClosedOnTheRow = async (page: Page): Promise<void> => {
@@ -48,7 +49,7 @@ test.describe('the detail drawer', () => {
     });
     await page.goto(`/holdings/${AMUNDI_ID}`);
 
-    await expect(page.getByRole('dialog', { name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Holding detail' })).toBeVisible();
   });
 
   test('opens over the list on the 0.36 veil, 440 wide, the table kept at seven columns', async ({ page }) => {

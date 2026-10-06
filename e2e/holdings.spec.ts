@@ -176,7 +176,7 @@ test.describe('holding detail', () => {
     await northwind.getByRole('link', { name: 'Amundi MSCI World' }).click();
 
     await expect(page).toHaveURL(/\/holdings\/11111111-1111-1111-1111-111111111111$/);
-    await expect(page.getByRole('dialog', { name: 'Amundi MSCI World' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Holding detail' })).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Amundi MSCI World' })).toBeVisible();
     await expect(page.getByTestId('holdings-list').locator('th')).toHaveCount(7);
   });

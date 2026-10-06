@@ -94,13 +94,15 @@ describe('HoldingAddDialogStore search', () => {
     searchOf('COINGECKO', 'msci').flush([]);
   });
 
-  it('shows every planned source as loading until it answers, then its own state', async () => {
+  it('shows every planned source as pending during the debounce, loading once asked, then its own state', async () => {
     await load();
 
     store.onQueryChange('msci');
-    expect(store.groups().map((group) => group.state)).toEqual(['loading', 'loading']);
+    expect(store.groups().map((group) => group.state)).toEqual(['pending', 'pending']);
+    expect(store.noneFound()).toBe(false);
 
     await vi.advanceTimersByTimeAsync(300);
+    expect(store.groups().map((group) => group.state)).toEqual(['loading', 'loading']);
     searchOf('YAHOO').flush([yahooHit]);
     searchOf('COINGECKO').flush(null, { status: 502, statusText: 'Bad Gateway' });
 
@@ -245,7 +247,7 @@ describe('HoldingAddDialogStore search', () => {
     await vi.waitFor(() => expect(store.trackedState()).toBe('error'));
     store.query.set('msci');
     expect(store.tracked()).toEqual([]);
-    expect(store.groups().map((group) => group.state)).toEqual(['loading', 'loading']);
+    expect(store.groups().map((group) => group.state)).toEqual(['pending', 'pending']);
 
     store.retryTracked();
     TestBed.tick();

@@ -99,7 +99,7 @@
   </ui-card>
 
   <app-holding-detail-facts [flash]="flash()" [holding]="holding" [priceSourceLabel]="priceSourceLabel()" />
-  @if (holding.description) {
+  @if (holding.description || holding.externalUrl) {
     <app-holding-detail-description [description]="holding.description" [externalUrl]="holding.externalUrl" />
   }
 

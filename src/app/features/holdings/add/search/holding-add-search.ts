@@ -14,7 +14,7 @@ import { LucideSearch } from '@lucide/angular';
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
 import { injectTranslationEvents } from '@core/i18n/translation-events';
 
-import type { ResultGroup } from '../result-groups';
+import { type ResultGroup, isShown } from '../result-groups';
 import { SOURCE_FILTERS, type SourceFilter } from '../search-plan';
 import { HoldingAddGroup } from './group/holding-add-group';
 import { HoldingAddTracked } from './tracked/holding-add-tracked';
@@ -71,6 +71,10 @@ export class HoldingAddSearch {
   });
 
   protected readonly showTracked = computed(() => this.trackedState() !== 'ready' || this.tracked().length > 0);
+  protected readonly shownGroups = computed(() => this.groups().filter(isShown));
+  protected readonly hasResults = computed(
+    () => this.showTracked() || this.shownGroups().length > 0 || this.noneFound() || this.narrowed(),
+  );
 
   protected chooseFilter(value: string): void {
     this.filterChange.emit(value as SourceFilter);
