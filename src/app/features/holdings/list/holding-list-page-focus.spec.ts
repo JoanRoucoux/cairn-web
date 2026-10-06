@@ -115,26 +115,39 @@ describe('HoldingListPage focus', () => {
     expect(await closeDetail('table')).toHaveFocus();
   });
 
+  const reloaded = async (left: unknown[]): Promise<void> => {
+    httpTesting.expectOne('/api/holdings').flush(left);
+    await vi.waitFor(() => expect(TestBed.inject(Router).url).toBe('/'));
+    TestBed.tick();
+  };
+
+  const band = (name: RegExp): HTMLElement => within(document.querySelector('table')!).getByRole('button', { name });
+
   it('moves focus to the band of its account once the closed line was deleted or sold out', async () => {
     const row = await closeDetail('table', 'own');
 
+    expect(band(/^Northwind PEA/)).not.toHaveFocus();
+
+    await reloaded(holdings);
+
+    await vi.waitFor(() => expect(band(/^Northwind PEA/)).toHaveFocus());
     expect(row).not.toHaveFocus();
-    expect(within(document.querySelector('table')!).getByRole('button', { name: /^Northwind PEA/ })).toHaveFocus();
-    httpTesting.expectOne('/api/holdings').flush([]);
   });
 
-  it('moves focus to the next account band when the deleted line emptied its own group', async () => {
+  it('waits for the reload, then moves focus to the next band when its own group emptied', async () => {
     await closeDetail('table', 'other');
 
-    expect(within(document.querySelector('table')!).getByRole('button', { name: /^Contoso Trading/ })).toHaveFocus();
-    httpTesting.expectOne('/api/holdings').flush([]);
+    await reloaded([holdings[1]]);
+
+    await vi.waitFor(() => expect(band(/^Contoso Trading/)).toHaveFocus());
   });
 
-  it('moves focus to the list once no band is left', async () => {
+  it('moves focus to the search field once no band is left', async () => {
     await closeDetail('table', 'list');
 
-    expect(screen.getByTestId('holdings-list')).toHaveFocus();
-    httpTesting.expectOne('/api/holdings').flush([]);
+    await reloaded([]);
+
+    await vi.waitFor(() => expect(screen.getByTestId('holdings-search')).toHaveFocus());
   });
 
   it('leaves focus alone when no row of the closed line is rendered', async () => {

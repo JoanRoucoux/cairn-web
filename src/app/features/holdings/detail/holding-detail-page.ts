@@ -13,7 +13,7 @@ import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
 import { UiMenu, UiMenuItem, UiMenuTrigger } from '@joanroucoux/cairn-ui/menu';
 import { UiHighlight } from '@joanroucoux/cairn-ui/motion';
 import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
-import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideTrash } from '@lucide/angular';
 
 import { LanguageStore } from '@core/i18n/language-store';
@@ -80,6 +80,7 @@ export class HoldingDetailPage {
   #masked = inject(UI_AMOUNT_MASKED);
 
   readonly #queryParams = toSignal(inject(ActivatedRoute).queryParams, { requireSync: true });
+  readonly #translocoEvents = toSignal(this.#transloco.events$, { initialValue: null });
 
   protected readonly desktop = injectDesktop();
   protected readonly drawerOpen = signal(true);
@@ -158,7 +159,11 @@ export class HoldingDetailPage {
   protected readonly editOpen = signal(false);
   protected readonly deleteOpen = signal(false);
 
-  protected readonly drawerLabel = translateSignal('detail.panel');
+  protected readonly drawerLabel = computed(() => {
+    this.#translocoEvents();
+
+    return this.#transloco.translate('holdings.detail.panel');
+  });
 
   protected readonly drawerDescription = computed(() => {
     this.#language.activeLang();

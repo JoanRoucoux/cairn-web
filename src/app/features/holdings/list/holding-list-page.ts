@@ -153,6 +153,7 @@ export class HoldingListPage {
   });
 
   #lastSelected: { holdingId: string; accountId: string | undefined } | undefined;
+  readonly #bandToFocus = signal<{ accountId: string | undefined } | null>(null);
 
   constructor() {
     let leftAt = 0;
@@ -205,6 +206,18 @@ export class HoldingListPage {
         selected === undefined
           ? undefined
           : { holdingId: selected, accountId: accountId ?? this.#lastSelected?.accountId };
+    });
+
+    afterRenderEffect(() => {
+      const band = this.#bandToFocus();
+      const status = this.holdings.status();
+
+      if (band && status !== 'loading' && status !== 'reloading') {
+        untracked(() => {
+          this.#bandToFocus.set(null);
+          this.#focusBand(band.accountId);
+        });
+      }
     });
   }
 
@@ -260,20 +273,24 @@ export class HoldingListPage {
   }
 
   #focusInList({ holdingId, accountId }: { holdingId: string; accountId: string | undefined }): void {
-    const host = this.#host.nativeElement;
-    const visible = (element: HTMLElement): boolean => element.offsetParent !== null;
-    const first = (selector: string): HTMLElement | undefined =>
-      [...host.querySelectorAll<HTMLElement>(selector)].find(visible);
-
-    if (this.#changes.lastRemoved()?.id !== holdingId) {
-      first(`[data-holding-id="${holdingId}"]`)?.focus();
-      return;
+    if (this.#changes.lastRemoved()?.id === holdingId) {
+      this.#bandToFocus.set({ accountId });
+    } else {
+      this.#firstVisible(`[data-holding-id="${holdingId}"]`)?.focus();
     }
+  }
 
+  #focusBand(accountId: string | undefined): void {
     (
-      first(`[data-account-id="${accountId}"] h2 button`) ??
-      first('[data-account-id] h2 button') ??
-      host.querySelector<HTMLElement>('[data-testid="holdings-list"]')
+      this.#firstVisible(`[data-account-id="${accountId}"] h2 button`) ??
+      this.#firstVisible('[data-account-id] h2 button') ??
+      this.#host.nativeElement.querySelector<HTMLElement>('[data-testid="holdings-search"]')
     )?.focus();
+  }
+
+  #firstVisible(selector: string): HTMLElement | undefined {
+    return [...this.#host.nativeElement.querySelectorAll<HTMLElement>(selector)].find(
+      (element) => element.offsetParent !== null,
+    );
   }
 }

@@ -6,8 +6,9 @@ import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Router, RouterOutlet } from '@angular/router';
 
-import { provideTranslocoScope } from '@jsverse/transloco';
+import { TRANSLOCO_LOADER, provideTranslocoScope } from '@jsverse/transloco';
 import { fireEvent, render, screen } from '@testing-library/angular';
+import { map, timer } from 'rxjs';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -210,9 +211,9 @@ describe('HoldingDetailPage navigation', () => {
       expect(TestBed.inject(Router).url).toBe('/holdings/h1');
     });
 
-    it('names the drawer while the line is still loading', async () => {
+    it('names the drawer while the line and the holdings scope are still loading', async () => {
       await render(TestHost, {
-        imports: [getTranslocoTestingModule()],
+        imports: [getTranslocoTestingModule({ langs: { en: {}, fr: {}, 'holdings/fr': {} } })],
         routes: [{ path: 'holdings/:holdingId', component: HoldingDetailPage }],
         initialRoute: 'holdings/h1',
         providers: [
@@ -222,12 +223,22 @@ describe('HoldingDetailPage navigation', () => {
           provideHttpClientTesting(),
           { provide: LOCALE_ID, useValue: 'en-GB' },
           provideTranslocoScope('holdings'),
+          {
+            provide: TRANSLOCO_LOADER,
+            useValue: {
+              getTranslation: (lang: string) =>
+                timer(lang.includes('/') ? 300 : 0).pipe(
+                  map(() => (lang === 'holdings/en' ? { detail: { panel: 'Line detail' } } : {})),
+                ),
+            },
+          },
         ],
       });
       httpTesting = TestBed.inject(HttpTestingController);
       await settle();
 
-      expect(drawer()).toHaveAttribute('aria-label', 'holdings.detail.panel');
+      expect(drawer().getAttribute('aria-label')).toBeTruthy();
+      await vi.waitFor(() => expect(drawer()).toHaveAttribute('aria-label', 'Line detail'));
       (await vi.waitFor(() => httpTesting.expectOne('/api/holdings'))).flush([]);
     });
   });
