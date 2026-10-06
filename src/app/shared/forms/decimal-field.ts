@@ -16,7 +16,7 @@ export const nonNegativeDecimal = (path: SchemaPath<string>, messages: FormMessa
     const parsed = parseDecimal(value());
 
     if (parsed === null) {
-      return value().trim() === '' ? undefined : { kind: 'decimal', message: messages.decimal() };
+      return value().trim() === '' ? undefined : { kind: 'decimal' };
     }
 
     return parsed < 0 ? minError(0, { message: belowMin() }) : undefined;

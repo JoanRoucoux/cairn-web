@@ -68,15 +68,24 @@ describe('HoldingCashDialog', () => {
     expect(screen.getByTestId('holding-cash-amount')).toHaveValue('732.4');
   });
 
-  it('should refuse a negative amount', async () => {
+  it('should not accept a minus sign or a letter', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
     await user.clear(screen.getByTestId('holding-cash-amount'));
-    await user.type(screen.getByTestId('holding-cash-amount'), '-10');
+    await user.type(screen.getByTestId('holding-cash-amount'), '-1a0');
+
+    expect(screen.getByTestId('holding-cash-amount')).toHaveValue('10');
+  });
+
+  it('should refuse an amount that is not a number', async () => {
+    const user = userEvent.setup();
+    await renderDialog();
+
+    await user.clear(screen.getByTestId('holding-cash-amount'));
+    await user.type(screen.getByTestId('holding-cash-amount'), '1.2.3');
     await user.click(screen.getByTestId('holding-cash-submit'));
 
-    expect(screen.getByTestId('holding-cash-amount')).toBeInvalid();
     expect(saved).not.toHaveBeenCalled();
   });
 

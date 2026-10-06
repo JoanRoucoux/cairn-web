@@ -91,14 +91,14 @@ describe('ManualQuoteDialog', () => {
     expect(screen.getAllByRole('alert')).toHaveLength(1);
   });
 
-  it('says the price cannot be negative', async () => {
+  it('refuses a price that is not a number', async () => {
     const user = userEvent.setup();
     await renderDialog();
 
-    await user.type(screen.getByTestId('manual-quote-price'), '-1');
+    await user.type(screen.getByTestId('manual-quote-price'), '1.2.3');
     await user.click(screen.getByTestId('manual-quote-submit'));
 
-    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(saved).not.toHaveBeenCalled();
   });
 
   it('should emit saved once the quote is accepted', async () => {

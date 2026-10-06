@@ -12,13 +12,14 @@ import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
 import { injectToast } from '@shared/feedback/toast';
 import { parseDecimal } from '@shared/format/parse-decimal';
+import { DecimalInput } from '@shared/forms/decimal-input';
 
 import { type HoldingChange, HoldingChanges } from '../../holding-changes';
 import { HoldingCashStore } from './holding-cash-store';
 
 @Component({
   selector: 'app-holding-cash-dialog',
-  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
+  imports: [DecimalInput, FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './holding-cash-dialog.html',
   providers: [HoldingCashStore],
 })

@@ -12,6 +12,7 @@
 >
   <ui-field [label]="'holdings.edit.quantity' | transloco">
     <input
+      appDecimalInput
       autocomplete="off"
       data-testid="holding-edit-quantity"
       inputmode="decimal"
@@ -24,6 +25,7 @@
 
   <ui-field [hint]="'holdings.edit.averageCostHint' | transloco" [label]="'holdings.edit.averageCost' | transloco">
     <input
+      appDecimalInput
       autocomplete="off"
       data-testid="holding-edit-average-cost"
       inputmode="decimal"

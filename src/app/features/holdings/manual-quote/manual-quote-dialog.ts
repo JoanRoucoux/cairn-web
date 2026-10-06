@@ -11,13 +11,14 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { injectDialogOutcome } from '@shared/dialog/dialog-outcome';
 import { focusInitial } from '@shared/dialog/focus-initial';
 import { injectToast } from '@shared/feedback/toast';
+import { DecimalInput } from '@shared/forms/decimal-input';
 
 import { type HoldingChange, HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialogStore } from './manual-quote-dialog-store';
 
 @Component({
   selector: 'app-manual-quote-dialog',
-  imports: [FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
+  imports: [DecimalInput, FormField, TranslocoPipe, UiAlert, UiButton, UiDialog, UiField, UiInput],
   templateUrl: './manual-quote-dialog.html',
   providers: [ManualQuoteDialogStore],
 })

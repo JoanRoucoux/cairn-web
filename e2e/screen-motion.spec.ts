@@ -94,6 +94,26 @@ test.describe('add a line motion', () => {
     expect((await started(page)).filter((name) => name.startsWith('cairn-pulse'))).toEqual([]);
   });
 
+  test('keeps the dialog height across a keystroke while the next query waits for its debounce', async ({ page }) => {
+    await mockApi(page);
+    await page.goto('/holdings');
+    await page.getByTestId('add-holding-desktop').click();
+    const dialog = page.getByTestId('holding-add-dialog').locator('dialog');
+    await expect(dialog).toBeVisible();
+    const query = page.getByTestId('holding-add-query');
+
+    await query.fill('solana');
+    await expect(page.getByTestId('holding-add-results')).toBeVisible();
+    await page.waitForTimeout(200);
+    const before = await dialog.boundingBox();
+
+    await query.pressSequentially('s', { delay: 0 });
+    await page.waitForTimeout(100);
+
+    expect((await dialog.boundingBox())?.height).toBe(before?.height);
+    await expect(page.getByTestId('holding-add-results')).toBeVisible();
+  });
+
   test('shows the SG Sirius note without fading it in', async ({ page }) => {
     await mockApi(page);
     await page.goto('/holdings');

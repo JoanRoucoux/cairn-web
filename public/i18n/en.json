@@ -72,7 +72,6 @@
     "required": "This field is required.",
     "maxLength": "Use at most {{limit}} characters.",
     "min": "Use a value of {{floor}} or more.",
-    "positive": "Use a strictly positive value.",
-    "decimal": "Use a number."
+    "positive": "Use a strictly positive value."
   }
 }
