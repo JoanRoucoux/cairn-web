@@ -22,7 +22,10 @@ test.describe('shell', () => {
     await expect(page).toHaveURL(/\/profile$/);
     await expect(portfolio.hideAmounts).toHaveAttribute('aria-pressed', 'true');
 
-    await page.locator('a[href="/"]').first().click();
+    await page
+      .getByRole('link', { name: /^(Portfolio|Portefeuille)$/ })
+      .first()
+      .click();
     await expect(portfolio.totalValue).toHaveText(/••••/);
 
     await page.reload();
