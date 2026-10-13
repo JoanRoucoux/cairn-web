@@ -3,7 +3,6 @@ import { rxResource } from '@angular/core/rxjs-interop';
 
 import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 
-import { AmountVisibility } from '@core/amounts/amount-visibility';
 import type { PasskeyResponse } from '@core/api-client/cairnAPI.schemas';
 import { SessionService } from '@core/api-client/session/session.service';
 import { LanguageStore } from '@core/i18n/language-store';
@@ -36,7 +35,6 @@ export class ProfileStore {
   #session = inject(SessionStore);
   #theme = inject(ThemeStore);
   #language = inject(LanguageStore);
-  #amountVisibility = inject(AmountVisibility);
   #sessionApiClient = inject(SessionService);
 
   #dateFormat = new Intl.DateTimeFormat(inject(LOCALE_ID), {
@@ -65,7 +63,6 @@ export class ProfileStore {
   readonly systemScheme = this.#theme.systemScheme;
   readonly language = this.#language.activeLang;
   readonly availableLanguages = this.#language.availableLangs;
-  readonly hideAmounts = this.#amountVisibility.hidden;
 
   readonly passkeys = computed<PasskeyView[]>(() => {
     const now = new Date();
@@ -86,10 +83,6 @@ export class ProfileStore {
 
   setLanguage(lang: string): void {
     this.#language.setActiveLang(lang);
-  }
-
-  setHideAmounts(value: boolean): void {
-    this.#amountVisibility.setHidden(value);
   }
 
   async signOut(): Promise<void> {

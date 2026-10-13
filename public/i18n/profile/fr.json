@@ -11,8 +11,6 @@
     "en": "English",
     "fr": "Français"
   },
-  "hideAmounts": "Masquer les montants",
-  "hideAmountsHint": "Pour montrer l'application à quelqu'un. Les montants deviennent •••• € sur tous les écrans ; les pourcentages restent visibles.",
   "manageData": {
     "title": "Données"
   },

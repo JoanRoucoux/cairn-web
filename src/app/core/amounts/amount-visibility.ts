@@ -18,6 +18,10 @@ export class AmountVisibility {
 
   readonly hidden: Signal<boolean> = this.#hidden.asReadonly();
 
+  toggle(): void {
+    this.setHidden(!this.#hidden());
+  }
+
   setHidden(value: boolean): void {
     this.#hidden.set(value);
     try {

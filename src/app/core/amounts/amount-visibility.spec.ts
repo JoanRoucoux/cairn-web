@@ -17,6 +17,18 @@ describe('AmountVisibility', () => {
     expect(TestBed.inject(AmountVisibility).hidden()).toBe(true);
   });
 
+  it('flips between hidden and shown', () => {
+    const visibility = TestBed.inject(AmountVisibility);
+
+    visibility.toggle();
+    expect(visibility.hidden()).toBe(true);
+    expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
+
+    visibility.toggle();
+    expect(visibility.hidden()).toBe(false);
+    expect(localStorage.getItem('cairn-hide-amounts')).toBe('0');
+  });
+
   it('remembers a choice to show amounts again', () => {
     TestBed.inject(AmountVisibility).setHidden(false);
 

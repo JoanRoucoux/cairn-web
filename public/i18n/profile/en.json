@@ -11,8 +11,6 @@
     "en": "English",
     "fr": "Français"
   },
-  "hideAmounts": "Hide amounts",
-  "hideAmountsHint": "For showing the application to someone. Amounts become •••• € on every screen; percentages stay visible.",
   "manageData": {
     "title": "Data"
   },

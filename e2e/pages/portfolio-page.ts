@@ -9,6 +9,7 @@ export class PortfolioPageObject {
   readonly tooltip: Locator;
   readonly moversList: Locator;
   readonly moversTable: Locator;
+  readonly hideAmounts: Locator;
 
   constructor(private readonly page: Page) {
     this.staleLink = page.getByTestId('stale-link');
@@ -19,6 +20,7 @@ export class PortfolioPageObject {
     this.tooltip = page.getByTestId('chart-tooltip');
     this.moversList = page.getByTestId('movers-list');
     this.moversTable = page.getByTestId('movers-table');
+    this.hideAmounts = page.getByTestId('hide-amounts');
   }
 
   async goto(): Promise<void> {

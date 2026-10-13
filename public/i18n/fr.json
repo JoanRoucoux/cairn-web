@@ -63,6 +63,8 @@
     "allocation": "Répartition",
     "accounts": "Comptes",
     "skipToContent": "Aller au contenu",
+    "hideAmounts": "Masquer les montants",
+    "showAmounts": "Afficher les montants",
     "offline": "Vous êtes hors ligne. Les valeurs peuvent être périmées."
   },
   "dialog": {

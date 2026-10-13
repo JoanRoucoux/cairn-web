@@ -63,6 +63,8 @@
     "allocation": "Allocation",
     "accounts": "Accounts",
     "skipToContent": "Skip to content",
+    "hideAmounts": "Hide amounts",
+    "showAmounts": "Show amounts",
     "offline": "You are offline. Values may be out of date."
   },
   "dialog": {

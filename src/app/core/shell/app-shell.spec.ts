@@ -6,6 +6,7 @@ import { type ActivatedRoute, Router, provideRouter } from '@angular/router';
 
 import { UiToasts } from '@joanroucoux/cairn-ui/toast';
 import { render, screen } from '@testing-library/angular';
+import userEvent from '@testing-library/user-event';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -45,6 +46,8 @@ describe('deepestData', () => {
 });
 
 describe('AppShell', () => {
+  beforeEach(() => localStorage.clear());
+
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
   it('should expose the primary navigation under a name', async () => {
@@ -85,6 +88,41 @@ describe('AppShell', () => {
     await settleSession();
 
     expect(screen.getByRole('link', { name: 'pageTitle.profile' })).toHaveAttribute('href', '/profile');
+  });
+
+  it('should offer a pressed-state eye button right before the avatar link', async () => {
+    const user = userEvent.setup();
+    await renderShell();
+    await settleSession();
+    const eye = screen.getByRole('button', { name: 'shell.hideAmounts' });
+
+    expect(eye).toHaveAttribute('aria-pressed', 'false');
+    expect(eye.nextElementSibling).toBe(screen.getByRole('link', { name: 'pageTitle.profile' }));
+
+    await user.click(eye);
+
+    expect(screen.getByRole('button', { name: 'shell.showAmounts' })).toHaveAttribute('aria-pressed', 'true');
+    expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
+  });
+
+  it('should start pressed when amounts were hidden before', async () => {
+    localStorage.setItem('cairn-hide-amounts', '1');
+    await renderShell();
+    await settleSession();
+
+    expect(screen.getByRole('button', { name: 'shell.showAmounts' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('should keep the eye button on the profile route', async () => {
+    await renderShell([
+      { path: '', component: StubPage },
+      { path: 'profile', component: StubPage },
+    ]);
+    await settleSession();
+
+    await TestBed.inject(Router).navigateByUrl('/profile');
+
+    expect(await screen.findByRole('button', { name: 'shell.hideAmounts' })).toBeInTheDocument();
   });
 
   it('should mark the avatar link as the current page on the profile route only', async () => {

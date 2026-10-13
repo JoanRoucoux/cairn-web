@@ -125,17 +125,6 @@ describe('ProfileStore', () => {
     await settle();
   });
 
-  it('should reflect and change the hide-amounts preference', async () => {
-    expect(store.hideAmounts()).toBe(false);
-
-    store.setHideAmounts(true);
-
-    expect(store.hideAmounts()).toBe(true);
-    expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
-
-    await settle();
-  });
-
   it('should reload only the passkeys on request', async () => {
     await settle();
 
