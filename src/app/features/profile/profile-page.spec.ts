@@ -226,19 +226,6 @@ describe('ProfilePage', () => {
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
   });
 
-  it('should reflect and change the stored hide-amounts preference', async () => {
-    const user = userEvent.setup();
-    await renderPage();
-
-    const toggle = await screen.findByTestId('hide-amounts');
-    expect(toggle).not.toBeChecked();
-
-    await user.click(toggle);
-
-    expect(toggle).toBeChecked();
-    expect(localStorage.getItem('cairn-hide-amounts')).toBe('1');
-  });
-
   it('should send the browser to the sign-in page after signing out, not navigate in place', async () => {
     const user = userEvent.setup();
     await renderPage();

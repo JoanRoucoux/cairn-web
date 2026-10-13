@@ -10,7 +10,6 @@ import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiRow, UiRowTile } from '@joanroucoux/cairn-ui/row';
 import { type SegmentedOption, UiSegmented } from '@joanroucoux/cairn-ui/segmented';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
-import { UiSwitch } from '@joanroucoux/cairn-ui/switch';
 import { UiTable, UiTd, UiTh } from '@joanroucoux/cairn-ui/table';
 import { TranslocoPipe, translateSignal } from '@jsverse/transloco';
 import { LucideChevronRight, LucideDownload, LucideFileText, LucideLogOut, LucideUpload } from '@lucide/angular';
@@ -49,7 +48,6 @@ import { type PasskeyView, ProfileStore } from './profile-store';
     UiButton,
     UiSegmented,
     UiSkeleton,
-    UiSwitch,
     UiTable,
     UiTd,
     UiTh,
@@ -76,7 +74,6 @@ export class ProfilePage {
   protected readonly theme = this.#store.theme;
   protected readonly systemScheme = this.#store.systemScheme;
   protected readonly language = this.#store.language;
-  protected readonly hideAmounts = this.#store.hideAmounts;
 
   protected readonly passkeyDialogOpen = signal(false);
   protected readonly passkeyToDelete = signal<PasskeyView | undefined>(undefined);
@@ -103,10 +100,6 @@ export class ProfilePage {
 
   protected onLanguageChange(lang: string): void {
     this.#store.setLanguage(lang);
-  }
-
-  protected onHideAmountsChange(event: Event): void {
-    this.#store.setHideAmounts((event.target as HTMLInputElement).checked);
   }
 
   protected async onFileSelected(event: Event): Promise<void> {

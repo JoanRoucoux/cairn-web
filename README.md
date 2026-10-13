@@ -64,7 +64,7 @@ The data shown is fictional.
 | `/holdings`            | Holdings       | Every holding, grouped by account, with search and an asset class filter. |
 | `/holdings/:holdingId` | Holding detail | One holding beside the list: figures, facts, trades and quote actions.    |
 | `/accounts`            | Accounts       | The accounts (envelopes), their totals, and create, edit and delete.      |
-| `/profile`             | Profile        | Theme, language, hide amounts, CSV import and export, passkeys, sign out. |
+| `/profile`             | Profile        | Theme, language, CSV import and export, passkeys, sign out.               |
 | `/login`               | Sign in        | Passkey first, with a password fallback.                                  |
 | any other URL          | Not found      | The 404 page.                                                             |
 

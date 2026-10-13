@@ -9,24 +9,6 @@ test.describe('profile', () => {
     await mockApi(page);
   });
 
-  test('masks every amount on screen at once, and the setting survives a reload', async ({ page }) => {
-    const profile = new ProfilePageObject(page);
-    const portfolio = new PortfolioPageObject(page);
-    await portfolio.goto();
-    await expect(portfolio.totalValue).not.toHaveText(/••••/);
-
-    await profile.goto();
-    await expect(profile.hideAmounts).not.toBeChecked();
-    await profile.hideAmounts.click();
-    await expect(profile.hideAmounts).toBeChecked();
-
-    await page.locator('a[href="/"]').first().click();
-    await expect(portfolio.totalValue).toHaveText(/••••/);
-
-    await page.reload();
-    await expect(portfolio.totalValue).toHaveText(/••••/);
-  });
-
   test('signs the user out from the profile screen', async ({ page }) => {
     const profile = new ProfilePageObject(page);
     let signedOut = false;

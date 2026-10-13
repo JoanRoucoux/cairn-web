@@ -3,12 +3,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { UiAvatar, UiAvatarLink } from '@joanroucoux/cairn-ui/avatar';
+import { UiIconToggle } from '@joanroucoux/cairn-ui/icon-toggle';
 import { UiNavItem } from '@joanroucoux/cairn-ui/nav-item';
 import { UiTab, UiTabBar } from '@joanroucoux/cairn-ui/tab-bar';
 import { UiToaster } from '@joanroucoux/cairn-ui/toast';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { filter, map } from 'rxjs';
 
+import { AmountVisibility } from '@core/amounts/amount-visibility';
 import { SessionStore } from '@core/session/session-store';
 
 import { CairnLogo } from './cairn-logo';
@@ -30,6 +33,8 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
   selector: 'app-shell',
   imports: [
     CairnLogo,
+    LucideEye,
+    LucideEyeOff,
     OfflineBanner,
     RouterLink,
     RouterLinkActive,
@@ -38,6 +43,7 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
     TranslocoPipe,
     UiAvatar,
     UiAvatarLink,
+    UiIconToggle,
     UiNavItem,
     UiTab,
     UiTabBar,
@@ -50,9 +56,11 @@ export class AppShell {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #session = inject(SessionStore);
+  #amountVisibility = inject(AmountVisibility);
 
   protected readonly destinations = SHELL_DESTINATIONS;
   protected readonly owner = this.#session.owner;
+  protected readonly amountsHidden = this.#amountVisibility.hidden;
 
   #navigationEnd = this.#router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd));
 
@@ -83,6 +91,10 @@ export class AppShell {
 
   #currentMobileHeaderHidden(): boolean {
     return deepestData(this.#route.root)['mobileHeaderHidden'] === true;
+  }
+
+  protected toggleAmounts(): void {
+    this.#amountVisibility.toggle();
   }
 
   protected isActive(path: string): boolean {
