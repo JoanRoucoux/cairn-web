@@ -5,19 +5,19 @@ import { TestBed } from '@angular/core/testing';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { type ChartRange } from '@shared/chart/chart-range';
+
 import { PortfolioStore } from './portfolio-store';
 
 let httpTesting: HttpTestingController;
 
-const setup = (range?: '1d'): PortfolioStore => {
+const setup = (range: ChartRange = '1m'): PortfolioStore => {
   TestBed.configureTestingModule({
     providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting(), PortfolioStore],
   });
   httpTesting = TestBed.inject(HttpTestingController);
   const store = TestBed.inject(PortfolioStore);
-  if (range) {
-    store.range.set(range);
-  }
+  store.range.set(range);
   TestBed.tick();
 
   return store;

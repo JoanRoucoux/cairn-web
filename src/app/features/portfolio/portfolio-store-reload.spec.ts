@@ -40,6 +40,7 @@ describe('PortfolioStore range reload', () => {
     });
     store = TestBed.inject(PortfolioStore);
     httpTesting = TestBed.inject(HttpTestingController);
+    store.range.set('1m');
   });
 
   afterEach(() => httpTesting.verify());
