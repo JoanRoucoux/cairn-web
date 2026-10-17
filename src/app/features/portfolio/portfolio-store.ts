@@ -58,7 +58,7 @@ export class PortfolioStore {
   #historyApiClient = inject(HistoryService);
   #performanceApiClient = inject(PerformanceService);
 
-  readonly range = signal<ChartRange>('1m');
+  readonly range = signal<ChartRange>('1d');
 
   readonly portfolio = rxResource({
     stream: () => this.#portfolioApiClient.getPortfolio(),
