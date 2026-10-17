@@ -9,7 +9,7 @@ import { provideTranslocoScope } from '@jsverse/transloco';
 import { type RenderResult, render, screen } from '@testing-library/angular';
 import { userEvent } from '@testing-library/user-event';
 
-import type { HistoryResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
+import type { HistoryResponse, IntradayHistoryResponse, PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
@@ -43,13 +43,20 @@ const holdings = [
 ];
 
 const performance = {
-  range: '1m',
-  from: '2026-07-21',
+  range: '1d',
+  from: '2026-08-21',
   to: '2026-08-21',
   reconstructed: false,
   lastPriceAt: '2026-08-21T16:32:00Z',
   total: { valueEur: 152318.64, changeEur: -396.07, changeRatio: -0.0026 },
   byEnvelope: [{ accountType: 'PEA', valueEur: 152318.64, share: 1, changeEur: -396.07, changeRatio: -0.0026 }],
+};
+
+const intraday: IntradayHistoryResponse = {
+  points: [
+    { at: '2026-08-21T08:00:00Z', totalEur: 278859.43 },
+    { at: '2026-08-21T16:00:00Z', totalEur: 152318.64 },
+  ],
 };
 
 const history: HistoryResponse = {
@@ -71,7 +78,7 @@ describe('PortfolioPage', () => {
     respondToPerformance: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
       request.flush(performance),
     respondToHistory: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
-      request.flush(history),
+      request.flush(intraday),
     respondToHoldings: (request: ReturnType<HttpTestingController['expectOne']>) => void = (request) =>
       request.flush(holdings),
   ): Promise<RenderResult<PortfolioPage>> => {
@@ -90,7 +97,9 @@ describe('PortfolioPage', () => {
     httpTesting = TestBed.inject(HttpTestingController);
     respondToPortfolio(httpTesting.expectOne((request) => request.url === '/api/portfolio'));
     respondToHoldings(httpTesting.expectOne((request) => request.url === '/api/holdings'));
-    await vi.waitFor(() => respondToHistory(httpTesting.expectOne((request) => request.url === '/api/history')));
+    await vi.waitFor(() =>
+      respondToHistory(httpTesting.expectOne((request) => request.url === '/api/history/intraday')),
+    );
     await vi.waitFor(() =>
       respondToPerformance(httpTesting.expectOne((request) => request.url === '/api/portfolio/performance')),
     );
@@ -173,21 +182,31 @@ describe('PortfolioPage', () => {
     await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 
-  it('should request the intraday history and the performance for the one-day range', async () => {
+  it('should open on the one-day range, requesting its intraday history and performance', async () => {
+    await renderPage(undefined, (request) => {
+      expect(request.request.params.get('range')).toBe('1d');
+      request.flush(performance);
+    });
+
+    expect(await screen.findByRole('radio', { name: 'chart.range.1d' })).toBeChecked();
+  });
+
+  it('should request the constant-mix history and the performance for a picked multi-day range', async () => {
     const user = userEvent.setup();
     await renderPage();
 
-    await user.click(await screen.findByRole('radio', { name: 'chart.range.1d' }));
+    await user.click(await screen.findByRole('radio', { name: 'chart.range.1m' }));
 
     await vi.waitFor(() => {
-      const pending = httpTesting.match((request) => request.url === '/api/history/intraday');
+      const pending = httpTesting.match((request) => request.url === '/api/history');
       expect(pending).toHaveLength(1);
-      pending[0]?.flush({ points: [] });
+      pending[0]?.flush(history);
     });
     await vi.waitFor(() => {
       const pending = httpTesting.match((request) => request.url === '/api/portfolio/performance');
       expect(pending).toHaveLength(1);
-      pending[0]?.flush({ ...performance, range: '1d' });
+      expect(pending[0]?.request.params.get('range')).toBe('1m');
+      pending[0]?.flush({ ...performance, range: '1m' });
     });
   });
 
@@ -272,7 +291,7 @@ describe('PortfolioPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'portfolio.error.retry' }));
 
-    httpTesting.expectOne((request) => request.url === '/api/history').flush(history);
+    httpTesting.expectOne((request) => request.url === '/api/history/intraday').flush(intraday);
     await vi.waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
   });
 

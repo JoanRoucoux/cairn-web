@@ -32,6 +32,15 @@ test.describe('portfolio', () => {
     await context.close();
   });
 
+  test('opens on the one-day range', async ({ page }) => {
+    const intradayRequest = page.waitForRequest((request) => request.url().includes('/api/history/intraday'));
+    const portfolio = new PortfolioPageObject(page);
+    await portfolio.goto();
+    await intradayRequest;
+
+    await expect(page.getByRole('radio', { name: '1D' })).toBeChecked();
+  });
+
   test('shows the total, the envelopes and the curve', async ({ page }) => {
     const portfolio = new PortfolioPageObject(page);
     await portfolio.goto();
