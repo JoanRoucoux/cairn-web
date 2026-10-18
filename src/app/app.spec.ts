@@ -63,9 +63,9 @@ describe('App', () => {
     await renderApp();
     await settleSession();
 
-    TestBed.inject(AppTitleStrategy).pageTitle.set('Users');
+    TestBed.inject(AppTitleStrategy).pageTitle.set('Holdings');
 
-    expect(await screen.findByTestId('route-announcer')).toHaveTextContent('Users');
+    expect(await screen.findByTestId('route-announcer')).toHaveTextContent('Holdings');
   });
 
   it('should not send a signed-out visitor already on /login anywhere', async () => {
