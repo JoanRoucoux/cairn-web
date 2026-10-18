@@ -101,9 +101,10 @@ test.describe('after a change on desktop', () => {
     expect(highlighted.every((entry) => entry.text.includes('Amundi MSCI World'))).toBe(true);
 
     const viewport = page.viewportSize()!;
+    const layoutWidth = await page.evaluate(() => document.documentElement.getBoundingClientRect().width);
     const sidebar = await box(page.locator('aside').filter({ has: page.getByRole('navigation') }));
     const placed = await box(toast(page));
-    expect((placed.left + placed.right) / 2).toBeCloseTo((sidebar.right + viewport.width) / 2, 0);
+    expect((placed.left + placed.right) / 2).toBeCloseTo((sidebar.right + layoutWidth) / 2, 0);
     expect(Math.round(viewport.height - placed.bottom)).toBe(24);
   });
 

@@ -22,7 +22,8 @@ for (const viewport of [
       await expect(home).toBeVisible();
       if (viewport.name === 'phone') {
         const box = await home.boundingBox();
-        expect(box?.width).toBeGreaterThan(viewport.width - 60);
+        const layoutWidth = await page.evaluate(() => document.documentElement.getBoundingClientRect().width);
+        expect(box?.width).toBeGreaterThan(layoutWidth - 60);
       }
 
       await home.click();

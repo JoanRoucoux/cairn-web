@@ -2,6 +2,8 @@ import { type Routes } from '@angular/router';
 
 import { provideTranslocoScope } from '@jsverse/transloco';
 
+import { preloadScope } from '@core/i18n/preload-scope';
+
 import { HoldingDetailPage } from './detail/holding-detail-page';
 import { HoldingChanges } from './holding-changes';
 import { HoldingListPage } from './list/holding-list-page';
@@ -10,6 +12,7 @@ export const HOLDINGS_ROUTES: Routes = [
   {
     path: '',
     providers: [provideTranslocoScope('holdings'), HoldingChanges],
+    resolve: { translations: preloadScope('holdings') },
     children: [
       {
         path: '',
