@@ -1,7 +1,7 @@
 {
   "name": "Cairn",
   "short_name": "Cairn",
-  "lang": "fr",
+  "lang": "en",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -117,6 +117,7 @@ holds. A rollback redeploys an already released commit and mints no version.
 - The global `public/i18n/<lang>.json` files hold keys needed synchronously before any scope loads (`pageTitle.*`, used by the title strategy on navigation, and the 404 page), and any key genuinely shared across two or more features with no single natural owner: `chart.*` (used by both `portfolio` and `holdings`) is the example. They are preloaded by an app initializer: keep them to that, and prefer a feature's own scope when the key has one clear owner.
 - Each feature has a lazy scope in `public/i18n/<feature>/<lang>.json`, declared with `provideTranslocoScope('<feature>')` in the feature's routes. Keys are prefixed with the scope (`accounts.form.createTitle`).
 - Every key must exist in both `en` and `fr`.
+- English is the default language, a first visit follows the browser language when it is supported, and a persisted choice always wins (`core/i18n/initial-lang.ts`).
 
 ## Testing
 
@@ -182,4 +183,6 @@ cairn-web is a standalone application: it owns its navigation shell, its theme a
 - A `computed()` calling `TranslocoService.translate()` for a lazily loaded scope key keeps the raw key once computed: read `injectTranslationEvents()` (`core/i18n/translation-events.ts`) inside it so the scope's load triggers a recompute. Never a bare `toSignal(transloco.events$)`: a load the template's `transloco` pipe starts can emit while Angular renders, and the signal write throws NG0600.
 - `@testing-library/angular`'s `render(Component, { routes })` never navigates without an explicit `initialRoute`: pass `initialRoute: '/'` when a test goes through a real `<router-outlet>`.
 - `src/environments/environment.ts` is always the file to import: `fileReplacements` in `angular.json` swaps it for `environment.production.ts` at build time.
+- nginx sets every header at server level only. An `add_header` inside a `location` silently drops all server-level headers (CSP included) for that location; per-path `Cache-Control` goes through `map $uri $cache_control`. Hashed filenames are cached a year, everything else revalidates. That one header has no `always`: with it, a 404 for a stale hashed name would be cached a year too.
+- CSP `script-src 'self'` is why `inlineCritical` is off in `angular.json`: Beasties' inline loader script would be blocked and the stylesheet would stay on `media="print"`. A new inline script needs a hash in the CSP or must become a file.
 - The app initializer in `transloco-provider.ts` waits for the active language to load: without it the first paint shows missing-translation warnings.
