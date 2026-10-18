@@ -10,9 +10,8 @@ import { TranslocoService, provideTransloco } from '@jsverse/transloco';
 import { cookiesStorage, provideTranslocoPersistLang } from '@jsverse/transloco-persist-lang';
 import { firstValueFrom } from 'rxjs';
 
+import { AVAILABLE_LANGS, getInitialLang } from '@core/i18n/initial-lang';
 import { TranslocoHttpLoader } from '@core/i18n/transloco-loader';
-
-export const AVAILABLE_LANGS = ['fr', 'en'] as const;
 
 export const provideTranslocoGlobal = (): EnvironmentProviders => {
   return makeEnvironmentProviders([
@@ -26,6 +25,7 @@ export const provideTranslocoGlobal = (): EnvironmentProviders => {
       loader: TranslocoHttpLoader,
     }),
     provideTranslocoPersistLang({
+      getLangFn: getInitialLang,
       storage: {
         useValue: cookiesStorage(),
       },

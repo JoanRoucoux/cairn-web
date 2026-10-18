@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { TranslocoService } from '@jsverse/transloco';
 
-import { AVAILABLE_LANGS } from '@core/i18n/transloco-provider';
+import { AVAILABLE_LANGS } from '@core/i18n/initial-lang';
 
 @Injectable({
   providedIn: 'root',
