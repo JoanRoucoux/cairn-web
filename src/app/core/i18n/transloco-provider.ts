@@ -30,7 +30,6 @@ export const provideTranslocoGlobal = (): EnvironmentProviders => {
         useValue: cookiesStorage(),
       },
     }),
-    // Without waiting for the active language, the first paint shows missing-translation warnings.
     provideAppInitializer(() => {
       const translocoService = inject(TranslocoService);
       return firstValueFrom(translocoService.load(translocoService.getActiveLang()));

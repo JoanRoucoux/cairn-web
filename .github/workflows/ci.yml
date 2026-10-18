@@ -80,7 +80,7 @@ jobs:
         run: |
           docker run -d --name web -p 8080:80 app:ci
           timeout 60 sh -c 'until curl -sf http://localhost:8080/ > /dev/null; do sleep 2; done'
-          curl -sf http://localhost:8080/users/1 | grep -q "<app-root>"
+          curl -sf http://localhost:8080/holdings/1 | grep -q "<app-root>"
 
   ops:
     runs-on: ubuntu-latest

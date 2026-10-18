@@ -122,4 +122,4 @@ Sheriff enforces the dependency rules at lint time ([`sheriff.config.ts`](sherif
 
 [MIT](LICENSE)
 
-<sub>Scaffolded from [angular-starter-web](https://github.com/JoanRoucoux/angular-starter-web).</sub>
+<sub>Generated from [angular-starter-web](https://github.com/JoanRoucoux/angular-starter-web).</sub>

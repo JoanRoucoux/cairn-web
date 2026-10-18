@@ -3,7 +3,6 @@
 .husky
 .vscode
 .claude
-.generator
 node_modules
 dist
 coverage

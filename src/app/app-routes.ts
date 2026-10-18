@@ -30,7 +30,6 @@ export const routes: Routes = [
       },
     ],
   },
-  // Fallback route, keep it at the end.
   {
     path: '**',
     component: NotFoundPage,

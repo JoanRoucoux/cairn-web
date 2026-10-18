@@ -1,7 +1,7 @@
 {
   "name": "cairn-web",
   "version": "0.1.0",
-  "description": "Cairn — Angular application generated from angular-starter-web.",
+  "description": "Cairn: the Angular frontend.",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
