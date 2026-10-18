@@ -52,6 +52,13 @@ describe('HoldingDetailPage shell', () => {
     httpTesting.expectOne('/api/holdings').flush([]);
   });
 
+  it('should open the mobile page below the iPhone status bar', async () => {
+    await renderPage();
+
+    expect(screen.getByRole('article')).toHaveClass('top-[env(safe-area-inset-top)]');
+    httpTesting.expectOne('/api/holdings').flush([]);
+  });
+
   it('should tell the user when the holdings could not be loaded', async () => {
     await renderPage();
     httpTesting.expectOne('/api/holdings').flush('boom', { status: 500, statusText: 'Server error' });

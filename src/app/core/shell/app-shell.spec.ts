@@ -181,6 +181,17 @@ describe('AppShell', () => {
     expect(screen.getByRole('main').firstElementChild).toHaveClass('max-lg:pt-0');
   });
 
+  it('should keep the header and a headerless page below the iPhone status bar', async () => {
+    await renderShell([
+      { path: '', component: StubPage, data: { headerKey: 'shell.portfolio', mobileHeaderless: true } },
+    ]);
+    await settleSession();
+
+    await screen.findByRole('heading', { level: 1, name: 'shell.portfolio' });
+
+    expect(screen.getByRole('banner').parentElement!.parentElement).toHaveClass('pt-[env(safe-area-inset-top)]');
+  });
+
   it('should hide the header title on mobile for a route flagged mobileHeaderHidden', async () => {
     await renderShell([
       { path: '', component: StubPage, data: { headerKey: 'shell.portfolio', mobileHeaderHidden: true } },

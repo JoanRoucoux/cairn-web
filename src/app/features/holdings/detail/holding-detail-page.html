@@ -125,7 +125,7 @@
   </ui-drawer>
 } @else {
   <article
-    class="fixed inset-x-0 top-0 bottom-(--tab-bar-height) z-30 overflow-y-auto bg-(--background) px-4"
+    class="fixed inset-x-0 top-[env(safe-area-inset-top)] bottom-(--tab-bar-height) z-30 overflow-y-auto bg-(--background) px-4"
     [class.pb-25]="holding()"
   >
     @if (holding(); as holding) {
