@@ -74,11 +74,12 @@ describe('ProfilePage loading states', () => {
     expect(screen.queryByTestId('identity')).not.toBeInTheDocument();
   });
 
-  it('should show the identity placeholder only once the session has taken over 150 ms', async () => {
+  it('should reserve the identity placeholder invisibly until the session has taken over 150 ms', async () => {
     await renderPage();
 
-    expect(document.querySelector('ui-skeleton.w-14')).toBeNull();
-    await vi.waitFor(() => expect(document.querySelector('ui-skeleton.w-14')).not.toBeNull());
+    const placeholder = document.querySelector('ui-skeleton.w-14')!.closest('div[aria-hidden="true"]')!;
+    expect(placeholder).toHaveClass('invisible');
+    await vi.waitFor(() => expect(placeholder).not.toHaveClass('invisible'));
 
     await settleProfile(httpTesting);
     expect(await screen.findByTestId('identity')).toBeInTheDocument();

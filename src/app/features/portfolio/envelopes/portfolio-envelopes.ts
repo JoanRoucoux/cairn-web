@@ -27,7 +27,7 @@ export class PortfolioEnvelopes {
   readonly since = input<string | null>(null);
   readonly retry = output<void>();
 
-  protected readonly skeletonWidths = [70, 93, 116, 89, 112, 85, 108];
+  protected readonly skeletonWidths = [70, 93, 116, 89, 112, 85];
 
   protected readonly period = computed(() => periodLabel(this.range(), this.since()));
 }

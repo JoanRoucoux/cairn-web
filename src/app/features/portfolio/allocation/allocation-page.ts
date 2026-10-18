@@ -124,11 +124,8 @@ export class AllocationPage {
 
   protected readonly formatShare = (share: number): string => this.#ratio.transform(share);
 
-  protected readonly classSkeleton = [70, 60, 80, 96, 64];
-  protected readonly accountSkeleton = [110, 70, 90, 80, 76, 100, 110];
-
-  protected readonly wrapperClass = (state: AsyncState): string =>
-    state === 'ready' ? 'block px-2 pt-2 lg:pb-1' : 'block p-2';
+  protected readonly classSkeleton = [70, 60, 80, 96, 64, 72];
+  protected readonly accountSkeleton = [110, 70, 90, 80, 76];
 
   protected readonly gridClass = computed(() => {
     const classes = this.assetClassState() === 'ready';

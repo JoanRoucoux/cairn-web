@@ -20,6 +20,7 @@
         &nbsp;
       }
     </p>
+    <span aria-hidden="true" class="block h-4.25"></span>
   </div>
 }
 
@@ -30,7 +31,7 @@
         <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAssetClass' | transloco }}</h2>
         <ui-async
           align="auto"
-          [class]="wrapperClass(assetClassState())"
+          class="block px-2 pt-2 lg:pb-1"
           [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
           [errorTitle]="'portfolio.allocation.byAssetClassErrorTitle' | transloco"
           [retryLabel]="'portfolio.error.retry' | transloco"
@@ -63,7 +64,7 @@
         <h2 class="text-title px-2 font-semibold">{{ 'portfolio.allocation.byAccount' | transloco }}</h2>
         <ui-async
           align="auto"
-          [class]="wrapperClass(accountState())"
+          class="block px-2 pt-2 lg:pb-1"
           [errorMessage]="'portfolio.allocation.errorMessage' | transloco"
           [errorTitle]="'portfolio.allocation.byAccountErrorTitle' | transloco"
           [retryLabel]="'portfolio.error.retry' | transloco"
@@ -94,13 +95,18 @@
 </div>
 
 <ng-template #legendSkeleton let-widths>
-  <div class="flex w-full flex-1 flex-col gap-4 py-2">
+  <div class="flex w-full min-w-0 flex-1 flex-col sm:w-auto">
     @for (width of widths; track $index) {
-      <div class="flex items-center gap-3">
-        <ui-skeleton shape="dot" />
-        <div [style.width.px]="width"><ui-skeleton [height]="16" /></div>
-        <span class="flex-1"></span>
-        <div class="w-13"><ui-skeleton [height]="16" /></div>
+      <div class="flex min-h-14 w-full items-center gap-3 px-2 py-1">
+        <ui-skeleton class="flex-none" shape="dot" />
+        <span class="flex min-w-0 flex-1 flex-col gap-1">
+          <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
+          <span class="block w-28"><ui-skeleton [height]="12" /></span>
+        </span>
+        <span class="flex flex-none flex-col items-end gap-1">
+          <span class="block w-13"><ui-skeleton [height]="16" /></span>
+          <span class="block w-20"><ui-skeleton [height]="12" /></span>
+        </span>
       </div>
     }
   </div>

@@ -156,14 +156,18 @@
       [state]="state()"
       (retry)="retry()"
     >
-      <span asyncLoading class="flex flex-col lg:px-2 lg:pb-1">
-        @for (width of skeletonWidths; track $index) {
-          <span class="flex h-15 items-center justify-between lg:h-13">
-            <span class="flex flex-col gap-1.5">
-              <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
-              <span class="block w-27.5 lg:hidden"><ui-skeleton [height]="12" /></span>
-            </span>
-            <span class="block w-24 lg:w-130"><ui-skeleton [height]="16" /></span>
+      <span asyncLoading class="contents">
+        @if (state() !== 'ready') {
+          <span class="flex flex-col lg:px-2 lg:pb-1">
+            @for (width of skeletonWidths; track $index) {
+              <span class="flex h-15 items-center justify-between lg:h-13">
+                <span class="flex flex-col gap-1.5">
+                  <span class="block" [style.width.px]="width"><ui-skeleton [height]="16" /></span>
+                  <span class="block w-27.5 lg:hidden"><ui-skeleton [height]="12" /></span>
+                </span>
+                <span class="block w-24 lg:w-130"><ui-skeleton [height]="16" /></span>
+              </span>
+            }
           </span>
         }
       </span>
