@@ -90,9 +90,10 @@ Before considering a change done, run the same pipeline as CI: `format:check`, `
 
 This repository owns `WEB_TAG` in `/srv/cairn/.env` and the `web` service alone; the backend, the
 database and the shared Caddy proxy belong to `cairn` and `infra`. `deploy.yml` runs on every push
-to `main`, pushes the image to GHCR as `sha-` followed by the commit's first 7 characters, ships
-`deploy/deploy.sh` to the server and restarts `web` alone. Rolling back is running the workflow by
-hand with the full SHA of an earlier commit, which checks the image exists instead of building it.
+to `main`, builds the image alongside CI and pushes it to GHCR as `sha-` followed by the commit's
+first 7 characters, then waits for both, ships `deploy/deploy.sh` to the server and restarts `web`
+alone. Rolling back is running the workflow by hand with the full SHA of an earlier commit, which
+checks that the image exists and that the `ci / ci` check passed on that commit instead of building.
 A running deploy is never cancelled, and GitHub keeps only the newest pending run in the `deploy`
 concurrency group, so the run list must be checked after dispatching a rollback.
 
@@ -178,6 +179,7 @@ cairn-web is a standalone application: it owns its navigation shell, its theme a
 - `@joanroucoux/cairn-ui/styles/fonts.css` is listed in `angular.json` `styles`, not `@import`ed from `src/styles.css`: Tailwind inlines an `@import` without rebasing its relative `url()`s, so Rubik would silently fall back to the system font.
 - `typescript` is pinned to `~6.0.2`: TypeScript 7 breaks `typescript-eslint` (via `ts-api-utils`). Do not bump until typescript-eslint supports TS 7.
 - `pnpm-workspace.yaml` `allowBuilds` is required for native postinstall scripts (esbuild, lmdb, ...): do not remove it.
+- The required status check `ci` is the gate job at the end of `ci.yml`, not a build job: a new CI job must be added to its `needs`, or its failure will not block a merge.
 - GitHub Actions in `.github/workflows/ci.yml` are pinned by commit SHA (Dependabot keeps them updated); when adding one, pin it the same way.
 - **`core/shell/app-shell.ts` must not walk `ActivatedRoute.firstChild` in a field initializer.** On a real bootstrap (never on `TestBed`, which resolves the whole tree before any component exists), the outer `RouterOutlet` creates `AppShell` as soon as its own segment matches, before the `<router-outlet>` inside `app-shell.html` has attached the leaf route as `.firstChild`: reading `route.root`'s deepest `.snapshot.data` at construction throws on the very first paint of every page. The fix is a defensive walk (`current?.firstChild`, `current?.snapshot?.data ?? {}`) so the header title is briefly empty and corrects itself on the `NavigationEnd` that follows.
 - A `computed()` calling `TranslocoService.translate()` for a lazily loaded scope key keeps the raw key once computed: read `injectTranslationEvents()` (`core/i18n/translation-events.ts`) inside it so the scope's load triggers a recompute. Never a bare `toSignal(transloco.events$)`: a load the template's `transloco` pipe starts can emit while Angular renders, and the signal write throws NG0600.
