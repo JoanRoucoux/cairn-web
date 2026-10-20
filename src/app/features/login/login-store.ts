@@ -12,6 +12,14 @@ import { environment } from '@environments/environment';
 
 import { credentialsSchema, initialCredentials } from './credentials';
 
+const DEFAULT_RETRY_AFTER_SECONDS = 60;
+
+function retryAfterSeconds(error: HttpErrorResponse): number {
+  const header = error.headers.get('Retry-After')?.trim() ?? '';
+  const seconds = /^\d+$/.test(header) ? Number(header) : 0;
+  return seconds > 0 ? seconds : DEFAULT_RETRY_AFTER_SECONDS;
+}
+
 @Injectable()
 export class LoginStore {
   #http = inject(HttpClient);
@@ -25,6 +33,7 @@ export class LoginStore {
 
   readonly refused = signal(false);
   readonly failed = signal(false);
+  readonly throttledSeconds = signal<number | null>(null);
 
   readonly passkeySubmitting = signal(false);
   readonly passkeyRefused = signal(false);
@@ -53,6 +62,8 @@ export class LoginStore {
       } catch (error) {
         if (error instanceof HttpErrorResponse && error.status === 401) {
           this.refused.set(true);
+        } else if (error instanceof HttpErrorResponse && error.status === 429) {
+          this.throttledSeconds.set(retryAfterSeconds(error));
         } else {
           this.failed.set(true);
         }
@@ -65,6 +76,7 @@ export class LoginStore {
   clearPasswordOutcome(): void {
     this.refused.set(false);
     this.failed.set(false);
+    this.throttledSeconds.set(null);
   }
 
   async signInWithPasskey(): Promise<boolean> {
@@ -96,6 +108,7 @@ export class LoginStore {
   #clearOutcomes(): void {
     this.refused.set(false);
     this.failed.set(false);
+    this.throttledSeconds.set(null);
     this.passkeyRefused.set(false);
     this.passkeyUnsupported.set(false);
     this.passkeyFailed.set(false);

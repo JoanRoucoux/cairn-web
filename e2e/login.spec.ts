@@ -62,6 +62,19 @@ test.describe('login', () => {
     await expect(login.password).toBeFocused();
   });
 
+  test('tells the user how long to wait when sign-in is throttled', async ({ page }) => {
+    await page.route('**/api/authenticate', (route) =>
+      route.fulfill({ status: 429, headers: { 'Retry-After': '42' }, json: { message: 'too many attempts' } }),
+    );
+    const login = new LoginPageObject(page);
+    await login.goto();
+
+    await login.signInWithPassword('alex', 'wrong-password');
+
+    await expect(login.throttled).toBeVisible();
+    await expect(login.throttled).toContainText('Too many attempts. Try again in 42 s.');
+  });
+
   test('signs in with a password and reaches the portfolio', async ({ page }) => {
     await page.route('**/api/authenticate', (route) => {
       signedIn = true;

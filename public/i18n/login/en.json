@@ -5,6 +5,7 @@
   "submit": "Sign in",
   "refused": "Incorrect username or password.",
   "failed": "Sign-in could not be sent. Try again.",
+  "throttled": "Too many attempts. Try again in {{seconds}} s.",
   "passkey": "Sign in with a passkey",
   "passkeyRefused": "The request was cancelled or the key was not recognized. Try again.",
   "passkeyUnsupported": "This browser cannot use passkeys.",

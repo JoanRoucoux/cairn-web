@@ -38,6 +38,7 @@ export class LoginPage {
   protected readonly form = this.#store.form;
   protected readonly refused = this.#store.refused;
   protected readonly failed = this.#store.failed;
+  protected readonly throttledSeconds = this.#store.throttledSeconds;
 
   protected readonly passkeySubmitting = this.#store.passkeySubmitting;
   protected readonly passkeyRefused = this.#store.passkeyRefused;

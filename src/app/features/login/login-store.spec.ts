@@ -84,6 +84,59 @@ describe('LoginStore', () => {
     expect(store.refused()).toBe(false);
   });
 
+  it('should read the wait from Retry-After when sign-in is throttled', async () => {
+    store.form.username().value.set('alex');
+    store.form.password().value.set('wrong');
+
+    const signedIn = store.signIn();
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: { 'Retry-After': '42' },
+    });
+
+    expect(await signedIn).toBe(false);
+    expect(store.throttledSeconds()).toBe(42);
+    expect(store.refused()).toBe(false);
+    expect(store.failed()).toBe(false);
+  });
+
+  it.each([
+    ['is absent', {}],
+    ['is not a number', { 'Retry-After': 'soon' }],
+    ['is zero', { 'Retry-After': '0' }],
+  ])('should wait sixty seconds when Retry-After %s', async (_label, headers) => {
+    store.form.username().value.set('alex');
+    store.form.password().value.set('wrong');
+
+    const signedIn = store.signIn();
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers,
+    });
+
+    await signedIn;
+    expect(store.throttledSeconds()).toBe(60);
+  });
+
+  it('should clear the throttle once another attempt starts', async () => {
+    store.form.username().value.set('alex');
+    store.form.password().value.set('wrong');
+    const first = store.signIn();
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+    });
+    await first;
+
+    const second = store.signIn();
+    const request = await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'));
+    expect(store.throttledSeconds()).toBeNull();
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    await second;
+  });
+
   it('should clear the previous outcome before trying again', async () => {
     store.form.username().value.set('alex');
     store.form.password().value.set('wrong');
