@@ -7,6 +7,7 @@ export class LoginPageObject {
   readonly password: Locator;
   readonly submit: Locator;
   readonly refused: Locator;
+  readonly throttled: Locator;
   readonly passkeyRefused: Locator;
   readonly passkeyToggle: Locator;
 
@@ -17,6 +18,7 @@ export class LoginPageObject {
     this.password = page.getByTestId('login-password');
     this.submit = page.getByTestId('login-submit');
     this.refused = page.getByTestId('login-refused');
+    this.throttled = page.getByTestId('login-throttled');
     this.passkeyRefused = page.getByTestId('login-passkey-refused');
     this.passkeyToggle = page.getByTestId('login-passkey-toggle');
   }

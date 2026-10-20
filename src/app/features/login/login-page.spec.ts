@@ -77,6 +77,37 @@ describe('LoginPage', () => {
     expect(load).not.toHaveBeenCalled();
   });
 
+  it('should tell the user to wait when sign-in is throttled, and stay put', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await fillIn(user, 'wrong');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+      headers: { 'Retry-After': '30' },
+    });
+
+    const alert = await screen.findByTestId('login-throttled');
+    expect(alert).toHaveAttribute('role', 'alert');
+    expect(alert).toHaveTextContent('login.throttled');
+    expect(screen.queryByTestId('login-failed')).not.toBeInTheDocument();
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  it('should still say to wait when Retry-After is missing', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await fillIn(user, 'wrong');
+    (await vi.waitFor(() => httpTesting.expectOne('/api/authenticate'))).flush(null, {
+      status: 429,
+      statusText: 'Too Many Requests',
+    });
+
+    expect(await screen.findByTestId('login-throttled')).toBeInTheDocument();
+  });
+
   it('should send no request when submitted empty', async () => {
     const user = userEvent.setup();
     await renderPage();

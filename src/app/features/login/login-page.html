@@ -22,6 +22,9 @@
         @if (failed()) {
           <ui-alert data-testid="login-failed">{{ 'login.failed' | transloco }}</ui-alert>
         }
+        @if (throttledSeconds(); as seconds) {
+          <ui-alert data-testid="login-throttled">{{ 'login.throttled' | transloco: { seconds } }}</ui-alert>
+        }
 
         <ui-field animate.enter="ui-enter-fade-up" [label]="'login.username' | transloco">
           <input
