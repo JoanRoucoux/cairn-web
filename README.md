@@ -14,11 +14,13 @@
 
 </div>
 
-# cairn-web
-
 The Angular frontend of [Cairn](https://github.com/JoanRoucoux/cairn), a single-owner wealth tracker. The product, the architecture and the backend are documented in the Cairn repository.
 
 It is built on the [Cairn UI](https://github.com/JoanRoucoux/cairn-ui) design system ([Storybook](https://joanroucoux.github.io/cairn-ui/)) and runs at https://cairn.joanroucoux.fr, behind passkey sign-in.
+
+## Screenshots
+
+The data shown is fictional.
 
 <p align="center">
   <img alt="The dashboard: net worth, day change, unrealized gain, the performance chart over a selectable range and the envelopes" src="docs/github/screenshots/dashboard-dark.png">
@@ -37,8 +39,6 @@ It is built on the [Cairn UI](https://github.com/JoanRoucoux/cairn-ui) design sy
   <img alt="Mobile holding detail" src="docs/github/screenshots/mobile-holding-dark.png" width="30%">
 </p>
 
-The data shown is fictional.
-
 ## Highlights
 
 - **Modern Angular**: Angular 22, standalone components, zoneless, signals (`rxResource`, Signal Forms), OnPush by default, and no state library.
@@ -48,10 +48,6 @@ The data shown is fictional.
 - **i18n**: English and French with Transloco, one lazy scope per feature, and the chosen language persisted.
 - **Display preferences**: light, dark or system theme, and a toggle that hides every amount.
 - **Installable**: a web app manifest. There is no service worker, on purpose (see [AGENTS.md](AGENTS.md)).
-- **Enforced boundaries**: Sheriff checks the module boundaries at lint time.
-- **Bundle budget**: the initial bundle is capped at 530 kB (warning) and 630 kB (error). It currently weighs 502.83 kB raw and 113.94 kB gzip, after moving cairn-ui to per-component subpaths.
-- **Tested**: Vitest and Angular Testing Library with lines and branches at 100 %, plus a Playwright end-to-end suite that includes axe accessibility checks. Everything runs against a mocked API.
-- **Shipped on every push to main**: an nginx image pushed to GHCR, then a CalVer release.
 
 ## Screens
 
@@ -65,36 +61,6 @@ The data shown is fictional.
 | `/profile`             | Profile        | Theme, language, CSV import and export, passkeys, sign out.               |
 | `/login`               | Sign in        | Passkey first, with a password fallback.                                  |
 | any other URL          | Not found      | The 404 page.                                                             |
-
-## Getting started
-
-Prerequisites: Node `^22.22.3`, `^24.15.0` or `>=26` (`engines` in `package.json`; `.nvmrc` pins 24) and [pnpm](https://pnpm.io) (the version is pinned in the `packageManager` field).
-
-```bash
-pnpm install    # installs dependencies and generates the API client (postinstall)
-pnpm start      # dev server on http://localhost:4200
-```
-
-The dev server proxies `/api` to `http://localhost:8080` ([`proxy.conf.json`](proxy.conf.json)), where the Cairn backend is expected. To run the backend, follow [`docs/development.md`](https://github.com/JoanRoucoux/cairn/blob/main/docs/development.md) in the Cairn repository.
-
-## Scripts
-
-| Script                   | Description                                                              |
-| ------------------------ | ------------------------------------------------------------------------ |
-| `pnpm start`             | Dev server (with API proxy)                                              |
-| `pnpm run build`         | Production build into `dist/`                                            |
-| `pnpm run build:dev`     | Development build                                                        |
-| `pnpm run watch`         | Development build in watch mode                                          |
-| `pnpm test`              | Unit tests (Vitest)                                                      |
-| `pnpm run test:coverage` | Unit tests with coverage report and thresholds                           |
-| `pnpm run e2e`           | End-to-end tests (Playwright)                                            |
-| `pnpm run e2e:ui`        | End-to-end tests in the Playwright UI                                    |
-| `pnpm run lint`          | Lint (ESLint, includes Sheriff module boundaries)                        |
-| `pnpm run lint:fix`      | Lint and fix                                                             |
-| `pnpm run format`        | Format the whole project (Prettier)                                      |
-| `pnpm run format:check`  | Check the formatting                                                     |
-| `pnpm run generate:api`  | Regenerate the API client from `openapi/openapi.yaml`                    |
-| `pnpm run api:sync`      | Fetch the backend's current OpenAPI contract, then regenerate the client |
 
 ## Project structure
 
@@ -113,9 +79,80 @@ src/app/
 
 Sheriff enforces the dependency rules at lint time ([`sheriff.config.ts`](sheriff.config.ts)): features depend on `core` and `shared`, `core` depends on `shared`, `shared` depends on nothing, and features reach each other only through their `contract/` folder (route paths and query keys as pure data). Modules are barrel-less: import files directly.
 
+## The Cairn repositories
+
+| Repository                                                       | Content                                                                                                                 |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [cairn](https://github.com/JoanRoucoux/cairn)                    | Backend: API, batch jobs, Kafka worker, schema                                                                          |
+| [cairn-web](https://github.com/JoanRoucoux/cairn-web) (this one) | Angular 22 frontend                                                                                                     |
+| [cairn-ui](https://github.com/JoanRoucoux/cairn-ui)              | Design system, published on npm as `@joanroucoux/cairn-ui`, with a [Storybook](https://joanroucoux.github.io/cairn-ui/) |
+
+The host, the shared proxy and the monitoring are managed in [infra](https://github.com/JoanRoucoux/infra), shared by every application on the server.
+
+## Tech stack
+
+| Tool                              | Version                          | Role                                                        |
+| --------------------------------- | -------------------------------- | ----------------------------------------------------------- |
+| Angular                           | 22.2.2                           | Framework: standalone components, zoneless, signals         |
+| TypeScript                        | 6.0.3                            | Language                                                    |
+| Tailwind CSS                      | 4.3.3                            | Styling                                                     |
+| cairn-ui                          | 0.12.1                           | Design system (`@joanroucoux/cairn-ui`)                     |
+| Transloco                         | 8.4.0                            | English and French translations, one lazy scope per feature |
+| Orval                             | 8.43.0                           | Typed API client generated from the OpenAPI contract        |
+| Vitest                            | 5.0.4                            | Unit tests                                                  |
+| Angular Testing Library           | 19.5.0                           | Component tests                                             |
+| Playwright                        | 1.64.1                           | End-to-end tests                                            |
+| axe-core (`@axe-core/playwright`) | 4.13.0                           | Accessibility checks in the end-to-end suite                |
+| Sheriff                           | 0.20.0                           | Module boundaries at lint time                              |
+| ESLint                            | 10.12.0                          | Lint                                                        |
+| Prettier                          | 3.9.10                           | Formatting                                                  |
+| pnpm                              | 11.14.0                          | Package manager                                             |
+| Node.js                           | 24 (`.nvmrc`, CI)                | Runtime for tooling                                         |
+| nginx, Docker, GHCR               | nginx 1.31 (`nginx:1.31-alpine`) | Production image `cairn-web`                                |
+
+## Quality and delivery
+
+- **Test layers**: Vitest and Angular Testing Library with lines and branches at 100 %, plus a Playwright end-to-end suite that includes axe accessibility checks. Everything runs against a mocked API.
+- **Bundle budget**: the initial bundle is capped at 530 kB (warning) and 630 kB (error). It currently weighs 502.83 kB raw and 113.94 kB gzip, after moving cairn-ui to per-component subpaths.
+- **Enforced boundaries**: Sheriff checks the module boundaries at lint time.
+- **API contract check**: CI fetches the backend's `main` OpenAPI contract and fails on any difference with `openapi/openapi.yaml` (fix with `pnpm run api:sync`).
+- **Continuous deployment**: every push to `main` runs CI, pushes an nginx image to GHCR, ships it to the server and checks that the page is served.
+- **Releases**: a successful deploy publishes a CalVer release `vYYYY.MM.DD.n`, with notes generated by git-cliff.
+- **Dependabot** keeps npm, GitHub Actions and Docker dependencies up to date.
+
+## Development
+
+Prerequisites: Node `^22.22.3`, `^24.15.0` or `>=26` (`engines` in `package.json`; `.nvmrc` pins 24) and [pnpm](https://pnpm.io) (the version is pinned in the `packageManager` field).
+
+```bash
+pnpm install
+pnpm start
+```
+
+`pnpm install` installs the dependencies and generates the API client (postinstall); `pnpm start` serves the app on http://localhost:4200. The dev server proxies `/api` to `http://localhost:8080` ([`proxy.conf.json`](proxy.conf.json)), where the Cairn backend is expected. To run the backend, follow [`docs/development.md`](https://github.com/JoanRoucoux/cairn/blob/main/docs/development.md) in the Cairn repository.
+
+### Scripts
+
+| Script                   | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `pnpm start`             | Dev server (with API proxy)                                              |
+| `pnpm run build`         | Production build into `dist/`                                            |
+| `pnpm run build:dev`     | Development build                                                        |
+| `pnpm run watch`         | Development build in watch mode                                          |
+| `pnpm test`              | Unit tests (Vitest)                                                      |
+| `pnpm run test:coverage` | Unit tests with coverage report and thresholds                           |
+| `pnpm run e2e`           | End-to-end tests (Playwright)                                            |
+| `pnpm run e2e:ui`        | End-to-end tests in the Playwright UI                                    |
+| `pnpm run lint`          | Lint (ESLint, includes Sheriff module boundaries)                        |
+| `pnpm run lint:fix`      | Lint and fix                                                             |
+| `pnpm run format`        | Format the whole project (Prettier)                                      |
+| `pnpm run format:check`  | Check the formatting                                                     |
+| `pnpm run generate:api`  | Regenerate the API client from `openapi/openapi.yaml`                    |
+| `pnpm run api:sync`      | Fetch the backend's current OpenAPI contract, then regenerate the client |
+
 ## Documentation
 
-[AGENTS.md](AGENTS.md) holds the architecture, conventions, testing guidelines, deployment and release flow.
+- [AGENTS.md](AGENTS.md): architecture, conventions, testing guidelines, deployment and release flow
 
 ## License
 
