@@ -10,6 +10,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { PortfolioResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { HOLDINGS_PATH } from '@features/holdings/contract/holdings-paths';
+
 import { AmountSeparator } from '@shared/format/amount-separator';
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
@@ -33,6 +35,8 @@ import { UpperFirstPipe } from '@shared/format/upper-first-pipe';
   templateUrl: './portfolio-total.html',
 })
 export class PortfolioTotal {
+  protected readonly holdingsPath = HOLDINGS_PATH;
+
   readonly state = input.required<AsyncState>();
   readonly portfolio = input<PortfolioResponse | undefined>();
   readonly retry = output<void>();

@@ -10,6 +10,8 @@ import { LucideEye, LucideEyeOff, LucideKeyRound } from '@lucide/angular';
 
 import { PageLoad } from '@core/navigation/page-load';
 
+import { PORTFOLIO_PATH } from '@features/portfolio/contract/portfolio-paths';
+
 import { CairnMark } from '@shared/branding/cairn-mark';
 
 import { LoginStore } from './login-store';
@@ -80,7 +82,7 @@ export class LoginPage {
     }
 
     // A full page load, not a router navigation: the session store must start against the new session.
-    this.#pageLoad.to('/');
+    this.#pageLoad.to(PORTFOLIO_PATH);
   }
 
   protected async onPasskeySignIn(): Promise<void> {
@@ -88,7 +90,7 @@ export class LoginPage {
       return;
     }
 
-    this.#pageLoad.to('/');
+    this.#pageLoad.to(PORTFOLIO_PATH);
   }
 
   protected usePassword(): void {

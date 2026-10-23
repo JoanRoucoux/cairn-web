@@ -6,11 +6,11 @@
     </p>
 
     <div class="mt-1 flex w-full flex-col gap-2 lg:mt-2 lg:w-auto lg:flex-row">
-      <a routerLink="/holdings" ui-button>
+      <a ui-button [routerLink]="holdingsPath">
         <svg lucidePlus [size]="18" [strokeWidth]="1.75" />
         {{ 'portfolio.empty.addHolding' | transloco }}
       </a>
-      <a routerLink="/profile" ui-button variant="outline">{{ 'portfolio.empty.importCsv' | transloco }}</a>
+      <a ui-button variant="outline" [routerLink]="profilePath">{{ 'portfolio.empty.importCsv' | transloco }}</a>
     </div>
   </div>
 </ui-card>

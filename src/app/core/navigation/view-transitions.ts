@@ -5,6 +5,8 @@ import { injectReducedMotion } from '@joanroucoux/cairn-ui/motion';
 
 import { SHELL_DESTINATIONS } from '@core/shell/shell-nav';
 
+import { HOLDINGS_PATH } from '@features/holdings/contract/holdings-paths';
+
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 const SHELL_PATHS = new Set(SHELL_DESTINATIONS.map((destination) => destination.path));
@@ -19,7 +21,7 @@ const pathOf = (root: ActivatedRouteSnapshot): string => {
   return `/${leaf.pathFromRoot.flatMap((segment) => segment.url.map((part) => part.path)).join('/')}`;
 };
 
-const inHoldings = (path: string): boolean => path === '/holdings' || path.startsWith('/holdings/');
+const inHoldings = (path: string): boolean => path === HOLDINGS_PATH || path.startsWith(`${HOLDINGS_PATH}/`);
 
 @Injectable({ providedIn: 'root' })
 class ViewTransitionPolicy {

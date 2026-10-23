@@ -40,9 +40,9 @@
               <td primary uiTd>
                 <a
                   data-testid="account-link"
-                  routerLink="/holdings"
                   uiRowLink
                   [queryParams]="{ compte: account.id }"
+                  [routerLink]="holdingsPath"
                   [stretch]="false"
                   >{{ account.name }}</a
                 >
@@ -115,15 +115,21 @@
                     <div class="flex flex-none gap-2">
                       <a
                         data-testid="account-empty-add"
-                        routerLink="/holdings"
                         size="sm"
                         ui-button
                         variant="outline"
                         [queryParams]="{ add: account.id }"
+                        [routerLink]="holdingsPath"
                       >
                         {{ 'accounts.rowEmptyAction' | transloco }}
                       </a>
-                      <a data-testid="account-empty-import" routerLink="/profile" size="sm" ui-button variant="ghost">
+                      <a
+                        data-testid="account-empty-import"
+                        size="sm"
+                        ui-button
+                        variant="ghost"
+                        [routerLink]="profilePath"
+                      >
                         {{ 'accounts.rowEmptyImport' | transloco }}
                       </a>
                     </div>

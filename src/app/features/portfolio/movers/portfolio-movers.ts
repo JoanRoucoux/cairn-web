@@ -11,6 +11,8 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
+import { holdingPath } from '@features/holdings/contract/holdings-paths';
+
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
 @Component({
@@ -33,6 +35,8 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
   templateUrl: './portfolio-movers.html',
 })
 export class PortfolioMovers {
+  protected readonly holdingPath = holdingPath;
+
   readonly state = input.required<AsyncState>();
   readonly movers = input<HoldingResponse[]>([]);
   readonly retry = output<void>();

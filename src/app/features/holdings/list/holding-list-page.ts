@@ -23,6 +23,8 @@ import { injectTranslationEvents } from '@core/i18n/translation-events';
 import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
+import { SLUG_BY_CLASS } from '../contract/holding-class-slugs';
+import { HOLDINGS_PATH, HOLDINGS_QUERY } from '../contract/holdings-paths';
 import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
@@ -30,7 +32,7 @@ import { HoldingAccountGroup } from './account-group/holding-account-group';
 import { HoldingCashDialog } from './cash-dialog/holding-cash-dialog';
 import { HoldingListEmpty } from './empty/holding-list-empty';
 import { FoldedAccounts } from './folded-accounts';
-import { CLASSES_SHOWN_WHEN_HELD, CLASS_ORDER, HoldingListStore, SLUG_BY_CLASS } from './holding-list-store';
+import { CLASSES_SHOWN_WHEN_HELD, CLASS_ORDER, HoldingListStore } from './holding-list-store';
 import { HoldingListSkeleton } from './skeleton/holding-list-skeleton';
 import { HoldingClassSummary } from './summary/holding-class-summary';
 
@@ -162,7 +164,7 @@ export class HoldingListPage {
     this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event instanceof NavigationStart) {
         leftAt = window.scrollY;
-      } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith('/holdings')) {
+      } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith(HOLDINGS_PATH)) {
         const top = leftAt;
 
         queueMicrotask(() => window.scrollTo({ top, behavior: 'instant' }));
@@ -235,11 +237,11 @@ export class HoldingListPage {
   }
 
   protected onClassChange(value: string): void {
-    this.#mergeQueryParams({ classe: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] });
+    this.#mergeQueryParams({ [HOLDINGS_QUERY.assetClass]: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] });
   }
 
   protected chooseAccount(accountId: string | null): void {
-    this.#mergeQueryParams({ compte: accountId });
+    this.#mergeQueryParams({ [HOLDINGS_QUERY.account]: accountId });
   }
 
   protected openAdd(): void {

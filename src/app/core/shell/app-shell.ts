@@ -14,6 +14,9 @@ import { filter, map } from 'rxjs';
 import { AmountVisibility } from '@core/amounts/amount-visibility';
 import { SessionStore } from '@core/session/session-store';
 
+import { PORTFOLIO_PATH } from '@features/portfolio/contract/portfolio-paths';
+import { PROFILE_PATH } from '@features/profile/contract/profile-paths';
+
 import { CairnLogo } from './cairn-logo';
 import { OfflineBanner } from './offline-banner';
 import { ShellDestinationIcon } from './shell-destination-icon';
@@ -53,6 +56,8 @@ export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
   host: { class: 'lg:[--sidebar-width:15rem]' },
 })
 export class AppShell {
+  protected readonly profilePath = PROFILE_PATH;
+
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #session = inject(SessionStore);
@@ -98,6 +103,6 @@ export class AppShell {
   }
 
   protected isActive(path: string): boolean {
-    return path === '/' ? this.url() === '/' : this.url().startsWith(path);
+    return path === PORTFOLIO_PATH ? this.url() === PORTFOLIO_PATH : this.url().startsWith(path);
   }
 }

@@ -5,10 +5,10 @@
         <a
           data-testid="account-link-mobile"
           padding="sm"
-          routerLink="/holdings"
           size="xl"
           ui-row
           [queryParams]="{ compte: account.id }"
+          [routerLink]="holdingsPath"
           [uiHighlight]="account.id === added() ? account.id : null"
           (highlighted)="highlighted.emit()"
         >
@@ -83,11 +83,11 @@
           <span class="text-label text-(--muted-foreground)">{{ 'accounts.rowEmptyCompact' | transloco }}</span>
           <a
             data-testid="account-empty-add-mobile"
-            routerLink="/holdings"
             size="sm"
             ui-button
             variant="outline"
             [queryParams]="{ add: account.id }"
+            [routerLink]="holdingsPath"
           >
             {{ 'accounts.rowEmptyAction' | transloco }}
           </a>

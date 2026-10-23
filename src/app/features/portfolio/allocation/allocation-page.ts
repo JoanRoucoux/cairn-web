@@ -9,8 +9,15 @@ import { type DonutSlice, UiDonut } from '@joanroucoux/cairn-ui/donut';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe, TranslocoService, translateSignal } from '@jsverse/transloco';
 
-import type { AccountAllocationResponse, AssetClassAllocationResponse } from '@core/api-client/cairnAPI.schemas';
+import type {
+  AccountAllocationResponse,
+  AssetClass,
+  AssetClassAllocationResponse,
+} from '@core/api-client/cairnAPI.schemas';
 import { injectTranslationEvents } from '@core/i18n/translation-events';
+
+import { SLUG_BY_CLASS } from '@features/holdings/contract/holding-class-slugs';
+import { HOLDINGS_PATH, HOLDINGS_QUERY } from '@features/holdings/contract/holdings-paths';
 
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
@@ -18,16 +25,6 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
 import { UpperFirstPipe } from '@shared/format/upper-first-pipe';
 
 import { AllocationStore } from './allocation-store';
-
-const CLASS_SLUGS: Record<string, string> = {
-  ETF: 'etf',
-  FUND: 'fonds',
-  EQUITY: 'actions',
-  CRYPTO: 'crypto',
-  BOND: 'obligations',
-  OTHER: 'autre',
-  CASH: 'liquidites',
-};
 
 const GRID_BASE =
   'grid grid-cols-[minmax(0,1fr)] gap-4 @min-[960px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] @min-[960px]:gap-6';
@@ -143,10 +140,10 @@ export class AllocationPage {
   });
 
   protected readonly classHref = (id: string): string | null =>
-    id === OTHERS_ID ? null : `/holdings?classe=${CLASS_SLUGS[id]}`;
+    id === OTHERS_ID ? null : `${HOLDINGS_PATH}?${HOLDINGS_QUERY.assetClass}=${SLUG_BY_CLASS[id as AssetClass]}`;
 
   protected readonly accountHref = (id: string): string | null =>
-    id === OTHERS_ID ? null : `/holdings?compte=${encodeURIComponent(id)}`;
+    id === OTHERS_ID ? null : `${HOLDINGS_PATH}?${HOLDINGS_QUERY.account}=${encodeURIComponent(id)}`;
 
   protected retryClasses(): void {
     this.#store.retryClasses();
@@ -161,7 +158,9 @@ export class AllocationPage {
       return;
     }
 
-    this.#router.navigate(['/holdings'], { queryParams: { classe: CLASS_SLUGS[id] } });
+    this.#router.navigate([HOLDINGS_PATH], {
+      queryParams: { [HOLDINGS_QUERY.assetClass]: SLUG_BY_CLASS[id as AssetClass] },
+    });
   }
 
   protected onAccountSelect(id: string): void {
@@ -169,7 +168,7 @@ export class AllocationPage {
       return;
     }
 
-    this.#router.navigate(['/holdings'], { queryParams: { compte: id } });
+    this.#router.navigate([HOLDINGS_PATH], { queryParams: { [HOLDINGS_QUERY.account]: id } });
   }
 }
 

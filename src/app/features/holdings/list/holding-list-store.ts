@@ -9,6 +9,8 @@ import { HoldingService } from '@core/api-client/holding/holding.service';
 import { excludedCounts } from '@shared/format/excluded-lines';
 import { normalizeSearch } from '@shared/format/normalize-search';
 
+import { SLUG_BY_CLASS } from '../contract/holding-class-slugs';
+import { HOLDINGS_QUERY } from '../contract/holdings-paths';
 import { type HoldingChange, HoldingChanges } from '../holding-changes';
 
 export type AccountGroup = {
@@ -38,16 +40,6 @@ export const CLASS_ORDER: readonly AssetClass[] = ['ETF', 'FUND', 'EQUITY', 'CRY
 
 export const CLASSES_SHOWN_WHEN_HELD: readonly AssetClass[] = ['BOND', 'OTHER'];
 
-export const SLUG_BY_CLASS: Record<AssetClass, string> = {
-  ETF: 'etf',
-  FUND: 'fonds',
-  EQUITY: 'actions',
-  CRYPTO: 'crypto',
-  BOND: 'obligations',
-  OTHER: 'autre',
-  CASH: 'liquidites',
-};
-
 const CLASS_BY_SLUG = new Map<string, AssetClass>(
   Object.entries(SLUG_BY_CLASS).map(([assetClass, slug]) => [slug, assetClass as AssetClass]),
 );
@@ -71,10 +63,10 @@ export class HoldingListStore {
 
   readonly addParam = computed(() => this.#queryParamMap()?.get('add') ?? null);
 
-  readonly accountParam = computed(() => this.#queryParamMap()?.get('compte') ?? null);
+  readonly accountParam = computed(() => this.#queryParamMap()?.get(HOLDINGS_QUERY.account) ?? null);
 
   readonly assetClass = linkedSignal<AssetClass | null>(
-    () => CLASS_BY_SLUG.get(this.#queryParamMap()?.get('classe') ?? '') ?? null,
+    () => CLASS_BY_SLUG.get(this.#queryParamMap()?.get(HOLDINGS_QUERY.assetClass) ?? '') ?? null,
   );
 
   readonly holdings = rxResource({
