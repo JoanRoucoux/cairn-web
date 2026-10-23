@@ -107,10 +107,11 @@ src/app/
               formatting, layout). Imports neither core nor features.
   features/   One folder per business feature: portfolio, holdings, accounts,
               profile and login. Each one has a <feature>-routes.ts,
-              which is its public API, and one folder per screen.
+              a contract/ folder (its only public part: paths and
+              query keys) and one folder per screen.
 ```
 
-Sheriff enforces the dependency rules at lint time ([`sheriff.config.ts`](sheriff.config.ts)): features depend on `core` and `shared`, `core` depends on `shared`, `shared` depends on nothing, and features never import each other. Modules are barrel-less: import files directly.
+Sheriff enforces the dependency rules at lint time ([`sheriff.config.ts`](sheriff.config.ts)): features depend on `core` and `shared`, `core` depends on `shared`, `shared` depends on nothing, and features reach each other only through their `contract/` folder (route paths and query keys as pure data). Modules are barrel-less: import files directly.
 
 ## Documentation
 

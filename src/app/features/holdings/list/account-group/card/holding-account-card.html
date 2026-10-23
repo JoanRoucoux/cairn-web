@@ -24,7 +24,7 @@
         ui-row
         uiFlipItem
         [attr.data-holding-id]="holding.id"
-        [routerLink]="['/holdings', holding.id]"
+        [routerLink]="holdingPath(holding.id)"
         [uiHighlight]="flash()?.id === holding.id ? flash() : null"
       >
         <div class="flex min-w-0 flex-1 flex-col">

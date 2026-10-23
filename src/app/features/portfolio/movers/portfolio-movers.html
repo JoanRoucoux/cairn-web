@@ -30,7 +30,7 @@
 
     <div class="-mx-2 flex flex-col lg:hidden" data-testid="movers-list">
       @for (mover of movers(); track mover.id) {
-        <a gap="sm" padding="sm" size="xl" ui-row [routerLink]="['/holdings', mover.id]">
+        <a gap="sm" padding="sm" size="xl" ui-row [routerLink]="holdingPath(mover.id)">
           <span class="flex min-w-0 flex-1 flex-col">
             <span class="text-body truncate font-medium">{{ mover.instrumentName }}</span>
             <span class="text-label text-(--subtle-foreground)">{{ mover.accountName }}</span>
@@ -74,7 +74,7 @@
         @for (mover of movers(); track mover.id) {
           <tr interactive uiTr>
             <td primary uiTd>
-              <a uiRowLink [routerLink]="['/holdings', mover.id]">{{ mover.instrumentName }}</a>
+              <a uiRowLink [routerLink]="holdingPath(mover.id)">{{ mover.instrumentName }}</a>
             </td>
             <td uiTd>
               <span class="text-label text-(--muted-foreground)">{{ mover.accountName }}</span>

@@ -54,9 +54,9 @@
           <a
             ariaCurrentWhenActive="page"
             data-testid="account-link"
-            routerLink="/profile"
             routerLinkActive
             uiAvatarLink
+            [routerLink]="profilePath"
           >
             <ui-avatar size="auto" [initials]="owner().initials" [label]="'pageTitle.profile' | transloco" />
           </a>

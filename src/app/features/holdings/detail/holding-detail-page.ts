@@ -24,6 +24,7 @@ import { CHART_RANGES, type ChartRange } from '@shared/chart/chart-range';
 import { FocusOnInit } from '@shared/focus/focus-on-init';
 import { injectDesktop } from '@shared/layout/desktop-media';
 
+import { HOLDINGS_PATH } from '../contract/holdings-paths';
 import { foreignCurrencyOf } from '../foreign-currency';
 import { HoldingDetailActions } from './actions/holding-detail-actions';
 import { HoldingDetailBar } from './bar/holding-detail-bar';
@@ -88,7 +89,7 @@ export class HoldingDetailPage {
   protected readonly flash = this.#store.flash;
 
   protected readonly listHref = computed(() =>
-    this.#router.serializeUrl(this.#router.createUrlTree(['/holdings'], { queryParams: this.#queryParams() })),
+    this.#router.serializeUrl(this.#router.createUrlTree([HOLDINGS_PATH], { queryParams: this.#queryParams() })),
   );
 
   protected readonly menu = viewChild.required<UiMenu>('menu');
@@ -257,13 +258,13 @@ export class HoldingDetailPage {
     if (this.listIsPreviousEntry()) {
       this.#location.back();
     } else {
-      void this.#router.navigate(['/holdings'], { queryParamsHandling: 'preserve' });
+      void this.#router.navigate([HOLDINGS_PATH], { queryParamsHandling: 'preserve' });
     }
   }
 
   private listIsPreviousEntry(): boolean {
     const previous = this.#router.lastSuccessfulNavigation()?.previousNavigation?.finalUrl;
 
-    return previous !== undefined && this.#router.serializeUrl(previous).split(/[?#]/)[0] === '/holdings';
+    return previous !== undefined && this.#router.serializeUrl(previous).split(/[?#]/)[0] === HOLDINGS_PATH;
   }
 }

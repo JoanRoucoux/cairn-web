@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 
 import { PageLoad } from '@core/navigation/page-load';
 
-const SIGN_IN_URL = '/login';
+import { LOGIN_PATH } from '@features/login/contract/login-paths';
 
 @Injectable({ providedIn: 'root' })
 export class SignInRedirect {
@@ -15,6 +15,6 @@ export class SignInRedirect {
     }
 
     this.#started = true;
-    this.#pageLoad.to(SIGN_IN_URL);
+    this.#pageLoad.to(LOGIN_PATH);
   }
 }
