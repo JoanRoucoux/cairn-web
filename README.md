@@ -91,24 +91,24 @@ The host, the shared proxy and the monitoring are managed in [infra](https://git
 
 ## Tech stack
 
-| Tool                              | Version                          | Role                                                        |
-| --------------------------------- | -------------------------------- | ----------------------------------------------------------- |
-| Angular                           | 22.2.2                           | Framework: standalone components, zoneless, signals         |
-| TypeScript                        | 6.0.3                            | Language                                                    |
-| Tailwind CSS                      | 4.3.3                            | Styling                                                     |
-| cairn-ui                          | 0.12.1                           | Design system (`@joanroucoux/cairn-ui`)                     |
-| Transloco                         | 8.4.0                            | English and French translations, one lazy scope per feature |
-| Orval                             | 8.43.0                           | Typed API client generated from the OpenAPI contract        |
-| Vitest                            | 5.0.4                            | Unit tests                                                  |
-| Angular Testing Library           | 19.5.0                           | Component tests                                             |
-| Playwright                        | 1.64.1                           | End-to-end tests                                            |
-| axe-core (`@axe-core/playwright`) | 4.13.0                           | Accessibility checks in the end-to-end suite                |
-| Sheriff                           | 0.20.0                           | Module boundaries at lint time                              |
-| ESLint                            | 10.12.0                          | Lint                                                        |
-| Prettier                          | 3.9.10                           | Formatting                                                  |
-| pnpm                              | 11.14.0                          | Package manager                                             |
-| Node.js                           | 24 (`.nvmrc`, CI)                | Runtime for tooling                                         |
-| nginx, Docker, GHCR               | nginx 1.31 (`nginx:1.31-alpine`) | Production image `cairn-web`                                |
+| Tool                              | Version           | Role                                                        |
+| --------------------------------- | ----------------- | ----------------------------------------------------------- |
+| Angular                           | 22                | Framework: standalone components, zoneless, signals         |
+| TypeScript                        | 6                 | Language                                                    |
+| Tailwind CSS                      | 4                 | Styling                                                     |
+| cairn-ui                          | 0.12              | Design system (`@joanroucoux/cairn-ui`)                     |
+| Transloco                         | 8                 | English and French translations, one lazy scope per feature |
+| Orval                             | 8                 | Typed API client generated from the OpenAPI contract        |
+| Vitest                            | 5                 | Unit tests                                                  |
+| Angular Testing Library           | 19                | Component tests                                             |
+| Playwright                        | 1                 | End-to-end tests                                            |
+| axe-core (`@axe-core/playwright`) | 4                 | Accessibility checks in the end-to-end suite                |
+| Sheriff                           | 0.20              | Module boundaries at lint time                              |
+| ESLint                            | 10                | Lint                                                        |
+| Prettier                          | 3                 | Formatting                                                  |
+| pnpm                              | 11                | Package manager                                             |
+| Node.js                           | 24 (`.nvmrc`, CI) | Runtime for tooling                                         |
+| nginx, Docker, GHCR               | nginx (alpine)    | Production image `cairn-web`                                |
 
 ## Quality and delivery
 
