@@ -1,6 +1,6 @@
 import type { Params } from '@angular/router';
 
-import { HOLDINGS_PATH, HOLDINGS_QUERY, holdingPath } from '@features/holdings/contract/holdings-paths';
+import { HOLDINGS_PATHS, HOLDINGS_QUERY } from '@features/holdings/contract/holdings-paths';
 
 import { pluralKey } from '@shared/format/plural-key';
 
@@ -19,5 +19,5 @@ export const uncountedCaptions = (account: AccountView): UncountedCaption[] => [
 
 export const uncountedLink = (account: AccountView): { commands: string[]; queryParams: Params | null } =>
   account.excludedLineId
-    ? { commands: holdingPath(account.excludedLineId), queryParams: null }
-    : { commands: [HOLDINGS_PATH], queryParams: { [HOLDINGS_QUERY.account]: account.id } };
+    ? { commands: HOLDINGS_PATHS.detail(account.excludedLineId), queryParams: null }
+    : { commands: [HOLDINGS_PATHS.list], queryParams: { [HOLDINGS_QUERY.account]: account.id } };

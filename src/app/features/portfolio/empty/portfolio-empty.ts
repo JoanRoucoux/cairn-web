@@ -6,8 +6,8 @@ import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
 
-import { HOLDINGS_PATH } from '@features/holdings/contract/holdings-paths';
-import { PROFILE_PATH } from '@features/profile/contract/profile-paths';
+import { HOLDINGS_PATHS } from '@features/holdings/contract/holdings-paths';
+import { PROFILE_PATHS } from '@features/profile/contract/profile-paths';
 
 @Component({
   selector: 'app-portfolio-empty',
@@ -15,6 +15,6 @@ import { PROFILE_PATH } from '@features/profile/contract/profile-paths';
   templateUrl: './portfolio-empty.html',
 })
 export class PortfolioEmpty {
-  protected readonly holdingsPath = HOLDINGS_PATH;
-  protected readonly profilePath = PROFILE_PATH;
+  protected readonly holdingsPaths = HOLDINGS_PATHS;
+  protected readonly profilePaths = PROFILE_PATHS;
 }

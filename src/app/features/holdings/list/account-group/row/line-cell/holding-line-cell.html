@@ -3,7 +3,7 @@
   uiRowLink
   [attr.data-holding-id]="holding().id"
   [current]="open()"
-  [routerLink]="holdingPath(holding().id)"
+  [routerLink]="holdingsPaths.detail(holding().id)"
 >
   {{ holding().instrumentName }}
 </a>

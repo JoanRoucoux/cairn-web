@@ -1,2 +1,6 @@
-export const ACCOUNTS_SEGMENT = 'accounts';
-export const ACCOUNTS_PATH = `/${ACCOUNTS_SEGMENT}`;
+const SEGMENT = 'accounts';
+
+export const ACCOUNTS_PATHS = {
+  segment: SEGMENT,
+  list: `/${SEGMENT}`,
+} as const;

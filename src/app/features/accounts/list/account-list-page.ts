@@ -13,8 +13,8 @@ import { UiRowAction, UiRowLink, UiTable, UiTd, UiTh, UiTr } from '@joanroucoux/
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 
-import { HOLDINGS_PATH } from '@features/holdings/contract/holdings-paths';
-import { PROFILE_PATH } from '@features/profile/contract/profile-paths';
+import { HOLDINGS_PATHS } from '@features/holdings/contract/holdings-paths';
+import { PROFILE_PATHS } from '@features/profile/contract/profile-paths';
 
 import { injectToast } from '@shared/feedback/toast';
 import { excludedTotal } from '@shared/format/excluded-lines';
@@ -67,8 +67,8 @@ import { AccountUncounted } from './uncounted/account-uncounted';
   providers: [AccountListStore],
 })
 export class AccountListPage {
-  protected readonly holdingsPath = HOLDINGS_PATH;
-  protected readonly profilePath = PROFILE_PATH;
+  protected readonly holdingsPaths = HOLDINGS_PATHS;
+  protected readonly profilePaths = PROFILE_PATHS;
 
   #store = inject(AccountListStore);
 

@@ -1,2 +1,6 @@
-export const PROFILE_SEGMENT = 'profile';
-export const PROFILE_PATH = `/${PROFILE_SEGMENT}`;
+const SEGMENT = 'profile';
+
+export const PROFILE_PATHS = {
+  segment: SEGMENT,
+  profile: `/${SEGMENT}`,
+} as const;

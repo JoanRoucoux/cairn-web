@@ -15,7 +15,7 @@ import { decimalPlaces } from '@shared/format/decimal-places';
 import { RatioPipe } from '@shared/format/ratio-pipe';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
-import { holdingPath } from '../../../contract/holdings-paths';
+import { HOLDINGS_PATHS } from '../../../contract/holdings-paths';
 import { foreignCurrencyOf } from '../../../foreign-currency';
 import type { HoldingChange } from '../../../holding-changes';
 import { isMissing } from '../../../is-missing';
@@ -46,7 +46,7 @@ import { injectGroupMeta } from '../group-meta';
   },
 })
 export class HoldingAccountCard {
-  protected readonly holdingPath = holdingPath;
+  protected readonly holdingsPaths = HOLDINGS_PATHS;
 
   readonly group = input.required<AccountGroup>();
   readonly flash = input<HoldingChange | null>(null);

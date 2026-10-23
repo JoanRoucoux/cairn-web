@@ -59,7 +59,7 @@
             <div class="max-lg:contents lg:flex lg:items-center lg:gap-x-6">
               @if (portfolio.staleCount > 0) {
                 <div class="flex items-center self-start max-lg:mt-0.5 max-lg:-mb-3 max-lg:min-h-11">
-                  <a chevron data-testid="stale-link" size="label" uiStaleLink [routerLink]="holdingsPath">
+                  <a chevron data-testid="stale-link" size="label" uiStaleLink [routerLink]="holdingsPaths.list">
                     {{ staleKey() | transloco: { count: portfolio.staleCount } }}
                   </a>
                 </div>

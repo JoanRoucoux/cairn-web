@@ -1,4 +1,9 @@
-export const PORTFOLIO_SEGMENT = '';
-export const PORTFOLIO_PATH = `/${PORTFOLIO_SEGMENT}`;
-export const ALLOCATION_SEGMENT = 'allocation';
-export const ALLOCATION_PATH = `/${ALLOCATION_SEGMENT}`;
+const SEGMENT = '';
+const ALLOCATION_SEGMENT = 'allocation';
+
+export const PORTFOLIO_PATHS = {
+  segment: SEGMENT,
+  allocationSegment: ALLOCATION_SEGMENT,
+  home: `/${SEGMENT}`,
+  allocation: `/${ALLOCATION_SEGMENT}`,
+} as const;

@@ -6,7 +6,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { holdingPath } from '../../../../contract/holdings-paths';
+import { HOLDINGS_PATHS } from '../../../../contract/holdings-paths';
 import { foreignCurrencyOf } from '../../../../foreign-currency';
 
 @Component({
@@ -15,7 +15,7 @@ import { foreignCurrencyOf } from '../../../../foreign-currency';
   templateUrl: './holding-line-cell.html',
 })
 export class HoldingLineCell {
-  protected readonly holdingPath = holdingPath;
+  protected readonly holdingsPaths = HOLDINGS_PATHS;
 
   readonly holding = input.required<HoldingResponse>();
   readonly open = input(false, { transform: booleanAttribute });

@@ -11,7 +11,7 @@ import { TranslocoPipe } from '@jsverse/transloco';
 
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
-import { holdingPath } from '@features/holdings/contract/holdings-paths';
+import { HOLDINGS_PATHS } from '@features/holdings/contract/holdings-paths';
 
 import { RatioPipe } from '@shared/format/ratio-pipe';
 
@@ -35,7 +35,7 @@ import { RatioPipe } from '@shared/format/ratio-pipe';
   templateUrl: './portfolio-movers.html',
 })
 export class PortfolioMovers {
-  protected readonly holdingPath = holdingPath;
+  protected readonly holdingsPaths = HOLDINGS_PATHS;
 
   readonly state = input.required<AsyncState>();
   readonly movers = input<HoldingResponse[]>([]);

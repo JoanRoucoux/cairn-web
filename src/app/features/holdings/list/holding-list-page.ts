@@ -24,7 +24,7 @@ import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
 import { SLUG_BY_CLASS } from '../contract/holding-class-slugs';
-import { HOLDINGS_PATH, HOLDINGS_QUERY } from '../contract/holdings-paths';
+import { HOLDINGS_PATHS, HOLDINGS_QUERY } from '../contract/holdings-paths';
 import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
@@ -164,7 +164,7 @@ export class HoldingListPage {
     this.#router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event instanceof NavigationStart) {
         leftAt = window.scrollY;
-      } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith(HOLDINGS_PATH)) {
+      } else if (event instanceof Scroll && !event.position && this.#router.url.startsWith(HOLDINGS_PATHS.list)) {
         const top = leftAt;
 
         queueMicrotask(() => window.scrollTo({ top, behavior: 'instant' }));

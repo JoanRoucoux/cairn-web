@@ -1,6 +1,6 @@
 <div class="mx-auto flex max-w-[720px] flex-col gap-4 lg:gap-6">
   <div class="-mx-2 flex h-12 items-center max-lg:-mb-4 lg:hidden">
-    <a data-testid="back-link" ui-back-link [routerLink]="portfolioPath">{{ 'profile.back' | transloco }}</a>
+    <a data-testid="back-link" ui-back-link [routerLink]="portfolioPaths.home">{{ 'profile.back' | transloco }}</a>
   </div>
 
   @switch (identityShown()) {

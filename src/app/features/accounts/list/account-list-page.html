@@ -42,7 +42,7 @@
                   data-testid="account-link"
                   uiRowLink
                   [queryParams]="{ compte: account.id }"
-                  [routerLink]="holdingsPath"
+                  [routerLink]="holdingsPaths.list"
                   [stretch]="false"
                   >{{ account.name }}</a
                 >
@@ -119,7 +119,7 @@
                         ui-button
                         variant="outline"
                         [queryParams]="{ add: account.id }"
-                        [routerLink]="holdingsPath"
+                        [routerLink]="holdingsPaths.list"
                       >
                         {{ 'accounts.rowEmptyAction' | transloco }}
                       </a>
@@ -128,7 +128,7 @@
                         size="sm"
                         ui-button
                         variant="ghost"
-                        [routerLink]="profilePath"
+                        [routerLink]="profilePaths.profile"
                       >
                         {{ 'accounts.rowEmptyImport' | transloco }}
                       </a>
