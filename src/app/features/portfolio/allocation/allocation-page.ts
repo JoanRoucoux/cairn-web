@@ -17,7 +17,7 @@ import type {
 import { injectTranslationEvents } from '@core/i18n/translation-events';
 
 import { SLUG_BY_CLASS } from '@features/holdings/contract/holding-class-slugs';
-import { HOLDINGS_PATH, HOLDINGS_QUERY } from '@features/holdings/contract/holdings-paths';
+import { HOLDINGS_PATHS, HOLDINGS_QUERY } from '@features/holdings/contract/holdings-paths';
 
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
@@ -140,10 +140,10 @@ export class AllocationPage {
   });
 
   protected readonly classHref = (id: string): string | null =>
-    id === OTHERS_ID ? null : `${HOLDINGS_PATH}?${HOLDINGS_QUERY.assetClass}=${SLUG_BY_CLASS[id as AssetClass]}`;
+    id === OTHERS_ID ? null : `${HOLDINGS_PATHS.list}?${HOLDINGS_QUERY.assetClass}=${SLUG_BY_CLASS[id as AssetClass]}`;
 
   protected readonly accountHref = (id: string): string | null =>
-    id === OTHERS_ID ? null : `${HOLDINGS_PATH}?${HOLDINGS_QUERY.account}=${encodeURIComponent(id)}`;
+    id === OTHERS_ID ? null : `${HOLDINGS_PATHS.list}?${HOLDINGS_QUERY.account}=${encodeURIComponent(id)}`;
 
   protected retryClasses(): void {
     this.#store.retryClasses();
@@ -158,7 +158,7 @@ export class AllocationPage {
       return;
     }
 
-    this.#router.navigate([HOLDINGS_PATH], {
+    this.#router.navigate([HOLDINGS_PATHS.list], {
       queryParams: { [HOLDINGS_QUERY.assetClass]: SLUG_BY_CLASS[id as AssetClass] },
     });
   }
@@ -168,7 +168,7 @@ export class AllocationPage {
       return;
     }
 
-    this.#router.navigate([HOLDINGS_PATH], { queryParams: { [HOLDINGS_QUERY.account]: id } });
+    this.#router.navigate([HOLDINGS_PATHS.list], { queryParams: { [HOLDINGS_QUERY.account]: id } });
   }
 }
 

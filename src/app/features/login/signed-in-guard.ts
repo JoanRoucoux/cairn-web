@@ -4,7 +4,7 @@ import { type CanMatchFn, RedirectCommand, Router } from '@angular/router';
 
 import { firstValueFrom } from 'rxjs';
 
-import { PORTFOLIO_PATH } from '@features/portfolio/contract/portfolio-paths';
+import { PORTFOLIO_PATHS } from '@features/portfolio/contract/portfolio-paths';
 
 import { environment } from '@environments/environment';
 
@@ -15,7 +15,7 @@ export const signedInGuard: CanMatchFn = async () => {
   try {
     await firstValueFrom(http.get(`${environment.apiBaseUrl}/session`));
 
-    return new RedirectCommand(router.parseUrl(PORTFOLIO_PATH));
+    return new RedirectCommand(router.parseUrl(PORTFOLIO_PATHS.home));
   } catch {
     return true;
   }

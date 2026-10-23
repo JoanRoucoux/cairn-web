@@ -5,7 +5,7 @@ import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideHouse } from '@lucide/angular';
 
-import { PORTFOLIO_PATH } from '@features/portfolio/contract/portfolio-paths';
+import { PORTFOLIO_PATHS } from '@features/portfolio/contract/portfolio-paths';
 
 import { CairnMark } from '@shared/branding/cairn-mark';
 
@@ -15,5 +15,5 @@ import { CairnMark } from '@shared/branding/cairn-mark';
   templateUrl: './not-found-page.html',
 })
 export class NotFoundPage {
-  protected readonly portfolioPath = PORTFOLIO_PATH;
+  protected readonly portfolioPaths = PORTFOLIO_PATHS;
 }

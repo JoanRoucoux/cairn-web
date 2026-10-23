@@ -17,7 +17,7 @@ import { LucideChevronRight, LucideDownload, LucideFileText, LucideLogOut, Lucid
 import { SignInRedirect } from '@core/interceptors/sign-in-redirect';
 import { THEME_PREFERENCES, type ThemePreference } from '@core/theme/theme-store';
 
-import { PORTFOLIO_PATH } from '@features/portfolio/contract/portfolio-paths';
+import { PORTFOLIO_PATHS } from '@features/portfolio/contract/portfolio-paths';
 
 import { injectErrorToast, injectToast } from '@shared/feedback/toast';
 import { pluralKey } from '@shared/format/plural-key';
@@ -58,7 +58,7 @@ import { type PasskeyView, ProfileStore } from './profile-store';
   providers: [ProfileStore, PortfolioImportStore],
 })
 export class ProfilePage {
-  protected readonly portfolioPath = PORTFOLIO_PATH;
+  protected readonly portfolioPaths = PORTFOLIO_PATHS;
 
   #store = inject(ProfileStore);
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);

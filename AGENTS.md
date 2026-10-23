@@ -37,7 +37,7 @@ Before considering a change done, run the same pipeline as CI: `format:check`, `
 `features/<feature>/contract/` is a Sheriff module (`contract:<feature>`): the only part of a feature the rest of the app may import. It is named `contract` because "api" means the backend in this repo.
 
 - Pure data only: route segments, absolute paths, functions that build link commands, query param keys and values, and their types. Never a component, service, store, `inject()` or any `@angular/*` import. Importing a contract must pull only constants into the importer's chunk (lazy loading), and a shared injectable would be shared state between features (that belongs in `core` or the backend).
-- One file per concern, no `index.ts`. Every feature has `contract/<feature>-paths.ts` with at least its segment, because `app-routes.ts` mounts the feature on it and cannot take it from `<feature>-routes.ts` (a static import would make the lazy chunk eager).
+- One file per concern, no `index.ts`. Every feature has `contract/<feature>-paths.ts` exporting one `<FEATURE>_PATHS` object (`as const`): `segment` (the mount segment), `<child>Segment` for child routes, and one key per absolute link or link-building function (`list` for a list screen, otherwise named after the screen). A component exposes it as one field per feature. `app-routes.ts` mounts the feature on `segment` and cannot take it from `<feature>-routes.ts` (a static import would make the lazy chunk eager).
 - Something enters a contract only when a second module needs it. Route parameter names (`:holdingId`) stay private: the path builder hides them.
 - Contracts may `import type` from `core/api-client`, nothing else.
 - No route path is written as a string outside the feature that owns it. Specs and e2e keep literal URLs on purpose: they assert the user-facing URL.
@@ -149,7 +149,7 @@ cairn-web is a standalone application: it owns its navigation shell, its theme a
   choosing which one shows. It is the only place in the app that knows the **primary** navigation
   route tree. A contextual in-app link from one screen to another (`account-list-page.html` linking out
   to the holdings list) is fine and expected, goes through the target feature's contract
-  (`HOLDINGS_PATH`), and does not need to be routed through the shell.
+  (`HOLDINGS_PATHS.list`), and does not need to be routed through the shell.
 - **`core/theme/`**: a `system | light | dark` preference persisted in `localStorage` and stamped
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
   through `light-dark()`, which follows the OS only while nothing is stamped.

@@ -8,7 +8,7 @@
           size="xl"
           ui-row
           [queryParams]="{ compte: account.id }"
-          [routerLink]="holdingsPath"
+          [routerLink]="holdingsPaths.list"
           [uiHighlight]="account.id === added() ? account.id : null"
           (highlighted)="highlighted.emit()"
         >
@@ -87,7 +87,7 @@
             ui-button
             variant="outline"
             [queryParams]="{ add: account.id }"
-            [routerLink]="holdingsPath"
+            [routerLink]="holdingsPaths.list"
           >
             {{ 'accounts.rowEmptyAction' | transloco }}
           </a>

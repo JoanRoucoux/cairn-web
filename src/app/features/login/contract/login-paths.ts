@@ -1,2 +1,6 @@
-export const LOGIN_SEGMENT = 'login';
-export const LOGIN_PATH = `/${LOGIN_SEGMENT}`;
+const SEGMENT = 'login';
+
+export const LOGIN_PATHS = {
+  segment: SEGMENT,
+  signIn: `/${SEGMENT}`,
+} as const;
