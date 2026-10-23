@@ -5,8 +5,6 @@
   </picture>
 </p>
 
-<br>
-
 <div align="center">
 
 [![CI](https://github.com/JoanRoucoux/cairn-web/actions/workflows/ci.yml/badge.svg)](https://github.com/JoanRoucoux/cairn-web/actions/workflows/ci.yml)
