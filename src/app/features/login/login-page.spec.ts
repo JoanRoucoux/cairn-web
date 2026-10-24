@@ -125,8 +125,8 @@ describe('LoginPage', () => {
     await user.click(screen.getByTestId('login-password-toggle'));
     await user.click(screen.getByTestId('login-submit'));
 
-    expect(await screen.findAllByRole('alert')).toHaveLength(2);
-    expect(screen.getAllByRole('alert')[0]).toHaveTextContent('forms.required');
+    await vi.waitFor(() => expect(screen.getByTestId('login-username')).toHaveAccessibleDescription('forms.required'));
+    expect(screen.getByTestId('login-password')).toHaveAccessibleDescription('forms.required');
     httpTesting.expectNone('/api/authenticate');
   });
 

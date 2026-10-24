@@ -72,7 +72,8 @@ describe('PortfolioCurve', () => {
   it('should show a dash for the range change while performance is not ready', async () => {
     await renderCurve({ rangeChangeEur: undefined });
 
-    expect(await screen.findByText('—')).toBeInTheDocument();
+    expect(await screen.findByText('—')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByText('Not available')).toHaveClass('sr-only');
   });
 
   it('should show the range change line for the one-day range too', async () => {

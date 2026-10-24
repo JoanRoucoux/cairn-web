@@ -67,6 +67,10 @@
     "showAmounts": "Show amounts",
     "offline": "You are offline. Values may be out of date."
   },
+  "amount": {
+    "masked": "Hidden amount",
+    "missing": "Not available"
+  },
   "dialog": {
     "close": "Close"
   },

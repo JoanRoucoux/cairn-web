@@ -1,6 +1,6 @@
 import { Component, LOCALE_ID, computed, inject, input } from '@angular/core';
 
-import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiAmount, UiAmountText } from '@joanroucoux/cairn-ui/amount';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiFact, UiFacts } from '@joanroucoux/cairn-ui/fact';
 import { UiHighlight } from '@joanroucoux/cairn-ui/motion';
@@ -15,7 +15,7 @@ import { injectDesktop } from '@shared/layout/desktop-media';
 
 @Component({
   selector: 'app-holding-detail-facts',
-  imports: [ShortDatePipe, TranslocoPipe, UiAmount, UiCard, UiFact, UiFacts, UiHighlight],
+  imports: [ShortDatePipe, TranslocoPipe, UiAmount, UiAmountText, UiCard, UiFact, UiFacts, UiHighlight],
   templateUrl: './holding-detail-facts.html',
   host: { class: 'block' },
 })

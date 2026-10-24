@@ -35,7 +35,7 @@
             {{ rangeChangeRatio() | ratio: { signed: true, decimals: 2 } }}
           </ui-delta>
         } @else {
-          <span class="text-(--subtle-foreground)">&mdash;</span>
+          <span class="text-(--subtle-foreground)"><ui-amount-text text="—" /></span>
         }
         <span class="text-(--muted-foreground)">{{ period().key | transloco: period().params }}</span>
       }

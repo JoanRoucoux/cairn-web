@@ -67,6 +67,10 @@
     "showAmounts": "Afficher les montants",
     "offline": "Vous êtes hors ligne. Les valeurs peuvent être périmées."
   },
+  "amount": {
+    "masked": "Montant masqué",
+    "missing": "Non renseigné"
+  },
   "dialog": {
     "close": "Fermer"
   },

@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, output } from '@angular/core';
 
-import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UI_AMOUNT_LABELS, UiAmount, UiAmountText, speakAmount } from '@joanroucoux/cairn-ui/amount';
 import { type AsyncState, UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
 import { UiDelta } from '@joanroucoux/cairn-ui/delta';
 import { type ChartPoint, UiLineChart } from '@joanroucoux/cairn-ui/line-chart';
@@ -24,6 +24,7 @@ import { periodLabel } from '../period-label';
     RatioPipe,
     TranslocoPipe,
     UiAmount,
+    UiAmountText,
     UiAsync,
     UiDelta,
     UiLineChart,
@@ -51,6 +52,7 @@ export class PortfolioCurve {
 
   #transloco = inject(TranslocoService);
   #language = inject(LanguageStore);
+  #amountLabels = inject(UI_AMOUNT_LABELS);
 
   protected readonly period = computed(() => periodLabel(this.shownRange() ?? this.range(), this.since()));
 
@@ -74,7 +76,11 @@ export class PortfolioCurve {
     const last = points.at(-1) as ChartPoint;
     const { time, delta } = this.formats();
 
-    return { from: time(first.t), to: time(last.t), change: delta(last.v - first.v) };
+    return {
+      from: time(first.t),
+      to: time(last.t),
+      change: speakAmount(delta(last.v - first.v), this.#amountLabels()),
+    };
   });
 
   protected onRangeChange(value: string): void {

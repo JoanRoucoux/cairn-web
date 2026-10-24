@@ -173,7 +173,7 @@ test.describe('add a line', () => {
     await expect(page.getByText('4 characters out of 12')).toBeVisible();
 
     await isin.fill('XS238123456X');
-    await expect(page.getByText('This is not a valid ISIN: 2 letters, 9 characters, 1 digit.')).toBeVisible();
+    await expect(isin).toHaveAccessibleDescription(/This is not a valid ISIN: 2 letters, 9 characters, 1 digit./);
     await expect(page.getByTestId('holding-add-account')).toHaveCount(0);
 
     await isin.fill('XS2381234567');

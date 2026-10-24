@@ -74,7 +74,7 @@ describe('ProfilePasskeyDialog', () => {
 
     await user.click(screen.getByTestId('passkey-register'));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('forms.required');
+    await vi.waitFor(() => expect(screen.getByTestId('passkey-label')).toHaveAccessibleDescription('forms.required'));
     expect(register).not.toHaveBeenCalled();
   });
 
