@@ -27,6 +27,7 @@ import { ProfilePasskeyDialog } from './passkey-dialog/profile-passkey-dialog';
 import { ProfilePasskeyList } from './passkey-list/profile-passkey-list';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { type PasskeyView, ProfileStore } from './profile-store';
+import { ProfileTelegram } from './telegram/profile-telegram';
 
 @Component({
   selector: 'app-profile-page',
@@ -43,6 +44,7 @@ import { type PasskeyView, ProfileStore } from './profile-store';
     ProfilePasskeyDeleteDialog,
     ProfilePasskeyDialog,
     ProfilePasskeyList,
+    ProfileTelegram,
     RouterLink,
     TranslocoPipe,
     UiRow,

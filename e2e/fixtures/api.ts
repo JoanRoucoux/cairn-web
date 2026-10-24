@@ -189,6 +189,7 @@ const FIXED_RESPONSES: Record<string, unknown> = {
   'GET /api/accounts': accounts,
   'GET /api/session': getSession(),
   'GET /api/session/passkeys': getPasskeys(),
+  'GET /api/session/telegram': { status: 'unlinked' },
 };
 
 type Handler = (route: Route, match: RegExpExecArray) => Promise<void>;

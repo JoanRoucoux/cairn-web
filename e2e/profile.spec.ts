@@ -120,4 +120,29 @@ test.describe('profile', () => {
     expect(passkeyCalls).toBe(2);
     expect(sessionCalls).toBe(1);
   });
+
+  test('connectsTelegramThroughTheInvitationLink', async ({ page }) => {
+    const profile = new ProfilePageObject(page);
+    let checks = 0;
+    await page.route('**/api/session/telegram/link', (route) =>
+      route.fulfill({
+        status: 201,
+        json: { url: 'https://t.me/cairn_bot?start=abc', expiresAt: '2099-01-01T00:00:00Z' },
+      }),
+    );
+    await page.route('**/api/session/telegram/link/check', (route) => {
+      checks += 1;
+
+      return route.fulfill({ json: { status: 'linked', chatLabel: '@alex', linkedAt: '2026-10-24T09:00:00Z' } });
+    });
+    await profile.goto();
+
+    await profile.telegramConnect.click();
+
+    await expect(profile.telegramOpen).toHaveAttribute('href', 'https://t.me/cairn_bot?start=abc');
+    await expect(profile.telegramOpen).toHaveAttribute('target', '_blank');
+    await expect(profile.telegramLinked).toContainText('@alex', { timeout: 10_000 });
+    await expect(profile.telegramDisconnect).toBeVisible();
+    expect(checks).toBeGreaterThan(0);
+  });
 });
