@@ -39,6 +39,8 @@ export const passkeys: Record<string, unknown>[] = [
 
 export const preferences = { language: 'en', theme: 'system' };
 
+export const telegram = { status: 'unlinked' };
+
 export const flushCall = async (
   http: HttpTestingController,
   url: string,
@@ -61,4 +63,5 @@ export const settleProfile = async (
   await flushCall(http, '/api/session', (data.session ?? session) as object);
   await flushCall(http, '/api/session/passkeys', data.passkeys ?? passkeys);
   await flushCall(http, '/api/session/preferences', preferences);
+  http.match('/api/session/telegram').forEach((request) => request.flush(telegram));
 };
