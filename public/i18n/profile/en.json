@@ -97,6 +97,8 @@
     "preferencesFailed": "Your preference could not be saved. Try again.",
     "telegramLinked": "Telegram connected",
     "telegramUnlinked": "Telegram disconnected",
+    "telegramCopied": "Message copied",
+    "telegramCopyFailed": "The message could not be copied. Select it instead.",
     "telegramDisconnectFailed": "Telegram could not be disconnected. Try again."
   },
   "telegram": {
@@ -105,6 +107,9 @@
     "unavailable": "No Telegram bot is configured on the server.",
     "connect": "Connect Telegram",
     "open": "Open Telegram",
+    "fallback": "Telegram does not open? Send this message to @{{bot}}:",
+    "command": "Message to send",
+    "copy": "Copy the message",
     "pending": "Press Start in Telegram. This page updates by itself.",
     "expired": "The link expired. Try again.",
     "linked": "Connected to {{label}} since {{date}}",

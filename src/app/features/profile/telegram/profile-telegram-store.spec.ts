@@ -21,7 +21,11 @@ describe('ProfileTelegramStore', () => {
     TestBed.tick();
     httpTesting.expectOne('/api/session/telegram').flush(body);
     await TestBed.inject(ApplicationRef).whenStable();
-    vi.useFakeTimers({ now: new Date('2026-10-24T09:00:00Z') });
+    vi.useFakeTimers({
+      now: new Date('2026-10-24T09:00:00Z'),
+      toFake: ['setTimeout', 'clearTimeout', 'Date', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      shouldClearNativeTimers: true,
+    });
   };
 
   const connect = async (expiresAt = '2026-10-24T09:10:00Z'): Promise<void> => {
@@ -153,6 +157,27 @@ describe('ProfileTelegramStore', () => {
     httpTesting.expectNone(CHECK);
   });
 
+  it('derivesTheStartCommandFromTheInvitation', async () => {
+    await load();
+
+    expect(store.botUsername()).toBeNull();
+    expect(store.startCommand()).toBeNull();
+
+    await connect();
+
+    expect(store.botUsername()).toBe('cairn_bot');
+    expect(store.startCommand()).toBe('/start abc');
+
+    store.invitationUrl.set('not a url');
+
+    expect(store.startCommand()).toBeNull();
+
+    store.invitationUrl.set('https://t.me/cairn_bot');
+
+    expect(store.botUsername()).toBeNull();
+    expect(store.startCommand()).toBeNull();
+  });
+
   it('flags a failed connect and keeps the status', async () => {
     await load();
 
@@ -176,33 +201,52 @@ describe('ProfileTelegramStore', () => {
     await connect();
 
     await vi.advanceTimersByTimeAsync(3000);
-    const first = httpTesting.expectOne(CHECK);
-    await vi.advanceTimersByTimeAsync(3000);
-    const second = httpTesting.expectOne(CHECK);
-    second.flush(linked);
-    await vi.advanceTimersByTimeAsync(0);
-    first.flush(null, { status: 502, statusText: 'Bad Gateway' });
+    const inFlight = httpTesting.expectOne(CHECK);
+    const disconnecting = store.disconnect();
+    httpTesting.expectOne({ method: 'DELETE', url: LINK }).flush(null, { status: 204, statusText: 'No Content' });
+    await disconnecting;
+    inFlight.flush(linked);
     await vi.advanceTimersByTimeAsync(0);
 
-    expect(store.status()).toBe('linked');
-    expect(store.failed()).toBe(false);
+    expect(store.status()).toBe('unlinked');
+    expect(store.chatLabel()).toBe('');
   });
 
-  it('aLateSuccessAfterPollingFailedIsIgnored', async () => {
+  it('aLateCheckFailureAfterPollingStoppedIsIgnored', async () => {
     await load();
     await connect();
 
     await vi.advanceTimersByTimeAsync(3000);
-    const first = httpTesting.expectOne(CHECK);
-    await vi.advanceTimersByTimeAsync(3000);
-    const second = httpTesting.expectOne(CHECK);
-    second.flush(null, { status: 502, statusText: 'Bad Gateway' });
-    await vi.advanceTimersByTimeAsync(0);
-    first.flush(linked);
+    const inFlight = httpTesting.expectOne(CHECK);
+    const disconnecting = store.disconnect();
+    httpTesting.expectOne({ method: 'DELETE', url: LINK }).flush(null, { status: 204, statusText: 'No Content' });
+    await disconnecting;
+    inFlight.flush(null, { status: 502, statusText: 'Bad Gateway' });
     await vi.advanceTimersByTimeAsync(0);
 
     expect(store.status()).toBe('unlinked');
-    expect(store.failed()).toBe(true);
+    expect(store.failed()).toBe(false);
+  });
+
+  it('aSlowCheckDelaysTheNextOneInsteadOfOverlapping', async () => {
+    await load();
+    await connect();
+
+    await vi.advanceTimersByTimeAsync(3000);
+    const slow = httpTesting.expectOne(CHECK);
+
+    await vi.advanceTimersByTimeAsync(3000);
+    httpTesting.expectNone(CHECK);
+
+    slow.flush({ status: 'pending' });
+    await vi.advanceTimersByTimeAsync(2999);
+    httpTesting.expectNone(CHECK);
+
+    await vi.advanceTimersByTimeAsync(1);
+    httpTesting.expectOne(CHECK).flush({ status: 'pending' });
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(store.status()).toBe('pending');
   });
 
   it('pollingStopsWhenTheSectionIsDestroyed', async () => {

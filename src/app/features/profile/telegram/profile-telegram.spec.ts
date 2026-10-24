@@ -24,17 +24,23 @@ const translations = {
   'profile.telegram.connect': 'Connect Telegram',
   'profile.telegram.open': 'Open Telegram',
   'profile.telegram.pending': 'Press Start in Telegram.',
+  'profile.telegram.fallback': 'Telegram does not open? Send this message to @{{bot}}:',
+  'profile.telegram.command': 'Message to send',
+  'profile.telegram.copy': 'Copy the message',
   'profile.telegram.expired': 'The link expired. Try again.',
   'profile.telegram.linked': 'Connected to {{label}} since {{date}}',
   'profile.telegram.disconnect': 'Disconnect',
   'profile.telegram.error': 'Telegram could not be reached. Try again.',
   'profile.toasts.telegramLinked': 'Telegram connected',
   'profile.toasts.telegramUnlinked': 'Telegram disconnected',
+  'profile.toasts.telegramCopied': 'Message copied',
+  'profile.toasts.telegramCopyFailed': 'The message could not be copied. Select it instead.',
   'profile.toasts.telegramDisconnectFailed': 'Telegram could not be disconnected. Try again.',
 };
 
 describe('ProfileTelegram', () => {
   let httpTesting: HttpTestingController;
+  const clipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
   const show = vi.fn();
   const showError = vi.fn();
 
@@ -53,18 +59,18 @@ describe('ProfileTelegram', () => {
     httpTesting.expectOne('/api/session/telegram').flush(body);
   };
 
-  const connect = async (expiresAt: string): Promise<void> => {
-    const user = userEvent.setup();
+  const connect = async (expiresAt: string, url = INVITATION_URL): Promise<void> => {
+    const user = userEvent.setup({ delay: null });
     await renderSection({ status: 'unlinked' });
     const button = await screen.findByRole('button', { name: 'Connect Telegram' });
     vi.useFakeTimers({
-      toFake: ['setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
       shouldClearNativeTimers: true,
     });
     await user.click(button);
     const request = await vi.waitFor(() => httpTesting.expectOne({ method: 'POST', url: LINK }));
 
-    request.flush({ url: INVITATION_URL, expiresAt });
+    request.flush({ url, expiresAt });
     await vi.waitFor(() => {
       TestBed.tick();
       expect(screen.getByRole('link', { name: 'Open Telegram' })).toBeInTheDocument();
@@ -79,6 +85,12 @@ describe('ProfileTelegram', () => {
   };
 
   afterEach(() => {
+    if (clipboard) {
+      Object.defineProperty(navigator, 'clipboard', clipboard);
+    } else {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    }
+
     httpTesting.verify();
     vi.useRealTimers();
     show.mockClear();
@@ -97,6 +109,7 @@ describe('ProfileTelegram', () => {
 
     expect(await screen.findByRole('button', { name: 'Connect Telegram' })).toBeInTheDocument();
     expect(screen.queryByText('The link expired. Try again.')).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
   });
 
   it('should open the invitation in a new tab once connecting', async () => {
@@ -108,6 +121,58 @@ describe('ProfileTelegram', () => {
     expect(open).toHaveAttribute('target', '_blank');
     expect(open).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByText('Press Start in Telegram.')).toBeInTheDocument();
+  });
+
+  it('should show the fallback command with the bot name while pending', async () => {
+    await connect('2099-01-01T00:00:00Z');
+
+    expect(screen.getByText('Telegram does not open? Send this message to @cairn_bot:')).toBeInTheDocument();
+    const command = screen.getByRole('textbox', { name: 'Message to send' });
+
+    expect(command).toHaveValue('/start abc');
+    expect(command).toHaveAttribute('readonly');
+  });
+
+  it('should hide the fallback when the invitation carries no token', async () => {
+    await connect('2099-01-01T00:00:00Z', 'https://t.me/cairn_bot');
+
+    expect(screen.getByRole('link', { name: 'Open Telegram' })).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy the message' })).not.toBeInTheDocument();
+  });
+
+  it('should copy the command and toast', async () => {
+    await connect('2099-01-01T00:00:00Z');
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+
+    screen.getByRole('button', { name: 'Copy the message' }).click();
+
+    await vi.waitFor(() => expect(show).toHaveBeenCalledWith('Message copied'));
+    expect(writeText).toHaveBeenCalledWith('/start abc');
+  });
+
+  it('should toast an error when the command cannot be copied', async () => {
+    await connect('2099-01-01T00:00:00Z');
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockRejectedValue(new Error('denied')) },
+      configurable: true,
+    });
+
+    screen.getByRole('button', { name: 'Copy the message' }).click();
+
+    await vi.waitFor(() =>
+      expect(showError).toHaveBeenCalledWith('The message could not be copied. Select it instead.', 'dialog.close'),
+    );
+  });
+
+  it('should toast an error when the clipboard is missing', async () => {
+    await connect('2099-01-01T00:00:00Z');
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true });
+
+    screen.getByRole('button', { name: 'Copy the message' }).click();
+
+    await vi.waitFor(() => expect(showError).toHaveBeenCalled());
   });
 
   it('should offer to connect again when a token is pending but its link is lost', async () => {
@@ -151,6 +216,7 @@ describe('ProfileTelegram', () => {
     await renderSection(linked);
 
     expect(await screen.findByText(/Connected to @alex since/)).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Disconnect' }));
     const request = await vi.waitFor(() => httpTesting.expectOne({ method: 'DELETE', url: LINK }));
     request.flush(null, { status: 204, statusText: 'No Content' });
