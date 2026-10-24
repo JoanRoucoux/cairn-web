@@ -19,6 +19,7 @@ import { injectTranslationEvents } from '@core/i18n/translation-events';
 import { SLUG_BY_CLASS } from '@features/holdings/contract/holding-class-slugs';
 import { HOLDINGS_PATHS, holdingsListHref, holdingsQuery } from '@features/holdings/contract/holdings-paths';
 
+import { EUR } from '@shared/format/currency';
 import { excludedTotal } from '@shared/format/excluded-lines';
 import { pluralKey } from '@shared/format/plural-key';
 import { RatioPipe } from '@shared/format/ratio-pipe';
@@ -117,7 +118,7 @@ export class AllocationPage {
   });
 
   protected readonly formatEur = (value: number): string =>
-    formatAmount(value, { locale: this.#locale, currency: 'EUR' }, this.#masked());
+    formatAmount(value, { locale: this.#locale, currency: EUR }, this.#masked());
 
   protected readonly formatShare = (share: number): string => this.#ratio.transform(share);
 

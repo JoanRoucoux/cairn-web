@@ -1,5 +1,7 @@
 import { formatAmount } from '@joanroucoux/cairn-ui/amount';
 
+import { EUR } from '@shared/format/currency';
+
 import type { ChartRange } from './chart-range';
 
 export type ChartFormats = {
@@ -10,7 +12,7 @@ export type ChartFormats = {
 };
 
 export const chartFormats = (locale: string, masked: boolean, range: ChartRange): ChartFormats => {
-  const zone = 'Europe/Paris';
+  const zone = range === '1d' ? undefined : 'UTC';
   const timeOptions: Record<ChartRange, Intl.DateTimeFormatOptions> = {
     '1d': { hour: '2-digit', minute: '2-digit', timeZone: zone },
     '7d': { weekday: 'short', day: 'numeric', month: 'short', timeZone: zone },
@@ -31,8 +33,8 @@ export const chartFormats = (locale: string, masked: boolean, range: ChartRange)
   const axisFormat = new Intl.DateTimeFormat(locale, axisOptions[range]);
 
   return {
-    value: (value) => formatAmount(value, { locale, currency: 'EUR' }, masked),
-    delta: (delta) => formatAmount(delta, { locale, currency: 'EUR', signed: true, fractionDigits: 2 }, masked),
+    value: (value) => formatAmount(value, { locale, currency: EUR }, masked),
+    delta: (delta) => formatAmount(delta, { locale, currency: EUR, signed: true, fractionDigits: 2 }, masked),
     time: (time) => timeFormat.format(time),
     axis: (time) => axisFormat.format(time),
   };

@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom/vitest';
 
+declare const process: { env: Record<string, string | undefined> };
+
+process.env['TZ'] = 'America/New_York';
+
 HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement): void {
   this.setAttribute('open', '');
 };

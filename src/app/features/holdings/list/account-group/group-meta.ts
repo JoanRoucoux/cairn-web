@@ -5,6 +5,7 @@ import { TranslocoService } from '@jsverse/transloco';
 
 import { injectTranslationEvents } from '@core/i18n/translation-events';
 
+import { EUR } from '@shared/format/currency';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
 import type { AccountGroup } from '../holding-list-store';
@@ -26,7 +27,7 @@ export const injectGroupMeta = (group: Signal<AccountGroup>): Signal<string> => 
       const lines = filteredCount(current.filtered.rowCount);
 
       return transloco.translate('holdings.filteredMeta', {
-        total: formatAmount(current.filtered.accountValueEur, { locale, currency: 'EUR' }, masked()),
+        total: formatAmount(current.filtered.accountValueEur, { locale, currency: EUR }, masked()),
         lines: transloco.translate(lines.key, lines),
       });
     }

@@ -104,11 +104,11 @@ describe('ProfileStore', () => {
     ]);
   });
 
-  it('should count a use after midnight in Paris but before midnight UTC as today', async () => {
-    await settleProfile(httpTesting, { passkeys: [{ ...passkeys[1]!, lastUsedAt: '2026-09-24T22:30:00Z' }] });
+  it('should count days on the device calendar, so a use already today in UTC is yesterday in New York', async () => {
+    await settleProfile(httpTesting, { passkeys: [{ ...passkeys[1]!, lastUsedAt: '2026-09-25T03:30:00Z' }] });
     await TestBed.inject(ApplicationRef).whenStable();
 
-    expect(store.passkeys()[0]?.usage.kind).toBe('today');
+    expect(store.passkeys()[0]?.usage.kind).toBe('yesterday');
   });
 
   it('should follow the device scheme', async () => {

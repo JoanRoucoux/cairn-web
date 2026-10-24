@@ -9,8 +9,6 @@ import { LanguageStore } from '@core/i18n/language-store';
 import { SessionStore } from '@core/session/session-store';
 import { type ThemePreference, ThemeStore } from '@core/theme/theme-store';
 
-import { parisDateString } from '@shared/format/paris-date';
-
 const MILLISECONDS_PER_DAY = 86_400_000;
 
 export type PasskeyUsage = { kind: 'never' | 'today' | 'yesterday' | 'on'; date: string };
@@ -24,11 +22,8 @@ export type PasskeyView = {
   usage: PasskeyUsage;
 };
 
-const parisDayNumber = (date: Date): number => {
-  const [year, month, day] = parisDateString(date).split('-').map(Number) as [number, number, number];
-
-  return Date.UTC(year, month - 1, day) / MILLISECONDS_PER_DAY;
-};
+const localDayNumber = (date: Date): number =>
+  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MILLISECONDS_PER_DAY;
 
 @Injectable()
 export class ProfileStore {
@@ -38,7 +33,6 @@ export class ProfileStore {
   #sessionApiClient = inject(SessionService);
 
   #dateFormat = new Intl.DateTimeFormat(inject(LOCALE_ID), {
-    timeZone: 'Europe/Paris',
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -132,7 +126,7 @@ export class ProfileStore {
     }
 
     const lastUsed = new Date(passkey.lastUsedAt);
-    const days = parisDayNumber(now) - parisDayNumber(lastUsed);
+    const days = localDayNumber(now) - localDayNumber(lastUsed);
 
     if (days === 0) {
       return { kind: 'today', date: '' };

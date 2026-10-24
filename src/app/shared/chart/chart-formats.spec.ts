@@ -30,13 +30,13 @@ describe('chartFormats', () => {
   const at = Date.UTC(2026, 8, 25, 7, 0);
 
   it.each([
-    ['fr-FR', '1d', '09:00'],
+    ['fr-FR', '1d', '03:00'],
     ['fr-FR', '7d', 'ven. 25'],
     ['fr-FR', '1m', '25 sept.'],
     ['fr-FR', '1y', 'sept.'],
     ['fr-FR', '5y', '2026'],
     ['fr-FR', 'max', '2026'],
-    ['en-GB', '1d', '09:00'],
+    ['en-GB', '1d', '03:00'],
     ['en-GB', '7d', 'Fri 25'],
     ['en-GB', '1m', '25 Sept'],
     ['en-GB', '1y', 'Sept'],
@@ -47,7 +47,7 @@ describe('chartFormats', () => {
   });
 
   it.each([
-    ['fr-FR', '1d', '09:00'],
+    ['fr-FR', '1d', '03:00'],
     ['fr-FR', '7d', 'ven. 25 sept.'],
     ['fr-FR', '1m', '25 sept.'],
     ['fr-FR', '1y', '25 sept. 2026'],
@@ -58,5 +58,9 @@ describe('chartFormats', () => {
     ['en-GB', 'max', 'September 2026'],
   ] as const)('should date the %s %s tooltip like the mockup', (locale, range, expected) => {
     expect(chartFormats(locale, false, range).time(at)).toBe(expected);
+  });
+
+  it('should keep a daily point on its own day in a zone behind UTC', () => {
+    expect(chartFormats('en-GB', false, '1m').axis(Date.parse('2026-09-25'))).toBe('25 Sept');
   });
 });
