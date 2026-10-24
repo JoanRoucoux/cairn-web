@@ -18,7 +18,8 @@ export class ProfileTelegramStore {
     year: 'numeric',
   });
 
-  #timer: ReturnType<typeof setInterval> | undefined;
+  #timer: ReturnType<typeof setTimeout> | undefined;
+  #generation = 0;
 
   readonly #link = rxResource({
     stream: () => this.#telegramApiClient.getTelegramLink(),
@@ -98,21 +99,24 @@ export class ProfileTelegramStore {
 
   #startPolling(expiresAt: number): void {
     this.#stopPolling();
-    this.#timer = setInterval(() => void this.#check(expiresAt), POLL_INTERVAL_MS);
+    this.#scheduleCheck(expiresAt, this.#generation);
+  }
+
+  #scheduleCheck(expiresAt: number, generation: number): void {
+    this.#timer = setTimeout(() => void this.#check(expiresAt, generation), POLL_INTERVAL_MS);
   }
 
   #stopPolling(): void {
-    clearInterval(this.#timer);
+    clearTimeout(this.#timer);
     this.#timer = undefined;
+    this.#generation++;
   }
 
-  async #check(expiresAt: number): Promise<void> {
-    const timer = this.#timer;
-
+  async #check(expiresAt: number, generation: number): Promise<void> {
     try {
       const response = await firstValueFrom(this.#telegramApiClient.checkTelegramLink());
 
-      if (this.#timer !== timer) {
+      if (this.#generation !== generation) {
         return;
       }
 
@@ -125,9 +129,11 @@ export class ProfileTelegramStore {
         this.invitationUrl.set(null);
         this.expired.set(true);
         this.#current.set(response);
+      } else {
+        this.#scheduleCheck(expiresAt, generation);
       }
     } catch {
-      if (this.#timer !== timer) {
+      if (this.#generation !== generation) {
         return;
       }
 

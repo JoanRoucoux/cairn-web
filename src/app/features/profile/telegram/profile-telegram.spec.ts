@@ -54,11 +54,11 @@ describe('ProfileTelegram', () => {
   };
 
   const connect = async (expiresAt: string): Promise<void> => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     await renderSection({ status: 'unlinked' });
     const button = await screen.findByRole('button', { name: 'Connect Telegram' });
     vi.useFakeTimers({
-      toFake: ['setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      toFake: ['setTimeout', 'clearTimeout', 'requestAnimationFrame', 'cancelAnimationFrame'],
       shouldClearNativeTimers: true,
     });
     await user.click(button);
