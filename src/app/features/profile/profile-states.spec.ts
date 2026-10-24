@@ -13,7 +13,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
-import { flushCall, passkeys, session, settleProfile } from './profile-testing';
+import { flushCall, passkeys, preferences, session, settleProfile } from './profile-testing';
 
 describe('ProfilePage loading states', () => {
   let httpTesting: HttpTestingController;
@@ -35,7 +35,10 @@ describe('ProfilePage loading states', () => {
     httpTesting = TestBed.inject(HttpTestingController);
   };
 
-  afterEach(() => httpTesting.verify());
+  afterEach(() => {
+    httpTesting.match('/api/session/preferences').forEach((request) => request.flush(preferences));
+    httpTesting.verify();
+  });
 
   it('should show the identity while the passkeys load, with placeholders for them only', async () => {
     await renderPage();

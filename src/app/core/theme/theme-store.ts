@@ -28,17 +28,20 @@ export class ThemeStore {
   readonly systemScheme: Signal<ThemeScheme> = this.#systemScheme.asReadonly();
 
   constructor() {
-    this.#apply(this.#preference());
+    this.#stamp(this.#preference());
     this.#followDevice();
   }
 
-  set(preference: ThemePreference): void {
+  apply(preference: ThemePreference): void {
     this.#preference.set(preference);
     localStorage.setItem(STORAGE_KEY, preference);
+    this.#stamp(preference);
+  }
 
+  set(preference: ThemePreference): void {
     const root = this.#document.documentElement;
     root.setAttribute('data-theme-switching', '');
-    this.#apply(preference);
+    this.apply(preference);
     root.getBoundingClientRect();
     requestAnimationFrame(() => root.removeAttribute('data-theme-switching'));
   }
@@ -61,7 +64,7 @@ export class ThemeStore {
     return isPreference(stored) ? stored : 'system';
   }
 
-  #apply(preference: ThemePreference): void {
+  #stamp(preference: ThemePreference): void {
     const root = this.#document.documentElement;
     const forced = this.#themeColors.find((color) => color.scheme === preference)?.content;
 
