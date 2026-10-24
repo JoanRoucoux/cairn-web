@@ -1,3 +1,4 @@
+import { isForeignCurrency } from './currency';
 import { pluralKey } from './plural-key';
 
 export type ExcludableLine = { marketValueEur?: number | null; priceCurrency?: string | null };
@@ -7,8 +8,7 @@ export type ExcludedCounts = { unvaluedCount: number; nonEurCount: number };
 export const isExcluded = (line: ExcludableLine): boolean =>
   line.marketValueEur === null || line.marketValueEur === undefined;
 
-export const isNonEur = (line: ExcludableLine): boolean =>
-  isExcluded(line) && Boolean(line.priceCurrency) && line.priceCurrency !== 'EUR';
+export const isNonEur = (line: ExcludableLine): boolean => isExcluded(line) && isForeignCurrency(line.priceCurrency);
 
 export const excludedCounts = (lines: readonly ExcludableLine[]): ExcludedCounts => {
   const excluded = lines.filter(isExcluded);

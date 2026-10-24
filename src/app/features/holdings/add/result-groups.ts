@@ -1,5 +1,6 @@
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
 
+import { isForeignCurrency } from '@shared/format/currency';
 import { normalizeSearch } from '@shared/format/normalize-search';
 
 import { compactIsin, isIsin } from './isin';
@@ -17,8 +18,7 @@ export type ShownGroup = ResultGroup & { state: Exclude<ResultGroup['state'], 'p
 
 export const isShown = (group: ResultGroup): group is ShownGroup => group.state !== 'pending';
 
-export const isForeign = (candidate: InstrumentCandidateResponse): boolean =>
-  !!candidate.currency && candidate.currency !== 'EUR';
+export const isForeign = (candidate: InstrumentCandidateResponse): boolean => isForeignCurrency(candidate.currency);
 
 export const trackedTitlesOf = (holdings: HoldingResponse[]): HoldingResponse[] => {
   const titles = new Map<string, HoldingResponse>();

@@ -174,7 +174,13 @@ cairn-web is a standalone application: it owns its navigation shell, its theme a
   lignes sans cours", "hors N lignes" once one is quoted in another currency), and so do an account
   (its caption) and an unfiltered Lignes group (its meta). Envelopes, slices, the class summary and a
   filtered group only sum. A line without a price, or quoted in another currency, renders a dash and
-  is never summed.
+  is never summed. `isForeignCurrency()` (`shared/format/currency.ts`) is the only home of that rule.
+- **Three kinds of time.** An instant the user reads (a quote time, the 1D chart, passkey dates)
+  shows in the device's zone. A date-only value (`priceAsOf`, a daily chart point) is formatted in
+  UTC, the zone it was parsed in, or a device behind UTC shows the day before. The portfolio's
+  calendar day (the `date` sent to the API, whether a quote is from today, the start of a range) is
+  the Europe/Paris day the backend defines: `parisDateString()`. Unit tests run in America/New_York
+  (`src/test-setup.ts`) so a slip shows; Playwright runs in Europe/Paris.
 - **Never rebuild a provider URL from `priceSource` and `sourceRef`.** The backend computes
   `externalUrl`; duplicating the rule here would make it live in two places.
 

@@ -15,6 +15,7 @@ import type {
 import { HoldingService } from '@core/api-client/holding/holding.service';
 import { InstrumentService } from '@core/api-client/instrument/instrument.service';
 
+import { EUR } from '@shared/format/currency';
 import { filterDecimalInput, parseDecimal } from '@shared/format/parse-decimal';
 
 import { compactIsin, isIsin } from './isin';
@@ -149,7 +150,7 @@ export class HoldingAddDialogStore {
       return picked.candidate.probePrice ?? null;
     }
 
-    return picked.title.priceCurrency === 'EUR' ? (picked.title.price ?? null) : null;
+    return picked.title.priceCurrency === EUR ? (picked.title.price ?? null) : null;
   });
 
   readonly value = computed(() => {

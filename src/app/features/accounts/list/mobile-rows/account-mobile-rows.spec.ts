@@ -117,12 +117,12 @@ describe('AccountMobileRows', () => {
     expect(screen.queryByTestId('account-empty-hint-mobile')).not.toBeInTheDocument();
   });
 
-  it('should show the balance date of a savings account instead of a line count, from the Paris date', async () => {
-    await renderRows([{ ...savings, balanceAt: '2026-09-12T22:30:00Z' }], {
+  it('should show the balance date of a savings account instead of a line count, on the device calendar', async () => {
+    await renderRows([{ ...savings, balanceAt: '2026-09-13T02:30:00Z' }], {
       'accounts/en': { balanceAt: 'Balance as of {{date}}' },
     });
 
-    expect(screen.getByTestId('account-lines-mobile')).toHaveTextContent('Balance as of 13/09');
+    expect(screen.getByTestId('account-lines-mobile')).toHaveTextContent('Balance as of 12/09');
     expect(screen.getByTestId('account-row-mobile')).not.toHaveTextContent('accounts.noLine');
   });
 

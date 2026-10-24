@@ -9,10 +9,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import type { HoldingResponse } from '@core/api-client/cairnAPI.schemas';
 
 import { decimalPlaces } from '@shared/format/decimal-places';
+import { parisDateString } from '@shared/format/paris-date';
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 import { injectDesktop } from '@shared/layout/desktop-media';
-
-const PARIS_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
 
 @Component({
   selector: 'app-holding-detail-facts',
@@ -53,14 +52,13 @@ export class HoldingDetailFacts {
 
     const fetched = new Date(priceFetchedAt);
 
-    if (PARIS_DAY.format(fetched) !== priceAsOf) {
+    if (parisDateString(fetched) !== priceAsOf) {
       return null;
     }
 
     return new Intl.DateTimeFormat(this.#locale, {
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'Europe/Paris',
     }).format(fetched);
   });
 }

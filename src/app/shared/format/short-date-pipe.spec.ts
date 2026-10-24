@@ -10,12 +10,12 @@ describe('ShortDatePipe', () => {
     return TestBed.runInInjectionContext(() => new ShortDatePipe().transform(value));
   };
 
-  it('formats a date as day/month', () => {
+  it('keeps a date-only value on its own day in a zone behind UTC', () => {
     expect(transform('2026-09-24')).toBe('24/09');
   });
 
-  it('reads the date in Paris, not in UTC', () => {
-    expect(transform('2026-09-12T22:30:00Z')).toBe('13/09');
+  it('reads an instant on the device calendar, not in UTC', () => {
+    expect(transform('2026-09-13T02:30:00Z')).toBe('12/09');
   });
 
   it('returns an empty string for a missing value', () => {
