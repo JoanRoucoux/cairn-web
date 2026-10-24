@@ -24,7 +24,7 @@ import { injectDesktop } from '@shared/layout/desktop-media';
 
 import { HoldingAddDialog } from '../add/holding-add-dialog';
 import { SLUG_BY_CLASS } from '../contract/holding-class-slugs';
-import { HOLDINGS_PATHS, HOLDINGS_QUERY } from '../contract/holdings-paths';
+import { HOLDINGS_PATHS, holdingsQuery } from '../contract/holdings-paths';
 import { HoldingChanges } from '../holding-changes';
 import { ManualQuoteDialog } from '../manual-quote/manual-quote-dialog';
 import { HoldingAccountCard } from './account-group/card/holding-account-card';
@@ -177,7 +177,7 @@ export class HoldingListPage {
       if (account !== null) {
         this.presetAccountId.set(account || null);
         this.addOpen.set(true);
-        this.#mergeQueryParams({ add: null });
+        this.#mergeQueryParams(holdingsQuery({ add: null }));
       }
     });
 
@@ -191,7 +191,7 @@ export class HoldingListPage {
 
     effect(() => {
       if (this.#store.unknownAccountParam()) {
-        this.#mergeQueryParams({ compte: null });
+        this.#mergeQueryParams(holdingsQuery({ account: null }));
       }
     });
 
@@ -237,11 +237,11 @@ export class HoldingListPage {
   }
 
   protected onClassChange(value: string): void {
-    this.#mergeQueryParams({ [HOLDINGS_QUERY.assetClass]: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] });
+    this.#mergeQueryParams(holdingsQuery({ assetClass: value === ALL ? null : SLUG_BY_CLASS[value as AssetClass] }));
   }
 
   protected chooseAccount(accountId: string | null): void {
-    this.#mergeQueryParams({ [HOLDINGS_QUERY.account]: accountId });
+    this.#mergeQueryParams(holdingsQuery({ account: accountId }));
   }
 
   protected openAdd(): void {

@@ -10,7 +10,7 @@ import { UiRow, UiRowItem } from '@joanroucoux/cairn-ui/row';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideEllipsis, LucidePencil, LucideTrash } from '@lucide/angular';
 
-import { HOLDINGS_PATHS } from '@features/holdings/contract/holdings-paths';
+import { HOLDINGS_PATHS, holdingsQuery } from '@features/holdings/contract/holdings-paths';
 
 import { ShortDatePipe } from '@shared/format/short-date-pipe';
 
@@ -41,6 +41,7 @@ import { uncountedCaptions } from '../uncounted-captions';
 })
 export class AccountMobileRows {
   protected readonly holdingsPaths = HOLDINGS_PATHS;
+  protected readonly holdingsQuery = holdingsQuery;
 
   readonly accounts = input.required<AccountView[]>();
   readonly added = input<string | null>(null);
