@@ -61,7 +61,7 @@ export class HoldingListStore {
 
   readonly #queryParamMap = toSignal(this.#route.queryParamMap);
 
-  readonly addParam = computed(() => this.#queryParamMap()?.get('add') ?? null);
+  readonly addParam = computed(() => this.#queryParamMap()?.get(HOLDINGS_QUERY.add) ?? null);
 
   readonly accountParam = computed(() => this.#queryParamMap()?.get(HOLDINGS_QUERY.account) ?? null);
 

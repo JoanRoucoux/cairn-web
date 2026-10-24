@@ -7,7 +7,7 @@
           padding="sm"
           size="xl"
           ui-row
-          [queryParams]="{ compte: account.id }"
+          [queryParams]="holdingsQuery({ account: account.id })"
           [routerLink]="holdingsPaths.list"
           [uiHighlight]="account.id === added() ? account.id : null"
           (highlighted)="highlighted.emit()"
@@ -86,7 +86,7 @@
             size="sm"
             ui-button
             variant="outline"
-            [queryParams]="{ add: account.id }"
+            [queryParams]="holdingsQuery({ add: account.id })"
             [routerLink]="holdingsPaths.list"
           >
             {{ 'accounts.rowEmptyAction' | transloco }}
