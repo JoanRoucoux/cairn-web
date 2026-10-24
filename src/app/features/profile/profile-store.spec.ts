@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 
 import { ProfileStore } from './profile-store';
-import { flushCall, session, settleProfile } from './profile-testing';
+import { flushCall, preferences, session, settleProfile } from './profile-testing';
 
 const passkeys = [
   {
@@ -59,6 +59,7 @@ describe('ProfileStore', () => {
   });
 
   afterEach(() => {
+    httpTesting.match('/api/session/preferences').forEach((request) => request.flush(preferences));
     httpTesting.verify();
     vi.useRealTimers();
   });
@@ -118,11 +119,15 @@ describe('ProfileStore', () => {
   });
 
   it('should change the theme', async () => {
-    store.setTheme('dark');
+    await settle();
+
+    const saved = store.setTheme('dark');
 
     expect(store.theme()).toBe('dark');
 
-    await settle();
+    await flushCall(httpTesting, '/api/session/preferences', { language: 'fr', theme: 'dark' });
+
+    expect(await saved).toBe(true);
   });
 
   it('should reload only the passkeys on request', async () => {
@@ -217,6 +222,7 @@ describe('ProfileStore', () => {
 
   it('should name no passkey when one is added while the list is in error', async () => {
     await flushCall(httpTesting, '/api/session', session);
+    await flushCall(httpTesting, '/api/session/preferences', preferences);
     await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
     await TestBed.inject(ApplicationRef).whenStable();
 
@@ -251,6 +257,7 @@ describe('ProfileStore', () => {
       signInMethod: 'PASSKEY',
     });
     await flushCall(httpTesting, '/api/session/passkeys', null, { status: 500 });
+    await flushCall(httpTesting, '/api/session/preferences', preferences);
     await TestBed.inject(ApplicationRef).whenStable();
 
     expect(store.identityState()).toBe('ready');

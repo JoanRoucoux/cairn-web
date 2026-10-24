@@ -12,6 +12,7 @@ import { LucideEye, LucideEyeOff } from '@lucide/angular';
 import { filter, map } from 'rxjs';
 
 import { AmountVisibility } from '@core/amounts/amount-visibility';
+import { PreferencesStore } from '@core/preferences/preferences-store';
 import { SessionStore } from '@core/session/session-store';
 
 import { PORTFOLIO_PATHS } from '@features/portfolio/contract/portfolio-paths';
@@ -62,6 +63,7 @@ export class AppShell {
   #router = inject(Router);
   #route = inject(ActivatedRoute);
   #session = inject(SessionStore);
+  protected readonly preferences = inject(PreferencesStore);
   #amountVisibility = inject(AmountVisibility);
 
   protected readonly destinations = SHELL_DESTINATIONS;

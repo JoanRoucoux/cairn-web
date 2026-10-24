@@ -98,12 +98,16 @@ export class ProfilePage {
     this.#store.availableLanguages.map((value, index) => ({ value, label: this.#languageLabels()[index]! })),
   );
 
-  protected onThemeChange(preference: string): void {
-    this.#store.setTheme(preference as ThemePreference);
+  protected async onThemeChange(preference: string): Promise<void> {
+    if (!(await this.#store.setTheme(preference as ThemePreference))) {
+      this.#errorToast('profile.toasts.preferencesFailed');
+    }
   }
 
-  protected onLanguageChange(lang: string): void {
-    this.#store.setLanguage(lang);
+  protected async onLanguageChange(lang: string): Promise<void> {
+    if (!(await this.#store.setLanguage(lang))) {
+      this.#errorToast('profile.toasts.preferencesFailed');
+    }
   }
 
   protected async onFileSelected(event: Event): Promise<void> {

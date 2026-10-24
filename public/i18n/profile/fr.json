@@ -93,6 +93,7 @@
     "passkeyDeleted": "Clé d'accès supprimée",
     "imported_one": "{{count}} ligne importée",
     "imported_other": "{{count}} lignes importées",
-    "importFailed": "Échec de l'import"
+    "importFailed": "Échec de l'import",
+    "preferencesFailed": "Votre préférence n'a pas pu être enregistrée. Réessayez."
   }
 }

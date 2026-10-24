@@ -50,7 +50,11 @@ const settleSession = async (): Promise<void> => {
 };
 
 describe('App', () => {
-  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  afterEach(() => {
+    const http = TestBed.inject(HttpTestingController);
+    http.match('/api/session/preferences').forEach((request) => request.flush({ language: 'en', theme: 'system' }));
+    http.verify();
+  });
 
   it('should render the main content area', async () => {
     await renderApp();

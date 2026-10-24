@@ -35,6 +35,7 @@ const settleSession = async (): Promise<void> => {
     username: 'alex',
     signInMethod: 'PASSKEY',
   });
+  (await vi.waitFor(() => http.expectOne('/api/session/preferences'))).flush({ language: 'fr', theme: 'system' });
 };
 
 describe('deepestData', () => {

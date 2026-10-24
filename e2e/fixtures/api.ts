@@ -7,6 +7,7 @@ import { EXTRA_ACCOUNTS, EXTRA_HOLDINGS, buildEnvelopes } from './envelope-holdi
 import { buildUsdHolding } from './non-eur-holding';
 import { buildPerformanceFixtures, buildTrendSeries } from './performance';
 import { summarizeByAccount, totalsOf } from './portfolio-summary';
+import { getPreferences, resetPreferences, updatePreferences } from './preferences';
 import { buildSearchHandler } from './search';
 import { buyHolding, sellHolding, updateHolding } from './trading';
 import { getPasskeys, getSession, mockWebauthn } from './webauthn';
@@ -341,6 +342,8 @@ const setCashBalanceHandler: Handler = setCashBalance(holdings, accounts, cashHo
 
 // First match wins, so a more specific path must come before a broader one.
 const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
+  { method: 'GET', path: new RegExp('^/api/session/preferences$'), handle: getPreferences },
+  { method: 'PATCH', path: new RegExp('^/api/session/preferences$'), handle: updatePreferences },
   { method: 'DELETE', path: new RegExp('^/api/session/passkeys/.+$'), handle: deletePasskey },
   { method: 'GET', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: listQuotes },
   { method: 'POST', path: new RegExp('^/api/instruments/([^/]+)/quotes$'), handle: recordQuote },
@@ -380,6 +383,7 @@ const handleApiRoute = async (route: Route): Promise<void> => {
 const initialState = structuredClone({ holdings, accounts });
 
 const resetState = (): void => {
+  resetPreferences();
   const fresh = structuredClone(initialState);
   holdings.splice(0, holdings.length, ...fresh.holdings);
   accounts.splice(0, accounts.length, ...fresh.accounts);
