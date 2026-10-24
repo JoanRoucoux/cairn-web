@@ -96,13 +96,47 @@ describe('PreferencesStore', () => {
   });
 
   it('keepsTheLocalChoicesWhenTheServerCannotBeReached', async () => {
+    TestBed.resetTestingModule();
+    localStorage.setItem('cairn.theme', 'dark');
+    TestBed.configureTestingModule({
+      imports: [getTranslocoTestingModule()],
+      providers: [provideZonelessChangeDetection(), provideHttpClient(), provideHttpClientTesting()],
+    });
+    TestBed.inject(PreferencesStore);
+    TestBed.inject(LanguageStore).setActiveLang('fr');
+    const failing = TestBed.inject(HttpTestingController);
     TestBed.tick();
-    (await vi.waitFor(() => http.expectOne('/api/session/preferences'))).flush(null, {
+
+    (await vi.waitFor(() => failing.expectOne('/api/session/preferences'))).flush(null, {
       status: 500,
       statusText: 'Error',
     });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(TestBed.inject(ThemeStore).preference()).toBe('dark');
+    expect(TestBed.inject(LanguageStore).activeLang()).toBe('fr');
+    failing.verify();
+  });
+
+  it('aChangeMadeBeforeTheServerAnswersIsNotOverwritten', async () => {
     TestBed.tick();
 
-    expect(TestBed.inject(ThemeStore).preference()).toBe('system');
+    const savedTheme = store.setTheme('dark');
+    const savedLanguage = store.setLanguage('fr');
+    const patches = await vi.waitFor(() => {
+      const found = http.match({ method: 'PATCH', url: '/api/session/preferences' });
+      expect(found).toHaveLength(2);
+
+      return found;
+    });
+    patches[0]!.flush({ language: 'en', theme: 'dark' });
+    patches[1]!.flush({ language: 'fr', theme: 'dark' });
+    await Promise.all([savedTheme, savedLanguage]);
+
+    http.expectOne({ method: 'GET', url: '/api/session/preferences' }).flush({ language: 'en', theme: 'light' });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(TestBed.inject(ThemeStore).preference()).toBe('dark');
+    expect(TestBed.inject(LanguageStore).activeLang()).toBe('fr');
   });
 });

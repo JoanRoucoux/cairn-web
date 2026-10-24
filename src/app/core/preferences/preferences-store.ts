@@ -18,6 +18,9 @@ export class PreferencesStore {
   #theme = inject(ThemeStore);
   #language = inject(LanguageStore);
 
+  #themeTouched = false;
+  #languageTouched = false;
+
   readonly #preferences = rxResource({
     stream: () => this.#apiClient.getPreferences(),
   });
@@ -31,13 +34,19 @@ export class PreferencesStore {
       const { language, theme } = this.#preferences.value();
 
       untracked(() => {
-        this.#language.setActiveLang(language);
-        this.#theme.apply(theme);
+        if (!this.#languageTouched) {
+          this.#language.setActiveLang(language);
+        }
+
+        if (!this.#themeTouched) {
+          this.#theme.apply(theme);
+        }
       });
     });
   }
 
   async setTheme(theme: ThemePreference): Promise<boolean> {
+    this.#themeTouched = true;
     const previous = this.#theme.preference();
     this.#theme.set(theme);
 
@@ -45,6 +54,7 @@ export class PreferencesStore {
   }
 
   async setLanguage(lang: string): Promise<boolean> {
+    this.#languageTouched = true;
     const previous = this.#language.activeLang();
     this.#language.setActiveLang(lang);
 
