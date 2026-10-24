@@ -37,6 +37,8 @@ export const passkeys: Record<string, unknown>[] = [
   { credentialId: 'bmV2ZXI', label: 'Neuf', createdAt: '2026-09-20T10:00:00Z', lastUsedAt: null, current: false },
 ];
 
+export const preferences = { language: 'en', theme: 'system' };
+
 export const flushCall = async (
   http: HttpTestingController,
   url: string,
@@ -58,4 +60,5 @@ export const settleProfile = async (
 ): Promise<void> => {
   await flushCall(http, '/api/session', (data.session ?? session) as object);
   await flushCall(http, '/api/session/passkeys', data.passkeys ?? passkeys);
+  await flushCall(http, '/api/session/preferences', preferences);
 };

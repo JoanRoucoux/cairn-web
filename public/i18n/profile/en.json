@@ -93,6 +93,7 @@
     "passkeyDeleted": "Passkey deleted",
     "imported_one": "{{count}} holding imported",
     "imported_other": "{{count}} holdings imported",
-    "importFailed": "Import failed"
+    "importFailed": "Import failed",
+    "preferencesFailed": "Your preference could not be saved. Try again."
   }
 }

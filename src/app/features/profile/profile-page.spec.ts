@@ -111,6 +111,7 @@ describe('ProfilePage', () => {
     await renderPage();
 
     await user.click(await screen.findByRole('radio', { name: 'profile.theme.dark' }));
+    await flushCall(httpTesting, '/api/session/preferences', { language: 'en', theme: 'dark' });
 
     expect(screen.getByTestId('theme-hint')).toHaveTextContent('profile.themeHint.dark');
   });
@@ -213,6 +214,7 @@ describe('ProfilePage', () => {
     ).toEqual(['profile.language.fr', 'profile.language.en']);
 
     await user.click(within(group).getByRole('radio', { name: 'profile.language.fr' }));
+    await flushCall(httpTesting, '/api/session/preferences', { language: 'fr', theme: 'system' });
 
     expect(TestBed.inject(TranslocoService).getActiveLang()).toBe('fr');
   });
@@ -222,8 +224,34 @@ describe('ProfilePage', () => {
     await renderPage();
 
     await user.click(await screen.findByRole('radio', { name: 'profile.theme.dark' }));
+    await flushCall(httpTesting, '/api/session/preferences', { language: 'en', theme: 'dark' });
 
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+  });
+
+  it('aRefusedThemeChangeShowsTheErrorToast', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(await screen.findByRole('radio', { name: 'profile.theme.dark' }));
+    await flushCall(httpTesting, '/api/session/preferences', null, { status: 500 });
+
+    await vi.waitFor(() => expect(TestBed.inject(UiToasts).toast()?.text).toBe('profile.toasts.preferencesFailed'));
+    expect(document.documentElement).not.toHaveAttribute('data-theme');
+  });
+
+  it('aRefusedLanguageChangeShowsTheErrorToast', async () => {
+    const user = userEvent.setup();
+    await renderPage();
+
+    await user.click(
+      within(await screen.findByRole('radiogroup', { name: 'profile.languageLabel' })).getByRole('radio', {
+        name: 'profile.language.fr',
+      }),
+    );
+    await flushCall(httpTesting, '/api/session/preferences', null, { status: 500 });
+
+    await vi.waitFor(() => expect(TestBed.inject(UiToasts).toast()?.text).toBe('profile.toasts.preferencesFailed'));
   });
 
   it('should send the browser to the sign-in page after signing out, not navigate in place', async () => {

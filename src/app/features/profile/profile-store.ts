@@ -6,6 +6,7 @@ import { type AsyncState } from '@joanroucoux/cairn-ui/async';
 import type { PasskeyResponse } from '@core/api-client/cairnAPI.schemas';
 import { SessionService } from '@core/api-client/session/session.service';
 import { LanguageStore } from '@core/i18n/language-store';
+import { PreferencesStore } from '@core/preferences/preferences-store';
 import { SessionStore } from '@core/session/session-store';
 import { type ThemePreference, ThemeStore } from '@core/theme/theme-store';
 
@@ -30,6 +31,7 @@ export class ProfileStore {
   #session = inject(SessionStore);
   #theme = inject(ThemeStore);
   #language = inject(LanguageStore);
+  #preferences = inject(PreferencesStore);
   #sessionApiClient = inject(SessionService);
 
   #dateFormat = new Intl.DateTimeFormat(inject(LOCALE_ID), {
@@ -71,12 +73,12 @@ export class ProfileStore {
     }));
   });
 
-  setTheme(preference: ThemePreference): void {
-    this.#theme.set(preference);
+  setTheme(preference: ThemePreference): Promise<boolean> {
+    return this.#preferences.setTheme(preference);
   }
 
-  setLanguage(lang: string): void {
-    this.#language.setActiveLang(lang);
+  setLanguage(lang: string): Promise<boolean> {
+    return this.#preferences.setLanguage(lang);
   }
 
   async signOut(): Promise<void> {
