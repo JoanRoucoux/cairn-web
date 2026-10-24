@@ -33,6 +33,19 @@ export class ProfileTelegramStore {
     () => this.#current() ?? (this.#link.hasValue() ? this.#link.value() : undefined),
   );
 
+  readonly #invitation = computed(() => {
+    const url = this.invitationUrl();
+
+    if (url === null || !URL.canParse(url)) {
+      return null;
+    }
+
+    const parsed = new URL(url);
+    const token = parsed.searchParams.get('start');
+
+    return token ? { bot: parsed.pathname.slice(1), token } : null;
+  });
+
   readonly ready = computed(() => this.#loaded() !== undefined);
   readonly invitationUrl = signal<string | null>(null);
   readonly status = computed(() => {
@@ -45,6 +58,12 @@ export class ProfileTelegramStore {
     const linkedAt = this.#loaded()?.linkedAt;
 
     return linkedAt ? this.#dateFormat.format(new Date(linkedAt)) : '';
+  });
+  readonly botUsername = computed(() => this.#invitation()?.bot ?? null);
+  readonly startCommand = computed(() => {
+    const invitation = this.#invitation();
+
+    return invitation ? `/start ${invitation.token}` : null;
   });
   readonly expired = signal(false);
   readonly failed = computed(() => this.#failedAction() || this.#link.error() !== undefined);

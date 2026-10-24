@@ -9,6 +9,7 @@ export class ProfilePageObject {
   readonly deleteConfirm: Locator;
   readonly telegramConnect: Locator;
   readonly telegramOpen: Locator;
+  readonly telegramCommand: Locator;
   readonly telegramLinked: Locator;
   readonly telegramDisconnect: Locator;
 
@@ -21,6 +22,7 @@ export class ProfilePageObject {
     this.deleteConfirm = page.getByTestId('passkey-delete-confirm');
     this.telegramConnect = page.getByTestId('telegram-connect');
     this.telegramOpen = page.getByTestId('telegram-open');
+    this.telegramCommand = page.getByTestId('telegram-command');
     this.telegramLinked = page.getByTestId('telegram-linked');
     this.telegramDisconnect = page.getByTestId('telegram-disconnect');
   }

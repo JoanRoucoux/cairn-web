@@ -32,6 +32,27 @@
           <span class="text-caption text-(--subtle-foreground)" data-testid="telegram-pending">{{
             'profile.telegram.pending' | transloco
           }}</span>
+          @if (startCommand(); as command) {
+            <span class="text-caption text-(--subtle-foreground)" data-testid="telegram-fallback">{{
+              'profile.telegram.fallback' | transloco: { bot: botUsername() }
+            }}</span>
+            <input
+              data-testid="telegram-command"
+              readonly
+              uiInput
+              [attr.aria-label]="'profile.telegram.command' | transloco"
+              [value]="command"
+            />
+            <button
+              data-testid="telegram-copy"
+              type="button"
+              ui-button
+              variant="outline"
+              (click)="copyCommand(command)"
+            >
+              {{ 'profile.telegram.copy' | transloco }}
+            </button>
+          }
         }
         @default {
           <span class="text-body" data-testid="telegram-linked">{{

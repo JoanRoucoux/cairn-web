@@ -3,6 +3,7 @@ import { Component, effect, inject, untracked } from '@angular/core';
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiInput } from '@joanroucoux/cairn-ui/input';
 import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -12,7 +13,7 @@ import { ProfileTelegramStore } from './profile-telegram-store';
 
 @Component({
   selector: 'app-profile-telegram',
-  imports: [TranslocoPipe, UiAlert, UiButton, UiCard, UiSkeleton],
+  imports: [TranslocoPipe, UiAlert, UiButton, UiCard, UiInput, UiSkeleton],
   templateUrl: './profile-telegram.html',
   providers: [ProfileTelegramStore],
   host: { class: 'block' },
@@ -25,6 +26,8 @@ export class ProfileTelegram {
   protected readonly ready = this.#store.ready;
   protected readonly status = this.#store.status;
   protected readonly invitationUrl = this.#store.invitationUrl;
+  protected readonly botUsername = this.#store.botUsername;
+  protected readonly startCommand = this.#store.startCommand;
   protected readonly chatLabel = this.#store.chatLabel;
   protected readonly linkedAt = this.#store.linkedAt;
   protected readonly expired = this.#store.expired;
@@ -48,6 +51,15 @@ export class ProfileTelegram {
 
   protected async connect(): Promise<void> {
     await this.#store.connect();
+  }
+
+  protected async copyCommand(command: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(command);
+      this.#toast('profile.toasts.telegramCopied');
+    } catch {
+      this.#errorToast('profile.toasts.telegramCopyFailed');
+    }
   }
 
   protected async disconnect(): Promise<void> {

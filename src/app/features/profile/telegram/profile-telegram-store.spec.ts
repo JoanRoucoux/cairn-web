@@ -157,6 +157,27 @@ describe('ProfileTelegramStore', () => {
     httpTesting.expectNone(CHECK);
   });
 
+  it('derivesTheStartCommandFromTheInvitation', async () => {
+    await load();
+
+    expect(store.botUsername()).toBeNull();
+    expect(store.startCommand()).toBeNull();
+
+    await connect();
+
+    expect(store.botUsername()).toBe('cairn_bot');
+    expect(store.startCommand()).toBe('/start abc');
+
+    store.invitationUrl.set('not a url');
+
+    expect(store.startCommand()).toBeNull();
+
+    store.invitationUrl.set('https://t.me/cairn_bot');
+
+    expect(store.botUsername()).toBeNull();
+    expect(store.startCommand()).toBeNull();
+  });
+
   it('flags a failed connect and keeps the status', async () => {
     await load();
 

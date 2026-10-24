@@ -97,6 +97,8 @@
     "preferencesFailed": "Votre préférence n'a pas pu être enregistrée. Réessayez.",
     "telegramLinked": "Telegram connecté",
     "telegramUnlinked": "Telegram déconnecté",
+    "telegramCopied": "Message copié",
+    "telegramCopyFailed": "Le message n'a pas pu être copié. Sélectionnez-le à la main.",
     "telegramDisconnectFailed": "Telegram n'a pas pu être déconnecté. Réessayez."
   },
   "telegram": {
@@ -105,6 +107,9 @@
     "unavailable": "Aucun bot Telegram n'est configuré sur le serveur.",
     "connect": "Connecter Telegram",
     "open": "Ouvrir Telegram",
+    "fallback": "Telegram ne s'ouvre pas ? Envoyez ce message à @{{bot}} :",
+    "command": "Message à envoyer",
+    "copy": "Copier le message",
     "pending": "Appuyez sur Démarrer dans Telegram. Cette page se met à jour toute seule.",
     "expired": "Le lien a expiré. Réessayez.",
     "linked": "Connecté à {{label}} depuis le {{date}}",

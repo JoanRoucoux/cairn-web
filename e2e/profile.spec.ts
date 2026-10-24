@@ -141,6 +141,7 @@ test.describe('profile', () => {
 
     await expect(profile.telegramOpen).toHaveAttribute('href', 'https://t.me/cairn_bot?start=abc');
     await expect(profile.telegramOpen).toHaveAttribute('target', '_blank');
+    await expect(profile.telegramCommand).toHaveValue('/start abc');
     await expect(profile.telegramLinked).toContainText('@alex', { timeout: 10_000 });
     await expect(profile.telegramDisconnect).toBeVisible();
     expect(checks).toBeGreaterThan(0);
