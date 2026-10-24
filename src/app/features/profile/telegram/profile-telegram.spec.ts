@@ -40,6 +40,7 @@ const translations = {
 
 describe('ProfileTelegram', () => {
   let httpTesting: HttpTestingController;
+  const clipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
   const show = vi.fn();
   const showError = vi.fn();
 
@@ -84,6 +85,12 @@ describe('ProfileTelegram', () => {
   };
 
   afterEach(() => {
+    if (clipboard) {
+      Object.defineProperty(navigator, 'clipboard', clipboard);
+    } else {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    }
+
     httpTesting.verify();
     vi.useRealTimers();
     show.mockClear();
