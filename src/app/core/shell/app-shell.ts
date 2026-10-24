@@ -21,15 +21,16 @@ import { CairnLogo } from './cairn-logo';
 import { OfflineBanner } from './offline-banner';
 import { ShellDestinationIcon } from './shell-destination-icon';
 import { SHELL_DESTINATIONS } from './shell-nav';
+import type { ShellRouteData } from './shell-route-data';
 
-export const deepestData = (route: ActivatedRoute): Record<string, unknown> => {
+export const deepestData = (route: ActivatedRoute): ShellRouteData => {
   let current: ActivatedRoute | null = route;
 
   while (current?.firstChild) {
     current = current.firstChild;
   }
 
-  return current?.snapshot?.data ?? {};
+  return (current?.snapshot?.data ?? {}) as ShellRouteData;
 };
 
 @Component({
@@ -87,15 +88,15 @@ export class AppShell {
   });
 
   #currentHeaderKey(): string | undefined {
-    return deepestData(this.#route.root)['headerKey'] as string | undefined;
+    return deepestData(this.#route.root).headerKey;
   }
 
   #currentMobileHeaderless(): boolean {
-    return deepestData(this.#route.root)['mobileHeaderless'] === true;
+    return deepestData(this.#route.root).mobileHeaderless === true;
   }
 
   #currentMobileHeaderHidden(): boolean {
-    return deepestData(this.#route.root)['mobileHeaderHidden'] === true;
+    return deepestData(this.#route.root).mobileHeaderHidden === true;
   }
 
   protected toggleAmounts(): void {

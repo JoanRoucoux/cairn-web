@@ -149,7 +149,10 @@ cairn-web is a standalone application: it owns its navigation shell, its theme a
   choosing which one shows. It is the only place in the app that knows the **primary** navigation
   route tree. A contextual in-app link from one screen to another (`account-list-page.html` linking out
   to the holdings list) is fine and expected, goes through the target feature's contract
-  (`HOLDINGS_PATHS.list`), and does not need to be routed through the shell.
+  (`HOLDINGS_PATHS.list`), and does not need to be routed through the shell. The header title and
+  its mobile variants come from the deepest route's `data`, which every feature route writes as
+  `{ ... } satisfies ShellRouteData` (`core/shell/shell-route-data.ts`): a misspelt key fails to
+  compile instead of silently dropping the title.
 - **`core/theme/`**: a `system | light | dark` preference persisted in `localStorage` and stamped
   on `<html>`. The `system` value must leave `data-theme` **unset**: the token sheet resolves
   through `light-dark()`, which follows the OS only while nothing is stamped.
