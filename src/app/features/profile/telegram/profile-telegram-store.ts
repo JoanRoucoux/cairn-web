@@ -33,14 +33,18 @@ export class ProfileTelegramStore {
   );
 
   readonly ready = computed(() => this.#loaded() !== undefined);
-  readonly status = computed(() => this.#loaded()?.status ?? 'unavailable');
+  readonly invitationUrl = signal<string | null>(null);
+  readonly status = computed(() => {
+    const status = this.#loaded()?.status ?? 'unavailable';
+
+    return status === 'pending' && this.invitationUrl() === null ? 'unlinked' : status;
+  });
   readonly chatLabel = computed(() => this.#loaded()?.chatLabel ?? '');
   readonly linkedAt = computed(() => {
     const linkedAt = this.#loaded()?.linkedAt;
 
     return linkedAt ? this.#dateFormat.format(new Date(linkedAt)) : '';
   });
-  readonly invitationUrl = signal<string | null>(null);
   readonly expired = signal(false);
   readonly failed = computed(() => this.#failedAction() || this.#link.error() !== undefined);
   readonly busy = signal(false);
@@ -80,8 +84,6 @@ export class ProfileTelegramStore {
 
       return true;
     } catch {
-      this.#failedAction.set(true);
-
       return false;
     } finally {
       this.busy.set(false);
@@ -105,8 +107,14 @@ export class ProfileTelegramStore {
   }
 
   async #check(expiresAt: number): Promise<void> {
+    const timer = this.#timer;
+
     try {
       const response = await firstValueFrom(this.#telegramApiClient.checkTelegramLink());
+
+      if (this.#timer !== timer) {
+        return;
+      }
 
       if (response.status === 'linked') {
         this.#stopPolling();
@@ -119,7 +127,12 @@ export class ProfileTelegramStore {
         this.#current.set(response);
       }
     } catch {
+      if (this.#timer !== timer) {
+        return;
+      }
+
       this.#stopPolling();
+      this.invitationUrl.set(null);
       this.#failedAction.set(true);
     }
   }

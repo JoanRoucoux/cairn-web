@@ -30,6 +30,7 @@ const translations = {
   'profile.telegram.error': 'Telegram could not be reached. Try again.',
   'profile.toasts.telegramLinked': 'Telegram connected',
   'profile.toasts.telegramUnlinked': 'Telegram disconnected',
+  'profile.toasts.telegramDisconnectFailed': 'Telegram could not be disconnected. Try again.',
 };
 
 describe('ProfileTelegram', () => {
@@ -55,17 +56,23 @@ describe('ProfileTelegram', () => {
   const connect = async (expiresAt: string): Promise<void> => {
     const user = userEvent.setup();
     await renderSection({ status: 'unlinked' });
-    await user.click(await screen.findByRole('button', { name: 'Connect Telegram' }));
+    const button = await screen.findByRole('button', { name: 'Connect Telegram' });
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    await user.click(button);
     const request = await vi.waitFor(() => httpTesting.expectOne({ method: 'POST', url: LINK }));
 
     request.flush({ url: INVITATION_URL, expiresAt });
-    await screen.findByRole('link', { name: 'Open Telegram' });
+    await vi.waitFor(() => {
+      TestBed.tick();
+      expect(screen.getByRole('link', { name: 'Open Telegram' })).toBeInTheDocument();
+    });
   };
 
-  const pollOnce = async (body: object): Promise<void> => {
-    const request = await vi.waitFor(() => httpTesting.expectOne(CHECK), { timeout: 4000 });
-
-    request.flush(body);
+  const pollOnce = async (body: object | null, status = 200): Promise<void> => {
+    await vi.advanceTimersByTimeAsync(3000);
+    httpTesting.expectOne(CHECK).flush(body, { status, statusText: 'Answer' });
+    await vi.advanceTimersByTimeAsync(0);
+    vi.useRealTimers();
   };
 
   afterEach(() => {
@@ -100,6 +107,42 @@ describe('ProfileTelegram', () => {
     expect(screen.getByText('Press Start in Telegram.')).toBeInTheDocument();
   });
 
+  it('should offer to connect again when a token is pending but its link is lost', async () => {
+    await renderSection({ status: 'pending' });
+
+    expect(await screen.findByRole('button', { name: 'Connect Telegram' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open Telegram' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Press Start in Telegram.')).not.toBeInTheDocument();
+  });
+
+  it('should show the alert and offer to connect again when a check fails', async () => {
+    await connect('2099-01-01T00:00:00Z');
+
+    await pollOnce(null, 502);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Telegram could not be reached. Try again.');
+    expect(screen.getByRole('button', { name: 'Connect Telegram' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Open Telegram' })).not.toBeInTheDocument();
+  });
+
+  it('should show the alert when the first read fails', async () => {
+    await render(ProfileTelegram, {
+      imports: [getTranslocoTestingModule({ langs: { en: translations } })],
+      providers: [
+        provideZonelessChangeDetection(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideTranslocoScope('profile'),
+        { provide: UiToasts, useValue: { show, showError } },
+      ],
+    });
+    httpTesting = TestBed.inject(HttpTestingController);
+    httpTesting.expectOne('/api/session/telegram').flush(null, { status: 500, statusText: 'Error' });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Telegram could not be reached. Try again.');
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
   it('should show the linked chat and disconnect it', async () => {
     const user = userEvent.setup();
     await renderSection(linked);
@@ -121,8 +164,11 @@ describe('ProfileTelegram', () => {
     const request = await vi.waitFor(() => httpTesting.expectOne({ method: 'DELETE', url: LINK }));
     request.flush(null, { status: 500, statusText: 'Error' });
 
-    await vi.waitFor(() => expect(showError).toHaveBeenCalled());
+    await vi.waitFor(() =>
+      expect(showError).toHaveBeenCalledWith('Telegram could not be disconnected. Try again.', 'dialog.close'),
+    );
     expect(screen.getByRole('button', { name: 'Disconnect' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('should show an alert when Telegram fails to answer the connection', async () => {

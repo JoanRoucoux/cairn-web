@@ -3,6 +3,7 @@ import { Component, effect, inject, untracked } from '@angular/core';
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
+import { UiSkeleton } from '@joanroucoux/cairn-ui/skeleton';
 import { TranslocoPipe } from '@jsverse/transloco';
 
 import { injectErrorToast, injectToast } from '@shared/feedback/toast';
@@ -11,7 +12,7 @@ import { ProfileTelegramStore } from './profile-telegram-store';
 
 @Component({
   selector: 'app-profile-telegram',
-  imports: [TranslocoPipe, UiAlert, UiButton, UiCard],
+  imports: [TranslocoPipe, UiAlert, UiButton, UiCard, UiSkeleton],
   templateUrl: './profile-telegram.html',
   providers: [ProfileTelegramStore],
   host: { class: 'block' },
@@ -53,7 +54,7 @@ export class ProfileTelegram {
     if (await this.#store.disconnect()) {
       this.#toast('profile.toasts.telegramUnlinked');
     } else {
-      this.#errorToast('profile.telegram.error');
+      this.#errorToast('profile.toasts.telegramDisconnectFailed');
     }
   }
 }

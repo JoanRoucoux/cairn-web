@@ -96,7 +96,8 @@
     "importFailed": "Import failed",
     "preferencesFailed": "Your preference could not be saved. Try again.",
     "telegramLinked": "Telegram connected",
-    "telegramUnlinked": "Telegram disconnected"
+    "telegramUnlinked": "Telegram disconnected",
+    "telegramDisconnectFailed": "Telegram could not be disconnected. Try again."
   },
   "telegram": {
     "title": "Telegram",

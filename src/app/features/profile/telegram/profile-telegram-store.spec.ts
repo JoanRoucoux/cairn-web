@@ -146,6 +146,8 @@ describe('ProfileTelegramStore', () => {
     await tick(3000, { status: 502 });
 
     expect(store.failed()).toBe(true);
+    expect(store.status()).toBe('unlinked');
+    expect(store.invitationUrl()).toBeNull();
 
     await vi.advanceTimersByTimeAsync(6000);
     httpTesting.expectNone(CHECK);
@@ -161,6 +163,46 @@ describe('ProfileTelegramStore', () => {
     expect(store.failed()).toBe(true);
     expect(store.status()).toBe('unlinked');
     expect(store.busy()).toBe(false);
+  });
+
+  it('shows a token pending on the server as unlinked while this page holds no invitation', async () => {
+    await load({ status: 'pending' });
+
+    expect(store.status()).toBe('unlinked');
+  });
+
+  it('aLateCheckResultAfterPollingStoppedIsIgnored', async () => {
+    await load();
+    await connect();
+
+    await vi.advanceTimersByTimeAsync(3000);
+    const first = httpTesting.expectOne(CHECK);
+    await vi.advanceTimersByTimeAsync(3000);
+    const second = httpTesting.expectOne(CHECK);
+    second.flush(linked);
+    await vi.advanceTimersByTimeAsync(0);
+    first.flush(null, { status: 502, statusText: 'Bad Gateway' });
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(store.status()).toBe('linked');
+    expect(store.failed()).toBe(false);
+  });
+
+  it('aLateSuccessAfterPollingFailedIsIgnored', async () => {
+    await load();
+    await connect();
+
+    await vi.advanceTimersByTimeAsync(3000);
+    const first = httpTesting.expectOne(CHECK);
+    await vi.advanceTimersByTimeAsync(3000);
+    const second = httpTesting.expectOne(CHECK);
+    second.flush(null, { status: 502, statusText: 'Bad Gateway' });
+    await vi.advanceTimersByTimeAsync(0);
+    first.flush(linked);
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(store.status()).toBe('unlinked');
+    expect(store.failed()).toBe(true);
   });
 
   it('pollingStopsWhenTheSectionIsDestroyed', async () => {
@@ -190,7 +232,7 @@ describe('ProfileTelegramStore', () => {
     httpTesting.expectOne({ method: 'DELETE', url: LINK }).flush(null, { status: 500, statusText: 'Error' });
 
     expect(await disconnecting).toBe(false);
-    expect(store.failed()).toBe(true);
+    expect(store.failed()).toBe(false);
     expect(store.status()).toBe('linked');
   });
 });

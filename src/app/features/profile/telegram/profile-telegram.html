@@ -2,12 +2,12 @@
   <div class="flex flex-col gap-3">
     <h2 class="text-title font-semibold">{{ 'profile.telegram.title' | transloco }}</h2>
 
+    @if (failed()) {
+      <ui-alert data-testid="telegram-error">{{ 'profile.telegram.error' | transloco }}</ui-alert>
+    }
+
     @if (ready()) {
       <span class="text-caption text-(--subtle-foreground)">{{ 'profile.telegram.hint' | transloco }}</span>
-
-      @if (failed()) {
-        <ui-alert data-testid="telegram-error">{{ 'profile.telegram.error' | transloco }}</ui-alert>
-      }
 
       @switch (status()) {
         @case ('unavailable') {
@@ -49,6 +49,8 @@
           </button>
         }
       }
+    } @else if (!failed()) {
+      <ui-skeleton class="w-full" [height]="16" />
     }
   </div>
 </ui-card>
