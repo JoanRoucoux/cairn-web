@@ -57,7 +57,10 @@ describe('ProfileTelegram', () => {
     const user = userEvent.setup();
     await renderSection({ status: 'unlinked' });
     const button = await screen.findByRole('button', { name: 'Connect Telegram' });
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    vi.useFakeTimers({
+      toFake: ['setInterval', 'clearInterval', 'requestAnimationFrame', 'cancelAnimationFrame'],
+      shouldClearNativeTimers: true,
+    });
     await user.click(button);
     const request = await vi.waitFor(() => httpTesting.expectOne({ method: 'POST', url: LINK }));
 
