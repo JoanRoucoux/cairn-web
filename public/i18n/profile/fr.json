@@ -94,6 +94,20 @@
     "imported_one": "{{count}} ligne importée",
     "imported_other": "{{count}} lignes importées",
     "importFailed": "Échec de l'import",
-    "preferencesFailed": "Votre préférence n'a pas pu être enregistrée. Réessayez."
+    "preferencesFailed": "Votre préférence n'a pas pu être enregistrée. Réessayez.",
+    "telegramLinked": "Telegram connecté",
+    "telegramUnlinked": "Telegram déconnecté"
+  },
+  "telegram": {
+    "title": "Telegram",
+    "hint": "Recevez les récaps quotidiens et périodiques dans Telegram.",
+    "unavailable": "Aucun bot Telegram n'est configuré sur le serveur.",
+    "connect": "Connecter Telegram",
+    "open": "Ouvrir Telegram",
+    "pending": "Appuyez sur Démarrer dans Telegram. Cette page se met à jour toute seule.",
+    "expired": "Le lien a expiré. Réessayez.",
+    "linked": "Connecté à {{label}} depuis le {{date}}",
+    "disconnect": "Déconnecter",
+    "error": "Telegram est injoignable. Réessayez."
   }
 }

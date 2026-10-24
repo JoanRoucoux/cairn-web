@@ -1,0 +1,54 @@
+<ui-card>
+  <div class="flex flex-col gap-3">
+    <h2 class="text-title font-semibold">{{ 'profile.telegram.title' | transloco }}</h2>
+
+    @if (ready()) {
+      <span class="text-caption text-(--subtle-foreground)">{{ 'profile.telegram.hint' | transloco }}</span>
+
+      @if (failed()) {
+        <ui-alert data-testid="telegram-error">{{ 'profile.telegram.error' | transloco }}</ui-alert>
+      }
+
+      @switch (status()) {
+        @case ('unavailable') {
+          <span class="text-caption text-(--subtle-foreground)" data-testid="telegram-unavailable">{{
+            'profile.telegram.unavailable' | transloco
+          }}</span>
+        }
+        @case ('unlinked') {
+          @if (expired()) {
+            <span class="text-caption text-(--subtle-foreground)" data-testid="telegram-expired">{{
+              'profile.telegram.expired' | transloco
+            }}</span>
+          }
+          <button data-testid="telegram-connect" type="button" ui-button [loading]="busy()" (click)="connect()">
+            {{ 'profile.telegram.connect' | transloco }}
+          </button>
+        }
+        @case ('pending') {
+          <a data-testid="telegram-open" rel="noopener noreferrer" target="_blank" ui-button [href]="invitationUrl()">
+            {{ 'profile.telegram.open' | transloco }}
+          </a>
+          <span class="text-caption text-(--subtle-foreground)" data-testid="telegram-pending">{{
+            'profile.telegram.pending' | transloco
+          }}</span>
+        }
+        @default {
+          <span class="text-body" data-testid="telegram-linked">{{
+            'profile.telegram.linked' | transloco: { label: chatLabel(), date: linkedAt() }
+          }}</span>
+          <button
+            data-testid="telegram-disconnect"
+            type="button"
+            ui-button
+            variant="outline-destructive"
+            [loading]="busy()"
+            (click)="disconnect()"
+          >
+            {{ 'profile.telegram.disconnect' | transloco }}
+          </button>
+        }
+      }
+    }
+  </div>
+</ui-card>

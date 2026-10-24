@@ -13,7 +13,7 @@ import { getTranslocoTestingModule } from '@shared/testing/transloco-testing';
 import { PortfolioImportStore } from './portfolio-import-store';
 import { ProfilePage } from './profile-page';
 import { ProfileStore } from './profile-store';
-import { flushCall, passkeys, preferences, session, settleProfile } from './profile-testing';
+import { flushCall, passkeys, preferences, session, settleProfile, telegram } from './profile-testing';
 
 describe('ProfilePage loading states', () => {
   let httpTesting: HttpTestingController;
@@ -37,6 +37,7 @@ describe('ProfilePage loading states', () => {
 
   afterEach(() => {
     httpTesting.match('/api/session/preferences').forEach((request) => request.flush(preferences));
+    httpTesting.match('/api/session/telegram').forEach((request) => request.flush(telegram));
     httpTesting.verify();
   });
 

@@ -94,6 +94,20 @@
     "imported_one": "{{count}} holding imported",
     "imported_other": "{{count}} holdings imported",
     "importFailed": "Import failed",
-    "preferencesFailed": "Your preference could not be saved. Try again."
+    "preferencesFailed": "Your preference could not be saved. Try again.",
+    "telegramLinked": "Telegram connected",
+    "telegramUnlinked": "Telegram disconnected"
+  },
+  "telegram": {
+    "title": "Telegram",
+    "hint": "Receive the daily and periodic recaps in Telegram.",
+    "unavailable": "No Telegram bot is configured on the server.",
+    "connect": "Connect Telegram",
+    "open": "Open Telegram",
+    "pending": "Press Start in Telegram. This page updates by itself.",
+    "expired": "The link expired. Try again.",
+    "linked": "Connected to {{label}} since {{date}}",
+    "disconnect": "Disconnect",
+    "error": "Telegram could not be reached. Try again."
   }
 }
