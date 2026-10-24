@@ -1,7 +1,7 @@
 import { Component, ElementRef, LOCALE_ID, afterRenderEffect, computed, inject, input, output } from '@angular/core';
 
 import { UiAlert } from '@joanroucoux/cairn-ui/alert';
-import { UiAmount, formatAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiAmount, UiAmountText, formatAmount } from '@joanroucoux/cairn-ui/amount';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
 import { UiDelta } from '@joanroucoux/cairn-ui/delta';
@@ -26,7 +26,20 @@ import { HoldingSellDialogStore, type SellResult } from './holding-sell-dialog-s
 
 @Component({
   selector: 'app-holding-sell-dialog',
-  imports: [TranslocoPipe, UiAlert, UiAmount, UiButton, UiCard, UiDelta, UiDialog, UiFact, UiFacts, UiField, UiInput],
+  imports: [
+    TranslocoPipe,
+    UiAlert,
+    UiAmount,
+    UiAmountText,
+    UiButton,
+    UiCard,
+    UiDelta,
+    UiDialog,
+    UiFact,
+    UiFacts,
+    UiField,
+    UiInput,
+  ],
   templateUrl: './holding-sell-dialog.html',
   providers: [HoldingSellDialogStore],
 })

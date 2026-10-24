@@ -94,7 +94,7 @@ describe('AccountListPage', () => {
     const row = await screen.findByTestId('account-row');
 
     expect(row).not.toHaveTextContent('·');
-    expect(row.querySelectorAll('td')[2]).toHaveTextContent('—');
+    expect(row.querySelectorAll('td')[2]).toHaveTextContent('—Not available');
   });
 
   it('should render a card row per account on iPhone, linking to the holdings of that account', async () => {

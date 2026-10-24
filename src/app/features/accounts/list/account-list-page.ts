@@ -1,7 +1,7 @@
 import { Component, afterRenderEffect, computed, inject, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiAmount, UiAmountText } from '@joanroucoux/cairn-ui/amount';
 import { UiAsync, delayedState } from '@joanroucoux/cairn-ui/async';
 import { UiBadge } from '@joanroucoux/cairn-ui/badge';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
@@ -47,6 +47,7 @@ import { AccountUncounted } from './uncounted/account-uncounted';
     ShortDatePipe,
     TranslocoPipe,
     UiAmount,
+    UiAmountText,
     UiAsync,
     UiBadge,
     UiCard,

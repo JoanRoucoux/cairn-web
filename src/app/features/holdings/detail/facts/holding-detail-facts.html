@@ -45,7 +45,7 @@
       [label]="(crypto() ? 'holdings.detail.symbol' : 'holdings.detail.isin') | transloco"
       [sub]="'enums.assetClass.' + holding().assetClass | transloco"
     >
-      {{ identifier() || '—' }}
+      <ui-amount-text [text]="identifier() || '—'" />
     </div>
   </dl>
 </ui-card>

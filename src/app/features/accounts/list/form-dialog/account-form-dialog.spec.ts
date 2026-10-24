@@ -83,7 +83,9 @@ describe('AccountFormDialog', () => {
     await user.click(screen.getByTestId('account-form-name'));
     await user.tab();
 
-    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    await vi.waitFor(() =>
+      expect(screen.getByTestId('account-form-name')).toHaveAccessibleDescription('forms.required'),
+    );
 
     await user.type(screen.getByTestId('account-form-name'), 'PEA');
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEA' }));
@@ -172,7 +174,7 @@ describe('AccountFormDialog', () => {
 
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(null, { status: 409, statusText: 'Conflict' }));
 
-    expect(await screen.findByText('accounts.form.nameConflict')).toBeInTheDocument();
+    expect(await screen.findAllByText('accounts.form.nameConflict')).not.toHaveLength(0);
     expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
     expect(savedForm).not.toHaveBeenCalled();
   });
@@ -188,7 +190,7 @@ describe('AccountFormDialog', () => {
       httpTesting.expectOne('/api/accounts/a1').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
     );
 
-    expect(await screen.findByText('accounts.form.savingsConflict')).toBeInTheDocument();
+    expect(await screen.findAllByText('accounts.form.savingsConflict')).not.toHaveLength(0);
     expect(screen.queryByTestId('account-form-error')).not.toBeInTheDocument();
     expect(screen.getByRole('dialog')).toHaveAttribute('open');
     expect(TestBed.inject(UiToasts).toast()).toBeNull();
@@ -206,11 +208,11 @@ describe('AccountFormDialog', () => {
     await vi.waitFor(() =>
       httpTesting.expectOne('/api/accounts').flush(null, { status: 422, statusText: 'Unprocessable Entity' }),
     );
-    await screen.findByText('accounts.form.savingsConflict');
+    await screen.findAllByText('accounts.form.savingsConflict');
 
     await user.click(screen.getByRole('radio', { name: 'enums.accountType.PEE' }));
 
-    expect(screen.queryByText('accounts.form.savingsConflict')).not.toBeInTheDocument();
+    expect(screen.queryAllByText('accounts.form.savingsConflict')).toHaveLength(0);
   });
 
   it('should clear the name conflict once the name is edited again', async () => {
@@ -222,11 +224,11 @@ describe('AccountFormDialog', () => {
     await user.type(screen.getByTestId('account-form-institution'), 'Northwind Bank');
     await user.click(screen.getByTestId('account-form-submit'));
     await vi.waitFor(() => httpTesting.expectOne('/api/accounts').flush(null, { status: 409, statusText: 'Conflict' }));
-    await screen.findByText('accounts.form.nameConflict');
+    await screen.findAllByText('accounts.form.nameConflict');
 
     await user.type(screen.getByTestId('account-form-name'), ' bis');
 
-    expect(screen.queryByText('accounts.form.nameConflict')).not.toBeInTheDocument();
+    expect(screen.queryAllByText('accounts.form.nameConflict')).toHaveLength(0);
   });
 
   it('should stay open and show a generic error on any other failure', async () => {

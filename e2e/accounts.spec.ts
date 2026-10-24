@@ -238,7 +238,7 @@ test.describe('accounts', () => {
     await page.getByTestId('account-form-name').fill('Northwind PEA');
     await page.getByTestId('account-form-submit').click();
 
-    await expect(page.getByText('already has this name')).toBeVisible();
+    await expect(page.getByTestId('account-form-name')).toHaveAccessibleDescription(/already has this name/);
     await expect(page.getByTestId('account-form-dialog').locator('dialog')).toBeVisible();
     await expect(page.getByTestId('account-form-error')).toHaveCount(0);
   });

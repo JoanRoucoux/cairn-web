@@ -1,6 +1,7 @@
-import { Injectable, type Provider, type Signal, inject, signal } from '@angular/core';
+import { Injectable, type Provider, type Signal, computed, inject, signal } from '@angular/core';
 
-import { UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
+import { UI_AMOUNT_LABELS, UI_AMOUNT_MASKED } from '@joanroucoux/cairn-ui/amount';
+import { translateSignal } from '@jsverse/transloco';
 
 const STORAGE_KEY = 'cairn-hide-amounts';
 
@@ -32,6 +33,16 @@ export class AmountVisibility {
   }
 }
 
-export function provideAmountVisibility(): Provider {
-  return { provide: UI_AMOUNT_MASKED, useFactory: () => inject(AmountVisibility).hidden };
+export function provideAmountVisibility(): Provider[] {
+  return [
+    { provide: UI_AMOUNT_MASKED, useFactory: () => inject(AmountVisibility).hidden },
+    {
+      provide: UI_AMOUNT_LABELS,
+      useFactory: () => {
+        const masked = translateSignal('amount.masked');
+        const missing = translateSignal('amount.missing');
+        return computed(() => ({ masked: masked(), missing: missing() }));
+      },
+    },
+  ];
 }

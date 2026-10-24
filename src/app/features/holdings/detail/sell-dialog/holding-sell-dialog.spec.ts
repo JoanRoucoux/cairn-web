@@ -275,6 +275,7 @@ describe('HoldingSellDialog', () => {
 
     expect(screen.queryByText('holdings.sell.rows.realizedGainUnknown')).not.toBeInTheDocument();
     expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Not available').length).toBeGreaterThan(0);
   });
 
   it('emits sold once, only after the exit has played', async () => {

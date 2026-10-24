@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-import { UiAmount } from '@joanroucoux/cairn-ui/amount';
+import { UiAmount, UiAmountText } from '@joanroucoux/cairn-ui/amount';
 import { UiDelta } from '@joanroucoux/cairn-ui/delta';
 import { TranslocoPipe } from '@jsverse/transloco';
 
@@ -13,7 +13,7 @@ import { foreignCurrencyOf } from '../../foreign-currency';
 
 @Component({
   selector: 'app-holding-detail-figures',
-  imports: [AmountSeparator, RatioPipe, TranslocoPipe, UiAmount, UiDelta],
+  imports: [AmountSeparator, RatioPipe, TranslocoPipe, UiAmount, UiAmountText, UiDelta],
   templateUrl: './holding-detail-figures.html',
   host: { class: 'block' },
 })

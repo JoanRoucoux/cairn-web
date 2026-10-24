@@ -88,7 +88,7 @@ describe('ManualQuoteDialog', () => {
 
     await user.click(screen.getByTestId('manual-quote-submit'));
 
-    expect(screen.getAllByRole('alert')).toHaveLength(1);
+    expect(screen.getByTestId('manual-quote-price')).toHaveAccessibleDescription(/forms.required/);
   });
 
   it('refuses a price that is not a number', async () => {

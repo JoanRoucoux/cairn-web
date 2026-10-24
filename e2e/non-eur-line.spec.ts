@@ -14,6 +14,7 @@ test.describe('lines quoted in another currency', () => {
     const row = page.getByTestId('holding-row').filter({ hasText: 'Nasdaq 100 ETF' });
     await expect(row).toContainText('Quoted in USD, not counted');
     await expect(row).toContainText('—');
+    await expect(row.getByText('Not available').first()).toBeAttached();
     await expect(row.getByRole('button')).toHaveCount(0);
   });
 

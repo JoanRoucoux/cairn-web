@@ -221,6 +221,8 @@
     "sourceError": "{{source}} ne répond pas pour le moment.",
     "retry": "Réessayer",
     "amundiNeedsIsin": "Saisissez un ISIN complet, 12 caractères : Amundi ne cherche pas par nom.",
+    "resultCount_one": "{{count}} résultat",
+    "resultCount_other": "{{count}} résultats",
     "noneFound": "Aucun titre trouvé pour « {{query}} ». Un produit structuré SG ou un titre sans cotation s'ajoute avec les liens ci-dessous.",
     "searchAll": "Chercher dans toutes les sources",
     "siriusLink": "Produit structuré SG Sirius",

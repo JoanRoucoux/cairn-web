@@ -51,7 +51,9 @@
                 <ui-badge>{{ 'enums.accountType.' + account.type | transloco }}</ui-badge>
               </td>
               <td uiTd>
-                <span class="text-label text-(--muted-foreground)">{{ account.institution || '—' }}</span>
+                <span class="text-label text-(--muted-foreground)"
+                  ><ui-amount-text [text]="account.institution || '—'"
+                /></span>
               </td>
               <td numeric uiTd>
                 <div class="flex w-0 min-w-full flex-col items-end whitespace-normal">
@@ -72,7 +74,7 @@
                 />
               </td>
               <td class="text-(--muted-foreground)" numeric uiTd>
-                {{ account.share === null ? '—' : (account.share | ratio) }}
+                <ui-amount-text [text]="account.share === null ? '—' : (account.share | ratio)" />
               </td>
               <td uiTd>
                 <div class="flex justify-end">

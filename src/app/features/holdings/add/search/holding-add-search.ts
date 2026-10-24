@@ -1,5 +1,6 @@
-import { Component, computed, inject, input, linkedSignal, output } from '@angular/core';
+import { Component, computed, effect, inject, input, linkedSignal, output } from '@angular/core';
 
+import { UiAnnouncer } from '@joanroucoux/cairn-ui/announcer';
 import type { AsyncState } from '@joanroucoux/cairn-ui/async';
 import { UiButton } from '@joanroucoux/cairn-ui/button';
 import { UiCard } from '@joanroucoux/cairn-ui/card';
@@ -13,6 +14,8 @@ import { LucideSearch } from '@lucide/angular';
 
 import type { HoldingResponse, InstrumentCandidateResponse, SearchableSource } from '@core/api-client/cairnAPI.schemas';
 import { injectTranslationEvents } from '@core/i18n/translation-events';
+
+import { pluralKey } from '@shared/format/plural-key';
 
 import { type ResultGroup, type ShownGroup, isShown } from '../result-groups';
 import { SOURCE_FILTERS, type SourceFilter } from '../search-plan';
@@ -60,6 +63,7 @@ export class HoldingAddSearch {
 
   readonly #transloco = inject(TranslocoService);
   readonly #translocoEvents = injectTranslationEvents();
+  readonly #announcer = inject(UiAnnouncer);
 
   protected readonly filterOptions = computed<FilterChipOption[]>(() => {
     this.#translocoEvents();
@@ -89,6 +93,44 @@ export class HoldingAddSearch {
     }),
     computation: ({ live, waiting }, previous) => live || (waiting && (previous?.value ?? false)),
   });
+
+  readonly #resultsMessage = computed(() => {
+    this.#translocoEvents();
+
+    if (
+      !this.showResults() ||
+      this.trackedState() === 'loading' ||
+      this.groups().some((group) => !this.#settled(group))
+    ) {
+      return null;
+    }
+
+    const count =
+      (this.trackedState() === 'ready' ? this.tracked().length : 0) +
+      this.groups().reduce((total, group) => total + group.candidates.length, 0);
+
+    if (count > 0) {
+      return this.#transloco.translate(pluralKey('holdings.add.resultCount', count), { count });
+    }
+
+    return this.noneFound()
+      ? this.#transloco.translate('holdings.add.noneFound', { query: this.query().trim() })
+      : null;
+  });
+
+  constructor() {
+    effect(() => {
+      const message = this.#resultsMessage();
+
+      if (message) {
+        this.#announcer.announce(message);
+      }
+    });
+  }
+
+  #settled(group: ResultGroup): boolean {
+    return group.state === 'ready' || group.state === 'error' || group.state === 'short';
+  }
 
   protected chooseFilter(value: string): void {
     this.filterChange.emit(value as SourceFilter);

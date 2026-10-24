@@ -62,9 +62,15 @@
           <span class="flex items-baseline gap-1.5 text-right">
             <span class="text-(--subtle-foreground)">{{ fmtQty(holding().quantity) }}</span>
             <span class="text-(--subtle-foreground)">&rarr;</span>
-            <span class="font-medium">{{
-              preview() ? (closes() ? ('holdings.sell.closes' | transloco) : fmtQty(preview()!.quantityAfter)) : '—'
-            }}</span>
+            <span class="font-medium">
+              @if (!preview()) {
+                <ui-amount-text text="—" />
+              } @else if (closes()) {
+                {{ 'holdings.sell.closes' | transloco }}
+              } @else {
+                {{ fmtQty(preview()!.quantityAfter) }}
+              }
+            </span>
           </span>
         </div>
         <div size="recap" ui-fact [label]="'holdings.averageCost' | transloco">
@@ -89,7 +95,7 @@
           } @else if (holding().averageCost === null || holding().averageCost === undefined) {
             <span class="text-(--muted-foreground)">{{ 'holdings.sell.rows.realizedGainUnknown' | transloco }}</span>
           } @else {
-            <span class="text-(--muted-foreground)">&mdash;</span>
+            <span class="text-(--muted-foreground)"><ui-amount-text text="—" /></span>
           }
         </div>
         <div size="recap" ui-fact [label]="'holdings.sell.rows.amount' | transloco">
@@ -97,7 +103,7 @@
             @if (preview() && preview()!.amount !== null) {
               <ui-amount currency="EUR" [value]="preview()!.amount" />
             } @else {
-              —
+              <ui-amount-text text="—" />
             }
           </span>
         </div>

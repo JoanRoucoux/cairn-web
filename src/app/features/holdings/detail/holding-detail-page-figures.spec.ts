@@ -143,7 +143,8 @@ describe('HoldingDetailPage figures', () => {
     const unrealized = (await screen.findByText('holdings.detail.unrealized')).parentElement!;
 
     expect(unrealized).not.toHaveTextContent('holdings.averageCostUnknownShort');
-    expect(within(unrealized).getByText('—')).toHaveClass('font-medium', 'text-(--subtle-foreground)');
+    expect(within(unrealized).getByText('—').closest('.font-medium')).toHaveClass('text-(--subtle-foreground)');
+    expect(unrealized).toHaveTextContent('—Not available');
   });
 
   it('draws no description block when the instrument has neither a description nor a link', async () => {
@@ -169,7 +170,7 @@ describe('HoldingDetailPage figures', () => {
   it('shows a dash instead of a blank ISIN for a holding with none', async () => {
     await renderPage({ ...holding, isin: null });
 
-    expect((await screen.findByText('holdings.detail.isin')).parentElement).toHaveTextContent('—');
+    expect((await screen.findByText('holdings.detail.isin')).parentElement).toHaveTextContent('—Not available');
   });
 
   it('keeps the chart mounted while a new range loads', async () => {

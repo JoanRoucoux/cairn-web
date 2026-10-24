@@ -83,6 +83,7 @@ describe('HoldingDetailPage on a line quoted in another currency', () => {
     await renderPage();
 
     expect(await screen.findByText('—')).toBeInTheDocument();
+    expect(screen.getByText('Not available')).toHaveClass('sr-only');
     expect(screen.getByTestId('no-quote-yet')).toHaveTextContent('holdings.foreignQuote');
     expect(screen.queryByTestId('range-change')).not.toBeInTheDocument();
     expect(document.body).toHaveTextContent('US$112.36');

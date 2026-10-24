@@ -15,7 +15,7 @@
               'holdings.averageCostUnknownShort' | transloco
             }}</span>
           } @else {
-            <span class="font-medium text-(--subtle-foreground)">—</span>
+            <span class="font-medium text-(--subtle-foreground)"><ui-amount-text text="—" /></span>
           }
         } @else {
           <ui-delta [unknownLabel]="'holdings.unknown' | transloco" [value]="holding().unrealizedGainEur">

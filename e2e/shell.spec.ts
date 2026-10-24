@@ -17,6 +17,7 @@ test.describe('shell', () => {
     await portfolio.hideAmounts.click();
     await expect(portfolio.hideAmounts).toHaveAttribute('aria-pressed', 'true');
     await expect(portfolio.totalValue).toHaveText(/••••/);
+    await expect(portfolio.totalValue).toHaveText(/Hidden amount|Montant masqué/);
 
     await page.getByTestId('account-link').click();
     await expect(page).toHaveURL(/\/profile$/);

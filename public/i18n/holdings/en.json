@@ -221,6 +221,8 @@
     "sourceError": "{{source}} is not answering right now.",
     "retry": "Retry",
     "amundiNeedsIsin": "Type a full 12-character ISIN: Amundi does not search by name.",
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results",
     "noneFound": "Nothing found for \"{{query}}\". An SG structured product or an instrument without a quote is added with the links below.",
     "searchAll": "Search every source",
     "siriusLink": "SG Sirius structured product",

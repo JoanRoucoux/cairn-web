@@ -93,7 +93,7 @@ describe('HoldingDetailFacts', () => {
     await renderFacts({ isin: null, assetClass: 'CRYPTO' });
     const row = (await screen.findByText('holdings.detail.symbol')).parentElement!;
 
-    expect(row).toHaveTextContent('—');
+    expect(row).toHaveTextContent('—Not available');
   });
 
   it('shows the symbol of a crypto when the API gives one', async () => {
@@ -115,7 +115,7 @@ describe('HoldingDetailFacts', () => {
     await renderFacts({ isin: null });
     const row = (await screen.findByText('holdings.detail.isin')).parentElement!;
 
-    expect(row).toHaveTextContent('—');
+    expect(row).toHaveTextContent('—Not available');
   });
 
   it('says there is no quote yet instead of a date', async () => {

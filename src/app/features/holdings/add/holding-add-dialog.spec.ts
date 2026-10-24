@@ -244,7 +244,7 @@ describe('HoldingAddDialog', () => {
     expect(screen.getByText('holdings.add.sirius.count_one')).toBeInTheDocument();
 
     await user.type(isin, 's238123456x');
-    expect(screen.getByRole('alert')).toHaveTextContent('holdings.add.sirius.invalid');
+    expect(screen.getAllByText('holdings.add.sirius.invalid')).not.toHaveLength(0);
     expect(screen.queryByTestId('holding-add-account')).not.toBeInTheDocument();
 
     await user.clear(isin);
