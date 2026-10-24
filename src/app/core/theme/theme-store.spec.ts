@@ -148,39 +148,6 @@ describe('ThemeStore', () => {
     });
   });
 
-  describe('apply', () => {
-    let frame: FrameRequestCallback | undefined;
-
-    beforeEach(() => {
-      frame = undefined;
-      vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
-        frame = callback;
-        return 1;
-      });
-    });
-
-    afterEach(() => vi.unstubAllGlobals());
-
-    it('applyDoesNotMarkTheRootAsSwitching', () => {
-      const store = configure(null);
-
-      store.apply('dark');
-
-      expect(root.getAttribute('data-theme')).toBe('dark');
-      expect(root.hasAttribute('data-theme-switching')).toBe(false);
-      expect(frame).toBeUndefined();
-    });
-
-    it('applyWritesTheCache', () => {
-      const store = configure(null);
-
-      store.apply('light');
-
-      expect(localStorage.getItem('cairn.theme')).toBe('light');
-      expect(store.preference()).toBe('light');
-    });
-  });
-
   describe('device scheme', () => {
     let listener: ((event: { matches: boolean }) => void) | undefined;
 

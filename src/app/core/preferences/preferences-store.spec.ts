@@ -139,4 +139,42 @@ describe('PreferencesStore', () => {
     expect(TestBed.inject(ThemeStore).preference()).toBe('dark');
     expect(TestBed.inject(LanguageStore).activeLang()).toBe('fr');
   });
+
+  it('aFailedChangeMadeBeforeTheServerAnswersLetsTheServerValueApply', async () => {
+    TestBed.tick();
+
+    const savedTheme = store.setTheme('dark');
+    const savedLanguage = store.setLanguage('fr');
+    const patches = await vi.waitFor(() => {
+      const found = http.match({ method: 'PATCH', url: '/api/session/preferences' });
+      expect(found).toHaveLength(2);
+
+      return found;
+    });
+    patches.forEach((patch) => patch.flush(null, { status: 500, statusText: 'Error' }));
+    await Promise.all([savedTheme, savedLanguage]);
+
+    http.expectOne({ method: 'GET', url: '/api/session/preferences' }).flush({ language: 'fr', theme: 'light' });
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(TestBed.inject(ThemeStore).preference()).toBe('light');
+    expect(TestBed.inject(LanguageStore).activeLang()).toBe('fr');
+  });
+
+  it('marksTheRootAsSwitchingWhenTheServerAnswersAndReleasesItOnTheNextFrame', async () => {
+    let frame: FrameRequestCallback | undefined;
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frame = callback;
+      return 1;
+    });
+    onTestFinished(() => void vi.unstubAllGlobals());
+
+    await load({ language: 'en', theme: 'dark' });
+
+    expect(document.documentElement.hasAttribute('data-theme-switching')).toBe(true);
+
+    frame?.(0);
+
+    expect(document.documentElement.hasAttribute('data-theme-switching')).toBe(false);
+  });
 });

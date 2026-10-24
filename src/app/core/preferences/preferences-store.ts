@@ -39,7 +39,7 @@ export class PreferencesStore {
         }
 
         if (!this.#themeTouched) {
-          this.#theme.apply(theme);
+          this.#theme.set(theme);
         }
       });
     });
@@ -50,7 +50,10 @@ export class PreferencesStore {
     const previous = this.#theme.preference();
     this.#theme.set(theme);
 
-    return this.#save({ theme: theme as UpdatePreferencesRequestTheme }, () => this.#theme.set(previous));
+    return this.#save({ theme: theme as UpdatePreferencesRequestTheme }, () => {
+      this.#themeTouched = false;
+      this.#theme.set(previous);
+    });
   }
 
   async setLanguage(lang: string): Promise<boolean> {
@@ -58,9 +61,10 @@ export class PreferencesStore {
     const previous = this.#language.activeLang();
     this.#language.setActiveLang(lang);
 
-    return this.#save({ language: lang as UpdatePreferencesRequestLanguage }, () =>
-      this.#language.setActiveLang(previous),
-    );
+    return this.#save({ language: lang as UpdatePreferencesRequestLanguage }, () => {
+      this.#languageTouched = false;
+      this.#language.setActiveLang(previous);
+    });
   }
 
   async #save(body: UpdatePreferencesRequest, restore: () => void): Promise<boolean> {

@@ -32,16 +32,13 @@ export class ThemeStore {
     this.#followDevice();
   }
 
-  apply(preference: ThemePreference): void {
+  set(preference: ThemePreference): void {
     this.#preference.set(preference);
     localStorage.setItem(STORAGE_KEY, preference);
-    this.#stamp(preference);
-  }
 
-  set(preference: ThemePreference): void {
     const root = this.#document.documentElement;
     root.setAttribute('data-theme-switching', '');
-    this.apply(preference);
+    this.#stamp(preference);
     root.getBoundingClientRect();
     requestAnimationFrame(() => root.removeAttribute('data-theme-switching'));
   }
