@@ -113,7 +113,7 @@ test.describe('sell dialog close paths on desktop', () => {
     await page.getByTestId('holding-sell-submit').click();
 
     await expectExitPlayed(page);
-    await expect(page.getByRole('status')).toHaveText('Sale saved');
+    await expect(page.locator('ui-toaster')).toHaveText('Sale saved');
     await expect(page.getByTestId('holding-sell')).toBeFocused();
     await expect.poll(reloads).toBe(2);
     await page.waitForTimeout(300);
