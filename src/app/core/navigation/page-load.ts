@@ -7,4 +7,8 @@ export class PageLoad {
   to(path: string): void {
     this.#document.defaultView?.location.replace(path);
   }
+
+  reload(): void {
+    this.#document.defaultView?.location.reload();
+  }
 }

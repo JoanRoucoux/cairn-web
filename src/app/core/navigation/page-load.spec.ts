@@ -15,11 +15,23 @@ describe('PageLoad', () => {
     expect(replace).toHaveBeenCalledWith('/');
   });
 
+  it('should reload the current page', () => {
+    const reload = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [{ provide: DOCUMENT, useValue: { defaultView: { location: { reload } } } }],
+    });
+
+    TestBed.inject(PageLoad).reload();
+
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
   it('should do nothing where there is no window, rather than throw', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: DOCUMENT, useValue: {} }],
     });
 
     expect(() => TestBed.inject(PageLoad).to('/')).not.toThrow();
+    expect(() => TestBed.inject(PageLoad).reload()).not.toThrow();
   });
 });
