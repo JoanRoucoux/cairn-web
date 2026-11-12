@@ -17,6 +17,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'chromium-dark',
+      testMatch: /accessibility\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'], colorScheme: 'dark' },
+    },
   ],
   webServer: {
     command: 'pnpm start',

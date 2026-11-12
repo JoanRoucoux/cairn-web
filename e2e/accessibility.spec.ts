@@ -11,6 +11,22 @@ const screens = [
   '/navigation-error',
 ];
 
+test('renders in the color scheme of the project', async ({ page, colorScheme }) => {
+  await mockApi(page);
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+
+  const [red, green, blue] = await page.evaluate(() =>
+    getComputedStyle(document.body)
+      .backgroundColor.match(/\d+(\.\d+)?/g)!
+      .slice(0, 3)
+      .map(Number),
+  );
+  const dark = red + green + blue < 384;
+
+  expect(dark).toBe(colorScheme === 'dark');
+});
+
 for (const screen of screens) {
   test(`has no accessibility violation on ${screen}`, async ({ page, makeAxeBuilder }) => {
     await mockApi(page);
