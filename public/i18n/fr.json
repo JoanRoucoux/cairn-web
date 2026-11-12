@@ -7,6 +7,7 @@
     "accounts": "Comptes",
     "profile": "Profil",
     "notFound": "Page introuvable",
+    "navigationError": "Page indisponible",
     "login": "Connexion"
   },
   "notFound": {
@@ -14,6 +15,11 @@
     "description": "Le lien est peut-être ancien, ou la ligne a été supprimée.",
     "home": "Revenir au portefeuille",
     "error404": "Erreur 404"
+  },
+  "navigationError": {
+    "title": "Cette page n'a pas pu être chargée",
+    "description": "Cairn a peut-être été mis à jour. Rechargez la page pour réessayer.",
+    "reload": "Recharger la page"
   },
   "excluded": {
     "noQuote_one": "hors {{count}} ligne sans cours",

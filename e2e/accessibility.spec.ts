@@ -8,6 +8,7 @@ const screens = [
   '/allocation',
   '/profile',
   '/accounts',
+  '/navigation-error',
 ];
 
 for (const screen of screens) {

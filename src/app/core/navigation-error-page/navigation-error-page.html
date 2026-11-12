@@ -1,0 +1,21 @@
+<main
+  class="flex min-h-dvh flex-col px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:items-center lg:justify-center lg:p-0"
+>
+  <div class="flex flex-1 flex-col items-center justify-center gap-5 text-center lg:w-95 lg:flex-none lg:gap-8">
+    <app-cairn-mark class="[&>svg]:size-16 lg:[&>svg]:size-14" [size]="64" />
+
+    <div class="flex max-w-85.5 flex-col gap-2 text-balance lg:max-w-none">
+      <h1 class="text-heading font-semibold tracking-(--tracking-display)">
+        {{ 'navigationError.title' | transloco }}
+      </h1>
+      <p class="text-body text-pretty text-(--muted-foreground)">{{ 'navigationError.description' | transloco }}</p>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-3 lg:mt-8 lg:items-center">
+    <button class="w-full lg:h-11 lg:w-auto lg:pr-5 lg:pl-4" size="xxl" type="button" ui-button (click)="reload()">
+      <svg lucideRefreshCw [size]="20" [strokeWidth]="1.75" />
+      {{ 'navigationError.reload' | transloco }}
+    </button>
+  </div>
+</main>
