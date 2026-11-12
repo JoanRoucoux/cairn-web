@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 
 test.describe('holdings list', () => {
   test.beforeEach(async ({ page }) => {

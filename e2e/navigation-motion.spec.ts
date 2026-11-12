@@ -1,6 +1,7 @@
-import { type Page, expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 import { LoginPageObject } from './pages/login-page';
 import { ProfilePageObject } from './pages/profile-page';
 

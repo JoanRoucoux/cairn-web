@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 
 for (const viewport of [
   { name: 'phone', width: 390, height: 844 },

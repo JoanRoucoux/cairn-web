@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
-import { test as base } from '@playwright/test';
+
+import { test as base } from './base-test';
 
 export const test = base.extend<{ makeAxeBuilder: () => AxeBuilder }>({
   makeAxeBuilder: async ({ page }, use) => {

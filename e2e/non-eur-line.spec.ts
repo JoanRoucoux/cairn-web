@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 import { USD_HOLDING_ISIN } from './fixtures/search';
 
 test.describe('lines quoted in another currency', () => {

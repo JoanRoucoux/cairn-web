@@ -1,6 +1,7 @@
-import { type Page, expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 
 const addVirtualAuthenticator = async (page: Page): Promise<void> => {
   const client = await page.context().newCDPSession(page);
