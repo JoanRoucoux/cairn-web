@@ -30,6 +30,7 @@ Before considering a change done, run the same pipeline as CI: `format:check`, `
 - **`<feature>-routes.ts` is the feature's routing entry point**: every feature has one, whatever its number of screens, and it owns the feature's titles and `provideTranslocoScope`. Its paths come from the feature's contract. `app-routes.ts` imports a feature's routes file and its contract, nothing else: it never reaches for a page directly. The app knows nothing of a feature's insides.
 - `src/app/shared/`: reusable presentation/test helpers, imports neither `core` nor `features`.
 - Module boundaries are enforced at lint time by Sheriff ([sheriff.config.ts](sheriff.config.ts)): `features` may import `core`, `shared` and any feature's `contract/`; `core` may import `shared` and contracts; features otherwise never import each other; a contract imports only `api-client` types (`core/api-client` is its own module). Modules are barrel-less: no `index.ts`, import files directly; private files go in an `internal/` subdirectory.
+- Sheriff only follows imports reachable from `src/main.ts`, so specs and test helpers are outside its graph and their imports are reviewed by hand.
 - Import aliases: `@core/*`, `@features/*`, `@shared/*`, `@environments/*`.
 
 ### Feature contract
@@ -140,6 +141,7 @@ holds. A rollback redeploys an already released commit and mints no version.
 - jsdom implements no `<dialog>` behavior: [src/test-setup.ts](src/test-setup.ts) shims `showModal`/`close` so specs can drive the markup, and the semantics that matter (initial focus on the safe action, Esc, focus returned to the trigger) are asserted in the Playwright suite instead.
 - `coverageInclude` in [angular.json](angular.json) makes every source file count, including those no spec imports. Without it v8 reports only what a test loaded, so a file with no spec is invisible rather than uncovered. `coverageExclude` holds the generated client and the pure wiring (bootstrap, `*-routes.ts`, `*-provider.ts`, environments); anything with behavior gets a spec.
 - Coverage is at 100% and must stay there; the CI thresholds are 85/80/70/85.
+- The accessibility spec runs twice, as the `chromium` (light) and `chromium-dark` projects; the other e2e specs run in light only.
 - `data-testid` attributes in templates are used by the Playwright e2e page objects: keep them even where unit tests query by role.
 
 ## App shell, theme and session
