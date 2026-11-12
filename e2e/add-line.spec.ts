@@ -1,6 +1,7 @@
-import { type Page, type Request, expect, test } from '@playwright/test';
+import type { Page, Request } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 import { SHARED_ISIN } from './fixtures/search';
 
 const searchesOf = (page: Page): Request[] => {

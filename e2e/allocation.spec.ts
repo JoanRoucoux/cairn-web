@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 import { AllocationPageObject } from './pages/allocation-page';
 
 const NORTHWIND_PEA_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';

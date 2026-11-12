@@ -71,6 +71,24 @@ export default defineConfig([
     extends: [sheriff.configs.all],
   },
   {
+    files: ['e2e/**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@playwright/test',
+              importNames: ['test'],
+              message:
+                'Import test from e2e/fixtures/base-test.ts: it fails a test on a CSP or Trusted Types violation.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['src/app/core/logger/logger.ts', 'src/main.ts'],
     rules: {
       'no-console': 'off',

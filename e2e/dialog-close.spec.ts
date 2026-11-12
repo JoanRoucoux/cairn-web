@@ -1,6 +1,7 @@
-import { type Locator, type Page, expect, test } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 import { mockApi } from './fixtures/api';
+import { expect, test } from './fixtures/base-test';
 
 const AMUNDI_ID = '11111111-1111-1111-1111-111111111111';
 
