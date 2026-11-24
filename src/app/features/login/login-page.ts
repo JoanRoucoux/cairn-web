@@ -81,7 +81,6 @@ export class LoginPage {
       return;
     }
 
-    // A full page load, not a router navigation: the session store must start against the new session.
     this.#pageLoad.to(PORTFOLIO_PATHS.home);
   }
 

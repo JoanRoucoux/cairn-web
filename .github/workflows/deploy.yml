@@ -110,7 +110,6 @@ jobs:
       - name: Authorize this runner on the server
         run: |
           mkdir -p ~/.ssh
-          # tr -d '\r': a key pasted from Windows carries carriage returns OpenSSH rejects silently.
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts

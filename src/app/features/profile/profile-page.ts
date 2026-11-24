@@ -115,7 +115,6 @@ export class ProfilePage {
   protected async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    // Resets the input so picking the same corrected file again still fires a change event.
     input.value = '';
 
     if (!file) {
@@ -153,7 +152,6 @@ export class ProfilePage {
 
   protected async onSignOut(): Promise<void> {
     await this.#store.signOut();
-    // A full page load, not a router navigation: the app would keep rendering the destroyed session.
     this.#signIn.start();
   }
 }
