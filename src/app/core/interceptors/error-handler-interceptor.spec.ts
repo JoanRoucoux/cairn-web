@@ -37,6 +37,22 @@ describe('errorHandlerInterceptor', () => {
     expect(errorSpy).toHaveBeenCalledWith('HttpInterceptor', 'API error on GET /api/holdings', expect.anything());
   });
 
+  it('should log the trace id the API answered with', () => {
+    const errorSpy = vi.spyOn(logger, 'error');
+    const traceId = '4bf92f3577b34da6a3ce929d0e0e4736';
+
+    httpClient.get('/api/holdings').subscribe({ error: () => undefined });
+    httpTesting
+      .expectOne('/api/holdings')
+      .flush(null, { status: 502, statusText: 'Bad Gateway', headers: { 'X-Trace-Id': traceId } });
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      'HttpInterceptor',
+      `API error on GET /api/holdings (trace ${traceId})`,
+      expect.anything(),
+    );
+  });
+
   it('should not log errors for requests outside the API base URL', () => {
     const errorSpy = vi.spyOn(logger, 'error');
 
