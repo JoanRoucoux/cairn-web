@@ -203,6 +203,7 @@ cairn-web is a standalone application: it owns its navigation shell, its theme a
 - `SessionStore.signOut()` swallows a failed logout: the caller navigates away either way and the server session expires on its own.
 - `@joanroucoux/cairn-ui/styles/fonts.css` is listed in `angular.json` `styles`, not `@import`ed from `src/styles.css`: Tailwind inlines an `@import` without rebasing its relative `url()`s, so Rubik would silently fall back to the system font.
 - `typescript` stays below 7 (the Dependabot ignore enforces it): TypeScript 7 breaks `typescript-eslint` (via `ts-api-utils`). Do not bump until typescript-eslint supports TS 7.
+- `orval.config.ts` deletes the root `core/api-client/index.ts` in an `afterAllFilesWrite` hook: that file turns the client into a barrel Sheriff refuses deep imports from, and Orval's `indexFiles: false` is no way out because it also breaks the schemas import.
 - `pnpm-workspace.yaml` `allowBuilds` is required for native postinstall scripts (esbuild, lmdb, ...): do not remove it.
 - The required status check `ci` is the gate job at the end of `ci.yml`, not a build job: a new CI job must be added to its `needs`, or its failure will not block a merge.
 - GitHub Actions in `.github/workflows/ci.yml` are pinned by commit SHA (Dependabot keeps them updated); when adding one, pin it the same way.
