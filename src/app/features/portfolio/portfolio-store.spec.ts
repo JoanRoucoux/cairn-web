@@ -386,13 +386,8 @@ describe('PortfolioStore', () => {
 
       httpTesting
         .match((candidate) => candidate.url === '/api/history')
-        .forEach((request) => {
-          try {
-            request.flush(history);
-          } catch {
-            // Already cancelled.
-          }
-        });
+        .filter((request) => !request.cancelled)
+        .forEach((request) => request.flush(history));
     });
   });
 });

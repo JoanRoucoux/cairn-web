@@ -18,7 +18,6 @@ filter_unconventional = false
 protect_breaking_commits = true
 sort_commits = "oldest"
 tag_pattern = "v[0-9]*"
-# The HTML comment is a sort key that striptags removes; groups are alphabetical otherwise.
 commit_parsers = [
   { message = "^feat", group = "<!-- 0 -->Features" },
   { message = "^fix", group = "<!-- 1 -->Bug fixes" },

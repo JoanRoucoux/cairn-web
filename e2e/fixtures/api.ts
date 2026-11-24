@@ -341,7 +341,6 @@ const { createAccount, updateAccount, deleteAccount } = buildAccountCrudHandlers
 
 const setCashBalanceHandler: Handler = setCashBalance(holdings, accounts, cashHolding);
 
-// First match wins, so a more specific path must come before a broader one.
 const ROUTES: { method: string; path: RegExp; handle: Handler }[] = [
   { method: 'GET', path: new RegExp('^/api/session/preferences$'), handle: getPreferences },
   { method: 'PATCH', path: new RegExp('^/api/session/preferences$'), handle: updatePreferences },

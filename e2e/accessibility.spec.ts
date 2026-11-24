@@ -31,7 +31,6 @@ for (const screen of screens) {
   test(`has no accessibility violation on ${screen}`, async ({ page, makeAxeBuilder }) => {
     await mockApi(page);
     await page.goto(screen);
-    // Scanning before the lazy i18n scope resolves makes axe flag transient empty aria-labels.
     await page.waitForLoadState('networkidle');
 
     const results = await makeAxeBuilder().analyze();

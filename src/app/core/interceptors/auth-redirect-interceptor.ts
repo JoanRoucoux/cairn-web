@@ -14,7 +14,6 @@ export const authRedirectInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: unknown) => {
-      // Redirecting on a failing logout bounces between /logout and /login forever.
       const ownAuthenticationCall =
         req.url.endsWith(SIGN_OUT_URL) ||
         req.url.endsWith(SIGN_IN_URL) ||

@@ -46,7 +46,6 @@ export class LoginStore {
 
     await submit(this.form, async () => {
       const credentials = this.#model();
-      // Form encoding, not JSON: Spring's login filter reads request parameters, not a JSON body.
       const body = new URLSearchParams({
         username: credentials.username,
         password: credentials.password,

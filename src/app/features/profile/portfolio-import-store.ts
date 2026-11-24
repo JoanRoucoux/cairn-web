@@ -28,7 +28,6 @@ export class PortfolioImportStore {
 
     try {
       const report = await firstValueFrom(
-        // The endpoint consumes text/csv: a string body would otherwise go out as text/plain and get a 415.
         this.#portfolioApiClient.importPortfolio(await file.text(), {
           headers: new HttpHeaders({ 'Content-Type': 'text/csv' }),
         }),
